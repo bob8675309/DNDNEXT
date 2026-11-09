@@ -1,0 +1,147 @@
+name: Validate C3.3 original Forge and NPC privacy joint local JWT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-c3-3-forge-privacy-original.yml'
+      - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
+      - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
+      - 'scripts/fixtures/c33_forge_privacy_inventory_join_setup_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql'
+      - 'scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs'
+      - 'scripts/release/c33_compose_disposable_joint_sql.mjs'
+      - 'scripts/release/test_c33_compose_disposable_joint_sql.mjs'
+      - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql'
+      - 'scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_inventory_access_original_pg17.sql'
+      - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
+      - 'scripts/test_c33_forge_privacy_original_local_auth.mjs'
+      - 'scripts/browser/c33_creator_backstory_dom.jsx'
+      - 'scripts/browser/c33_next_router_shim.js'
+      - 'scripts/browser/c33_next_dynamic_shim.js'
+      - 'scripts/browser/verify_c33_creator_backstory_dom.mjs'
+      - 'scripts/browser/c33_original_forge_full_dom.jsx'
+      - 'scripts/browser/verify_c33_original_forge_full_dom.mjs'
+      - 'scripts/fixtures/c33_next_town_route_pg17.sql'
+      - 'scripts/browser/verify_c33_next_town_route.mjs'
+      - 'pages/town/[id].js'
+      - 'components/TownSheet.js'
+      - 'components/character/CharacterInteractionPanel.js'
+      - 'components/MerchantPanel.js'
+      - 'pages/inventory.js'
+      - 'components/GlobalNpcProfileOverlay.js'
+      - 'utils/npcProfileOverlay.js'
+      - 'scripts/fixtures/c33_forge_full_component_browser_catalog_pg17.sql'
+      - 'components/CreatorBackstoryPanel.js'
+      - 'components/NpcPanel.js'
+      - 'components/CharacterSheetPanel.js'
+      - 'utils/officialCharacterSheetPdf.js'
+      - 'utils/printableCharacterSheet.js'
+      - 'public/forms/5E_CharacterSheet_Fillable.pdf'
+      - 'components/NewNpcModalV3.js'
+      - 'components/NpcForgeStepContent.js'
+      - 'scripts/validate_npc_profile_consumer_acl.mjs'
+      - 'scripts/validate_p1_3_npc_profile_rls_source.mjs'
+      - 'scripts/fixtures/forge_creation_original_functions_pg17.sql'
+      - 'scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql'
+      - 'sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql'
+      - 'sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql'
+      - 'sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-forge-joint-privacy:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check genuine JWT test and original staged SQL source guards
+        run: |
+          node --check scripts/test_c33_forge_privacy_original_local_auth.mjs
+          node --check scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs
+          node scripts/release/test_c33_compose_disposable_joint_sql.mjs
+          node scripts/release/c33_compose_disposable_joint_sql.mjs --check
+          node --check scripts/browser/verify_c33_creator_backstory_dom.mjs
+          node --check scripts/browser/verify_c33_original_forge_full_dom.mjs
+          node --check scripts/browser/verify_c33_next_town_route.mjs
+          node scripts/validate_p1_3_npc_profile_rls_source.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned local-only Chromium test tooling outside repository
+        run: |
+          mkdir -p "$RUNNER_TEMP/c33-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/c33-browser-tools" \
+            --no-save --package-lock=false --no-audit --no-fund \
+            --no-progress esbuild@0.25.12 playwright-core@1.56.1
+      - name: Configure disposable PG17 and GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/c33-forge-privacy-local/supabase"
+          cat > "$RUNNER_TEMP/c33-forge-privacy-local/supabase/config.toml" <<'TOML'
+          project_id = "c33-original-forge-privacy-test"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable Auth and PostgREST
+        run: |
+          cd "$RUNNER_TEMP/c33-forge-privacy-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Exercise source-original Forge v2/v3 against NPC privacy stage 1 to 3
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_ONLY
+          (cd "$RUNNER_TEMP/c33-forge-privacy-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/c33-forge-privacy-env"
+          set -a
+          source "$RUNNER_TEMP/c33-forge-privacy-env"
+          set +a
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          node scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs
+          node scripts/test_c33_forge_privacy_original_local_auth.mjs
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME" || { echo "Local Chromium missing; no remote browser fallback"; exit 1; }
+          C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c33-browser-tools" \
+          C33_BROWSER_CHROME="$CHROME" \
+            node scripts/browser/verify_c33_creator_backstory_dom.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_full_component_browser_catalog_pg17.sql
+          C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c33-browser-tools" \
+          C33_BROWSER_CHROME="$CHROME" \
+            node scripts/browser/verify_c33_original_forge_full_dom.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_next_town_route_pg17.sql
+          C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c33-browser-tools" \
+          C33_BROWSER_CHROME="$CHROME" \
+            node scripts/browser/verify_c33_next_town_route.mjs
+      - name: Stop and remove disposable services
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/c33-forge-privacy-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true

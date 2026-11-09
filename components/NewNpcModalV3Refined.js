@@ -126,6 +126,9 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
     function closeCompletedChoiceOnOutsidePointer(event) {
       const modal = modalRef.current;
       if (!modal) return;
+      // Keep footer navigation stable: collapsing open completed details during
+      // pointerdown can move Continue before pointerup/click and lose the action.
+      if (modal.querySelector(".npc-forge-footer")?.contains(event.target)) return;
       modal.querySelectorAll("details.npc-forge-species-fact-choice.is-complete[open]").forEach((details) => {
         if (!details.contains(event.target)) details.open = false;
       });

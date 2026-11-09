@@ -2,6 +2,11 @@
 
 **Use exactly one live task entry:** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) → [ACTIVE_WORK.md](ACTIVE_WORK.md) → [C0–C5 phase/PR closeout plan](PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md) → [workstream/PR dependencies](WORKSTREAMS_AND_PR_DEPENDENCIES.md) → most recent [HANDOFF_LOG.md](HANDOFF_LOG.md). All statuses are dated and must be rechecked against live GitHub/CI, deployed source and relevant read-only Supabase. **Do not use older 'Current Handoff' documents as active work orders.**
 
+## Backup and recoverability — 2026-11-09 owner-local checkpoint
+
+- **[2026-11-09 local backup capture, exact access paths and verification](BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md)** — canonical document for where to find the actual private Windows backup, what was done, archive `TABLE DATA` and four-bucket evidence, checksum manifest, read-only commands to recheck it, and remaining isolated restore/encryption tasks. **341 files / 469,857,682 bytes inventoried**; **not yet restore-tested or stored in an independently verified encrypted second location**. Actual backup bytes are **not in this GitHub repo**.
+- [Original Windows backup guide](C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md) and [C3.3 owner release packet](C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md) distinguish old instructions from newly captured artifacts. No live SQL, `main` merge, Vercel deployment or world-map change was authorized by backup completion.
+
 ## Latest C3.3 integrated NPC privacy source candidate (NOT DEPLOYED)
 
 - [C3.3 secure GM/creator/NPC Profile staged release gates](C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md): [draft #345](https://github.com/bob8675309/DNDNEXT/pull/345), exact-head 12/12 CI; original source/role compatibility audit NEXT, before any joint SQL/RLS/client rollout.

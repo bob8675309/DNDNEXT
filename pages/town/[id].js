@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import TownSheet from "../../components/TownSheet";
@@ -653,6 +653,54 @@ export default function TownPage() {
   const [playerUserId, setPlayerUserId] = useState(null);
   const [activeTownProfileCharacter, setActiveTownProfileCharacter] = useState(null);
   const [activeTownProfileView, setActiveTownProfileView] = useState("profile");
+  const townProfileRef = useRef(null);
+
+  // Profile/dossier data already rendered in React must not survive the
+  // identity that authorized it. RLS protects new reads, not stale open panels.
+  // Keep this synchronous: awaiting Supabase calls inside onAuthStateChange
+  // can block auth state transitions on the shared browser client.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_OUT") return;
+      setActiveTownProfileCharacter(null);
+      setActiveTownProfileView("profile");
+      setIsAdmin(false);
+      setPlayerUserId(null);
+      setPlayerInventory([]);
+      setPlayerPlants([]);
+    });
+    return () => subscription?.unsubscribe();
+  }, []);
+
+  // Profile window is a real dialog, not a navigational side drawer.
+  useEffect(() => {
+    if (!activeTownProfileCharacter) return;
+    const previousFocus = document.activeElement;
+    const element = townProfileRef.current;
+    element?.focus();
+    function onKeyDown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setActiveTownProfileCharacter(null);
+      } else if (event.key === "Tab" && element) {
+        const focusables = Array.from(element.querySelectorAll(
+          'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        )).filter((node) => node.getClientRects().length > 0);
+        if (!focusables.length) { event.preventDefault(); element.focus(); return; }
+        const first = focusables[0], last = focusables[focusables.length - 1];
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === element)) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault(); first.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [activeTownProfileCharacter]);
 
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
@@ -1085,7 +1133,9 @@ function handleOpenTownProfile(character, initialView = "profile") {
       }
     : character;
   setActiveTownProfileCharacter(panelCharacter);
-  setActiveTownProfileView(initialView || "profile");
+  // Opening any NPC/merchant/crafter interaction starts with Profile.
+  // Shop and Craft remain available as subsequent explicit panel tabs.
+  setActiveTownProfileView("profile");
 }
 
   return (
@@ -1120,7 +1170,7 @@ function handleOpenTownProfile(character, initialView = "profile") {
         />
           {activeTownProfileCharacter ? (
             <div className="town-profile-sidepanel-backdrop" onClick={() => setActiveTownProfileCharacter(null)}>
-              <aside className="town-profile-sidepanel" onClick={(event) => event.stopPropagation()}>
+              <aside className="town-profile-sidepanel" role="dialog" aria-modal="true" aria-label={`${activeTownProfileCharacter?.name || "NPC"} profile`} ref={townProfileRef} tabIndex={-1} onClick={(event) => event.stopPropagation()}>
                 <CharacterInteractionPanel
                   key={activeTownProfileCharacter?.id || "town-profile"}
                   character={activeTownProfileCharacter}

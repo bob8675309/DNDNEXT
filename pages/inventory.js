@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/utils/supabaseClient";
+import { openNpcProfile } from "@/utils/npcProfileOverlay";
 import ItemCard from "@/components/ItemCard";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "@/components/EquipmentDiagram";
 import OfferTradeButton from "@/components/OfferTradeButton";
@@ -232,6 +233,29 @@ export default function InventoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // This page stays mounted if Auth signs out elsewhere (e.g. navbar).
+  // Clear ALL privileged inventory/Admin views synchronously; PostgREST RLS
+  // cannot erase already-rendered client data. Do not await an auth call here.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_OUT") return;
+      setSession(null);
+      setIsAdmin(false);
+      setOwnerMeta(null);
+      setCanView(false);
+      setCanManage(false);
+      setRows([]);
+      setPlayers([]);
+      setNpcs([]);
+      setMerchants([]);
+      setSelectedIds([]);
+      setBulkTargetKey("");
+      setErrorMsg("");
+      setLoadingInv(false);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Parse query params
   useEffect(() => {
     if (!isReady) return;
@@ -293,7 +317,7 @@ export default function InventoryPage() {
 
       let view = false;
       let manage = false;
-      let meta = { name: "", subtitle: "", imageUrl: "", backHref: null };
+      let meta = { name: "", subtitle: "", imageUrl: "", backHref: null, profileCharacterId: null };
 
       try {
         if (ownerType === "player") {
@@ -335,6 +359,7 @@ export default function InventoryPage() {
             meta.subtitle = extras.join(" • ");
             meta.imageUrl = "/placeholder.png";
             meta.backHref = `/npcs?focus=${encodeURIComponent(`npc:${charId}`)}`;
+            meta.profileCharacterId = charId;
           }
 
           if (isAdmin) {
@@ -376,6 +401,7 @@ export default function InventoryPage() {
             meta.subtitle = extras.join(" • ");
             meta.imageUrl = "/placeholder.png";
             meta.backHref = `/npcs?focus=${encodeURIComponent(`merchant:${charId}`)}`;
+            meta.profileCharacterId = charId;
           }
 
           if (isAdmin) {
@@ -664,7 +690,15 @@ export default function InventoryPage() {
 
             <div className="flex-grow-1">
               <div className="d-flex align-items-center gap-2">
-                <h1 className="h5 m-0">{ownerMeta.name || "Inventory"}</h1>
+                {ownerMeta.profileCharacterId ? (
+                  <h1 className="h5 m-0">
+                    <button type="button" className="btn btn-link p-0 text-decoration-none text-light fw-semibold"
+                      onClick={() => openNpcProfile(ownerMeta.profileCharacterId)}
+                      title="Open this character's Profile">
+                      {ownerMeta.name || "Character"}
+                    </button>
+                  </h1>
+                ) : <h1 className="h5 m-0">{ownerMeta.name || "Inventory"}</h1>}
                 {ownerType === "player" && (isOwnInventory || isAdmin) ? (
                   <span className="badge bg-secondary">{walletLabel}</span>
                 ) : null}
@@ -770,11 +804,17 @@ export default function InventoryPage() {
               ) : null}
             </div>
 
-            {ownerMeta.backHref && (
-              <a className="btn btn-sm btn-outline-light ms-auto" href={ownerMeta.backHref}>
-                &larr; Back
+            {ownerMeta.profileCharacterId ? (
+              <button type="button" className="btn btn-sm btn-primary ms-auto"
+                onClick={() => openNpcProfile(ownerMeta.profileCharacterId)}>
+                Open Profile
+              </button>
+            ) : null}
+            {isAdmin && ownerMeta.backHref ? (
+              <a className="btn btn-sm btn-outline-light" href={ownerMeta.backHref}>
+                Manage in NPC page
               </a>
-            )}
+            ) : null}
           </div>
         </div>
       )}

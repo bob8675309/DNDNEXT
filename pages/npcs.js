@@ -13,7 +13,7 @@ import PortraitPickerModal from "../components/PortraitPickerModal";
 import NpcPanel from "../components/character/CharacterInteractionPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
-import { loadCharacterSecrets, saveCharacterSecret } from "../utils/characterSecrets";
+import { saveCharacterSecret } from "../utils/characterSecrets";
 import { isCurrentNpcSelectionRequest, normalizeNpcSelectionKey } from "../utils/npcSelectionGuard";
 import { settleWithDeadline } from "../utils/settleWithDeadline";
 
@@ -198,6 +198,8 @@ export default function NpcsPage() {
   const [npcs, setNpcs] = useState([]);
   const [merchants, setMerchants] = useState([]);
   const [merchantProfiles, setMerchantProfiles] = useState(new Map());
+  const [selectedGmDossier, setSelectedGmDossier] = useState(null);
+  const [selectedEditorNarrative, setSelectedEditorNarrative] = useState(null);
   const [mapIcons, setMapIcons] = useState([]);
   const [charPerm, setCharPerm] = useState(null);
  // merchant_id -> profile row
@@ -429,11 +431,6 @@ export default function NpcsPage() {
           "location_id",
           "tags",
           "description",
-          "background",
-          "motivation",
-          "quirk",
-          "mannerism",
-          "voice",
           "map_icon_id",
           "portrait_url",
           "portrait_storage_path",
@@ -473,15 +470,10 @@ export default function NpcsPage() {
       return;
     }
 
-    let secretById = new Map();
-    try {
-      secretById = await loadCharacterSecrets(supabase, (data || []).map((row) => row.id));
-    } catch (secretError) {
-      console.warn("Could not load protected NPC secrets", secretError);
-    }
+    // Basic roster is safe for both players and GM. Private narrative and
+    // GM secrets are loaded only for the selected row via the Admin dossier.
     const rows = (data || []).map((r) => ({
       ...r,
-      secret: secretById.get(String(r.id)) || "",
       status: r.is_hidden ? "hidden" : r.status || "alive",
     }));
 
@@ -558,11 +550,6 @@ export default function NpcsPage() {
           "role",
           "affiliation",
           "description",
-          "background",
-          "motivation",
-          "quirk",
-          "mannerism",
-          "voice",
           "tags",
           "status",
           "portrait_url",
@@ -584,17 +571,8 @@ export default function NpcsPage() {
       return;
     }
 
-    let secretById = new Map();
-    try {
-      secretById = await loadCharacterSecrets(supabase, (data || []).map((row) => row.id));
-    } catch (secretError) {
-      console.warn("Could not load protected merchant secrets", secretError);
-    }
     const m = new Map();
-    for (const row of data || []) {
-      row.secret = secretById.get(String(row.id)) || "";
-      m.set(String(row.id), row);
-    }
+    for (const row of data || []) m.set(String(row.id), row);
     setMerchantProfiles(m);
   }, []);
 
@@ -720,6 +698,49 @@ export default function NpcsPage() {
     return roster.find((r) => r.type === type && String(r.id) === String(id)) || null;
   }, [selectedKey, roster]);
 
+  // Never reuse an earlier NPC's edit grant while selection changes.
+  const selectedCharPerm = charPerm?.character_id && String(charPerm.character_id) === String(selected?.id)
+    ? charPerm : null;
+
+  // The GM manager loads a selected private dossier through a server-side
+  // Admin authorization check. The basic roster no longer reads protected
+  // narrative columns or all GM Secrets for every NPC/merchant.
+  useEffect(() => {
+    let cancelled = false;
+    setSelectedGmDossier(null);
+    if (!isAdmin || !selected?.id) return;
+    (async () => {
+      const { data, error } = await supabase.rpc("get_npc_dossier_admin_v1", {
+        p_character_id: selected.id,
+      });
+      if (cancelled) return;
+      if (error) {
+        console.error("GM dossier unavailable", error);
+        setSelectedGmDossier(null);
+      } else {
+        setSelectedGmDossier(data || null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isAdmin, selected?.id]);
+
+  // Column ACLs prevent direct lore SELECT, including for non-GM editors.
+  // The server independently validates can_edit and never returns GM Secrets.
+  useEffect(() => {
+    let cancelled = false;
+    setSelectedEditorNarrative(null);
+    if (!selected?.id || isAdmin || !selectedCharPerm?.can_edit) return undefined;
+    (async () => {
+      const { data, error } = await supabase.rpc("get_character_editor_narrative_v1", {
+        p_character_id: selected.id,
+      });
+      if (cancelled) return;
+      if (error) console.error("Editor narrative unavailable", error);
+      else if (data?.id && String(data.id) === String(selected.id)) setSelectedEditorNarrative(data);
+    })();
+    return () => { cancelled = true; };
+  }, [isAdmin, selected?.id, selectedCharPerm?.can_edit]);
+
   // Resolve the selected character's map icon record (for showing next to the name).
   const selectedMapIcon = useMemo(() => {
     if (!selected?.map_icon_id) return null;
@@ -751,13 +772,13 @@ export default function NpcsPage() {
       setCharPerm(null);
       if (!userId || !selected?.id) return;
       if (isAdmin) {
-        if (!cancelled) setCharPerm({ can_inventory: true, can_edit: true, can_convert: true });
+        if (!cancelled) setCharPerm({ character_id: selected.id, can_inventory: true, can_edit: true, can_convert: true });
         return;
       }
 
       const { data, error } = await supabase
         .from("character_permissions")
-        .select("can_inventory,can_edit,can_convert")
+        .select("character_id,can_inventory,can_edit,can_convert")
         .eq("character_id", selected.id)
         .eq("user_id", userId)
         .maybeSingle();
@@ -902,8 +923,8 @@ export default function NpcsPage() {
   const npcSheetActions = useNpcSheetActionData({
     characterId: selected?.id || "",
     sheet,
-    enabled: !!selected?.id && (!!isAdmin || !!charPerm?.can_inventory || !!charPerm?.can_edit),
-    canCommand: !!isAdmin || !!charPerm?.can_edit,
+    enabled: !!selected?.id && (!!isAdmin || !!selectedCharPerm?.can_inventory || !!selectedCharPerm?.can_edit),
+    canCommand: !!isAdmin || !!selectedCharPerm?.can_edit,
     onSheetUpdated: setSheet,
     onResult: setLastRoll,
   });
@@ -975,9 +996,13 @@ export default function NpcsPage() {
   const buildDetailsBase = useCallback(
     (sel) => {
       if (!sel) return null;
+      const candidateNarrative = isAdmin ? selectedGmDossier : selectedEditorNarrative;
+      const authorizedNarrative = String(candidateNarrative?.id || "") === String(sel.id)
+        ? candidateNarrative : null;
 
       if (sel.type === "npc") {
-        const row = (npcs || []).find((n) => String(n.id) === String(sel.id)) || sel;
+        const rosterRow = (npcs || []).find((n) => String(n.id) === String(sel.id)) || sel;
+        const row = authorizedNarrative ? { ...rosterRow, ...authorizedNarrative } : rosterRow;
         return {
           role: safeStr(row.role),
           affiliation: safeStr(row.affiliation),
@@ -992,7 +1017,8 @@ export default function NpcsPage() {
       }
 
       if (sel.type === "merchant") {
-        const prof = merchantProfiles.get(String(sel.id)) || {};
+        const basicProfile = merchantProfiles.get(String(sel.id)) || {};
+        const prof = authorizedNarrative ? { ...basicProfile, ...authorizedNarrative } : basicProfile;
         return {
           role: safeStr(prof.role || sel.role),
           affiliation: safeStr(prof.affiliation || sel.affiliation),
@@ -1008,7 +1034,7 @@ export default function NpcsPage() {
 
       return null;
     },
-    [npcs, merchantProfiles]
+    [npcs, merchantProfiles, isAdmin, selectedGmDossier, selectedEditorNarrative]
   );
 
   useEffect(() => {
@@ -1124,7 +1150,7 @@ export default function NpcsPage() {
   // Delete a character and dependent rows (schema has no ON DELETE CASCADE)
   async function handleDeleteNpc(characterId) {
     if (!characterId) return;
-    if (!(isAdmin || charPerm?.can_edit)) return;
+    if (!(isAdmin || selectedCharPerm?.can_edit)) return;
 
     const target = roster.find((entry) => String(entry.id) === String(characterId)) || selected;
     const name = target?.name || "this character";
@@ -1211,10 +1237,12 @@ export default function NpcsPage() {
 
   const panelHeight = { height: "calc(100vh - 170px)" };
 
-  const canEditCharacter = !!isAdmin || !!charPerm?.can_edit;
-  const canStoreToggle = !!isAdmin || !!charPerm?.can_inventory || !!charPerm?.can_edit;
-  const canConvertKind = !!isAdmin || !!charPerm?.can_convert;
-  const canEditNarrative = canEditCharacter && !!sheetEditMode;
+  const canEditCharacter = !!isAdmin || !!selectedCharPerm?.can_edit;
+  const canStoreToggle = !!isAdmin || !!selectedCharPerm?.can_inventory || !!selectedCharPerm?.can_edit;
+  const canConvertKind = !!isAdmin || !!selectedCharPerm?.can_convert;
+  const currentNarrative = isAdmin ? selectedGmDossier : selectedEditorNarrative;
+  const hasNarrative = Boolean(selected?.id && String(currentNarrative?.id || "") === String(selected.id));
+  const canEditNarrative = canEditCharacter && hasNarrative && !!sheetEditMode;
 
   async function applySpritePatchToSelected(nextSpritePath) {
     if (!selected?.id) return;
@@ -1504,7 +1532,7 @@ const details = detailsDraft || {};
     quirk: safeStr(details?.quirk || selected?.quirk),
     mannerism: safeStr(details?.mannerism || selected?.mannerism),
     voice: safeStr(details?.voice || selected?.voice),
-    secret: safeStr(details?.secret || selected?.secret),
+    secret: isAdmin ? safeStr(details?.secret || selected?.secret) : "",
     tags: Array.isArray(selected?.tags) ? selected.tags : [],
     portraitUrl: selectedPortrait?.url || "",
   };
@@ -1856,12 +1884,14 @@ const details = detailsDraft || {};
                           </div>
                           <input className="form-control form-control-sm" value={details.voice || ""} onChange={(e) => setDetailsField("voice", e.target.value)} />
                         </div>
-                        <div className="col-12">
-                          <div className="small" style={{ color: MUTED }}>
-                            Secret (optional)
+                        {isAdmin ? (
+                          <div className="col-12">
+                            <div className="small" style={{ color: MUTED }}>
+                              GM Secret (private to GM)
+                            </div>
+                            <input className="form-control form-control-sm" value={details.secret || ""} onChange={(e) => setDetailsField("secret", e.target.value)} />
                           </div>
-                          <input className="form-control form-control-sm" value={details.secret || ""} onChange={(e) => setDetailsField("secret", e.target.value)} />
-                        </div>
+                        ) : null}
                       </div>
                     ) : (
                       <>
@@ -1888,12 +1918,14 @@ const details = detailsDraft || {};
                           </div>
                         </div>
 
-                        <div className="mb-2">
-                          <div className="small" style={{ color: MUTED }}>
-                            Secret (optional)
+                        {isAdmin ? (
+                          <div className="mb-2">
+                            <div className="small" style={{ color: MUTED }}>
+                              GM Secret (private to GM)
+                            </div>
+                            <div style={{ color: "rgba(255,255,255,0.92)" }}>{details.secret || <span className="npc-muted">—</span>}</div>
                           </div>
-                          <div style={{ color: "rgba(255,255,255,0.92)" }}>{selected.secret || <span className="npc-muted">—</span>}</div>
-                        </div>
+                        ) : null}
                       </>
                     )}
 
@@ -2312,7 +2344,7 @@ const details = detailsDraft || {};
                         const updated_at = new Date().toISOString();
 
                         // Save narrative fields
-                        if (canEditCharacter && detailsDraft) {
+                        if (canEditCharacter && hasNarrative && detailsDraft) {
                           const patch = {
                             role: safeStr(detailsDraft.role) || null,
                             affiliation: safeStr(detailsDraft.affiliation) || null,
@@ -2327,7 +2359,9 @@ const details = detailsDraft || {};
 
                           const upd = await supabase.from("characters").update(patch).eq("id", selected.id);
                           if (upd.error) throw upd.error;
-                          await saveCharacterSecret(supabase, selected.id, detailsDraft.secret);
+                          if (isAdmin) {
+                            await saveCharacterSecret(supabase, selected.id, detailsDraft.secret);
+                          }
                         }
 
                         // Save sheet overlay
@@ -2398,7 +2432,7 @@ const details = detailsDraft || {};
         <div className="npc-page-profile-panel-shell">
           <NpcPanel
             npc={selected}
-            isAdmin={isAdmin || canEditCharacter}
+            isAdmin={isAdmin}
             locations={locations}
             initialView={profilePanelInitialView}
             onClose={() => setProfilePanelOpen(false)}

@@ -1,0 +1,116 @@
+name: C3.3 atomic SQL disposable source-backed rehearsal
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-c3-3-atomic-disposable.yml'
+      - 'scripts/release/c33_compose_disposable_joint_sql.mjs'
+      - 'scripts/release/test_c33_compose_disposable_joint_sql.mjs'
+      - 'scripts/release/c33_compose_production_review_sql.mjs'
+      - 'scripts/release/test_c33_compose_production_review_sql.mjs'
+      - 'scripts/release/c33_capture_sensitive_db_backup_windows.ps1'
+      - 'docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md'
+      - 'scripts/diagnostics/c33_migration_history_audit.mjs'
+      - 'docs/data/c33_migration_history_snapshot_2026-11-08.json'
+      - 'scripts/fixtures/c33_atomic_preprivacy_inventory_pg17.sql'
+      - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
+      - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql'
+      - 'sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql'
+      - 'sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql'
+      - 'sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql'
+      - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  atomic-pg17-c33:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact original candidate fingerprint and atomization
+        run: |
+          node --check scripts/release/c33_compose_disposable_joint_sql.mjs
+          node scripts/release/test_c33_compose_disposable_joint_sql.mjs
+          node --check scripts/release/c33_compose_production_review_sql.mjs
+          node scripts/release/test_c33_compose_production_review_sql.mjs
+          command -v pwsh
+          pwsh -NoProfile -NonInteractive -Command '
+            $tokens = $null; $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile("scripts/release/c33_capture_sensitive_db_backup_windows.ps1", [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -ne 0) { $errors | ForEach-Object { Write-Error $_ }; exit 1 }
+            Write-Host "PASS C3BACKUP01: PowerShell backup script syntax parsed; no database touched"
+          '
+          node scripts/release/c33_compose_production_review_sql.mjs --check
+          node --check scripts/diagnostics/c33_migration_history_audit.mjs
+          node scripts/diagnostics/c33_migration_history_audit.mjs
+      - name: Configure isolated Supabase PG17
+        run: |
+          mkdir -p "$RUNNER_TEMP/c33-atomic-db/supabase"
+          cat > "$RUNNER_TEMP/c33-atomic-db/supabase/config.toml" <<'TOML'
+          project_id = "c33-atomic-four-stage-test"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable database and local Auth
+        run: |
+          cd "$RUNNER_TEMP/c33-atomic-db"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Apply all four unchanged source candidates inside ONE local transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_ONLY
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
+            -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_atomic_preprivacy_inventory_pg17.sql
+          node scripts/release/c33_compose_disposable_joint_sql.mjs \
+            --out "$RUNNER_TEMP/c33-atomic-disposable.sql"
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/c33-atomic-disposable.sql"
+          psql -X -v ON_ERROR_STOP=1 -c \
+            "DO \$c33proof\$ BEGIN
+            IF to_regclass('public.character_backstory_secrets') IS NULL
+             OR to_regclass('public.character_public_secret_revelations') IS NULL
+             OR to_regclass('private.character_creator_attribution') IS NULL
+             OR (SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass
+                 AND conname='inventory_items_owner_type_chk')<>0
+             OR (SELECT count(*) FROM public.inventory_items WHERE id='00000000-0000-0000-0000-000000009872')<>1
+             OR (SELECT count(*) FROM public.character_stock WHERE id='00000000-0000-0000-0000-000000009871')<>1
+             OR (SELECT secret FROM public.characters WHERE id='00000000-0000-0000-0000-000000009870')
+                 IS DISTINCT FROM 'TEST-GM-SECRET-UNCHANGED'
+            THEN RAISE EXCEPTION 'C3ATOMIC02 post-commit catalog/secret/RPC state drift'; END IF;
+            END \$c33proof\$;"
+          echo 'PASS C3ATOMIC02: original four candidates committed as ONE disposable transaction; existing merchant stock, character item and GM secret retained'
+      - name: Remove disposable database
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/c33-atomic-db"
+          npx --yes supabase@2.120.0 stop --no-backup || true

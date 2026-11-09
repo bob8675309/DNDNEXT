@@ -1,0 +1,45 @@
+name: Validate NPC secure Profile and Admin dossier UI cutover
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-npc-private-profile-cutover.yml"
+      - "components/NpcPanel.js"
+      - "components/PlayerCharacterProfilePanelUnified.js"
+      - "scripts/validate_npc_profile_consumer_acl.mjs"
+      - "components/CreatorBackstoryPanel.js"
+      - "pages/npcs.js"
+      - "scripts/validate_npc_private_profile_cutover.mjs"
+      - "scripts/validate_printable_character_sheet.mjs"
+      - "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql"
+      - "scripts/test_p1_3_npc_profile_safe_local_auth.mjs"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-profile-ui-build:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify source-level server boundaries and existing interaction entry points
+        run: |
+          node --check scripts/validate_npc_private_profile_cutover.mjs
+          node scripts/validate_npc_private_profile_cutover.mjs
+          node scripts/validate_npc_profile_consumer_acl.mjs
+          node scripts/validate_character_interaction_panel.mjs
+          node scripts/validate_map_profile_offcanvas_handoff.mjs
+          node scripts/validate_town_crafter_handoff_pipeline.mjs
+      - name: Install pinned project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Compile Next.js Pages Router without deployment
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: static-test-placeholder
+        run: npm run build:vercel

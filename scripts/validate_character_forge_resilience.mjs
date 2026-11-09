@@ -59,7 +59,7 @@ requireToken(forgeSteps, "playerSpeciesRows", "player Species filtering");
 requireToken(forgeSteps, "!/^human\\s*\\(/i", "campaign Human variant filtering");
 forbidToken(forgeSource, "function handleClose() { if (creating) return; resetForm();", "canonical Forge");
 
-for (const token of ["useRef", 'supabase.rpc("create_player_character_v3"', "playerForgeProxySpellChoices", "p_spell_choices: proxySpellChoices", "p_magic_selections: magicSelections", "payloadWithSubclass", "payloadWithSourceChoices", "speciesTraitChoices", "classFeatureChoices", "classFeatureChoiceSummary", "NpcForgeClassChoiceContext.Provider"]) requireToken(adapter, token, "shared player adapter");
+for (const token of ["useRef", 'supabase.rpc("create_player_character_with_private_backstory_v1"', "playerForgeProxySpellChoices", "p_spell_choices: proxySpellChoices", "p_magic_selections: magicSelections", "payloadWithSubclass", "payloadWithSourceChoices", "speciesTraitChoices", "classFeatureChoices", "classFeatureChoiceSummary", "NpcForgeClassChoiceContext.Provider"]) requireToken(adapter, token, "shared player adapter");
 forbidToken(adapter, 'supabase.rpc("create_player_character_v2"', "shared player adapter");
 forbidToken(adapter, "p_spell_choices: []", "shared player adapter");
 forbidToken(adapter, "supabase.rpc =", "shared player adapter");

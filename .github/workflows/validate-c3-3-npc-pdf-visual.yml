@@ -1,0 +1,50 @@
+name: C3.3 original NPC official PDF page visual QA
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-c3-3-npc-pdf-visual.yml'
+      - 'scripts/browser/verify_c33_npc_pdf_visual.mjs'
+      - 'utils/officialCharacterSheetPdf.js'
+      - 'utils/printableCharacterSheet.js'
+      - 'public/forms/5E_CharacterSheet_Fillable.pdf'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-official-pdf-visual:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install repo dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install and verify PDF inspection utilities
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          command -v pdftotext
+          command -v pdftoppm
+          node --check scripts/browser/verify_c33_npc_pdf_visual.mjs
+      - name: Generate role-safe, GM-authorized, and dense real official PDFs and render all target pages
+        env:
+          DNDNEXT_PDF_VISUAL_OUT: "${{ runner.temp }}/c33-official-npc-pdf"
+          DNDNEXT_PDF_VISUAL_LOG_IMAGES: '1'
+        run: node scripts/browser/verify_c33_npc_pdf_visual.mjs
+      - name: Preserve synthetic PDF and image evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c33-official-npc-pdf-visual-qa
+          path: "${{ runner.temp }}/c33-official-npc-pdf/"
+          if-no-files-found: warn
+          retention-days: 7

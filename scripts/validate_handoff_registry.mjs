@@ -103,7 +103,10 @@ for (const token of ['**S0 exit:**','**S7 exit:**','**P0 exit:**','**P6 exit:**'
   if (!phases.includes(token)) fail(`phased checklist missing exit gate: ${token}`);
 }
 for (const token of ['Active product phase', 'S0–S7 gates', 'Phase exit conditions']) if (!receipts.includes(token)) fail(`handoff receipt missing ${token}`);
-if (!/\*\*Active phase \/ subphase:\*\* `P\d \/ P\d\.\d/.test(active)) fail('ACTIVE_WORK must provide a single current P# / P#.# identifier');
+// C3.3 NPC closeout and P1.3 tactical locks use distinct owner phase IDs.
+// Accept either current phase namespace, while still requiring exactly one.
+const activePhases = [...active.matchAll(/^\*\*Active phase \/ subphase:\*\* `([PC])(\d+) \/ \1\2\.(\d+)`/gm)];
+if (activePhases.length !== 1) fail('ACTIVE_WORK must provide exactly one current P# / P#.# or C# / C#.# identifier');
 if (!active.includes('Next single action:') && !active.includes('**Next single action:**')) fail('ACTIVE_WORK needs one explicit next action');
 if (!reg.snapshot?.main_sha || !reg.snapshot?.production_deployment_id) fail('registry missing dated production baseline');
 if (failures.length) {

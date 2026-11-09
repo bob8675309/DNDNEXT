@@ -712,6 +712,8 @@ for(const token of [
  "subclassName: selected.name",
  "subclassSource: selected.source",
  "p_payload: playerPayload(payload, proxySpellChoices, magicSelections)",
+ "create_player_character_with_private_backstory_v1",
+ "p_private_backstory: String(originalPayload?.secret || \"\")",
  "classChoiceStateComplete(classChoiceStateRef.current)"
 ])assert.ok(forgeModal.includes(token),"Player Forge must keep subclass name/source-qualified request "+token);
 for(const token of [

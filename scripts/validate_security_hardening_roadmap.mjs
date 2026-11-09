@@ -104,7 +104,7 @@ includesAll(sharedForgeAdapter, [
   "...sheet,",
   "playerForgeProxySpellChoices",
   "const createCharacter = useCallback",
-  'supabase.rpc("create_player_character_v3"',
+  'supabase.rpc("create_player_character_with_private_backstory_v1"',
   "p_payload: playerPayload(payload, proxySpellChoices, magicSelections)",
   "p_spell_choices: proxySpellChoices",
   "p_magic_selections: magicSelections",
