@@ -1,0 +1,25 @@
+name: C4 Spell Recipe P1 source-only validation
+on:
+  pull_request:
+    paths:
+      - "utils/spellRecipes/**"
+      - "scripts/fixtures/spell_recipe_p1_examples.mjs"
+      - "scripts/validate_spell_recipe_schema_p1.mjs"
+      - "scripts/validate_spell_recipe_preflight_p1.mjs"
+      - ".github/workflows/validate-spell-recipe-p1-extraction.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Closed schema and adversarial fixture checks
+        run: node scripts/validate_spell_recipe_schema_p1.mjs
+      - name: Compiler preflight and immutable manifest checks
+        run: node scripts/validate_spell_recipe_preflight_p1.mjs
