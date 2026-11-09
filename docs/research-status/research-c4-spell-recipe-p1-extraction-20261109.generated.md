@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c4-spell-recipe-p1-extraction-20261109` |
-| Exact source commit represented by this archive snapshot | `9437b9d0a2bedc3ba78110c612543f6033674a72` |
+| Exact source commit represented by this archive snapshot | `18e889ffc668ee9af45d04b6faf24d93f2d9f8ae` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: preserve C3.3 secure NPC source candidate, live source gaps and release gates (#346) |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 11 files (1 non-docs; 10 authored docs) |
+| Last source commit title | research(spells): extract non-executing P1 recipe contracts from held #309 |
+| Files changed relative to main | 8 (6 non-docs; 2 docs) |
+| Last source commit | 8 files (6 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,20 +17,25 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `AGENTS.md`
+- `.github/workflows/validate-spell-recipe-p1-extraction.yml`
 - `docs/ACTIVE_WORK.md`
-- `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
-- `docs/C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/NEXT_CHAT_START_HERE.md`
-- `docs/PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md`
-- `docs/PROJECT_STATE.md`
-- `docs/README.md`
-- `docs/SYSTEM_REGISTRY.json`
-- `docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md`
+- `scripts/fixtures/spell_recipe_p1_examples.mjs`
+- `scripts/validate_spell_recipe_preflight_p1.mjs`
+- `scripts/validate_spell_recipe_schema_p1.mjs`
+- `utils/spellRecipes/preflightSpellRecipe.mjs`
+- `utils/spellRecipes/validateSpellRecipe.mjs`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-spell-recipe-p1-extraction.yml`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/spell_recipe_p1_examples.mjs`
+- `scripts/validate_spell_recipe_preflight_p1.mjs`
+- `scripts/validate_spell_recipe_schema_p1.mjs`
+- `utils/spellRecipes/preflightSpellRecipe.mjs`
+- `utils/spellRecipes/validateSpellRecipe.mjs`
 
 ## Trust and update procedure
 
