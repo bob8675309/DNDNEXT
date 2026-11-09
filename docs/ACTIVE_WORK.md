@@ -2,6 +2,10 @@
 
 **Current owner direction (2026-11-09): integrate all approved outstanding PR functionality and source evidence before resuming unrelated new development.** Full decisions, 20 individual exact source-head file inventories and important cross-links: [PR catalog](pr-integration/README.md). Ordered acceptance and release program: [I0–I6 phased plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md). Previous C3.3-only task and evidence preserved verbatim in [historical archive](archive/ACTIVE_WORK_C3_3_PRE_OWNER_OVERRIDE_2026-11-09.md); never follow it as current priority.
 
+**Active phase / subphase:** `P1 / P1.3` — I1 preservation-first integration, starting with original Forge/security source-test compatibility; the I0–I6 integration sequence spans P1/P2 and supersedes a C3.3-only queue. This identifier is retained for the existing S0–S7 handoff-registry contract, not permission to release P1.3 SQL.
+
+Canonical resume and policy: [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) → [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) → [PR Integration Phase Plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) → [HANDOFF_LOG.md](HANDOFF_LOG.md).
+
 ## Current result and verified limits
 
 - **I0 preservation documentation prepared on a DRAFT branch only:** `docs/pr-preservation-integration-order-20261109`, based on unchanged `main` `9437b9d0a2bedc3ba78110c612543f6033674a72`. 20 exact-head PR dossiers, 584 total immediate PR changed-file entries (some repeated paths), full source blob SHA and feature/test/role/release gates. PR #345 current head `4f5f8ff7587aff1a68f21581ad68a4752789f54a` has 27 successes + 1 skipped, and #347 head `18e889ffc668ee9af45d04b6faf24d93f2d9f8ae` has 6 successes + 1 skipped. All 20 inspected heads had no failing checks. **Check this docs branch's own exact-head CI after the final commit/PR; it is not yet verified in this receipt.**
@@ -11,6 +15,8 @@
 - Original live spell/item catalogs, merchant stock, inventory, recipes, asset storage and deployed 19 XPHB spell adapters must remain intact. No `main` merge, Supabase SQL, Vercel production deployment, world-map source editing, paid agent invocation or PR close occurred from this documentation branch.
 
 ## ONE next executable engineering task
+
+**Next single action:** Complete I1-A original Forge #324/#328–#335 vs secure #345 source/blob/trigger/JWT/Chromium dependency crosswalk and audit against current main. No migration or branch merge.
 
 **I1-A: Build a source/blob/function/trigger and fixture dependency-closed overlap matrix comparing Forge #324/#328–#335 (which inherits old #321 privacy) against main-based secure C3.3 #345 and current main.** Classify every unique original source, test, fixture and workflow as copied byte-identical, ported with proven parity, superseded with source evidence, or deferred unchanged. Explicitly reconcile original v2/v3 nonce intent vs #345 Stage3 Story nonce, feat grant provenance, four-policy inventory CHECK/RLS, starting spell and nested Warlock/Wizard source cases, 31 trigger coverage, legacy players.sheet and signed role/browser assertions. Do not write a live migration or merge. After this one bounded matrix, create the smallest source/test-only integration draft with exact-head free CI.
 
