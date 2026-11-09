@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1-forge-original-trigger-ledger-20261109` |
-| Exact source commit represented by this archive snapshot | `b7c5f6d42c55c7cd13e9d774e04b28003507df36` |
+| Exact source commit represented by this archive snapshot | `c9a60f9d1a10d1e2459df18f0afe217f35d84a5a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(forge): preserve original source-only 31-trigger JWT receipt ledger |
-| Files changed relative to main | 6 (5 non-docs; 1 docs) |
-| Last source commit | 6 files (5 non-docs; 1 authored docs) |
+| Last source commit title | docs(I1): document original Forge trigger ledger and one next source-auth test |
+| Files changed relative to main | 9 (5 non-docs; 4 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,17 +17,17 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/forge-trigger-acceptance-audit.yml`
-- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- `scripts/agents/forge_automation_selftest.mjs`
-- `scripts/agents/forge_trigger_acceptance_ledger.mjs`
-- `scripts/agents/forge_trigger_acceptance_receipts.json`
-- `scripts/agents/forge_trigger_audit.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/I1_A_FORGE_TRIGGER_LEDGER_SOURCE_EXTRACTION.md`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/forge-trigger-acceptance-audit.yml`
+- `docs/ACTIVE_WORK.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/I1_A_FORGE_TRIGGER_LEDGER_SOURCE_EXTRACTION.md`
 - `scripts/agents/forge_automation_selftest.mjs`
 - `scripts/agents/forge_trigger_acceptance_ledger.mjs`
 - `scripts/agents/forge_trigger_acceptance_receipts.json`

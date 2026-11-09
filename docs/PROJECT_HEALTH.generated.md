@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-09T19:09:30Z | research/i1-forge-original-trigger-ledger-20261109 (b7c5f6d42c55c7cd13e9d774e04b28003507df36) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-09T19:11:46Z | research/i1-forge-original-trigger-ledger-20261109 (c9a60f9d1a10d1e2459df18f0afe217f35d84a5a) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
