@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-09T06:41:05Z | research/c4-spell-recipe-p1-extraction-20261109 (18e889ffc668ee9af45d04b6faf24d93f2d9f8ae) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-09T19:09:04Z | research/i1-forge-original-trigger-ledger-20261109 (9437b9d0a2bedc3ba78110c612543f6033674a72) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
