@@ -483,3 +483,11 @@
 - **Database archive status:** owner-reported 16,704,002-byte PostgreSQL 17 custom dump with `pg_restore --list` confirming critical data entries, including auth.users, storage.objects, migration history, spells_catalog, items_catalog, inventory_items, character_stock and recipes. Archive contents, whole 27-table restore, platform role/extension compatibility, and storage rehydration not proven.
 - **Remaining hard recovery gates:** record SHA-256 for dump and every canonical bucket file, encrypt a separate copy and verify private storage permissions, perform an independent full restore to a disposable environment with SQL roles/extensions, validate row counts/digests and Storage byte-for-byte recovery. Preserve protected spell/item/recipe/stock/inventory records. No secrets, backups or private hashes were committed.
 - **ONE NEXT TASK:** obtain hashes and protected encrypted second copy, then disposable DB + Storage recovery trial; only after owner-provided restore evidence propose separate approval of SQL migration, world-map NPC modal presentation and PR #345 merge/deploy.
+
+## 2026-11-09 — Owner SHA-256 manifest receipt: 341 backed-up files, 469,857,682 bytes
+
+- Owner provided PowerShell summary `Count 341`, `Sum 469857682` after running `Get-FileHash -Algorithm SHA256` across the database custom dump and canonical four Storage folders. This equals 340 Storage objects and one 16,704,002-byte DB archive; Storage total 453,153,680 bytes.
+- Manifest at `C:\PrivateDNDNextBackup\DNDNext-SHA256-Manifest.csv`; do not commit raw manifest, credentials, private dump, images or PII. No direct access to user's file bytes; cannot independently verify individual hashes or recovery.
+- PR #345 draft/open and mergeable-clean at `b503437` with 26 success/1 skipped exact-head CI checks, but CI is not release approval.
+- Remaining release hard gates: protected encrypted second copy; isolated full PostgreSQL restore and verification of critical tables/row digests/roles; Storage file rehydration and checksum verification; separate owner approval for world-map centered NPC modal, production C3.3 SQL and `main`/Vercel. No production data, Storage, world-map code or Vercel changes authorized.
+- Next engineering focus may resume on draft branch for C3.3 source review and release compatibility without live changes.
