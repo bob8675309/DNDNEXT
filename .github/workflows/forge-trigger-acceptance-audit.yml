@@ -1,0 +1,45 @@
+name: Forge original trigger acceptance inventory (no AI, no DB)
+on:
+  pull_request:
+    paths:
+      - 'scripts/fixtures/forge_*.sql'
+      - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
+      - 'scripts/validate_forge_immutable_creation_replay.mjs'
+      - 'scripts/agents/forge_*.mjs'
+      - 'scripts/agents/forge_trigger_acceptance_receipts.json'
+      - 'docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md'
+      - '.github/workflows/forge-trigger-acceptance-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  coverage:
+    name: Read-only original trigger and JWT receipt ledger
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate local source ledger and diagnostic invariants
+        run: |
+          set -euo pipefail
+          node scripts/agents/forge_automation_selftest.mjs
+          node scripts/agents/forge_trigger_acceptance_ledger.mjs . research-agent-artifact
+      - name: Post evidence summary to job
+        if: always()
+        run: |
+          if test -f research-agent-artifact/FORGE_TRIGGER_ACCEPTANCE_LEDGER.md; then
+            cat research-agent-artifact/FORGE_TRIGGER_ACCEPTANCE_LEDGER.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload small three-day review-only report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: forge-acceptance-evidence-${{ github.run_id }}
+          path: research-agent-artifact/
+          if-no-files-found: warn
+          retention-days: 3
