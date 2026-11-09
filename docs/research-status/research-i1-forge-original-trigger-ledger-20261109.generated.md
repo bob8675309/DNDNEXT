@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1-forge-original-trigger-ledger-20261109` |
-| Exact source commit represented by this archive snapshot | `9437b9d0a2bedc3ba78110c612543f6033674a72` |
+| Exact source commit represented by this archive snapshot | `b7c5f6d42c55c7cd13e9d774e04b28003507df36` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: preserve C3.3 secure NPC source candidate, live source gaps and release gates (#346) |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 11 files (1 non-docs; 10 authored docs) |
+| Last source commit title | test(forge): preserve original source-only 31-trigger JWT receipt ledger |
+| Files changed relative to main | 6 (5 non-docs; 1 docs) |
+| Last source commit | 6 files (5 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,20 +17,32 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `AGENTS.md`
-- `docs/ACTIVE_WORK.md`
-- `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
-- `docs/C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/NEXT_CHAT_START_HERE.md`
-- `docs/PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md`
-- `docs/PROJECT_STATE.md`
-- `docs/README.md`
-- `docs/SYSTEM_REGISTRY.json`
-- `docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md`
+- `.github/workflows/forge-trigger-acceptance-audit.yml`
+- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
+- `scripts/agents/forge_automation_selftest.mjs`
+- `scripts/agents/forge_trigger_acceptance_ledger.mjs`
+- `scripts/agents/forge_trigger_acceptance_receipts.json`
+- `scripts/agents/forge_trigger_audit.mjs`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/forge-trigger-acceptance-audit.yml`
+- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
+- `scripts/agents/forge_automation_selftest.mjs`
+- `scripts/agents/forge_trigger_acceptance_ledger.mjs`
+- `scripts/agents/forge_trigger_acceptance_receipts.json`
+- `scripts/agents/forge_trigger_audit.mjs`
+
+## Forge source and authenticated evidence (branch-local only)
+
+| Original trigger census | Staged DDL | Missing DDL | Mismatched definitions | Explicit targeted JWT receipts |
+|---:|---:|---:|---:|---:|
+| 31 | 17 | 14 | 0 | 3 |
+
+A staged definition is **not** a full source-body, JWT, COMMIT, concurrency, production RLS or browser acceptance claim.
+- `character_progression_apply_forge_subclass_v1`: `J142-J153` at independently verified `29d8700ead5db3a7f2292aa6f9be8eb3b859471c` ([CI run](https://github.com/bob8675309/DNDNEXT/actions/runs/42223567299)). Original BEFORE INSERT subclass choice; genuine signed v2/v3 JWT, explicit XPHB/PHB, level-3 denial, rollback/replay. Reduced Fighter catalog/RLS. Source-omitted Champion selected PHB in fixture; 2024 source precedence unresolved.
+- `characters_guard_player_tags_v1`: `J125-J132` at independently verified `8b247ebe9df2d77410b087cb9370d3dea3f938e9` ([CI run](https://github.com/bob8675309/DNDNEXT/actions/runs/42164951469)). Original 42501 tag denial, nested sheet sync, genuine GoTrue; reduced local editor RLS.
+- `sync_character_portrait_library_id_v1`: `J133-J141` at independently verified `c616209ced727f04cff06923ba9b2237a9c59bd4` ([CI run](https://github.com/bob8675309/DNDNEXT/actions/runs/42165452281)). Original active/inactive library matching, path priority, real GoTrue; reduced catalog/editor RLS.
 
 ## Trust and update procedure
 
