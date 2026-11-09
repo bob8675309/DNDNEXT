@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T18:51:11Z | research/p1-3-isolated-security-tests-20261107 (6563ded3fcce49429de4ffa92058a8389c8871bf) | 537b570083b3f18faad6d3038c131bee61af273c |
+| 2026-11-09T06:40:40Z | research/c4-spell-recipe-p1-extraction-20261109 (9437b9d0a2bedc3ba78110c612543f6033674a72) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
