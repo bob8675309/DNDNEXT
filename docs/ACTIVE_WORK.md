@@ -16,9 +16,9 @@ Canonical resume and policy: [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) 
 
 ## ONE next executable engineering task
 
-**Next single action:** Complete I1-A original Forge #324/#328–#335 vs secure #345 source/blob/trigger/JWT/Chromium dependency crosswalk and audit against current main. No migration or branch merge.
+**Next single action:** Verify independent draft PR #349's exact-head free Forge trigger inventory/three-receipt workflow and read its generated report. If green, design a source-faithful disposable PG17 + genuine GoTrue joint negative fixture for #324 complete nonce intent with #345 separate private Story/creator/grants/inventory, starting with changed-only-Story same-nonce and stale Story overwrite cases. No production SQL or merge.
 
-**I1-A: Build a source/blob/function/trigger and fixture dependency-closed overlap matrix comparing Forge #324/#328–#335 (which inherits old #321 privacy) against main-based secure C3.3 #345 and current main.** Classify every unique original source, test, fixture and workflow as copied byte-identical, ported with proven parity, superseded with source evidence, or deferred unchanged. Explicitly reconcile original v2/v3 nonce intent vs #345 Stage3 Story nonce, feat grant provenance, four-policy inventory CHECK/RLS, starting spell and nested Warlock/Wizard source cases, 31 trigger coverage, legacy players.sheet and signed role/browser assertions. Do not write a live migration or merge. After this one bounded matrix, create the smallest source/test-only integration draft with exact-head free CI.
+**I1-A SHA audit completed as research:** [source crosswalk](I1_A_FORGE_C33_SOURCE_CONTRACT_CROSSWALK_2026-11-09.md), [104-path blob comparison](evidence/I1_A_FORGE_BLOB_CROSSWALK_2026-11-09.json), and [146 incremental PR-file occurrences](evidence/I1_A_FORGE_INCREMENTAL_PR_FILES_2026-11-09.json). This classification is not full test execution or release acceptance.
 
 ## Release and closeout gates
 

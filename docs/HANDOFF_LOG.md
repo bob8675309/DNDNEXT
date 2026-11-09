@@ -242,3 +242,14 @@
 - **Correction:** Preserve the new owner I0–I6 priority and all 20 PR dossiers while adding the canonical next-chat link, S0–S7 phased-checklist link, one current P1/P1.3 registry identifier, and the explicit `Next single action:` required by the existing validator. No weakening of the validator and no change to owner-selected priorities.
 - **Evidence boundary:** Runtime CI needs a fresh exact-head run. This is documentation-only; no SQL migration, production data/Storage, Vercel deployment, world-map change, PR retirement, paid AI, or main merge.
 - **ONE NEXT TASK:** verify PR #348 exact-head handoff-registry and documentation CI; then I1-A original Forge #324/#328–#335 vs secure C3.3 #345 source/blob/trigger/JWT/Chromium compatibility matrix before an approved source-only extraction.
+
+
+## 2026-11-09 — I1-A Forge original source/trigger/Story dependency crosswalk
+
+- **Four source trees:** main 9437b9d0a2bedc3ba78110c612543f6033674a72; #324 f1a2c564046ab93a0bfa0732e3acc2179da9c064; terminal #335 19d7275d24d26f9641c9e6d98ea24cf9431f4d81; C3.3 #345 4f5f8ff7587aff1a68f21581ad68a4752789f54a.
+- **104 unique changed paths from nine immediate PRs / 146 PR-file appearances** source matched: 65 identical across main and #345, 4 newer #345 test/wrapper changes, 27 missing (22 historical docs and five offline audit files), 8 incompatible old branch variants. Exact blob matrix and original changed-file lists archived under docs/evidence; one complete authored I1-A crosswalk linked from plan/README/ACTIVE_WORK.
+- **Important integration gate:** original #324 v3 request hash does not account for #345's separate private Story argument. The Stage3 conflict-DO-NOTHING protects newer Story edits but combined same-nonce altered-only-Story semantics need a purpose-built real JWT/PG17 test. This is a source-level candidate risk, not a deployed exploit.
+- **First safe source slice:** independent clean-main draft #349 contains original static 31-trigger census, no-cost ledger/receipt/scanner/selftest and workflow. No SQL candidate, app runtime, world map or paid AI in that slice. Its exact-head CI needs independent verification.
+- **Original 31-trigger boundary:** 17/31 staged in held source fixture, two extra in separate #345 joint fixtures; no single full 19/31 suite or complete production-trigger Auth proof. Preserve all original J-series and browser failures/positive tests.
+- **No production action:** no main merge, DnDWeb write/grants, Storage edit, Vercel deploy, paid agent, world-map presentation or draft PR retirement.
+- **ONE NEXT TASK:** verify #349 exact-head ledger CI and build the first combined #324+#345 signed disposable nonce versus Story original-source negative fixture; the owner separately approves any migration/release.

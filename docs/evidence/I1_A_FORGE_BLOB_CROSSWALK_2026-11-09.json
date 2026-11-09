@@ -1,0 +1,1511 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-09",
+  "purpose": "I1-A Forge #324/#328-335 source/blob diff and #345 secure integration. SHA equality is content identity, NOT behavior/release proof.",
+  "refs": {
+    "main": "9437b9d0a2bedc3ba78110c612543f6033674a72",
+    "root324": "f1a2c564046ab93a0bfa0732e3acc2179da9c064",
+    "terminal335": "19d7275d24d26f9641c9e6d98ea24cf9431f4d81",
+    "secure345": "4f5f8ff7587aff1a68f21581ad68a4752789f54a"
+  },
+  "rows": [
+    {
+      "path": ".github/workflows/forge-trigger-acceptance-audit.yml",
+      "changedInPRs": [
+        324
+      ],
+      "type": "CI_workflow",
+      "blobs": {
+        "main": null,
+        "root324": "e752a5cc2626346726db3a86c56ffda0c9ae8ddd",
+        "terminal335": "e752a5cc2626346726db3a86c56ffda0c9ae8ddd",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": ".github/workflows/research-docs-maintenance.yml",
+      "changedInPRs": [
+        324
+      ],
+      "type": "CI_workflow",
+      "blobs": {
+        "main": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9",
+        "root324": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9",
+        "terminal335": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9",
+        "secure345": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": ".github/workflows/validate-forge-browser-warlock-choice.yml",
+      "changedInPRs": [
+        335
+      ],
+      "type": "CI_workflow",
+      "blobs": {
+        "main": "f2c19df4eaf5955f02735c1326723fa80695ed12",
+        "root324": null,
+        "terminal335": "f2c19df4eaf5955f02735c1326723fa80695ed12",
+        "secure345": "f2c19df4eaf5955f02735c1326723fa80695ed12"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+      "changedInPRs": [
+        324,
+        328,
+        329,
+        330,
+        331,
+        332,
+        334
+      ],
+      "type": "CI_workflow",
+      "blobs": {
+        "main": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+        "root324": "4fc4a603c10a5bc098c4196eb2a217aa9506b07a",
+        "terminal335": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+        "secure345": "839154a9c7c942e90fbb46b3d9c068ff056cc042"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "docs/ACTIVE_WORK.md",
+      "changedInPRs": [
+        324,
+        328,
+        329,
+        330,
+        331,
+        332,
+        333,
+        334,
+        335
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": "5e0ff80dc1b34bbe4bfa66a535229528e343a452",
+        "root324": "c5aa5d78dee590e4e36019f803a71434924902cf",
+        "terminal335": "f0166e03edfeb4a6ce78cfe63ab28885ad5cce63",
+        "secure345": "09a4b4619734067a04a5bed1ec46d2bba1f161f9"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "docs/Forge_Aasimar_Light_Bearer_Positive_Source_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "93f17b6eca0a3b4be548babc02ee586464cd15c8",
+        "terminal335": "93f17b6eca0a3b4be548babc02ee586464cd15c8",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "e46ccccc1addd9de371e20d00faad7c769cac41d",
+        "terminal335": "e46ccccc1addd9de371e20d00faad7c769cac41d",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Characters_Portrait_Source_Acceptance_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "5f5ded44ffbc28b423fc2ad4b38bb45050015e29",
+        "terminal335": "5f5ded44ffbc28b423fc2ad4b38bb45050015e29",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Characters_Tag_Guard_Original_Acceptance_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "0b0455d73d1f0c974cac96faab03961ac0c44578",
+        "terminal335": "0b0455d73d1f0c974cac96faab03961ac0c44578",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Feat_Grant_Provenance_Gap_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "67f371a1297fc59ac7d01a5fb4f3d3bd7e043880",
+        "terminal335": "67f371a1297fc59ac7d01a5fb4f3d3bd7e043880",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_GI_JWT_Source_Concurrency_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "627c1f042962afb274fc7d6cd7814d61481eb431",
+        "terminal335": "627c1f042962afb274fc7d6cd7814d61481eb431",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_High_Risk_Progression_Trigger_Parity_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "ea09588425828fd0ebc8b1f759793a9c358e109b",
+        "terminal335": "ea09588425828fd0ebc8b1f759793a9c358e109b",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Nested_Choice_Dependencies_2026-11-06.md",
+      "changedInPRs": [
+        331
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": null,
+        "terminal335": "130b12ca56e251efd2e1fae63a6d27d803e0bca0",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+      "changedInPRs": [
+        324,
+        329,
+        330,
+        331,
+        332
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "296e178fc951e261f48b6b9d63e48ee3012ee232",
+        "terminal335": "5d3a32c5b6661e47b36794bfe7723296c4b0631b",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "2de06843e330deb8279670c9f6034d3595cfc061",
+        "terminal335": "2de06843e330deb8279670c9f6034d3595cfc061",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Original_Merchant_Inventory_Concurrent_Writes_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "1000eddc1a2c112a760abbde38ea296891c1f541",
+        "terminal335": "1000eddc1a2c112a760abbde38ea296891c1f541",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Seeded_Scenario_Runner_2026-11-06.md",
+      "changedInPRs": [
+        328
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": null,
+        "terminal335": "d85863d1ab7ba99755e4a35e440a4b3ce69d896c",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Seeded_Starting_Spells_2026-11-06.md",
+      "changedInPRs": [
+        329
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": null,
+        "terminal335": "1b3108327a13f3b05d23b1ddba4057ed0d07e867",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Subclass_Original_Acceptance_2026-11-06.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "57193773ce662d731786943661b9627210c5024b",
+        "terminal335": "57193773ce662d731786943661b9627210c5024b",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "9eebb1755df8eb4bfaa69b2105efcfd5e25c7eaa",
+        "terminal335": "9eebb1755df8eb4bfaa69b2105efcfd5e25c7eaa",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "2978b5aad8418d91450bac0824665248ef6be0bd",
+        "terminal335": "2978b5aad8418d91450bac0824665248ef6be0bd",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+      "changedInPRs": [
+        332,
+        333,
+        334,
+        335
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": null,
+        "terminal335": "2fc89548ae5aa4d43e6496967b3cf2d4ab9d6e9d",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "e7ab7739e1d218f87e5c9ed13dfc7db6d5947324",
+        "terminal335": "e7ab7739e1d218f87e5c9ed13dfc7db6d5947324",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md",
+      "changedInPRs": [
+        330
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": null,
+        "terminal335": "0b3340f8df8b1c7ed1b72bf6898884ae436030fb",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Forge_Zero_Cost_Acceptance_Automation_2026-11-06.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "a6b24a8409a8a29d00e6db25afd13e2df5bd77d7",
+        "terminal335": "a6b24a8409a8a29d00e6db25afd13e2df5bd77d7",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/HANDOFF_LOG.md",
+      "changedInPRs": [
+        324,
+        328,
+        329,
+        330,
+        331,
+        332,
+        333,
+        334,
+        335
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": "89f5a50730b97f484e6da18551dc37d36902c867",
+        "root324": "692aca81e3ac3bcfb8c5e29c0ff0295ab4204638",
+        "terminal335": "d14b628608088af565e5ec54e38b5cbcb0037670",
+        "secure345": "8a6c4c30ac26aabcb0930b1b794d4ed3246c1bfc"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "115d5ad7061a788140dc45466bb3e20e0c351773",
+        "terminal335": "115d5ad7061a788140dc45466bb3e20e0c351773",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/Player_Forge_Immutable_Creation_Intent_Candidate_2026-11-05.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": null,
+        "root324": "2f95078b0ed37cca5773f23d6e5fe687b48f90ec",
+        "terminal335": "2f95078b0ed37cca5773f23d6e5fe687b48f90ec",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "docs/README.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": "5af88e118dea162bd6ea994164b72d3587be03da",
+        "root324": "f78e8a06ec1c496e0d367ccddd6863a7a4cf0e49",
+        "terminal335": "f78e8a06ec1c496e0d367ccddd6863a7a4cf0e49",
+        "secure345": "de534035ee80867ac2d69b3d1eb5997e4e9f5ee5"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "docs/Research_Docs_Maintenance_2026-11-06.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": "bbf3e745902a80c8809d9e9ffe6ce06139a9eb7e",
+        "root324": "946df7e71fc0511004f397df4ebfa13ac5802297",
+        "terminal335": "946df7e71fc0511004f397df4ebfa13ac5802297",
+        "secure345": "bbf3e745902a80c8809d9e9ffe6ce06139a9eb7e"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+        "root324": "4d97a272be6f79812b07a914e9fa331d7a94ffc4",
+        "terminal335": "4d97a272be6f79812b07a914e9fa331d7a94ffc4",
+        "secure345": "b58fe97fc807c03a357d3c51cb0627391b93431b"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "docs/SYSTEM_REGISTRY.json",
+      "changedInPRs": [
+        324
+      ],
+      "type": "documentation",
+      "blobs": {
+        "main": "811e89ca3f37eb93f2dfb8c9af52473fc0dc6e19",
+        "root324": "e0109f2f0175f137e56110dc6f92a340b8cf82c5",
+        "terminal335": "e0109f2f0175f137e56110dc6f92a340b8cf82c5",
+        "secure345": "e5abadc50cd76e0fae0878bcd721382b2d3e2f6b"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "scripts/agents/forge_automation_selftest.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": null,
+        "root324": "6d4dc315449958a3862130de739ed691773b00cf",
+        "terminal335": "6d4dc315449958a3862130de739ed691773b00cf",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "scripts/agents/forge_ci_diagnostics.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+        "root324": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+        "terminal335": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+        "secure345": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/agents/forge_seeded_scenarios.mjs",
+      "changedInPRs": [
+        328,
+        330
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+        "root324": null,
+        "terminal335": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+        "secure345": "55e64a7b7cf185f64370c6cc668884377657cc1a"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/agents/forge_trigger_acceptance_ledger.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": null,
+        "root324": "3a12039f69d25eb968b37eda39c09839a13cb8ae",
+        "terminal335": "3a12039f69d25eb968b37eda39c09839a13cb8ae",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "scripts/agents/forge_trigger_acceptance_receipts.json",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": null,
+        "root324": "ddcd17bc15aaf4f75e8c0aa07c7faed69f86fe5e",
+        "terminal335": "ddcd17bc15aaf4f75e8c0aa07c7faed69f86fe5e",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "scripts/agents/forge_trigger_audit.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": null,
+        "root324": "d5fbf344c5e92f8dc3e620806baded0fbb31f7ae",
+        "terminal335": "d5fbf344c5e92f8dc3e620806baded0fbb31f7ae",
+        "secure345": null
+      },
+      "status": "missing_from_main_and_345"
+    },
+    {
+      "path": "scripts/agents/forge_warlock_client_wire.mjs",
+      "changedInPRs": [
+        334
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "a90013d3dbb590af4dfae76e87863453daa04d9b",
+        "root324": null,
+        "terminal335": "a90013d3dbb590af4dfae76e87863453daa04d9b",
+        "secure345": "a90013d3dbb590af4dfae76e87863453daa04d9b"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/agents/project_health.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "3ad86c916e7495529d1df1b7d939cbb007d96b43",
+        "root324": "5bcb19c5f49ad9d5591b363f995f059bec46846f",
+        "terminal335": "5bcb19c5f49ad9d5591b363f995f059bec46846f",
+        "secure345": "3ad86c916e7495529d1df1b7d939cbb007d96b43"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "scripts/agents/research_docs_maintainer.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705",
+        "root324": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705",
+        "terminal335": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705",
+        "secure345": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/agents/validate_project_health.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "b8ca9a645a9103bc5fa9144eb9b5b735af1acfaf",
+        "root324": "25ce56e389fe3611faae2e7209e08f368f7f7771",
+        "terminal335": "25ce56e389fe3611faae2e7209e08f368f7f7771",
+        "secure345": "b8ca9a645a9103bc5fa9144eb9b5b735af1acfaf"
+      },
+      "status": "terminal_conflicts_with_main"
+    },
+    {
+      "path": "scripts/agents/validate_research_docs_maintainer.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "bceaee41d7536a288d33c5fe501c7d3576a9373f",
+        "root324": "bceaee41d7536a288d33c5fe501c7d3576a9373f",
+        "terminal335": "bceaee41d7536a288d33c5fe501c7d3576a9373f",
+        "secure345": "bceaee41d7536a288d33c5fe501c7d3576a9373f"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/browser/forge_warlock_choice_dom.jsx",
+      "changedInPRs": [
+        335
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "83a3b9653bd50aada19252358146b9904b9344fd",
+        "root324": null,
+        "terminal335": "83a3b9653bd50aada19252358146b9904b9344fd",
+        "secure345": "83a3b9653bd50aada19252358146b9904b9344fd"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/browser/verify_forge_warlock_choice_dom.mjs",
+      "changedInPRs": [
+        335
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "14e81cc8495f1d3a537e39e76f7427830dce9d88",
+        "root324": null,
+        "terminal335": "14e81cc8495f1d3a537e39e76f7427830dce9d88",
+        "secure345": "14e81cc8495f1d3a537e39e76f7427830dce9d88"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+        "root324": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+        "terminal335": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+        "secure345": "2517db705bdc1a19f59747c4d976cb437d9428c9"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "849ba03462e28c5d05b6bffd24a3384654af0393",
+        "root324": "849ba03462e28c5d05b6bffd24a3384654af0393",
+        "terminal335": "849ba03462e28c5d05b6bffd24a3384654af0393",
+        "secure345": "849ba03462e28c5d05b6bffd24a3384654af0393"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+        "root324": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+        "terminal335": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+        "secure345": "3886459350b2fadc515d27c4801d0c7ae273ee22"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_tag_guard_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+        "root324": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+        "terminal335": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+        "secure345": "de29cc239ccaaf46241aa78d52e52a53e75f7637"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_creation_original_functions_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+        "root324": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+        "terminal335": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+        "secure345": "6c64683e14ee148daf5c874a7e6e3c7ff606138c"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_creation_replay_candidate_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+        "root324": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+        "terminal335": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+        "secure345": "590329eb87f5f86990829eb1b0ed496d0cbf9623"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_creation_replay_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "3da82b85babbb37d4aee1744e22ec24716082997",
+        "root324": "3da82b85babbb37d4aee1744e22ec24716082997",
+        "terminal335": "3da82b85babbb37d4aee1744e22ec24716082997",
+        "secure345": "aa701c679712475cd4f04d4e0a01fedc4616bafa"
+      },
+      "status": "original_on_main_345_modified"
+    },
+    {
+      "path": "scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+        "root324": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+        "terminal335": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+        "secure345": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+        "root324": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+        "terminal335": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+        "secure345": "ef7c25d2bb3c83708e80eed0b244ded500f78772"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_equipment_validator_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+        "root324": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+        "terminal335": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+        "secure345": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+        "root324": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+        "terminal335": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+        "secure345": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+        "root324": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+        "terminal335": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+        "secure345": "e6d574baa68dea6ad93f997941b3f062a234ff98"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_feat_materializer_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+        "root324": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+        "terminal335": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+        "secure345": "aa60a2699796fea20213dca55c5191e2beaa24ac"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+        "root324": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+        "terminal335": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+        "secure345": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+        "root324": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+        "terminal335": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+        "secure345": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+        "root324": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+        "terminal335": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+        "secure345": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_inventory_access_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+        "root324": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+        "terminal335": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+        "secure345": "930036668d4e889b85f1c5ad0abeed79793a5c09"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+        "root324": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+        "terminal335": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+        "secure345": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_market_cash_original_functions_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+        "root324": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+        "terminal335": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+        "secure345": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+        "root324": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+        "terminal335": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+        "secure345": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_materializer_original_functions_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+        "root324": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+        "terminal335": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+        "secure345": "d6f5ac4f0cfd571edaa926b4168847eb85e18640"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+        "root324": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+        "terminal335": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+        "secure345": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_nested_choices_local_auth_pg17.sql",
+      "changedInPRs": [
+        331
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "44e0fdf6257c5a3a982540fece96296af0046f9a",
+        "root324": null,
+        "terminal335": "44e0fdf6257c5a3a982540fece96296af0046f9a",
+        "secure345": "44e0fdf6257c5a3a982540fece96296af0046f9a"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_nested_choices_original_pg17.sql",
+      "changedInPRs": [
+        331
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a",
+        "root324": null,
+        "terminal335": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a",
+        "secure345": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+        "root324": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+        "terminal335": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+        "secure345": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+        "root324": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+        "terminal335": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+        "secure345": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+        "root324": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+        "terminal335": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+        "secure345": "aafbfea03d565dfaa1599875ab49c3c485611c51"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+        "root324": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+        "terminal335": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+        "secure345": "413a82dc3c1913cb5f71c28531d31e19da89e02d"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_progression_authority_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "3a0b6caeb6712f67af7895433df15f1439b19581",
+        "root324": "3a0b6caeb6712f67af7895433df15f1439b19581",
+        "terminal335": "3a0b6caeb6712f67af7895433df15f1439b19581",
+        "secure345": "3a0b6caeb6712f67af7895433df15f1439b19581"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_nested_choices_v1.json",
+      "changedInPRs": [
+        331
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "1b913ceb8005880acfef31437227136e949cb1bd",
+        "root324": null,
+        "terminal335": "1b913ceb8005880acfef31437227136e949cb1bd",
+        "secure345": "1b913ceb8005880acfef31437227136e949cb1bd"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_scenarios_v1.json",
+      "changedInPRs": [
+        328
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "550f00899330fd7bec8d166047a4f70d1612cbe8",
+        "root324": null,
+        "terminal335": "550f00899330fd7bec8d166047a4f70d1612cbe8",
+        "secure345": "550f00899330fd7bec8d166047a4f70d1612cbe8"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_starting_spells_v1.json",
+      "changedInPRs": [
+        329
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1",
+        "root324": null,
+        "terminal335": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1",
+        "secure345": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+      "changedInPRs": [
+        332,
+        333,
+        334
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+        "root324": null,
+        "terminal335": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+        "secure345": "f30c9d25f39acfaab214a3135c6b7be34d21aea6"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_wizard_spells_v1.json",
+      "changedInPRs": [
+        330
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08",
+        "root324": null,
+        "terminal335": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08",
+        "secure345": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+        "root324": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+        "terminal335": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+        "secure345": "f3bf99af569a45ea496e48d06db954d8ea1309fb"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "b02285f75d446f5874341cf3bc694ac256e1f732",
+        "root324": "b02285f75d446f5874341cf3bc694ac256e1f732",
+        "terminal335": "b02285f75d446f5874341cf3bc694ac256e1f732",
+        "secure345": "b02285f75d446f5874341cf3bc694ac256e1f732"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_species_light_original_helpers_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+        "root324": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+        "terminal335": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+        "secure345": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+        "root324": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+        "terminal335": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+        "secure345": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
+      "changedInPRs": [
+        329
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897",
+        "root324": null,
+        "terminal335": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897",
+        "secure345": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_starting_spells_original_pg17.sql",
+      "changedInPRs": [
+        329
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "d56ed5ea44289bbb20720c1323f9b22f362b31c5",
+        "root324": null,
+        "terminal335": "d56ed5ea44289bbb20720c1323f9b22f362b31c5",
+        "secure345": "d56ed5ea44289bbb20720c1323f9b22f362b31c5"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+        "root324": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+        "terminal335": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+        "secure345": "6b34510b16b86aa4e06c40946732a83679cbea1c"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_subclass_choice_original_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+        "root324": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+        "terminal335": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+        "secure345": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+        "root324": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+        "terminal335": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+        "secure345": "7b592be1c2f177c15051e9c2156c865ddb20902d"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql",
+      "changedInPRs": [
+        332
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "94fa076d8e3e075aab551a5610bcff79393f3460",
+        "root324": null,
+        "terminal335": "94fa076d8e3e075aab551a5610bcff79393f3460",
+        "secure345": "94fa076d8e3e075aab551a5610bcff79393f3460"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+        "root324": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+        "terminal335": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+        "secure345": "4ee8fe49717f812f58140307b83d9f43d5c5a25e"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+        "root324": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+        "terminal335": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+        "secure345": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql",
+      "changedInPRs": [
+        332
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "f9bf748582986a452110f9b5c326cead61e76374",
+        "root324": null,
+        "terminal335": "f9bf748582986a452110f9b5c326cead61e76374",
+        "secure345": "f9bf748582986a452110f9b5c326cead61e76374"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql",
+      "changedInPRs": [
+        330
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "bbf8cece98f46b1008d8e2ff79650647f89a5e20",
+        "root324": null,
+        "terminal335": "bbf8cece98f46b1008d8e2ff79650647f89a5e20",
+        "secure345": "bbf8cece98f46b1008d8e2ff79650647f89a5e20"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+      "changedInPRs": [
+        324,
+        328,
+        329,
+        330,
+        331,
+        332,
+        333,
+        334,
+        335
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+        "root324": "4849c8490775711c9b09228d5cbfaac2b02d7e76",
+        "terminal335": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+        "secure345": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/validate_forge_immutable_creation_replay.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "00d85baf34bac0813036724dfe57d29c32b712ad",
+        "root324": "00d85baf34bac0813036724dfe57d29c32b712ad",
+        "terminal335": "00d85baf34bac0813036724dfe57d29c32b712ad",
+        "secure345": "f206e6250aef3075049ea619e117ad38709d7f34"
+      },
+      "status": "original_on_main_345_modified"
+    },
+    {
+      "path": "scripts/validate_forge_inventory_ui_release_contract.mjs",
+      "changedInPRs": [
+        324
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+        "root324": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+        "terminal335": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+        "secure345": "9fb2bcb008d700659503710da77945c2e449a364"
+      },
+      "status": "original_on_main_345_modified"
+    },
+    {
+      "path": "scripts/validate_forge_seeded_nested_choices.mjs",
+      "changedInPRs": [
+        331
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "0143ddff591831260723b435ac15b7525334f165",
+        "root324": null,
+        "terminal335": "0143ddff591831260723b435ac15b7525334f165",
+        "secure345": "0143ddff591831260723b435ac15b7525334f165"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/validate_forge_seeded_scenarios.mjs",
+      "changedInPRs": [
+        328
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7",
+        "root324": null,
+        "terminal335": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7",
+        "secure345": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/validate_forge_seeded_starting_spells.mjs",
+      "changedInPRs": [
+        329
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4",
+        "root324": null,
+        "terminal335": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4",
+        "secure345": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "scripts/validate_forge_seeded_warlock_child_completion.mjs",
+      "changedInPRs": [
+        332,
+        333,
+        334
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+        "root324": null,
+        "terminal335": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+        "secure345": "d469363de4f20983386f733ca05d43356cbfaf74"
+      },
+      "status": "original_on_main_345_modified"
+    },
+    {
+      "path": "scripts/validate_forge_seeded_wizard_spells.mjs",
+      "changedInPRs": [
+        330
+      ],
+      "type": "source_or_test",
+      "blobs": {
+        "main": "c1f18766081d10d391682cb77bfd7ebe635f1d14",
+        "root324": null,
+        "terminal335": "c1f18766081d10d391682cb77bfd7ebe635f1d14",
+        "secure345": "c1f18766081d10d391682cb77bfd7ebe635f1d14"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "SQL_candidate_or_fixture",
+      "blobs": {
+        "main": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+        "root324": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+        "terminal335": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+        "secure345": "ecddcd514917a4d379d14b02477dfb41dbf44f29"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "SQL_candidate_or_fixture",
+      "blobs": {
+        "main": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+        "root324": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+        "terminal335": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+        "secure345": "4532ddb8db642d0d0ab14646a3e87c034d4134c6"
+      },
+      "status": "identical_on_main_and_345"
+    },
+    {
+      "path": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+      "changedInPRs": [
+        324
+      ],
+      "type": "SQL_candidate_or_fixture",
+      "blobs": {
+        "main": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+        "root324": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+        "terminal335": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+        "secure345": "99bceee24c1718570237e70a65fe3172f4c9fbc9"
+      },
+      "status": "identical_on_main_and_345"
+    }
+  ]
+}

@@ -2,6 +2,9 @@
 
 # DNDNext — Documentation index (current)
 
+**New I1-A source audit:** [Forge #324/#328–#335 versus secure #345 full compatibility crosswalk](I1_A_FORGE_C33_SOURCE_CONTRACT_CROSSWALK_2026-11-09.md), [104-path SHA matrix](evidence/I1_A_FORGE_BLOB_CROSSWALK_2026-11-09.json), and [146 original PR-file occurrences](evidence/I1_A_FORGE_INCREMENTAL_PR_FILES_2026-11-09.json). Clean-main original static trigger ledger is on [draft #349](https://github.com/bob8675309/DNDNEXT/pull/349), pending its exact-head CI. No production change.
+
+
 **Use exactly one live task entry:** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) → [ACTIVE_WORK.md](ACTIVE_WORK.md) → [C0–C5 phase/PR closeout plan](PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md) → [workstream/PR dependencies](WORKSTREAMS_AND_PR_DEPENDENCIES.md) → most recent [HANDOFF_LOG.md](HANDOFF_LOG.md). All statuses are dated and must be rechecked against live GitHub/CI, deployed source and relevant read-only Supabase. **Do not use older 'Current Handoff' documents as active work orders.**
 
 ## Latest C3.3 integrated NPC privacy source candidate (NOT DEPLOYED)

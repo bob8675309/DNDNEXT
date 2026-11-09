@@ -37,6 +37,10 @@
 
 **ONE NEXT EXECUTABLE TASK after this docs PR is verified:** create the exact **#324/#328–#335 Forge original-source vs #345 secure C3.3** overlap/trigger/RPC/fixture compatibility crosswalk from current main and source blobs. Then create the first bounded source-only CI extraction PR. Do NOT jump directly to SQL, PR retirement or a multi-branch cherry-pick.
 
+## I1-A Forge source audit (November 9, evidence only)
+
+The [Forge-to-secure-C3.3 SHA/trigger/nonce crosswalk](I1_A_FORGE_C33_SOURCE_CONTRACT_CROSSWALK_2026-11-09.md) inspects every incremental changed path of #324/#328–#335 against four actual Git trees and assigns a blob status: **65 identical**, **4 updated in #345**, **27 absent from both main/#345**, **8 older variant conflicts**. Original 146 PR-file occurrences/104 unique paths are individually indexed. No live SQL is applied by having the candidate file on main. The first bounded no-cost source/test-only missing tool group is isolated in [draft PR #349](https://github.com/bob8675309/DNDNEXT/pull/349); after CI, build a true local source-locked nonce plus private Story/creator/grant/inventory negative fixture before a coordinated SQL/UI release. Do not import historic project-health handlers or overwrite newer #345 Forge auth assertions.
+
 ## Mandatory release, recovery and regression hard gates
 
 - The owner has **already completed the local capture**: PostgreSQL17 custom dump 16,704,002 bytes, four Storage buckets 340 files / 453,153,680 bytes; combined SHA256 inventory 341 files / 469,857,682 bytes in C:\PrivateDNDNextBackup. Do not redo or call unfinished. **An encrypted protected second copy and isolated PG17 + actual Storage byte recovery rehearsal are still not verified.** The payload is private workstation-only, not Git.
