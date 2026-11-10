@@ -42,7 +42,7 @@ jobs:
     env:
       CI: 'true'
       PGHOST: '127.0.0.1'
-      PGPORT: '54322'
+      PGPORT: '55422'
       PGUSER: postgres
       PGPASSWORD: postgres
       PGDATABASE: postgres
@@ -69,8 +69,11 @@ jobs:
           mkdir -p "$RUNNER_TEMP/i1f-local/supabase"
           cat > "$RUNNER_TEMP/i1f-local/supabase/config.toml" <<'TOML'
           project_id = "i1f-battle-master-original-local-only"
+          [api]
+          port = 55421
           [db]
-          port = 54322
+          port = 55422
+          shadow_port = 55420
           major_version = 17
           [auth.email]
           enable_confirmations = false
@@ -84,14 +87,14 @@ jobs:
         run: |
           set -euo pipefail
           test "$PGHOST" = '127.0.0.1'
-          test "$PGPORT" = '54322'
+          test "$PGPORT" = '55422'
           test "$PGDATABASE" = 'postgres'
           test "$DNDNEXT_I1F_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
           (cd "$RUNNER_TEMP/i1f-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i1f-local-env"
           set -a
           source "$RUNNER_TEMP/i1f-local-env"
           set +a
-          export DNDNEXT_I1F_LOCAL_URL='http://127.0.0.1:54321'
+          export DNDNEXT_I1F_LOCAL_URL='http://127.0.0.1:55421'
           export DNDNEXT_I1F_LOCAL_ANON_KEY="$ANON_KEY"
           psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
             -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
