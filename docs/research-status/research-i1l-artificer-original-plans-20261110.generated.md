@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `d0f6aad93772cbadee5c5547b37cbaf18de3ddd2` |
+| Exact source commit represented by this archive snapshot | `a146c2be65a70df30b3359d921d01aec3ef868d2` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1k): append exact signed original Species cantrip and triple-source rollback receipt |
-| Files changed relative to main | 136 (103 non-docs; 33 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(i1l): preserve exact original Artificer Magic Item Plan six functions and trigger in isolated PG17 |
+| Files changed relative to main | 137 (104 non-docs; 33 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/i1l_artificer_original_plan_materializer_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_K_SPECIES_CANTRIP_ORIGINAL_SIGNED_RESEARCH_2026-11-10.md`
-- … 86 more
+- … 87 more
 
 ## Trust and update procedure
 
