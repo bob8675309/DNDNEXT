@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1j-khoravar-original-skill-versatility-20261110` |
-| Exact source commit represented by this archive snapshot | `881a32223091a344f2a0b817b36a1ea5f60fab09` |
+| Exact source commit represented by this archive snapshot | `a6248d7c71d4178cd61e127741106231f8406164` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1j): source-identical Khoravar runtime original resolver/trigger in disposable PG17 |
+| Last source commit title | test(i1j): correct catalog-length assertion in source fixture preflight |
 | Files changed relative to main | 131 (100 non-docs; 31 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
