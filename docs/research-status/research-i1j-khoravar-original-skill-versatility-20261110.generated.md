@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1j-khoravar-original-skill-versatility-20261110` |
-| Exact source commit represented by this archive snapshot | `a6248d7c71d4178cd61e127741106231f8406164` |
+| Exact source commit represented by this archive snapshot | `cb8218b8144735fe615575a29805cf642087c517` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1j): correct catalog-length assertion in source fixture preflight |
+| Last source commit title | test(i1j): signed source Khoravar skill/tool projection, Warlock coexistence and atomic rollback matrix |
 | Files changed relative to main | 131 (100 non-docs; 31 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1j_khoravar_original_skill_versatility_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
