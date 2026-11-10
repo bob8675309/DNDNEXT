@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1i-eladrin-original-season-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `adfc6da74470a39d1cf9ec898eb0c12603a666e6` |
+| Exact source commit represented by this archive snapshot | `cbf6cbe8cb5e6bcd5c3e33e7919790c3b63d77ee` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1i): assert exact original Eladrin missing-season NULL-path error |
+| Last source commit title | test(i1i): retain exact live Eladrin runtime cadence and state CHECK constraints |
 | Files changed relative to main | 129 (99 non-docs; 30 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `scripts/fixtures/i1i_eladrin_original_materializer_pg17.sql`
 
 ## Research-branch change inventory versus main
 
