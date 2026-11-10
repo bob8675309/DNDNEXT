@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `95d7c97da8062b933ef77bc9d06fe9e69935a695` |
+| Exact source commit represented by this archive snapshot | `7c7e9907d86a6914460ca03296eb80de04e6747a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: use source-valid Fighter starting equipment in signed Battle Master creation specimens |
+| Last source commit title | docs: record signed Battle Master I1F 10/10 pass, local fixture fixes and Warlock I1G follow-up |
 | Files changed relative to main | 117 (89 non-docs; 28 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i1f_battle_master_original_joint_local_auth.mjs`
+- `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 
 ## Research-branch change inventory versus main
 
