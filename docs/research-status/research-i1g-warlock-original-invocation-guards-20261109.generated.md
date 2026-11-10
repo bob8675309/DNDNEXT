@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `40f7c5ff8d273a1b1146fa8bd951a4857fb1efbe` |
+| Exact source commit represented by this archive snapshot | `760b2104bd60e07d061671d4411be243bc705d3b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: signed source-original Warlock legacy and normalized invocation validator rollback/ownership |
+| Last source commit title | test: isolate I1G localhost-only PostgreSQL and GoTrue API endpoints |
 | Files changed relative to main | 120 (92 non-docs; 28 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
