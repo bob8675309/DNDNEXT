@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `202a7d2be68954194ba55dc2b2dc448449216e1f` |
+| Exact source commit represented by this archive snapshot | `480b8be8f148b201c08a0aef3d408d8bdd09554b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: explicitly separate pre-acquisition signed Warlock baselines from original guard install; prove fresh create fails closed |
+| Last source commit title | ci: include I1G original trigger phase2 installer in guarded signed test change filters |
 | Files changed relative to main | 124 (95 non-docs; 29 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1g-warlock-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
