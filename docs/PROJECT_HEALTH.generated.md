@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T06:03:44Z | research/i1g-warlock-original-invocation-guards-20261109 (2c3a21e6bdff6f31944d971a6e7c2bd030f1ad8c) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T06:04:06Z | research/i1g-warlock-original-invocation-guards-20261109 (1e1ed3350544d58f3c6a3ff44c6b45516f2d641f) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
