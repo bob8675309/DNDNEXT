@@ -13,10 +13,10 @@ const env = process.env;
 for (const [key,value] of Object.entries({
   CI:"true", GITHUB_ACTIONS:"true",
   DNDNEXT_I1G_LOCAL_CONFIRM:"DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY",
-  PGHOST:"127.0.0.1", PGPORT:"55422", PGDATABASE:"postgres"
+  PGHOST:"127.0.0.1", PGPORT:"55622", PGDATABASE:"postgres"
 })) assert.equal(env[key],value,"Unsafe I1-F environment: "+key);
 assert.equal(env.PGUSER,"postgres");
-assert.match(env.DNDNEXT_I1G_LOCAL_URL||"",/^http:\/\/127\.0\.0\.1:55421\/?$/);
+assert.match(env.DNDNEXT_I1G_LOCAL_URL||"",/^http:\/\/127\.0\.0\.1:55621\/?$/);
 assert.ok(env.DNDNEXT_I1G_LOCAL_ANON_KEY,"Missing disposable anon key");
 const makeClient=()=>createClient(env.DNDNEXT_I1G_LOCAL_URL,
   env.DNDNEXT_I1G_LOCAL_ANON_KEY,
