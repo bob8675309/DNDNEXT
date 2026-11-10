@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `1357ef3e3eb2c03ab2ca0c0ca119b4c4fa8d4642` |
+| Exact source commit represented by this archive snapshot | `f7f05e3cd36e7a3604f73df643a159971f52087c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci: validate genuine signed PG17 I1D Story and Stage4 inventory integration |
+| Last source commit title | test: include three already source-verified original character/progression triggers in signed joint fixture |
 | Files changed relative to main | 104 (80 non-docs; 24 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
+- `scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
