@@ -30,6 +30,10 @@ CREATE TABLE public.character_runtime_feature_choices (
  replacement_anchor_at timestamptz NOT NULL DEFAULT now(),
  created_at timestamptz NOT NULL DEFAULT now(),
  updated_at timestamptz NOT NULL DEFAULT now(),
+ CONSTRAINT character_runtime_feature_choices_cadence_chk
+   CHECK (cadence = ANY (ARRAY['long_rest'::text, 'short_rest'::text, 'short_or_long_rest'::text, 'per_use'::text, 'informational'::text])),
+ CONSTRAINT character_runtime_feature_choices_state_object_chk
+   CHECK (jsonb_typeof(state) = 'object'::text),
  PRIMARY KEY(character_id,feature_key)
 );
 ALTER TABLE public.character_runtime_feature_choices ENABLE ROW LEVEL SECURITY;
@@ -191,6 +195,7 @@ BEGIN
  OR v_sql NOT LIKE '%DEFERRABLE INITIALLY DEFERRED%'
  OR v_sql NOT LIKE '%private.materialize_player_forge_eladrin_season_v1()%'
  OR jsonb_array_length(private.eladrin_season_options_v1())<>4
+ OR (SELECT count(*) FROM pg_constraint WHERE conrelid='public.character_runtime_feature_choices'::regclass AND contype='c' AND convalidated AND conname IN ('character_runtime_feature_choices_cadence_chk','character_runtime_feature_choices_state_object_chk'))<>2
  THEN RAISE EXCEPTION 'I1-I original source trigger/options drift'; END IF;
 END $i1i_guard$;
 NOTIFY pgrst,'reload schema';
