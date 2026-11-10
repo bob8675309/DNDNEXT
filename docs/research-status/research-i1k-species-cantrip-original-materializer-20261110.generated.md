@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1k-species-cantrip-original-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `23c1d78e1d67d03beedf9da72735a80375ebc55d` |
+| Exact source commit represented by this archive snapshot | `6b7cc5eaecce47f18205a5d80ac71698d20e046d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1k): signed exact source High Elf/Khoravar cantrip, triple Warlock, rollback and replay |
-| Files changed relative to main | 134 (102 non-docs; 32 docs) |
+| Last source commit title | ci(i1k): run source-original High Elf/Khoravar cantrip and earlier signed regression |
+| Files changed relative to main | 135 (103 non-docs; 32 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1k-species-cantrip-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -34,6 +34,7 @@
 - `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
 - `.github/workflows/validate-i1i-eladrin-original-local-auth.yml`
 - `.github/workflows/validate-i1j-khoravar-original-local-auth.yml`
+- `.github/workflows/validate-i1k-species-cantrip-original-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/NEXT_CHAT_START_HERE.md`
-- `docs/README.md`
-- … 84 more
+- … 85 more
 
 ## Trust and update procedure
 
