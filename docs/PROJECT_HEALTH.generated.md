@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T04:26:08Z | research/i1d-forge-trigger-inventory-joint-20261109 (ad2552de780c46051b032c374717b93e10d9451b) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T04:26:39Z | research/i1d-forge-trigger-inventory-joint-20261109 (1203fb01b75a11319be0ca7dd52684d85dbd9ecc) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

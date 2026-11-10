@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `ad2552de780c46051b032c374717b93e10d9451b` |
+| Exact source commit represented by this archive snapshot | `1203fb01b75a11319be0ca7dd52684d85dbd9ecc` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: signed joint source branches for three historical original triggers omitted from forge-only scan |
-| Files changed relative to main | 104 (80 non-docs; 24 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | evidence: preserve original 31-trigger source census verbatim for I1D joint gap audit |
+| Files changed relative to main | 105 (80 non-docs; 25 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i1d_forge_story_inventory_joint_local_auth.mjs`
+- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 
 ## Research-branch change inventory versus main
 
@@ -52,6 +52,7 @@
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
+- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
@@ -70,8 +71,7 @@
 - `scripts/browser/c33_creator_backstory_dom.jsx`
 - `scripts/browser/c33_next_dynamic_shim.js`
 - `scripts/browser/c33_next_router_shim.js`
-- `scripts/browser/c33_original_forge_full_dom.jsx`
-- … 54 more
+- … 55 more
 
 ## Trust and update procedure
 
