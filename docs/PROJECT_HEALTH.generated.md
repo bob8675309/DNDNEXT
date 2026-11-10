@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T05:37:15Z | research/i1f-battle-master-original-maneuver-grants-20261109 (83aa403c725b3a05e6f32b1623801b8ffccf64b8) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T05:54:55Z | research/i1g-warlock-original-invocation-guards-20261109 (83aa403c725b3a05e6f32b1623801b8ffccf64b8) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
