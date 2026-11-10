@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `6e74a79ce67b31293574f3a69e62c50103698182` |
+| Exact source commit represented by this archive snapshot | `466f19398c79cb563b1a7ec193b598d7e94a11bc` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1l): label signed original-source RED versus scratch projection candidate GREEN explicitly |
+| Last source commit title | docs(i1l): distinguish verified original Artificer RED from one-condition scratch GREEN candidate |
 | Files changed relative to main | 140 (106 non-docs; 34 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `docs/I1_L_ARTIFICER_ORIGINAL_MAGIC_ITEM_PLANS_SIGNED_RESEARCH_2026-11-10.md`
 
 ## Research-branch change inventory versus main
 
