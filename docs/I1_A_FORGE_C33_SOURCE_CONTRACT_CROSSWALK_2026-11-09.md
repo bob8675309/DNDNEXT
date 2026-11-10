@@ -1,5 +1,7 @@
 # I1-A — Complete original Forge vs C3.3 source/trigger/fixture reconciliation
 
+> **2026-11-09 I1-A closeout / I1-B signed result:** The crosswalk is research-complete; independent #349 static/JWT source workflow CI verified. [Actual #350 original-source PG17 + real GoTrue](https://github.com/bob8675309/DNDNEXT/pull/350) reproduced I1B-03 changed-only private Story same-nonce acceptance. I1-C atomic Story-aware complete-intent correction is the [ACTIVE_WORK](ACTIVE_WORK.md) next task. This does not imply complete 31-trigger or live SQL acceptance.
+
 **Dated owner integration-first research, November 9, 2026. No production action authorized.** This is an evidence and dependency audit of the independent [Forge #324](https://github.com/bob8675309/DNDNEXT/pull/324), the stacked [Forge #328–#335 terminal](https://github.com/bob8675309/DNDNEXT/pull/335), and main-based secure [C3.3 #345](https://github.com/bob8675309/DNDNEXT/pull/345). It implements the I1-A step in the [approved I0–I6 plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) and complements [20 original PR dossiers](pr-integration/README.md). Preserve all original source failures and positive tests. No source equality is deployment acceptance.
 
 ## Reproducible exact-head source inventory

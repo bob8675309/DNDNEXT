@@ -1,5 +1,7 @@
 # DNDNext — End-of-chat handoff receipt (copy once per session)
 
+> **Current November 9 integration pointer:** Follow [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6 all-PR phased plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md), not historical C3.3 one-next instructions. I1-B [signed joint test #350](https://github.com/bob8675309/DNDNEXT/pull/350) confirmed changed-only private Story same-nonce was silently accepted. I1-C source-locked Story-inclusive immutable creation fix is next; #325 integrates last with paid execution disabled. Record both green characterization and **failed product contract** separately.
+
 > **MANDATORY:** At the end of *every substantial development session*, update the active branch's `docs/ACTIVE_WORK.md` and **append** a dated factual receipt to `docs/HANDOFF_LOG.md` using this template. Include both *what* changed and *why*, exact source/check evidence, limitations, and the single next task. Generated health snapshots are not a substitute; if write access or CI fails, explicitly declare the handoff incomplete instead of inventing a receipt. No merge, deployment, database write or paid API activation is implied by this requirement.
 
 ## Identity and authority

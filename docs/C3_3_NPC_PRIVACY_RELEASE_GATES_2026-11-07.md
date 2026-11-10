@@ -1,4 +1,4 @@
-> **NOVEMBER 9 INTEGRATION ROUTING:** This file retains November 7 #345 C3.3 role/SQL/UI release evidence but is not the current queue. [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6 phased plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) direct original-PR integration. I1-A crosswalk is complete, #349 read-only CI verified; I1-B combined genuine PG17/GoTrue Forge nonce + private Story negative fixture is next, before I2 C3.3 coordinated release. No production SQL or world-map changes.
+> **NOVEMBER 9 I1-C INTEGRATION ROUTING:** This holds November 7 #345 C3.3 role/SQL/UI evidence, not the active task queue. [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) remain authoritative. [Signed original-source #350](https://github.com/bob8675309/DNDNEXT/pull/350) CONFIRMED that changed-only creator-private Story under the same creation nonce is silently accepted by composed #324/#345; I1-C must resolve it with original source/role/rollback parity before I2 C3.3 release. No production SQL or world-map edits.
 
 # C3.3 — NPC privacy and centered Profile integration: evidence and release gates
 
