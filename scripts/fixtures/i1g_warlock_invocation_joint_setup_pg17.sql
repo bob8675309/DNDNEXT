@@ -13,7 +13,7 @@ BEGIN
  OR to_regclass('public.class_feature_option_catalog') IS NULL
  OR to_regclass('public.character_class_option_grant_instances') IS NULL
  OR to_regclass('public.character_option_catalog') IS NULL
- OR to_regclass('public.character_option_grant_instances') IS NOT NULL
+ OR to_regclass('public.character_option_grant_instances') IS NULL
  OR to_regclass('private.player_forge_source_choice_legacy_v1') IS NOT NULL
  OR to_regprocedure('private.validate_existing_normalized_warlock_invocations_v2()') IS NOT NULL
  THEN RAISE EXCEPTION 'I1-G may only run on completed disposable I1-F PG17/GoTrue DB'; END IF;
@@ -97,13 +97,17 @@ CREATE VIEW public.character_option_catalog_preferred
  SELECT id,option_type,name,source,category
  FROM public.character_option_catalog WHERE source='XPHB';
 REVOKE ALL ON public.character_option_catalog_preferred FROM PUBLIC,anon,authenticated;
-CREATE TABLE public.character_option_grant_instances(
- character_id uuid NOT NULL REFERENCES public.characters(id) ON DELETE CASCADE,
- acquisition_owner_type text NOT NULL,
- acquisition_owner_key text NOT NULL,
- option_id uuid NOT NULL REFERENCES public.character_option_catalog(id),
- PRIMARY KEY(character_id,acquisition_owner_type,acquisition_owner_key,option_id)
-);
+-- I1-D already created a guard-only id uuid PRIMARY KEY stub for
+-- original equipment helper dependencies. Extend that SAME empty scratch
+-- table here; do not recreate or conceal the earlier I1-D fixture contract.
+ALTER TABLE public.character_option_grant_instances
+ ALTER COLUMN id SET DEFAULT gen_random_uuid(),
+ ADD COLUMN character_id uuid NOT NULL REFERENCES public.characters(id) ON DELETE CASCADE,
+ ADD COLUMN acquisition_owner_type text NOT NULL,
+ ADD COLUMN acquisition_owner_key text NOT NULL,
+ ADD COLUMN option_id uuid NOT NULL REFERENCES public.character_option_catalog(id),
+ ADD CONSTRAINT i1g_origin_owner_unique
+  UNIQUE(character_id,acquisition_owner_type,acquisition_owner_key,option_id);
 ALTER TABLE public.character_option_grant_instances ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.character_option_grant_instances FROM PUBLIC,anon,authenticated;
 
