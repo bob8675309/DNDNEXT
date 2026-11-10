@@ -800,13 +800,13 @@ assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances W
 console.log("PASS I1G-10: original Origin feat child requires matching class-option owner and source feat ID");
 
 const beforeLegacySheet=sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id="+wq(w1));
-wReject(["UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{classFeatureChoices}',"+
+wReject(["UPDATE public.character_sheets SET sheet=jsonb_set(jsonb_set(sheet,'{sourceChoices}','{}'::jsonb,true),'{classFeatureChoices}',"+
  wq(JSON.stringify(wLegacy))+"::jsonb,true) WHERE character_id="+wq(w1),
  wTick(w1,"unmarkedLegacy")],
  "retroactive unmarked legacy choice",/source-owned Eldritch Invocation instances/i);
 assert.equal(sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id="+wq(w1)),beforeLegacySheet);
 wTxn(["INSERT INTO private.player_forge_source_choice_legacy_v1(character_id) VALUES ("+wq(w1)+")",
- "UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{classFeatureChoices}',"+
+ "UPDATE public.character_sheets SET sheet=jsonb_set(jsonb_set(sheet,'{sourceChoices}','{}'::jsonb,true),'{classFeatureChoices}',"+
  wq(JSON.stringify(wLegacy))+"::jsonb,true) WHERE character_id="+wq(w1),
  wTick(w1,"serverMarkedLegacy")]);
 assert.equal(sql("SELECT count(*) FROM private.player_forge_source_choice_legacy_v1 WHERE character_id="+wq(w1)),"1");
