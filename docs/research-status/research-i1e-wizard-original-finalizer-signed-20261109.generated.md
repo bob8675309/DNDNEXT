@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1e-wizard-original-finalizer-signed-20261109` |
-| Exact source commit represented by this archive snapshot | `0b021edb186800a4fbf31976160d7937b6e6e47a` |
+| Exact source commit represented by this archive snapshot | `f09540c9bf77bc0f353f66b147ffe1b30a9e0b31` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: compose original Wizard Savant and Signature helpers with source-original subclass and reduced signed PG17 catalog |
-| Files changed relative to main | 109 (83 non-docs; 26 docs) |
+| Last source commit title | test: signed Wizard level3 Savant and level20 Signature source-original positive negative replay/rollback |
+| Files changed relative to main | 110 (84 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1e_wizard_joint_setup_pg17.sql`
+- `scripts/test_i1e_wizard_original_finalizer_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `pages/town/[id].js`
 - `scripts/browser/c33_creator_backstory_dom.jsx`
 - `scripts/browser/c33_next_dynamic_shim.js`
-- … 59 more
+- … 60 more
 
 ## Trust and update procedure
 
