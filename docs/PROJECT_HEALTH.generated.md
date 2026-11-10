@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T19:17:05Z | research/i1k-species-cantrip-original-materializer-20261110 (cbc4cd991885cab62a0ad1c459c09b9f64b6f1d9) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T19:19:00Z | research/i1k-species-cantrip-original-materializer-20261110 (23c1d78e1d67d03beedf9da72735a80375ebc55d) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

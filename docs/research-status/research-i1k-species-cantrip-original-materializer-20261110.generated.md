@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1k-species-cantrip-original-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `cbc4cd991885cab62a0ad1c459c09b9f64b6f1d9` |
+| Exact source commit represented by this archive snapshot | `23c1d78e1d67d03beedf9da72735a80375ebc55d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1k): stage original species cantrip materializer and source fixed spells in disposable PG17 |
+| Last source commit title | test(i1k): signed exact source High Elf/Khoravar cantrip, triple Warlock, rollback and replay |
 | Files changed relative to main | 134 (102 non-docs; 32 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1k_species_cantrip_original_materializer_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
