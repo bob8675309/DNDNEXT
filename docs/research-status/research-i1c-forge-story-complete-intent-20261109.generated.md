@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1c-forge-story-complete-intent-20261109` |
-| Exact source commit represented by this archive snapshot | `28ad588772e1e5af021759ef1b897d66482e1688` |
+| Exact source commit represented by this archive snapshot | `b1fa341b465f5375e77b5aa4111b9e2b1ed810ff` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: genuine GoTrue I1C Story-aware nonce red-to-green and signed concurrency |
-| Files changed relative to main | 99 (76 non-docs; 23 docs) |
+| Last source commit title | ci: run source-locked I1C Story-aware nonce signed PG17 concurrency tests |
+| Files changed relative to main | 100 (77 non-docs; 23 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1c_forge_private_story_nonce_local_auth.mjs`
+- `.github/workflows/validate-i1c-forge-story-nonce-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -26,6 +26,7 @@
 - `.github/workflows/validate-c3-3-npc-pdf-visual.yml`
 - `.github/workflows/validate-centered-npc-profile.yml`
 - `.github/workflows/validate-i1b-forge-story-nonce-local-auth.yml`
+- `.github/workflows/validate-i1c-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `scripts/browser/c33_original_forge_full_dom.jsx`
 - `scripts/browser/verify_c33_creator_backstory_dom.mjs`
 - `scripts/browser/verify_c33_next_town_route.mjs`
-- `scripts/browser/verify_c33_npc_pdf_visual.mjs`
-- … 49 more
+- … 50 more
 
 ## Trust and update procedure
 
