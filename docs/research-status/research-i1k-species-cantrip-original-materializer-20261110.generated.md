@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1k-species-cantrip-original-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `928f200ad52ec736cb741a8d217c44b10293bd88` |
+| Exact source commit represented by this archive snapshot | `d0f6aad93772cbadee5c5547b37cbaf18de3ddd2` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1k): route active next action to exact-head signed Species cantrip and I1-L source inventory |
+| Last source commit title | docs(i1k): append exact signed original Species cantrip and triple-source rollback receipt |
 | Files changed relative to main | 136 (103 non-docs; 33 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
