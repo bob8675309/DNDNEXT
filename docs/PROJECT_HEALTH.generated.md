@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T02:04:31Z | research/i1b-forge-story-nonce-joint-auth-20261109 (64efa42b1ae58147cc0031ccb53cde8b13025542) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T02:05:35Z | research/i1b-forge-story-nonce-joint-auth-20261109 (3985479c1f1f6e05df0c3ec3d4d4df44493ff175) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1b-forge-story-nonce-joint-auth-20261109` |
-| Exact source commit represented by this archive snapshot | `64efa42b1ae58147cc0031ccb53cde8b13025542` |
+| Exact source commit represented by this archive snapshot | `3985479c1f1f6e05df0c3ec3d4d4df44493ff175` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: characterize combined Forge nonce and private Story with genuine local GoTrue |
-| Files changed relative to main | 95 (73 non-docs; 22 docs) |
+| Last source commit title | test: add disposable signed I1-B joint nonce and private Story integration evidence |
+| Files changed relative to main | 96 (74 non-docs; 22 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1b_forge_private_story_nonce_local_auth.mjs`
+- `.github/workflows/validate-i1b-forge-story-nonce-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -25,6 +25,7 @@
 - `.github/workflows/validate-c3-3-forge-privacy-original.yml`
 - `.github/workflows/validate-c3-3-npc-pdf-visual.yml`
 - `.github/workflows/validate-centered-npc-profile.yml`
+- `.github/workflows/validate-i1b-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `scripts/browser/verify_c33_next_town_route.mjs`
 - `scripts/browser/verify_c33_npc_pdf_visual.mjs`
 - `scripts/browser/verify_c33_original_forge_full_dom.mjs`
-- `scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs`
-- … 45 more
+- … 46 more
 
 ## Trust and update procedure
 
