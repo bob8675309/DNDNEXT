@@ -5,25 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1b-forge-story-nonce-joint-auth-20261109` |
-| Exact source commit represented by this archive snapshot | `4f5f8ff7587aff1a68f21581ad68a4752789f54a` |
+| Exact source commit represented by this archive snapshot | `64efa42b1ae58147cc0031ccb53cde8b13025542` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(recovery): publish verified local backup locations, evidence, access and restore limits |
-| Files changed relative to main | 94 (72 non-docs; 22 docs) |
-| Last source commit | 7 files (0 non-docs; 7 authored docs) |
+| Last source commit title | test: characterize combined Forge nonce and private Story with genuine local GoTrue |
+| Files changed relative to main | 95 (73 non-docs; 22 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md`
-- `docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md`
-- `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/NEXT_CHAT_START_HERE.md`
-- `docs/README.md`
+- `scripts/test_i1b_forge_private_story_nonce_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -77,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/browser/verify_c33_npc_pdf_visual.mjs`
 - `scripts/browser/verify_c33_original_forge_full_dom.mjs`
 - `scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs`
-- … 44 more
+- … 45 more
 
 ## Trust and update procedure
 
