@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `760b2104bd60e07d061671d4411be243bc705d3b` |
+| Exact source commit represented by this archive snapshot | `2c3a21e6bdff6f31944d971a6e7c2bd030f1ad8c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: isolate I1G localhost-only PostgreSQL and GoTrue API endpoints |
-| Files changed relative to main | 120 (92 non-docs; 28 docs) |
+| Last source commit title | ci: signed original Warlock invocation guards with all held Forge/Story/Stage4/Wizard/Battle Master tests |
+| Files changed relative to main | 121 (93 non-docs; 28 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1g-warlock-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -30,6 +30,7 @@
 - `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
 - `.github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml`
 - `.github/workflows/validate-i1f-battle-master-original-local-auth.yml`
+- `.github/workflows/validate-i1g-warlock-original-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/archive/npc_secure_profile_2026-11-04/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md`
 - `docs/data/c33_migration_history_snapshot_2026-11-08.json`
 - `pages/_app.js`
-- `pages/inventory.js`
-- … 70 more
+- … 71 more
 
 ## Trust and update procedure
 
