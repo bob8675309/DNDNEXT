@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1k-species-cantrip-original-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `6b7cc5eaecce47f18205a5d80ac71698d20e046d` |
+| Exact source commit represented by this archive snapshot | `f1c5635d6f800c963afecef0205f5ae0f6c6d9dd` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(i1k): run source-original High Elf/Khoravar cantrip and earlier signed regression |
-| Files changed relative to main | 135 (103 non-docs; 32 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i1k): record signed source-original High Elf/Khoravar cantrip acceptance and release limits |
+| Files changed relative to main | 136 (103 non-docs; 33 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1k-species-cantrip-original-local-auth.yml`
+- `docs/I1_K_SPECIES_CANTRIP_ORIGINAL_SIGNED_RESEARCH_2026-11-10.md`
 
 ## Research-branch change inventory versus main
 
@@ -70,8 +70,8 @@
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
-- `docs/NEXT_CHAT_START_HERE.md`
-- … 85 more
+- `docs/I1_K_SPECIES_CANTRIP_ORIGINAL_SIGNED_RESEARCH_2026-11-10.md`
+- … 86 more
 
 ## Trust and update procedure
 
