@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T05:36:42Z | research/i1f-battle-master-original-maneuver-grants-20261109 (7c7e9907d86a6914460ca03296eb80de04e6747a) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T05:37:15Z | research/i1f-battle-master-original-maneuver-grants-20261109 (83aa403c725b3a05e6f32b1623801b8ffccf64b8) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

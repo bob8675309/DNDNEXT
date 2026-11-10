@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `7c7e9907d86a6914460ca03296eb80de04e6747a` |
+| Exact source commit represented by this archive snapshot | `83aa403c725b3a05e6f32b1623801b8ffccf64b8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record signed Battle Master I1F 10/10 pass, local fixture fixes and Warlock I1G follow-up |
+| Last source commit title | docs: pin exact original I1F signed success and failed fixture run identifiers |
 | Files changed relative to main | 117 (89 non-docs; 28 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
