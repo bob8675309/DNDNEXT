@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T05:06:21Z | research/i1e-wizard-original-finalizer-signed-20261109 (2b10b86f1237de484974d686acbd16d47c29a1d6) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T05:22:39Z | research/i1f-battle-master-original-maneuver-grants-20261109 (2b10b86f1237de484974d686acbd16d47c29a1d6) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
