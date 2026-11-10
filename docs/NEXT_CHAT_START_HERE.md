@@ -4,7 +4,7 @@
 
 # DNDNext — NEXT CHAT START HERE (one authoritative entry point)
 
-## CURRENT November 9 integration-first route
+## ONE next bounded engineering task (I1-B; current November 9 integration-first route)
 
 Read [ACTIVE_WORK](ACTIVE_WORK.md) → [I0–I6 plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) → [full 20-PR catalog](pr-integration/README.md) → latest [HANDOFF_LOG](HANDOFF_LOG.md). The original SHA-based Forge/#345 overlap audit is [complete](I1_A_FORGE_C33_SOURCE_CONTRACT_CROSSWALK_2026-11-09.md). #349's static trigger/JWT receipts are green, not full 31-trigger production acceptance. **Next engineering task is I1-B combined original-source nonce/private Story PG17+GoTrue negative fixture.**
 
