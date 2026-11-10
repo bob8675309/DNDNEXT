@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1j-khoravar-original-skill-versatility-20261110` |
-| Exact source commit represented by this archive snapshot | `f4c1c285190f0efcbb0334155f712c14b65e24fa` |
+| Exact source commit represented by this archive snapshot | `0395e4e79f3ea6df55a66582c569bd277b956f63` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1j): source-hashed Khoravar skill/tool signed research and release exclusions |
+| Last source commit title | docs(i1j): reflect signed Khoravar materializer milestone and one bounded next task |
 | Files changed relative to main | 133 (101 non-docs; 32 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
