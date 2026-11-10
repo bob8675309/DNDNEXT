@@ -25,7 +25,9 @@ The live `character_progression_validate_player_forge_class_options_v1` is an **
 
 ## Evidence status and expected acceptance
 
-**At initial publication:** exact-head workflow execution and results are pending; a prepared test is not a passing test.
+**VERIFIED at exact code-bearing commit `c1b7fd5a21c8599d296b138d7bf51e2496e27542`:** the [dedicated I1-H signed local PostgreSQL 17/GoTrue/PostgREST job](https://github.com/bob8675309/DNDNEXT/actions/runs/42863361394/job/129995084717) completed **SUCCESS**. Its decoded Actions log explicitly records **PASS I1H-01 through I1H-08**, including both signed first-creation COMMITs and all five negative/rollback cases; source-original **I1G-01 through I1G-14** (including the prior intentionally failing RED control) and preceding I1C–I1F remained green, with I1C-06 final revoked-editor check also passing. The separate [I1-G unchanged baseline job](https://github.com/bob8675309/DNDNEXT/actions/runs/42863361452/job/129995080991) also completed **SUCCESS** at that code head. Static `validate` and `docs-only` checks passed; Supabase Preview intentionally skipped. This is **real local signed disposable acceptance**, not production release, full browser or 31/31 trigger acceptance.
+
+**Important timing:** this source/code head predates the later documentation receipt commit; refresh the final PR head's CI before using its status as exact-head acceptance.
 
 Expected checks:
 
