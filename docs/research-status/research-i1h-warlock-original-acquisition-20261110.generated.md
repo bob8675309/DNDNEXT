@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1h-warlock-original-acquisition-20261110` |
-| Exact source commit represented by this archive snapshot | `f56ddbbff6daf1baf3bf331dc42396314fc5b941` |
+| Exact source commit represented by this archive snapshot | `cb578ff647472af4d7dacad0630824152430ba1a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1h): stage original Warlock acquisition with both guards in disposable PG17 |
+| Last source commit title | test(i1h): signed fresh Warlock invocation acquisition and negative replay matrix |
 | Files changed relative to main | 125 (96 non-docs; 29 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1h_warlock_acquisition_with_guards_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
