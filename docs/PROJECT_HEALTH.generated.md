@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T17:21:32Z | research/i1h-warlock-original-acquisition-20261110 (f6fe276a305e292ed343b1bae122924983fedc2d) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T17:32:16Z | research/i1i-eladrin-original-season-materializer-20261110 (f6fe276a305e292ed343b1bae122924983fedc2d) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
