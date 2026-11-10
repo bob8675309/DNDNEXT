@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `83aa403c725b3a05e6f32b1623801b8ffccf64b8` |
+| Exact source commit represented by this archive snapshot | `023714ba25ba3c78e07ff7cc0cebc05b04f895b9` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: pin exact original I1F signed success and failed fixture run identifiers |
-| Files changed relative to main | 117 (89 non-docs; 28 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research: preserve exact original Warlock invocation guard and normalized validator source bodies |
+| Files changed relative to main | 118 (90 non-docs; 28 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
+- `scripts/fixtures/i1g_warlock_original_functions_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/data/c33_migration_history_snapshot_2026-11-08.json`
 - `pages/_app.js`
 - `pages/inventory.js`
-- … 67 more
+- … 68 more
 
 ## Trust and update procedure
 
