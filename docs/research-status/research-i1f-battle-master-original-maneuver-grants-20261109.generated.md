@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `70cbb93d0bc02a5aed1f30c55fd8d64c81cebf68` |
+| Exact source commit represented by this archive snapshot | `e51375eaf77c7351863e310a7c47e433301921d9` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci: isolate signed I1F fixture on dedicated localhost database/API ports |
+| Last source commit title | ci: avoid runner port collision with dedicated disposable PostgreSQL and API ports |
 | Files changed relative to main | 117 (89 non-docs; 28 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1f_battle_master_original_joint_local_auth.mjs`
+- `.github/workflows/validate-i1f-battle-master-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
