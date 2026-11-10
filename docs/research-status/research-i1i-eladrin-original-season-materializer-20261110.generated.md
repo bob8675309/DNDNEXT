@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1i-eladrin-original-season-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `cbf6cbe8cb5e6bcd5c3e33e7919790c3b63d77ee` |
+| Exact source commit represented by this archive snapshot | `a4a62a7e333f02a48e92b9591a958a4821b72ad6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1i): retain exact live Eladrin runtime cadence and state CHECK constraints |
-| Files changed relative to main | 129 (99 non-docs; 30 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i1i): record source-original Eladrin signed acceptance and nuanced NULL-path error |
+| Files changed relative to main | 130 (99 non-docs; 31 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1i_eladrin_original_materializer_pg17.sql`
+- `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 
 ## Research-branch change inventory versus main
 
@@ -66,12 +66,12 @@
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
+- `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
 - `docs/SYSTEM_REGISTRY.json`
 - `docs/archive/npc_secure_profile_2026-11-04/Centered_Secure_NPC_Profile_Integration_2026-11-04.md`
-- `docs/archive/npc_secure_profile_2026-11-04/NPC_Private_Reader_Client_Cutover_2026-11-04.md`
-- … 79 more
+- … 80 more
 
 ## Trust and update procedure
 
