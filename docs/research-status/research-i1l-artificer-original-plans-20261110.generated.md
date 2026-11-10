@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `72a440b59a34f49b227a165200cf2210eeb5fb2f` |
+| Exact source commit represented by this archive snapshot | `a827c37d368b8a702f433c2a1c6955108c7b6dc3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1l): fail closed with non-secret projection diagnostics on first original Artificer commit |
-| Files changed relative to main | 139 (105 non-docs; 34 docs) |
+| Last source commit title | test(i1l): stage single-condition null-safe Artificer projection candidate only after source RED |
+| Files changed relative to main | 140 (106 non-docs; 34 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `scripts/fixtures/i1l_artificer_projection_null_parent_candidate_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
-- … 89 more
+- … 90 more
 
 ## Trust and update procedure
 
