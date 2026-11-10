@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `73b1ebfadb83c6dcb367a91fc14836ce7a4c45ef` |
+| Exact source commit represented by this archive snapshot | `6380c0f52e00e83eefd106cd4adc1d2ea8671563` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: capture five original Battle Master grant/validator functions and verify exact source MD5 |
-| Files changed relative to main | 113 (86 non-docs; 27 docs) |
+| Last source commit title | test: stage original Battle Master deferred grant and validator with live-grounded canonical XPHB option IDs |
+| Files changed relative to main | 114 (87 non-docs; 27 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1f_battle_master_original_functions_pg17.sql`
+- `scripts/fixtures/i1f_battle_master_joint_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `pages/inventory.js`
 - `pages/npcs.js`
 - `pages/town/[id].js`
-- … 63 more
+- … 64 more
 
 ## Trust and update procedure
 
