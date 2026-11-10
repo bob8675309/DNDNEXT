@@ -1235,6 +1235,163 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
       assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
       console.log("PASS I1J-09: non-Khoravar skip, original I1I Eladrin and I1H Warlock+Wizard/Battle Master grants and Stage4 security unchanged");
       console.log("I1J RESULT: source-original Khoravar Skill Versatility and seven private dependency functions pass signed XPHB skill+tool, Warlock coexistence and five negative rollback branches in disposable PG17, NOT 31/31 production acceptance.");
+
+      // I1-K: source-original species replaceable CANTRIP trigger added only
+      // AFTER I1-J original standalone proficiency tests. Earlier historical
+      // test conditions stay preserved; new creations now require Fey Gift's
+      // permanent ability as well as Khoravar Skill Versatility.
+      if(env.DNDNEXT_I1K_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
+        sqlFile("scripts/fixtures/i1k_species_cantrip_original_materializer_pg17.sql");
+        const i1kFriends="c667b8ab-a44e-4c23-a8ea-b03f8953fc18";
+        const i1kPrest="5f62b543-f6ac-405f-baa8-1f196190ff35";
+        const elfGroup=(ability,kind="High Elf")=>({
+          ownerType:"species",ownerKey:"elf-elven-lineage",source:"XPHB",
+          label:"Elven Lineage",placement:"species",fields:{
+            lineage:{kind:"option",selections:[{key:"high-elf",value:kind,label:kind}]},
+            "spellcasting-ability":{kind:"ability",
+              selections:ability===null?[]:[{key:ability,value:ability,label:ability}]}
+          }
+        });
+        const khFeyGroup=(ability)=>({
+          ownerType:"species",ownerKey:"khoravar-fey-gift",source:"EFA",
+          label:"Fey Gift",placement:"species",fields:{
+            "feature-ability":{kind:"ability",
+              selections:ability===null?[]:[{key:ability,value:ability,label:ability}]}
+          }
+        });
+        const elfPayload=(name,nonce,ability,opts={})=>{
+          const p=gearPayload(name,nonce);
+          p.sheet.species="Elf";p.sheet.meta={speciesSource:"XPHB"};
+          p.sheet.sourceChoices={"i1k-source-owned-elven-lineage":elfGroup(ability,opts.lineage??"High Elf")};
+          return p;
+        };
+        const khCantripPayload=(name,nonce,ability,opts={})=>{
+          const p=khPayload(name,nonce,[khSkill],{warlock:opts.warlock??false});
+          p.sheet.sourceChoices["i1k-source-owned-khoravar-fey-gift"]=khFeyGroup(ability);
+          return p;
+        };
+        const spellCount=(id,key)=>Number(sql("SELECT count(*) FROM public.character_spells WHERE character_id="+wq(id)+
+          " AND source_type='species' AND source_key="+wq(key).replace(/'/g,"'")));
+        const spellIdFor=(id,key)=>sql("SELECT spell_id::text FROM public.character_spells WHERE character_id="+wq(id)+
+          " AND source_type='species' AND source_key="+wq(key).replace(/'/g,"'"));
+        const castFor=(id,key)=>sql("SELECT casting_stat FROM public.character_spells WHERE character_id="+wq(id)+
+          " AND source_type='species' AND source_key="+wq(key).replace(/'/g,"'"));
+        const runtimeSpell=(id,key)=>sql("SELECT state->>'spellId' FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+
+          " AND feature_key="+wq(key).replace(/'/g,"'"));
+        const projectedSpell=id=>sql("SELECT sheet#>>'{runtimeFeatures,speciesReplaceableCantrip,spellId}' FROM public.character_sheets WHERE character_id="+wq(id));
+        const i1kSnapshot=()=>khGlobal()+"|spells="+sql("SELECT count(*) FROM public.character_spells");
+        const i1kVerify=(id,key,spellId,castStat)=>{
+          assert.equal(spellCount(id,key),1,"Original deferred source materializer must create exactly one spell assignment");
+          assert.equal(spellIdFor(id,key),spellId);
+          assert.equal(castFor(id,key),castStat,"Permanent casting ability must survive normalized species grant");
+          assert.equal(runtimeSpell(id,key),spellId);
+          assert.equal(projectedSpell(id),spellId);
+          assert.equal(sql("SELECT source FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+
+            " AND feature_key="+wq(key)),""+(key==="high-elf-lineage-cantrip"?"XPHB":"EFA"));
+          assert.equal(sql("SELECT cadence FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+
+            " AND feature_key="+wq(key)),"long_rest");
+          assert.equal(sql("SELECT known::text||','||prepared::text||','||always_available::text FROM public.character_spells WHERE character_id="+wq(id)+
+            " AND source_type='species' AND source_key="+wq(key)),"true,true,true");
+        };
+        assert.equal(sql("SELECT count(*) FROM public.spells_catalog_preferred WHERE name IN ('Friends','Prestidigitation') AND level=0 AND source='XPHB'"),"2");
+        assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_species_replaceable_cantrip_v1()'::regprocedure))"),"a09198d8e12df12371647fccd8479489");
+        assert.equal(sql("SELECT count(*) FROM jsonb_array_elements(private.species_replaceable_cantrip_options_v1('high-elf-lineage-cantrip')) WHERE value->>'spellId'="+wq(i1kPrest)),"1");
+        assert.equal(sql("SELECT count(*) FROM jsonb_array_elements(private.species_replaceable_cantrip_options_v1('khoravar-fey-gift-cantrip')) WHERE value->>'spellId'="+wq(i1kFriends)),"1");
+        console.log("PASS I1K-01: all four original source-hashed species cantrip functions, source-fixed XPHB Friends/Prestidigitation and full reduced preferred rowtype installed");
+
+        const elfNonce=randomUUID(),elfStory="I1K-HIGH-ELF-STORY",elfChoice=elfPayload("I1K original High Elf signed",elfNonce,"int");
+        const elfId=succeeded(await create(creator,elfStory,elfChoice),"signed High Elf initial Prestidigitation");
+        i1kVerify(elfId,"high-elf-lineage-cantrip",i1kPrest,"int");
+        assert.equal(wNonce(elfNonce),1);
+        assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(elfId)),elfStory);
+        assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id="+wq(elfId)),"1");
+        assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id="+wq(elfId)+
+          " AND raw_payload->>'speciesReplaceableCantrip'='true'"),"1");
+        console.log("PASS I1K-02: genuine signed XPHB High Elf first-COMMIT receives source-fixed Prestidigitation spell, runtime state, sheet projection and permanent INT casting with Story/nonce");
+
+        const elfRowHash=sql("SELECT md5(to_jsonb(r)::text) FROM public.character_runtime_feature_choices r WHERE character_id="+wq(elfId)+" AND feature_key='high-elf-lineage-cantrip'");
+        const elfSpellHash=sql("SELECT md5(to_jsonb(s)::text) FROM public.character_spells s WHERE character_id="+wq(elfId)+" AND source_key='high-elf-lineage-cantrip'");
+        const elfBefore=i1kSnapshot();
+        assert.equal(succeeded(await create(creator,elfStory,elfChoice),"High Elf same nonce replay"),elfId);
+        assert.equal(i1kSnapshot(),elfBefore);
+        assert.equal(sql("SELECT md5(to_jsonb(r)::text) FROM public.character_runtime_feature_choices r WHERE character_id="+wq(elfId)+" AND feature_key='high-elf-lineage-cantrip'"),elfRowHash);
+        assert.equal(sql("SELECT md5(to_jsonb(s)::text) FROM public.character_spells s WHERE character_id="+wq(elfId)+" AND source_key='high-elf-lineage-cantrip'"),elfSpellHash);
+        denied(await create(creator,"I1K-CHANGED-ELF-STORY",elfChoice),"High Elf changed private Story nonce","22023");
+        denied(await create(outsider,elfStory,elfChoice),"High Elf outsider nonce","42501");
+        console.log("PASS I1K-03: identical High Elf nonce is truly inert for runtime, spell and Story; modified Story and foreign actor denied");
+
+        const khFriendsNonce=randomUUID(),khFriendsStory="I1K-KHORAVAR-FRIENDS-STORY";
+        const khFriendsPayload=khCantripPayload("I1K original Khoravar Friends+skill",khFriendsNonce,"cha");
+        const khFriendsId=succeeded(await create(creator,khFriendsStory,khFriendsPayload),
+          "signed Khoravar source-owned skill and Fey Gift cantrip");
+        i1kVerify(khFriendsId,"khoravar-fey-gift-cantrip",i1kFriends,"cha");
+        khCheck(khFriendsId,khSkill);
+        assert.equal(wNonce(khFriendsNonce),1);
+        assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(khFriendsId)),khFriendsStory);
+        assert.equal(succeeded(await create(creator,khFriendsStory,khFriendsPayload),"Khoravar Friends same nonce"),khFriendsId);
+        console.log("PASS I1K-04: signed EFA Khoravar first-COMMIT composes original Friends cantrip with original Skill Versatility + players mirror, Story/nonce");
+
+        const tripleNonce=randomUUID(),tripleStory="I1K-KHORAVAR-WARLOCK-TRIPLE-STORY";
+        const triplePayload=khCantripPayload("I1K Khoravar Warlock original triple",tripleNonce,"wis",{warlock:true});
+        const tripleId=succeeded(await create(creator,tripleStory,triplePayload),
+          "signed original Khoravar species cantrip+skill and Warlock Invocation combined");
+        i1kVerify(tripleId,"khoravar-fey-gift-cantrip",i1kFriends,"wis");
+        khCheck(tripleId,khSkill);
+        assert.equal(wCount(tripleId),1);
+        assert.equal(wNonce(tripleNonce),1);
+        assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(tripleId)),tripleStory);
+        assert.equal(succeeded(await create(creator,tripleStory,triplePayload),"Khoravar original triple unchanged nonce"),tripleId);
+        console.log("PASS I1K-05: genuine signed Khoravar Warlock single COMMIT runs 3 original cantrip/skill/Invocation materializers with private Story/nonce, unchanged replay");
+
+        const i1kReject=async(label,payload)=>{
+          const nonce=payload.creation_request_id,before=i1kSnapshot();
+          const result=await create(creator,"I1K-NEGATIVE-STORY-"+label,payload);
+          assert.ok(result.error,"Illegal "+label+" unexpectedly committed");
+          assert.equal(wNonce(nonce),0,"Failed "+label+" consumed original nonce");
+          assert.equal(recordCount("public.characters","creation_request_id="+wq(nonce)),0);
+          assert.equal(i1kSnapshot(),before,"Failed "+label+" left character/Story/nonce/grants/gear/spells/runtime/player residue");
+          assert.equal(spellCount(elfId,"high-elf-lineage-cantrip"),1);
+          assert.equal(spellCount(khFriendsId,"khoravar-fey-gift-cantrip"),1);
+          return result.error.message;
+        };
+        const missingAbility=await i1kReject("missing-high-elf-casting",elfPayload("I1K invalid Elf no stat",randomUUID(),null));
+        assert.match(missingAbility,/requires a permanent Intelligence, Wisdom, or Charisma spellcasting-ability choice/i);
+        console.log("PASS I1K-06: missing permanent High Elf spellcasting ability rejected by unchanged source trigger, all writes rolled back");
+
+        const badAbility=await i1kReject("wrong-khoravar-ability",khCantripPayload("I1K invalid Fey Gift STR",randomUUID(),"str"));
+        assert.match(badAbility,/requires a permanent Intelligence, Wisdom, or Charisma spellcasting-ability choice/i);
+        console.log("PASS I1K-07: STR as permanent Fey Gift casting stat rejected, without character/grant/Story/nonce/spell leakage");
+
+        // Negative test the actual source-fixed spell availability, not a
+        // fabricated "choose starting spell" field (the original has none).
+        const withheldNonce=randomUUID(),withheldPayload=elfPayload("I1K missing source-fixed Prestidigitation",withheldNonce,"cha");
+        const savedName=sql("SELECT name FROM public.spells_catalog WHERE id="+wq(i1kPrest));
+        assert.equal(savedName,"Prestidigitation");
+        let missingSpellError=null;
+        sql("UPDATE public.spells_catalog SET name='I1K withheld original cantrip' WHERE id="+wq(i1kPrest));
+        try {missingSpellError=await i1kReject("missing-source-fixed-spell",withheldPayload);}
+        finally {sql("UPDATE public.spells_catalog SET name='Prestidigitation' WHERE id="+wq(i1kPrest));}
+        assert.match(missingSpellError,/Could not resolve the source-fixed initial cantrip Prestidigitation for Elven Lineage/i);
+        assert.equal(spellIdFor(elfId,"high-elf-lineage-cantrip"),i1kPrest);
+        console.log("PASS I1K-08: source-fixed preferred Prestidigitation unavailable fails closed and rolls back, original catalog row then restored in scratch");
+
+        const woodNonce=randomUUID(),wood=elfPayload("I1K Wood Elf should skip",woodNonce,null,{lineage:"Wood Elf"});
+        const woodId=succeeded(await create(creator,"I1K-WOOD-ELF-SKIP",wood),
+          "non-High Elf lineage must not receive source fixed spell");
+        assert.equal(spellCount(woodId,"high-elf-lineage-cantrip"),0);
+        assert.equal(sql("SELECT count(*) FROM public.character_runtime_feature_choices WHERE character_id="+wq(woodId)+" AND feature_key='high-elf-lineage-cantrip'"),"0");
+        assert.equal(wNonce(woodNonce),1);
+        assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass AND NOT tgisinternal AND tgenabled='O' AND tgname IN ('character_progression_validate_player_forge_class_options_v1','character_progression_reject_unmarked_legacy_warlock_invocation','character_progression_validate_player_forge_class_options_v2','character_progression_materialize_eladrin_season_v1','character_progression_materialize_player_forge_khoravar_skill_v','character_progression_materialize_species_cantrip_v1')"),"6");
+        assert.equal(sql("SELECT has_table_privilege('authenticated','public.spells_catalog_preferred','SELECT')"),"f");
+        assert.equal(sql("SELECT has_table_privilege('authenticated','public.character_runtime_feature_choices','INSERT')"),"f");
+        assert.equal(wizardCount(sigId),9);assert.equal(battleGrants(bm10id),7);
+        assert.equal(wCount(i1hOne),1);assert.equal(wCount(i1hTwo),3);
+        assert.equal(seasonFor(winterId),"winter");assert.equal(seasonFor(autumnId),"autumn");
+        assert.equal(khRuntimeKey(khSkillId),khSkill);assert.equal(khRuntimeKey(khToolId),khTool);
+        assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
+        console.log("PASS I1K-09: Wood Elf source-gate skip, 6 original deferred triggers, I1G/H/I/J and Wizard/Battle Master/Stage4 regression parity preserved");
+        console.log("I1K RESULT: source-original High Elf/Khoravar replaceable cantrip first-COMMIT and triple original Khoravar Warlock materialization with signed Story/nonce, source-fixed failures and reduced catalog caveat. NOT full 31/31 source trigger, browser or release acceptance.");
+      }
     }
   }
 
