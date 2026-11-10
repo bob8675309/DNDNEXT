@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `480b8be8f148b201c08a0aef3d408d8bdd09554b` |
+| Exact source commit represented by this archive snapshot | `71840f27c68f5e34937b91f95ed88d3859ba06c4` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci: include I1G original trigger phase2 installer in guarded signed test change filters |
+| Last source commit title | docs: record I1G 14-case original Warlock safeguard pass and explicit fresh creation red gate |
 | Files changed relative to main | 124 (95 non-docs; 29 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1g-warlock-original-local-auth.yml`
+- `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 
 ## Research-branch change inventory versus main
 
