@@ -1059,8 +1059,11 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
       return response.error.message;
     };
     const missing=await i1iReject("missing-season",null);
-    assert.match(missing,/Eladrin requires exactly one current season during Player Forge creation/i);
-    console.log("PASS I1I-04: signed MPMM Eladrin missing starting season fails at original deferred handler with atomic rollback");
+    // Exact unmodified original semantics: SQL NULL fails the IF inequality
+    // test (three-valued logic), then the original resolver rejects empty key.
+    // This is still a full rollback, but has a different source error than [].
+    assert.match(missing,/Eladrin Player Forge references an invalid season/i);
+    console.log("PASS I1I-04: signed MPMM Eladrin missing season fails at original resolver (NULL path) with atomic rollback");
 
     const empty=await i1iReject("empty-selection",[]);
     assert.match(empty,/Eladrin requires exactly one current season during Player Forge creation/i);
