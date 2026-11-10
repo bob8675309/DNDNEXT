@@ -61,6 +61,30 @@ The MD5s below are **the original handler function source hashes**, not proof th
 
 **CI:** `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`, pinned Supabase CLI `2.120.0`, Node 22, localhost PostgreSQL17 and GoTrue/PostgREST only; disposable containers removed after run. The workflow first runs the static 31-trigger source gap audit, then genuine signed source-based SQL and DML assertions. Never point this fixture to any hosted project.
 
+## I1-D verified execution and live read-only source recheck (November 9 local / November 10 UTC)
+
+**EXACT SIGNED SOURCE HEAD `03b9250748a5355005b4146c0727efabf96c2ba6`: [GitHub Actions run 42756250666](https://github.com/bob8675309/DNDNEXT/actions/runs/42756250666) — SUCCESS** for new `forge-inventory-story-joint-signed` job. Its output includes all **I1D-01 through I1D-11 PASS**, plus prior I1C-01–11. Repository-wide original PG17 replay, genuine local JWT regression, validation, handoff registry, and docs-only checks also succeeded: **six successful checks, one intentionally skipped Supabase Preview** at that tested head. **No hosted data were mutated.** Supabase local Docker transient image rate-limit messages recovered automatically; the final signed SQL/role assertions completed and all disposable services stopped.
+
+Actual signed joint results (not static text matches): original v3+Story+nonce+deferred equipment/currency commit; three source-original C3.3 trigger paths (level-up cancellation, invalid sprite refusal, Mog delete guard); both historic owner CHECKs and original two inventory item handlers; legacy NOT VALID deferred failure with full character/Story/nonce rollback; unchanged exact Stage4 `4532ddb8` four-policy + CHECK DDL abort/rollback and then successful local install; preservation hashes of spells/items/merchant stock/existing gear/Story/nonce; signed v2 and private Story wrapper after Stage4, no duplicated equipment/currency/replay; creator, outsider, legitimate player inventory, Admin and revoked permissions.
+
+**Read-only current Supabase metadata review:** DnDWeb database Postgres 17.4 reported as healthy. A SELECT-only `pg_proc` / `md5(pg_get_functiondef)` inspection of the **nine other historically unstaged non-world-map original handlers** found all nine with source MD5s **identical to the November 5 original census**. None of those bodies were installed/tested in the joined I1-D fixture; **metadata equality does not imply complete execution or dependency parity**.
+
+| Original missing handler (source-only SELECT; no writes) | Current live MD5 | Source text characters |
+|---|---|---:|
+| `materialize_player_forge_artificer_plans_v1` | `67766989a466b82f170b5e00f9154e24` | 3,610 |
+| `materialize_player_forge_battle_master_maneuvers_v1` | `daf3fc12e7c30165dca50ca650f9d308` | 3,238 |
+| `materialize_player_forge_eladrin_season_v1` | `b866a8dff88bbfe6fb2c4f6d4c102fee` | 2,021 |
+| `materialize_player_forge_khoravar_skill_versatility_v1` | `9d5fec42e2aefdd39d8a34adf1548460` | 1,811 |
+| `materialize_player_forge_species_replaceable_cantrip_v1` | `a09198d8e12df12371647fccd8479489` | 3,531 |
+| `materialize_player_forge_wizard_final_v1` | `3c71ad65cde45d74bef4ea63f25847ac` | 432 |
+| `reject_unmarked_legacy_warlock_invocations_v1` | `631fbb585f47e71a619ca8ac8e212407` | 1,886 |
+| `validate_existing_battle_master_maneuvers_v1` | `8bc8a467e95b07e93df833bcfc585e80` | 1,612 |
+| `validate_existing_normalized_warlock_invocations_v2` | `4f1752db655b6ba490113f604c7583ef` | 6,955 |
+
+A further **read-only** lookup confirmed `materialize_player_forge_wizard_final_v1()` is a deferred AFTER INSERT trigger calling **two dependent original functions**, not a self-contained 432-character handler: `materialize_player_forge_wizard_savant_for_character_v1` (current MD5 `49594930f540d308b43ce00461462829`, 6,529 characters) and `materialize_player_forge_wizard_signature_for_character_v1` (MD5 `02395e9d544ef6d5d1e6e5436d080294`, 3,368 characters). Its authentic dependencies and preferred Wizard source catalog need to be reconstructed, not stubbed away.
+
+**ONE NEXT TASK (I1-E bounded source extraction):** preserve the complete source-original Wizard final trigger and both subfunction bodies with exact MD5 provenance, identify their true table/catalog/RLS dependencies, and create a **small signed positive + negative + rollback** addition to the existing I1-D disposable suite. Do not claim its acceptance merely from metadata MD5. Other eight non-map trigger handlers and two protected world-map behaviors stay in the explicit 31-trigger backlog.
+
 ## Unproven release gates and next work
 
 - **NOT 31/31** installed/executed. The historical 17/31 staged names occur across separate fixtures; I1-D joins a smaller source-original subset plus three C3.3 originals and two inventory crafting triggers. Nine historical original handler source/dependency paths remain unresolved, two world-map handlers are expressly protected.
