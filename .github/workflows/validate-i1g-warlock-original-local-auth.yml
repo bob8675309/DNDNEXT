@@ -1,0 +1,111 @@
+name: I1-G original Forge nonce plus private Story joint signed negative
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-i1g-warlock-original-local-auth.yml'
+      - 'scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs'
+      - 'docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md'
+      - 'scripts/validate_i1d_trigger_gap_manifest.mjs'
+      - 'scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql'
+      - 'scripts/fixtures/i1g_warlock_original_functions_pg17.sql'
+      - 'scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql'
+      - 'scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql'
+      - 'scripts/fixtures/i1f_battle_master_original_functions_pg17.sql'
+      - 'scripts/fixtures/i1f_battle_master_joint_setup_pg17.sql'
+      - 'scripts/fixtures/i1e_wizard_original_functions_pg17.sql'
+      - 'scripts/fixtures/i1e_wizard_joint_setup_pg17.sql'
+      - 'scripts/fixtures/forge_subclass_choice_original_pg17.sql'
+      - 'scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql'
+      - 'scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_inventory_access_original_pg17.sql'
+      - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
+      - 'sql/candidates/20261109_player_story_complete_intent_i1c_research.sql'
+      - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
+      - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
+      - 'scripts/fixtures/forge_creation_original_functions_pg17.sql'
+      - 'scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql'
+      - 'sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql'
+      - 'sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql'
+      - 'sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql'
+      - 'sql/candidates/20261105_player_creation_immutable_intent_v1.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  warlock-original-guards-joint-signed:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '55622'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_I1G_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate local-only signed fixture syntax
+        run: |
+          node --check scripts/validate_i1d_trigger_gap_manifest.mjs
+          node scripts/validate_i1d_trigger_gap_manifest.mjs
+          node --check scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+          node scripts/validate_npc_private_profile_cutover.mjs
+      - name: Install existing pinned application dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure isolated PostgreSQL 17 + GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/i1g-local/supabase"
+          cat > "$RUNNER_TEMP/i1g-local/supabase/config.toml" <<'TOML'
+          project_id = "i1g-warlock-original-guards-local-only"
+          [api]
+          port = 55621
+          [db]
+          port = 55622
+          shadow_port = 55620
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local Supabase services
+        run: |
+          cd "$RUNNER_TEMP/i1g-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Signed original Forge v2/v3 plus private Story and #324 nonce research
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '55622'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_I1G_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          (cd "$RUNNER_TEMP/i1g-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i1g-local-env"
+          set -a
+          source "$RUNNER_TEMP/i1g-local-env"
+          set +a
+          export DNDNEXT_I1G_LOCAL_URL='http://127.0.0.1:55621'
+          export DNDNEXT_I1G_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
+            -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          node scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
+      - name: Stop and discard local test services and data
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/i1g-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
