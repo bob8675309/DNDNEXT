@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `0c3ec510870dbbdf84679be421437f6f1dfd2327` |
+| Exact source commit represented by this archive snapshot | `727a7311981027cc9c3a3ad81bf23b3e71322ccd` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: extend existing I1D origin grant stub rather than recreating it in I1G |
+| Last source commit title | test: use source-valid Warlock package A supported by explicitly reduced I1D equipment helper |
 | Files changed relative to main | 122 (93 non-docs; 29 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
