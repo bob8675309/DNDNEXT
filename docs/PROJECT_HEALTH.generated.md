@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T23:38:49Z | research/i1l-artificer-original-plans-20261110 (466f19398c79cb563b1a7ec193b598d7e94a11bc) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T23:39:20Z | research/i1l-artificer-original-plans-20261110 (4f021f2ff5bfff62e117a6a2760c41eb77c7390f) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

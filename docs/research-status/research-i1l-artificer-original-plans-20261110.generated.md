@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `466f19398c79cb563b1a7ec193b598d7e94a11bc` |
+| Exact source commit represented by this archive snapshot | `4f021f2ff5bfff62e117a6a2760c41eb77c7390f` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1l): distinguish verified original Artificer RED from one-condition scratch GREEN candidate |
+| Last source commit title | docs(i1l): surface original-source Artificer projection RED and local-only repair candidate as active release blocker |
 | Files changed relative to main | 140 (106 non-docs; 34 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I1_L_ARTIFICER_ORIGINAL_MAGIC_ITEM_PLANS_SIGNED_RESEARCH_2026-11-10.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
