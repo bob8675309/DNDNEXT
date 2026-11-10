@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1c-forge-story-complete-intent-20261109` |
-| Exact source commit represented by this archive snapshot | `503e95a1cc1ee7151b5f16f8de60a45645bb818c` |
+| Exact source commit represented by this archive snapshot | `90215e4b4b3cd3ca811cfe367589139089643fbb` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record signed I1B-03 changed-Story nonce integration gap |
-| Files changed relative to main | 97 (74 non-docs; 23 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research: Story-inclusive immutable nonce through source-original Forge reservation |
+| Files changed relative to main | 98 (75 non-docs; 23 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
+- `sql/candidates/20261109_player_story_complete_intent_i1c_research.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/browser/verify_c33_creator_backstory_dom.mjs`
 - `scripts/browser/verify_c33_next_town_route.mjs`
 - `scripts/browser/verify_c33_npc_pdf_visual.mjs`
-- … 47 more
+- … 48 more
 
 ## Trust and update procedure
 
