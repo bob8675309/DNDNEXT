@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1h-warlock-original-acquisition-20261110` |
-| Exact source commit represented by this archive snapshot | `afe8d5ac13e767bca494d48be2664497abf6ba5e` |
+| Exact source commit represented by this archive snapshot | `03a34a8d497bbf5af040c286795ae91b9719ddde` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1h): record source-original Warlock acquisition test contract and unresolved release gates |
+| Last source commit title | docs(i1h): record verified exact-head signed creation and rollback results |
 | Files changed relative to main | 127 (97 non-docs; 30 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
