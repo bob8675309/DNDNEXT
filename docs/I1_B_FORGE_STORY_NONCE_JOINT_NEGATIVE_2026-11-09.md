@@ -2,6 +2,19 @@
 
 **Research only — November 9, 2026.** This is a source-locked integration negative fixture, not a candidate production SQL migration. The branch is intentionally based on secure research #345 at `4f5f8ff7587aff1a68f21581ad68a4752789f54a`, rather than merging #324/terminal Forge branches and risking older NPC privacy Stage3. PR #348 carries the canonical I0–I6 priority; #349 separately preserves read-only 31-trigger audit sources.
 
+## Verified exact-source signed result (November 9 local / November 10 UTC)
+
+**Executed, not just source-inferred.** PR [#350](https://github.com/bob8675309/DNDNEXT/pull/350) original test head `a8e13dc91b5076a1dcd95ea26731e0cb63b40f3b`, [GitHub Actions original-combined-signed-nonce run 42740333918](https://github.com/bob8675309/DNDNEXT/actions/runs/42740333918): **SUCCESS for research characterization**. All four source/docs checks succeeded and Supabase Preview skipped. PostgreSQL17/GoTrue/PostgREST started, original fixtures installed, signed RPC cases executed and disposable containers removed.
+
+- **I1B-01 PASS:** new signed Forge v3 character + source-checked creator attribution, exactly one Story/sheet/immutable reservation.
+- **I1B-02 PASS:** changed original payload same nonce rejected with SQLSTATE `22023`; unrelated actor same nonce rejected `42501`.
+- **I1B-03 KNOWN INTEGRATION GAP CONFIRMED:** changed-only private Story under the same creation nonce was **ACCEPTED and returned original character**, silently ignoring changed Story. This violates complete creation-intent rejection; **NOT RELEASE READY**. The test checks no duplicate character or secret was produced.
+- **I1B-04 PASS:** legitimate same-intent replay after explicit creator Story edit did not overwrite later edit.
+- **I1B-05 PASS:** overlength Story check rejected `23514` and rolled back both character and intent reservation.
+- **I1B-06 PASS:** signed replay after active edit grant revoked rejected `42501`; no new character/Story writes.
+
+**Mandatory next phase I1-C:** a source-pinned, transactionally complete Story-aware creation-intent correction with no raw Story in nonce ledger; reject changed-only Story before returning cached character, retain no-overwrite and current-role recheck, and preserve original public v2/v3 + creator/grant/inventory contracts. Test both first-create and retry across true signed GoTrue, failure/rollback, different users, and original triggered pathways. This is a new candidate/test-only branch and requires separately authorized release; no partial production SQL.
+
 ## Source authority and exact execution
 
 - Run only in CI on disposable localhost Supabase CLI v2.120.0, PostgreSQL 17, genuine GoTrue-issued JWT and PostgREST. All DB writes occur there. The script fails closed unless `GITHUB_ACTIONS=true`, `CI=true`, PGHOST=127.0.0.1, PGPORT=54322, PGDATABASE=postgres, and `DNDNEXT_I1B_LOCAL_CONFIRM=DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY` match.
