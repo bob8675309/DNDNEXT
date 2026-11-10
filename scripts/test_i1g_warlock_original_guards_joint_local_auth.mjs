@@ -1572,7 +1572,7 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
           assert.equal(spellIdFor(khFriendsId,"khoravar-fey-gift-cantrip"),i1kFriends);
           assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
           console.log("PASS I1L-12: non-Artificer skip, seven original deferred CP triggers, original I1C-K Wizard/Battle Master/Warlock/Eladrin/Khoravar source grants+Stage4 RLS still intact");
-          console.log("I1L RESULT: original EFA Artificer 4-slot fixed and source-wildcard Magic Item Plan first-creation grants and projection pass real signed JWT/GoTrue/PostgREST in reduced PG17 with exact six-function source hashes; NOT 31/31 production, actual full item catalog, or browser acceptance.");
+          console.log("I1L RESULT: original source first-COMMIT RED (4 Artificer grants, MISSING projection) reproduced under genuine signed GoTrue/PostgREST; isolated one-condition NULL-safe projection candidate GREEN (new fixed/wildcard signed grants and projection, immutable replay and negative rollback) with other five original source function hashes unchanged. Live original remains RED; NOT production-ready or full 31/31.");
         }
       }
     }
