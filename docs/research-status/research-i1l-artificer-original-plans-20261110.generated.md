@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `2438e8d93d14485a24a3bfe6647d16a94b3180b3` |
+| Exact source commit represented by this archive snapshot | `11ca716edc11eba5ddb6b5793a02a06ca1701ee5` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1l): signed original Artificer four plans/wildcard, 6 negative controls and all I1C-K regression |
-| Files changed relative to main | 137 (104 non-docs; 33 docs) |
+| Last source commit title | ci(i1l): run signed original Artificer plan acquisition and I1C-K regression in disposable PG17 |
+| Files changed relative to main | 138 (105 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1l-artificer-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -35,6 +35,7 @@
 - `.github/workflows/validate-i1i-eladrin-original-local-auth.yml`
 - `.github/workflows/validate-i1j-khoravar-original-local-auth.yml`
 - `.github/workflows/validate-i1k-species-cantrip-original-local-auth.yml`
+- `.github/workflows/validate-i1l-artificer-original-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
-- `docs/I1_K_SPECIES_CANTRIP_ORIGINAL_SIGNED_RESEARCH_2026-11-10.md`
-- … 87 more
+- … 88 more
 
 ## Trust and update procedure
 
