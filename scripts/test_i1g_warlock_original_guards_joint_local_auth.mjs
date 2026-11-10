@@ -717,6 +717,22 @@ const wChange=(id,slot,name,child)=>"UPDATE public.character_class_option_grant_
 const wTick=(id,label)=>"UPDATE public.character_progression SET level_choices=level_choices||"+wq(JSON.stringify({i1g:label}))+"::jsonb WHERE character_id="+wq(id);
 const wTxn=stmts=>sql("BEGIN;\n"+stmts.join(";\n")+";\nCOMMIT;");
 const wReject=(stmts,label,re)=>rejectedTransaction(stmts.join(";\n")+";",label,re);
+// The source-original acquisition trigger is not in this subset. Capture
+// genuine signed Warlock baselines BEFORE installing the two source-original
+// safeguards, then validate grants under the genuine deferred UPDATE trigger.
+// Never infer that a new production Warlock can currently be completed.
+const w1Nonce=randomUUID(),w1Payload=wPayload("I1G source-owned lvl1 Warlock",1,w1Nonce);
+const w1=succeeded(await create(creator,"I1G-LV1-STORY",w1Payload),
+ "pre-safeguard signed lvl1 baseline");
+const w2Nonce=randomUUID(),w2Payload=wPayload("I1G source-owned lvl2 Warlock",2,w2Nonce);
+const w2=succeeded(await create(creator,"I1G-LV2-STORY",w2Payload),
+ "pre-safeguard signed lvl2 baseline");
+assert.equal(wCount(w1),0);
+assert.equal(wCount(w2),0);
+sqlFile("scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass AND NOT tgisinternal AND tgenabled='O' AND tgname IN ('character_progression_reject_unmarked_legacy_warlock_invocation','character_progression_validate_player_forge_class_options_v2')"),"2");
+console.log("PASS I1G-BASELINE: two genuine signed pre-acquisition Warlock baselines; both original deferred safeguards then installed and ENABLED (not a live creation success)");
+
 const wLegacyNonce=randomUUID();
 const legacyResult=denied(await create(creator,"I1G-INVALID-LEGACY",
  wPayload("I1G legacy-only Warlock",1,wLegacyNonce,
@@ -727,8 +743,6 @@ assert.equal(wNonce(wLegacyNonce),0);
 assert.equal(recordCount("public.characters","creation_request_id="+wq(wLegacyNonce)),0);
 console.log("PASS I1G-01: original legacy-only guard rejects signed new Warlock with full Story/nonce rollback");
 
-const w1Nonce=randomUUID(),w1Payload=wPayload("I1G source-owned lvl1 Warlock",1,w1Nonce);
-const w1=succeeded(await create(creator,"I1G-LV1-STORY",w1Payload),"signed lvl1 Warlock");
 assert.equal(sql("SELECT class_id::text FROM public.character_progression WHERE character_id="+wq(w1)),wClass);
 assert.equal(wCount(w1),0,"Original acquisition materializer intentionally omitted in signed subset");
 wTxn([wInsert(w1,1,"Pact of the Blade",1),wTick(w1,"valid1")]);
@@ -736,17 +750,15 @@ assert.equal(wCount(w1),1);
 assert.equal(wNonce(w1Nonce),1);
 assert.equal(succeeded(await create(creator,"I1G-LV1-STORY",w1Payload),"identical Warlock nonce"),w1);
 denied(await create(creator,"I1G-CHANGED-LV1-STORY",w1Payload),"changed Warlock private Story","22023");
-console.log("PASS I1G-02: source-marked signed lvl1 identity, privileged Pact grant passes exact deferred validator, nonce replay inert");
+console.log("PASS I1G-02: signed pre-safeguard lvl1 baseline + privileged Pact grant pass ORIGINAL installed deferred validator; nonce inert");
 
-const w2Nonce=randomUUID(),w2Payload=wPayload("I1G source-owned lvl2 Warlock",2,w2Nonce);
-const w2=succeeded(await create(creator,"I1G-LV2-STORY",w2Payload),"signed Warlock lvl2");
 wTxn([wInsert(w2,1,"Pact of the Blade",1),wInsert(w2,2,"Armor of Shadows",2),
  wInsert(w2,3,"Devil's Sight",2),wTick(w2,"valid2")]);
 assert.equal(wCount(w2),3);
 assert.equal(sql("SELECT count(DISTINCT option_catalog_id) FROM public.character_class_option_grant_instances WHERE character_id="+wq(w2)),"3");
 const wBase=wHash(w2);
 assert.equal(succeeded(await create(creator,"I1G-LV2-STORY",w2Payload),"unchanged lvl2 nonce"),w2);
-console.log("PASS I1G-03: signed lvl2 + 3 canonical XPHB invocation grants pass original deferred normalized validator");
+console.log("PASS I1G-03: signed pre-safeguard lvl2 + 3 canonical XPHB grant specimens pass installed ORIGINAL deferred validator");
 
 wReject(["DELETE FROM public.character_class_option_grant_instances WHERE character_id="+wq(w2)+" AND instance_key='eldritch-invocation-slot-3'",wTick(w2,"missing")],
  "one missing invocation",/requires exactly 3 normalized Invocation instance/i);
@@ -828,7 +840,19 @@ assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventor
 assert.equal(sql("SELECT md5(pg_get_functiondef('private.reject_unmarked_legacy_warlock_invocations_v1()'::regprocedure))"),"631fbb585f47e71a619ca8ac8e212407");
 assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_existing_normalized_warlock_invocations_v2()'::regprocedure))"),"4f1752db655b6ba490113f604c7583ef");
 console.log("PASS I1G-13: cross-user/forged grant privileges denied; Wizard/Battle Master/Stage4 and original hashes remain intact");
-console.log("I1G RESULT: paired original Warlock guard+UPDATE validator signed-source subset only; acquisition, full source-priority/feat grants and 31-trigger integration remain OPEN.");
+// Required negative release gate: after both original safeguards are installed,
+// signed NEW Warlock creation cannot pass without source-owned acquisition.
+// The original sheet-sync fires the UPDATE validator before COMMIT. Do NOT
+// weaken the original source function or pretend this is production accepted.
+const freshNonce=randomUUID(),freshPayload=wPayload(
+ "I1G missing acquisition materializer after safeguards",1,freshNonce);
+const freshDenied=denied(await create(creator,"I1G-ACQUISITION-MISSING",freshPayload),
+ "new signed Warlock without original invocation acquisition","P0001");
+assert.match(freshDenied.message,/requires exactly 1 normalized Invocation instance/i);
+assert.equal(wNonce(freshNonce),0);
+assert.equal(recordCount("public.characters","creation_request_id="+wq(freshNonce)),0);
+console.log("PASS I1G-14 RED GATE: source-owning acquisition trigger ABSENT; new signed Warlock after original guards fails closed and rolls back whole Forge/Story/nonce");
+console.log("I1G RESULT: original Warlock guard+UPDATE validator negative/positive signed-source tests; NEW Warlock complete acquisition intentionally FAILS. Full original materializer and 31-trigger combined release remain OPEN.");
 
 // A previous editor must NOT continue replaying after loss of current rights.
 sql("UPDATE public.character_permissions SET can_edit=false WHERE "+whereId+
