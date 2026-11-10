@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `11ca716edc11eba5ddb6b5793a02a06ca1701ee5` |
+| Exact source commit represented by this archive snapshot | `e01c150ef23ffe2d0a0232ab185e515bab5db475` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(i1l): run signed original Artificer plan acquisition and I1C-K regression in disposable PG17 |
-| Files changed relative to main | 138 (105 non-docs; 33 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i1l): record original Artificer plan source graph, test matrix and held release gates |
+| Files changed relative to main | 139 (105 non-docs; 34 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1l-artificer-original-local-auth.yml`
+- `docs/I1_L_ARTIFICER_ORIGINAL_MAGIC_ITEM_PLANS_SIGNED_RESEARCH_2026-11-10.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
-- … 88 more
+- … 89 more
 
 ## Trust and update procedure
 
