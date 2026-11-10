@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1i-eladrin-original-season-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `98ee4202bd7ebe4c073d56945208365ba810ce28` |
+| Exact source commit represented by this archive snapshot | `e4afe2e2a22e0f18ca935a50996ece49c788536a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1i): source-original signed Eladrin seasonal materialization, Warlock coexistence and atomic negatives |
-| Files changed relative to main | 128 (98 non-docs; 30 docs) |
+| Last source commit title | ci(i1i): run source-original Eladrin with Warlock signed PostgreSQL17 regression |
+| Files changed relative to main | 129 (99 non-docs; 30 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1i-eladrin-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -32,6 +32,7 @@
 - `.github/workflows/validate-i1f-battle-master-original-local-auth.yml`
 - `.github/workflows/validate-i1g-warlock-original-local-auth.yml`
 - `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
+- `.github/workflows/validate-i1i-eladrin-original-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/SYSTEM_REGISTRY.json`
 - `docs/archive/npc_secure_profile_2026-11-04/Centered_Secure_NPC_Profile_Integration_2026-11-04.md`
 - `docs/archive/npc_secure_profile_2026-11-04/NPC_Private_Reader_Client_Cutover_2026-11-04.md`
-- `docs/archive/npc_secure_profile_2026-11-04/NPC_Profile_First_Centered_Overlay_2026-11-04.md`
-- … 78 more
+- … 79 more
 
 ## Trust and update procedure
 
