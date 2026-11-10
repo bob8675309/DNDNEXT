@@ -280,7 +280,6 @@ BEGIN
  IF v_trigger IS NULL OR v_trigger NOT LIKE '%AFTER INSERT ON%'
  OR v_trigger NOT LIKE '%DEFERRABLE INITIALLY DEFERRED%'
  OR v_trigger NOT LIKE '%private.materialize_player_forge_khoravar_skill_versatility_v1()%'
- OR (SELECT count(*) FROM private.khoravar_skill_versatility_options_v1()::jsonb v) <> 1
  OR (SELECT count(*) FROM jsonb_array_elements(private.khoravar_skill_versatility_options_v1())) <> 4
  OR (SELECT count(*) FROM pg_attribute WHERE attrelid='public.character_option_catalog_preferred'::regclass AND attname='metadata' AND NOT attisdropped) <> 1
  THEN RAISE EXCEPTION 'I1-J source exact trigger/options catalog boundary drift'; END IF;
