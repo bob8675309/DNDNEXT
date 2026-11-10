@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1j-khoravar-original-skill-versatility-20261110` |
-| Exact source commit represented by this archive snapshot | `3b4b4bd82ea0b363e6d40bf0bde70daebc91269e` |
+| Exact source commit represented by this archive snapshot | `f4c1c285190f0efcbb0334155f712c14b65e24fa` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(i1j): signed Khoravar source-original joined PG17/GoTrue regression |
-| Files changed relative to main | 132 (101 non-docs; 31 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i1j): source-hashed Khoravar skill/tool signed research and release exclusions |
+| Files changed relative to main | 133 (101 non-docs; 32 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1j-khoravar-original-local-auth.yml`
+- `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
 
 ## Research-branch change inventory versus main
 
@@ -68,10 +68,10 @@
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
+- `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
-- `docs/SYSTEM_REGISTRY.json`
-- … 82 more
+- … 83 more
 
 ## Trust and update procedure
 
