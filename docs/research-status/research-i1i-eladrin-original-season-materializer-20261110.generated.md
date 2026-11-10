@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1i-eladrin-original-season-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `a4a62a7e333f02a48e92b9591a958a4821b72ad6` |
+| Exact source commit represented by this archive snapshot | `6a3c848c6500785c6f2d335f673d07e16db4b150` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1i): record source-original Eladrin signed acceptance and nuanced NULL-path error |
+| Last source commit title | docs(i1i): set active next task to final signed Eladrin proof and next source trigger |
 | Files changed relative to main | 130 (99 non-docs; 31 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 

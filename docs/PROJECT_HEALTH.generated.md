@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T17:44:49Z | research/i1i-eladrin-original-season-materializer-20261110 (a4a62a7e333f02a48e92b9591a958a4821b72ad6) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T17:45:21Z | research/i1i-eladrin-original-season-materializer-20261110 (6a3c848c6500785c6f2d335f673d07e16db4b150) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
