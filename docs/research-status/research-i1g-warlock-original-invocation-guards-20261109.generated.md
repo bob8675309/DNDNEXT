@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `456def06f0da3ba6a75163e26a0bcb28922f29d6` |
+| Exact source commit represented by this archive snapshot | `7e91ef6268181b6a6b9754601678f4565d883b7a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: source-pin original Warlock invocation acquisition handler and slot levels |
-| Files changed relative to main | 123 (94 non-docs; 29 docs) |
+| Last source commit title | test: separate exact original Warlock deferred trigger install from pre-acquisition signed specimen setup |
+| Files changed relative to main | 124 (95 non-docs; 29 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1g_warlock_original_acquisition_pg17.sql`
+- `scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/archive/npc_secure_profile_2026-11-04/NPC_Profile_First_Centered_Overlay_2026-11-04.md`
 - `docs/archive/npc_secure_profile_2026-11-04/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md`
 - `docs/data/c33_migration_history_snapshot_2026-11-08.json`
-- … 73 more
+- … 74 more
 
 ## Trust and update procedure
 
