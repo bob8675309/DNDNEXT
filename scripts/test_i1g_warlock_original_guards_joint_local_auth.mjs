@@ -854,6 +854,129 @@ assert.equal(recordCount("public.characters","creation_request_id="+wq(freshNonc
 console.log("PASS I1G-14 RED GATE: source-owning acquisition trigger ABSENT; new signed Warlock after original guards fails closed and rolls back whole Forge/Story/nonce");
 console.log("I1G RESULT: original Warlock guard+UPDATE validator negative/positive signed-source tests; NEW Warlock complete acquisition intentionally FAILS. Full original materializer and 31-trigger combined release remain OPEN.");
 
+// I1-H is an additional, isolated follow-on, never enabled for old I1-G CI.
+// All original handler bodies and the preceding I1C-I1G acceptance stay intact.
+if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
+  sqlFile("scripts/fixtures/i1h_warlock_acquisition_with_guards_pg17.sql");
+  const i1hSourceGroup=(slot,name,childId=null)=>{
+    const option=({
+      "Pact of the Blade":"optional-feature:pact-of-the-blade|XPHB",
+      "Armor of Shadows":"optional-feature:armor-of-shadows|XPHB",
+      "Eldritch Mind":"optional-feature:eldritch-mind|XPHB",
+      "Agonizing Blast":"optional-feature:agonizing-blast|XPHB",
+      "Devil's Sight":"optional-feature:devils-sight|XPHB",
+      "Thirsting Blade":"optional-feature:thirsting-blade|XPHB"
+    })[name];
+    assert.ok(option,"No fabricated source catalog option for "+name);
+    const level=slot===1?1:2;
+    const group={
+      placement:"class",ownerType:"class-option",ownerKey:"warlock",
+      label:"Eldritch Invocation",level,
+      metadata:{family:"eldritch-invocation",slot,acquisitionLevel:level},
+      fields:{invocation:{kind:"option",selections:[{key:option,name,source:"XPHB"}]}}
+    };
+    if(childId!==null){
+      group.fields["child-agonizing-blast"]={
+        kind:"spell",count:1,required:true,
+        activeWhen:{groupId:"warlock-invocation-slot-"+slot,fieldId:"invocation",values:[option]},
+        selections:[{key:childId,value:childId,name:"Eldritch Blast",source:"XPHB"}]
+      };
+    }
+    return group;
+  };
+  const i1hChoices=(entries)=>Object.fromEntries(entries.map(([slot,name,child])=>
+    ["warlock-invocation-slot-"+slot,i1hSourceGroup(slot,name,child??null)]));
+  const i1hPayload=(name,level,nonce,entries)=>wPayload(name,level,nonce,{sourceChoices:i1hChoices(entries)});
+  const i1hSnap=()=>sql("SELECT jsonb_build_object("+
+    "'characters',(SELECT count(*) FROM public.characters),"+
+    "'sheets',(SELECT count(*) FROM public.character_sheets),"+
+    "'progression',(SELECT count(*) FROM public.character_progression),"+
+    "'grants',(SELECT count(*) FROM public.character_class_option_grant_instances),"+
+    "'stories',(SELECT count(*) FROM public.character_backstory_secrets),"+
+    "'nonces',(SELECT count(*) FROM private.player_creation_intent_reservations_v1),"+
+    "'inventory',(SELECT count(*) FROM public.inventory_items),"+
+    "'currency',(SELECT count(*) FROM public.character_currency))::text");
+  const i1hCheck=(id,expected,story)=>{
+    assert.equal(wCount(id),expected,"Original trigger must write ALL normalized grants at first COMMIT");
+    assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(id)),story);
+    assert.equal(sql("SELECT count(*) FROM public.character_progression WHERE character_id="+wq(id)), "1");
+    assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id="+wq(id)), "1");
+  };
+  const i1hOneNonce=randomUUID(),i1hOneStory="I1H-LEVEL1-PRIVATE-STORY";
+  const i1hOnePayload=i1hPayload("I1H signed Warlock one-slot",1,i1hOneNonce,[[1,"Pact of the Blade"]]);
+  const i1hOne=succeeded(await create(creator,i1hOneStory,i1hOnePayload),
+    "original source-first level1 signed Warlock creation");
+  i1hCheck(i1hOne,1,i1hOneStory);
+  assert.equal(sql("SELECT acquired_level FROM public.character_class_option_grant_instances WHERE character_id="+wq(i1hOne)), "1");
+  assert.equal(sql("SELECT option_catalog_id::text FROM public.character_class_option_grant_instances WHERE character_id="+wq(i1hOne)), "7776f12d-eef4-47c6-a996-c1ddf45c5071");
+  assert.equal(wNonce(i1hOneNonce),1);
+  const i1hOneHash=wHash(i1hOne),i1hSameSnap=i1hSnap();
+  assert.equal(succeeded(await create(creator,i1hOneStory,i1hOnePayload),"level1 same nonce replay"),i1hOne);
+  assert.equal(wHash(i1hOne),i1hOneHash);
+  assert.equal(i1hSnap(),i1hSameSnap);
+  denied(await create(creator,"I1H-CHANGED-PRIVATE-STORY",i1hOnePayload),"changed level1 Story same nonce","22023");
+  denied(await create(outsider,i1hOneStory,i1hOnePayload),"cross-account Warlock replay","42501");
+  console.log("PASS I1H-01: genuine signed level1 creates one normalized Invocation/character/Story/nonce; unchanged replay inert and changed Story/actor denied");
+
+  const i1hTwoNonce=randomUUID(),i1hTwoStory="I1H-LEVEL2-PRIVATE-STORY";
+  const i1hTwoEntries=[[1,"Pact of the Blade"],[2,"Agonizing Blast",wBlast],[3,"Eldritch Mind"]];
+  const i1hTwoPayload=i1hPayload("I1H signed Warlock level2 Agonizing",2,i1hTwoNonce,i1hTwoEntries);
+  const i1hTwo=succeeded(await create(creator,i1hTwoStory,i1hTwoPayload),
+    "original source-first level2 signed Warlock with dependent cantrip");
+  i1hCheck(i1hTwo,3,i1hTwoStory);
+  assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id="+wq(i1hTwo)+" AND acquired_level=2"),"2");
+  assert.equal(sql("SELECT choices#>>'{child,value}' FROM public.character_class_option_grant_instances WHERE character_id="+wq(i1hTwo)+" AND instance_key='warlock-invocation-slot-2'"),wBlast);
+  assert.equal(wNonce(i1hTwoNonce),1);
+  const i1hTwoHash=wHash(i1hTwo),i1hTwoSnap=i1hSnap();
+  assert.equal(succeeded(await create(creator,i1hTwoStory,i1hTwoPayload),"level2 same nonce"),i1hTwo);
+  assert.equal(wHash(i1hTwo),i1hTwoHash); assert.equal(i1hSnap(),i1hTwoSnap);
+  console.log("PASS I1H-02: genuine signed Warlock2 first-COMMIT original 3 Invocation grants, Agonizing Blast source cantrip, Story/nonce, inert replay");
+
+  const i1hReject=async(label,entries,level=2)=>{
+    const n=randomUUID(),before=i1hSnap();
+    const attempted=i1hPayload("I1H rejected "+label,level,n,entries);
+    const response=await create(creator,"I1H-REJECT-STORY-"+label,attempted);
+    assert.ok(response.error,"Invalid "+label+" unexpectedly committed");
+    assert.equal(wNonce(n),0,"Failed "+label+" retained immutable nonce");
+    assert.equal(recordCount("public.characters","creation_request_id="+wq(n)),0,"Failed "+label+" left a character");
+    assert.equal(i1hSnap(),before,"Failed "+label+" mutated canonical global tables");
+    return response.error.message;
+  };
+  const missingChild=await i1hReject("missing-Agonizing-child",[[1,"Pact of the Blade"],[2,"Agonizing Blast"],[3,"Eldritch Mind"]]);
+  assert.match(missingChild,/dependent source choice|dependent selection group/i);
+  console.log("PASS I1H-03: required child absence fails with total Story/nonce/grant/stock rollback");
+
+  const invalidLevel=await i1hReject("wrong-acquisition-level",[[1,"Thirsting Blade"]],1);
+  assert.match(invalidLevel,/not available at the acquisition level|not legal at Warlock level/i);
+  console.log("PASS I1H-04: illegal class-level Invocation rolls back the entire original creation");
+
+  const repeat=await i1hReject("duplicate-nonrepeatable",[[1,"Pact of the Blade"],[2,"Pact of the Blade"],[3,"Eldritch Mind"]]);
+  assert.match(repeat,/not repeatable/i);
+  console.log("PASS I1H-05: duplicate nonrepeatable Invocation rolls back source grants and nonce");
+
+  const illegalChild=await i1hReject("wrong-cantrip",[[1,"Pact of the Blade"],[2,"Agonizing Blast","00000000-0000-0000-0000-000000000901"],[3,"Eldritch Mind"]]);
+  assert.match(illegalChild,/preferred Warlock damage cantrip|valid cantrip id/i);
+  console.log("PASS I1H-06: unqualified dependent cantrip rejected without character/Story/grant residue");
+
+  const badShapeNonce=randomUUID(),badShapeSnap=i1hSnap();
+  const badLegacy=wPayload("I1H disallowed legacy new creation",1,badShapeNonce,
+    {sourceChoices:{},classFeatureChoices:wLegacy});
+  const legacyDenied=denied(await create(creator,"I1H-DENIED-LEGACY",badLegacy),
+    "fresh unmarked legacy after acquisition installed","P0001");
+  assert.match(legacyDenied.message,/source-owned Eldritch Invocation instances/i);
+  assert.equal(wNonce(badShapeNonce),0);assert.equal(i1hSnap(),badShapeSnap);
+  console.log("PASS I1H-07: original legacy guard still denies unmarked new Warlock before any write persists");
+
+  assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass AND NOT tgisinternal AND tgenabled='O' AND tgname IN ('character_progression_validate_player_forge_class_options_v1','character_progression_reject_unmarked_legacy_warlock_invocation','character_progression_validate_player_forge_class_options_v2')"),"3");
+  assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_and_materialize_player_forge_class_options_v1()'::regprocedure))"),"6df5aee6f0519c9c77758d6e887ed8e4");
+  assert.equal(wizardCount(sigId),9);assert.equal(battleGrants(bm10id),7);
+  assert.equal(wHash(i1hOne),i1hOneHash);assert.equal(wHash(i1hTwo),i1hTwoHash);
+  assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
+  console.log("PASS I1H-08: all three source-original Warlock triggers enabled; prior I1C-I1G Wizard/Battle Master/Story/Stage4 authority persists");
+  console.log("I1H RESULT: signed original FIRST-creation Invocation acquisition plus two original deferred safeguards in reduced local PG17 catalogs; NOT full 31-trigger or production acceptance.");
+}
+
+
 // A previous editor must NOT continue replaying after loss of current rights.
 sql("UPDATE public.character_permissions SET can_edit=false WHERE "+whereId+
   " AND user_id='"+creator.id+"'");
