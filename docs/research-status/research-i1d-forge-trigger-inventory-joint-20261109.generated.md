@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `f7f05e3cd36e7a3604f73df643a159971f52087c` |
+| Exact source commit represented by this archive snapshot | `ad2552de780c46051b032c374717b93e10d9451b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: include three already source-verified original character/progression triggers in signed joint fixture |
+| Last source commit title | test: signed joint source branches for three historical original triggers omitted from forge-only scan |
 | Files changed relative to main | 104 (80 non-docs; 24 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql`
+- `scripts/test_i1d_forge_story_inventory_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
