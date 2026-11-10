@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `d431a12afa9c717c7f98445c5b5c2cf3f00c8170` |
+| Exact source commit represented by this archive snapshot | `a47cf285e3b6edd37ebf663d7ead1a475290d576` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: genuine signed Battle Master canonical grants, deferred paired validator and immutable nonce rollback |
-| Files changed relative to main | 115 (88 non-docs; 27 docs) |
+| Last source commit title | ci: run source-original Battle Master grant and deferred validator signed PG17 regression |
+| Files changed relative to main | 116 (89 non-docs; 27 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1f_battle_master_original_joint_local_auth.mjs`
+- `.github/workflows/validate-i1f-battle-master-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -29,6 +29,7 @@
 - `.github/workflows/validate-i1c-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
 - `.github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml`
+- `.github/workflows/validate-i1f-battle-master-original-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `pages/_app.js`
 - `pages/inventory.js`
 - `pages/npcs.js`
-- `pages/town/[id].js`
-- … 65 more
+- … 66 more
 
 ## Trust and update procedure
 
