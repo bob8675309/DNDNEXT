@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `4f021f2ff5bfff62e117a6a2760c41eb77c7390f` |
+| Exact source commit represented by this archive snapshot | `4763a00a6a9afc387090b2853754dd22a7544b80` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1l): surface original-source Artificer projection RED and local-only repair candidate as active release blocker |
+| Last source commit title | docs(i1l): append signed original Artificer projection RED and isolated repair-candidate GREEN receipt |
 | Files changed relative to main | 140 (106 non-docs; 34 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
