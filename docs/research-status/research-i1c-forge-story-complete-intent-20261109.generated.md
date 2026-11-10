@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1c-forge-story-complete-intent-20261109` |
-| Exact source commit represented by this archive snapshot | `b1fa341b465f5375e77b5aa4111b9e2b1ed810ff` |
+| Exact source commit represented by this archive snapshot | `3a71ba7ea03ef98a868994eb56f686819398190d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci: run source-locked I1C Story-aware nonce signed PG17 concurrency tests |
-| Files changed relative to main | 100 (77 non-docs; 23 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs: capture I1C Story-aware nonce source contract and signed release gates |
+| Files changed relative to main | 101 (77 non-docs; 24 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1c-forge-story-nonce-local-auth.yml`
+- `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 
 ## Research-branch change inventory versus main
 
@@ -53,6 +53,7 @@
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
+- `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
 - `docs/SYSTEM_REGISTRY.json`
@@ -70,8 +71,7 @@
 - `scripts/browser/c33_next_router_shim.js`
 - `scripts/browser/c33_original_forge_full_dom.jsx`
 - `scripts/browser/verify_c33_creator_backstory_dom.mjs`
-- `scripts/browser/verify_c33_next_town_route.mjs`
-- … 50 more
+- … 51 more
 
 ## Trust and update procedure
 
