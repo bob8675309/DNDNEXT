@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `e51375eaf77c7351863e310a7c47e433301921d9` |
+| Exact source commit represented by this archive snapshot | `95d7c97da8062b933ef77bc9d06fe9e69935a695` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci: avoid runner port collision with dedicated disposable PostgreSQL and API ports |
+| Last source commit title | test: use source-valid Fighter starting equipment in signed Battle Master creation specimens |
 | Files changed relative to main | 117 (89 non-docs; 28 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1f-battle-master-original-local-auth.yml`
+- `scripts/test_i1f_battle_master_original_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
