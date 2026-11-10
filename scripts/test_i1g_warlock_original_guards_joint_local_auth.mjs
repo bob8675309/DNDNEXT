@@ -1094,6 +1094,148 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
     assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
     console.log("PASS I1I-08: other species never materialize Eladrin season; source trigger hashes, original Warlock/Wizard/Battle Master and Stage4 authorization preserved");
     console.log("I1I RESULT: source-identical Eladrin materializer + four helpers PASS with real signed creation, source-owned Warlock coexistence and four atomic negative cases; reduced local catalogs/RLS, NOT 31/31 production acceptance.");
+
+    // I1-J: one additional, genuinely missing original non-world-map
+    // character_progression deferred source materializer and ALL its original
+    // function dependencies, exercising preferred skill + mundane tool catalogs.
+    if(env.DNDNEXT_I1J_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
+      sqlFile("scripts/fixtures/i1j_khoravar_original_skill_versatility_pg17.sql");
+      const khSkill="skill:acrobatics",khTool="tool:bd914b52-04de-4cf3-a0ca-0200c9930e06";
+      const khOptions=JSON.parse(sql("SELECT private.khoravar_skill_versatility_options_v1()::text"));
+      assert.deepEqual(khOptions.map(x=>x.key).sort(),
+        ["skill:acrobatics","skill:arcana","tool:bd914b52-04de-4cf3-a0ca-0200c9930e06","tool:dbbec469-010d-4915-907e-f5cd220a9f26"].sort(),
+        "Original Khoravar resolver must expose actual XPHB-sourced skill and tool keys, no synthetic choice stub");
+      assert.equal(khOptions.find(x=>x.key===khSkill)?.metadata?.skillKey,"acrobatics");
+      assert.equal(khOptions.find(x=>x.key===khTool)?.metadata?.itemId,"bd914b52-04de-4cf3-a0ca-0200c9930e06");
+      assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_khoravar_skill_versatility_v1()'::regprocedure))"),
+        "9d5fec42e2aefdd39d8a34adf1548460");
+      console.log("PASS I1J-01: original Khoravar source resolver reconstructs real source-qualified XPHB skill+tool catalog and exact seven private source functions");
+
+      // Local only: a signed actor's existing players mirror, used by the
+      // unchanged original projection helper. Not a mutation to hosted users.
+      sql("INSERT INTO public.players(id,user_id,name,sheet) VALUES ("+
+        wq(randomUUID())+","+wq(creator.id)+",'I1J disposable projection witness','{}'::jsonb) "+
+        "ON CONFLICT(user_id) DO NOTHING");
+      const khGroup=(keys)=>({
+        placement:"training",ownerType:"species-runtime",ownerKey:"khoravar-skill-versatility",
+        label:"Skill Versatility",source:"EFA",level:1,
+        metadata:{family:"khoravar-skill-versatility",cadence:"long-rest",runtimeInitial:true},
+        fields:{proficiency:{kind:"proficiency",count:1,required:true,
+          selections:keys.map(key=>{
+            const x=khOptions.find(o=>o.key===key);
+            return {key,value:key,name:x?.name??key,source:x?.source??"EFA"};
+          })}}
+      });
+      const khPayload=(name,nonce,choices,opts={})=>{
+        const payload=gearPayload(name,nonce);
+        payload.sheet.species=opts.species??"Khoravar";
+        payload.sheet.meta={speciesSource:opts.speciesSource??"EFA"};
+        payload.sheet.sourceChoices=choices===null?{}:
+          {"species-runtime-khoravar-skill-versatility":khGroup(choices)};
+        if(opts.warlock){
+          payload.sheet.classKey="warlock";
+          payload.sheet.sourceChoices["warlock-invocation-slot-1"]=i1hSourceGroup(1,"Pact of the Blade");
+        }
+        return payload;
+      };
+      const khRowCount=id=>Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='khoravar-skill-versatility'"));
+      const khRuntimeKey=id=>sql("SELECT state->'proficiency'->>'key' FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='khoravar-skill-versatility'");
+      const khSheetKey=id=>sql("SELECT sheet#>>'{runtimeProficiencies,khoravarSkillVersatility,proficiency,key}' FROM public.character_sheets WHERE character_id="+wq(id));
+      const khPlayersKey=()=>sql("SELECT sheet#>>'{runtimeProficiencies,khoravarSkillVersatility,proficiency,key}' FROM public.players WHERE user_id="+wq(creator.id));
+      const khGlobal=()=>i1iSnapshot()+"|player="+sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+wq(creator.id));
+      const khCheck=(id,key)=>{
+        assert.equal(khRowCount(id),1,"Original Khoravar deferred trigger must materialize exactly one runtime row");
+        assert.equal(khRuntimeKey(id),key);
+        assert.equal(khSheetKey(id),key,"Original species runtime projection missing canonical sheet");
+        assert.equal(khPlayersKey(),key,"Original species projection must mirror to real players row");
+        assert.equal(sql("SELECT source FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='khoravar-skill-versatility'"),"EFA");
+        assert.equal(sql("SELECT cadence FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='khoravar-skill-versatility'"),"long_rest");
+      };
+      const khSkillNonce=randomUUID(),khSkillStory="I1J-SKILL-PRIVATE-STORY";
+      const khSkillPayload=khPayload("I1J Khoravar Acrobatics signed",khSkillNonce,[khSkill]);
+      const khSkillId=succeeded(await create(creator,khSkillStory,khSkillPayload),
+        "original Khoravar skill choice from signed creation");
+      khCheck(khSkillId,khSkill);
+      assert.equal(wNonce(khSkillNonce),1);
+      assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(khSkillId)),khSkillStory);
+      const khSkillFingerprint=sql("SELECT md5(to_jsonb(r)::text) FROM public.character_runtime_feature_choices r WHERE character_id="+wq(khSkillId));
+      const khReplayBefore=khGlobal();
+      assert.equal(succeeded(await create(creator,khSkillStory,khSkillPayload),"same Khoravar skill nonce"),khSkillId);
+      assert.equal(khGlobal(),khReplayBefore);
+      assert.equal(sql("SELECT md5(to_jsonb(r)::text) FROM public.character_runtime_feature_choices r WHERE character_id="+wq(khSkillId)),khSkillFingerprint);
+      denied(await create(creator,"I1J-MODIFIED-STORY",khSkillPayload),"Khoravar changed Story same nonce","22023");
+      denied(await create(outsider,khSkillStory,khSkillPayload),"Khoravar cross-account replay","42501");
+      console.log("PASS I1J-02: genuine signed EFA Khoravar Acrobatics first-COMMIT state+sheet+players projection with private Story/nonce, inert replay and actor/Story denial");
+
+      const khToolNonce=randomUUID(),khToolStory="I1J-TOOL-PRIVATE-STORY";
+      const khToolPayload=khPayload("I1J Khoravar source tool signed",khToolNonce,[khTool]);
+      const khToolId=succeeded(await create(creator,khToolStory,khToolPayload),
+        "original source-owned Khoravar mundane tool first creation");
+      khCheck(khToolId,khTool);
+      assert.equal(wNonce(khToolNonce),1);
+      assert.equal(sql("SELECT state#>>'{proficiency,metadata,itemKey}' FROM public.character_runtime_feature_choices WHERE character_id="+wq(khToolId)),"Alchemist's Supplies|XPHB");
+      assert.equal(khRuntimeKey(khSkillId),khSkill,"Later owner's tool choice must not mutate earlier Khoravar character");
+      console.log("PASS I1J-03: real XPHB Alchemist's Supplies tool selection resolves source item ID and materializes independently");
+
+      const khWarlockNonce=randomUUID(),khWarlockStory="I1J-WARLOCK-PRIVATE-STORY";
+      const khWarlockPayload=khPayload("I1J Khoravar Warlock Pact tool",khWarlockNonce,[khTool],{warlock:true});
+      const khWarlockId=succeeded(await create(creator,khWarlockStory,khWarlockPayload),
+        "original Khoravar proficiency and Warlock Invocation on single signed commit");
+      khCheck(khWarlockId,khTool);
+      assert.equal(wCount(khWarlockId),1);
+      assert.equal(wNonce(khWarlockNonce),1);
+      assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(khWarlockId)),khWarlockStory);
+      assert.equal(succeeded(await create(creator,khWarlockStory,khWarlockPayload),
+        "unchanged signed Khoravar+Warlock nonce"),khWarlockId);
+      console.log("PASS I1J-04: same signed Khoravar Warlock first-COMMIT combines two original source materializers, Story+nonce and exact replay");
+
+      const khReject=async(label,choices)=>{
+        const nonce=randomUUID(),before=khGlobal();
+        const response=await create(creator,"I1J-NEGATIVE-STORY-"+label,
+          khPayload("I1J rejected "+label,nonce,choices));
+        assert.ok(response.error,"Illegal Khoravar "+label+" unexpectedly committed");
+        assert.equal(wNonce(nonce),0,"Invalid Khoravar consumed nonce");
+        assert.equal(recordCount("public.characters","creation_request_id="+wq(nonce)),0);
+        assert.equal(khGlobal(),before,"Khoravar "+label+" leaked canonical grants, currency, Story, items, runtime row or players projection");
+        assert.equal(khRuntimeKey(khSkillId),khSkill);
+        assert.equal(khRuntimeKey(khToolId),khTool);
+        return response.error.message;
+      };
+      const missing=await khReject("missing-proficiency",null);
+      assert.match(missing,/Khoravar Skill Versatility references an invalid skill or tool\./i);
+      console.log("PASS I1J-05: source-original NULL missing-selection route rejects with invalid skill/tool and completely rolls back");
+
+      const empty=await khReject("empty-array",[]);
+      assert.match(empty,/Khoravar Skill Versatility requires exactly one skill or tool proficiency\./i);
+      console.log("PASS I1J-06: empty Khoravar proficiency selection fails original cardinality guard with complete rollback");
+
+      const double=await khReject("two-proficiencies",[khSkill,khTool]);
+      assert.match(double,/Khoravar Skill Versatility requires exactly one skill or tool proficiency\./i);
+      console.log("PASS I1J-07: two simultaneous source proficiencies fail original cardinality guard with complete rollback");
+
+      const unknown=await khReject("invented-skill",["skill:astrology"]);
+      assert.match(unknown,/Khoravar Skill Versatility references an invalid skill or tool\./i);
+      const forgedTool=await khReject("forged-item-id",["tool:00000000-0000-0000-0000-000000000999"]);
+      assert.match(forgedTool,/Khoravar Skill Versatility references an invalid skill or tool\./i);
+      console.log("PASS I1J-08: invented source skill and forged tool ID rejected by unchanged original catalog resolver without residue");
+
+      const mismatchNonce=randomUUID();
+      const mismatch=khPayload("I1J other species no Khoravar",mismatchNonce,null,
+        {species:"Human",speciesSource:"XPHB"});
+      const mismatchId=succeeded(await create(creator,"I1J-NONKHORAVAR-STORY",mismatch),
+        "original Khoravar must not materialize for other species");
+      assert.equal(khRowCount(mismatchId),0);
+      assert.equal(wNonce(mismatchNonce),1);
+      assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass AND NOT tgisinternal AND tgenabled='O' AND tgname IN ('character_progression_validate_player_forge_class_options_v1','character_progression_reject_unmarked_legacy_warlock_invocation','character_progression_validate_player_forge_class_options_v2','character_progression_materialize_eladrin_season_v1','character_progression_materialize_player_forge_khoravar_skill_v')"),"5");
+      assert.equal(sql("SELECT has_table_privilege('authenticated','public.character_runtime_feature_choices','INSERT')"),"f");
+      assert.equal(wizardCount(sigId),9);assert.equal(battleGrants(bm10id),7);
+      assert.equal(wCount(i1hOne),1);assert.equal(wCount(i1hTwo),3);
+      assert.equal(seasonFor(winterId),"winter");assert.equal(seasonFor(autumnId),"autumn");
+      assert.equal(khRuntimeKey(khSkillId),khSkill);assert.equal(khRuntimeKey(khToolId),khTool);
+      assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
+      console.log("PASS I1J-09: non-Khoravar skip, original I1I Eladrin and I1H Warlock+Wizard/Battle Master grants and Stage4 security unchanged");
+      console.log("I1J RESULT: source-original Khoravar Skill Versatility and seven private dependency functions pass signed XPHB skill+tool, Warlock coexistence and five negative rollback branches in disposable PG17, NOT 31/31 production acceptance.");
+    }
   }
 
 }
