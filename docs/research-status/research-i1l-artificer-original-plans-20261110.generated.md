@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `a146c2be65a70df30b3359d921d01aec3ef868d2` |
+| Exact source commit represented by this archive snapshot | `2438e8d93d14485a24a3bfe6647d16a94b3180b3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1l): preserve exact original Artificer Magic Item Plan six functions and trigger in isolated PG17 |
+| Last source commit title | test(i1l): signed original Artificer four plans/wildcard, 6 negative controls and all I1C-K regression |
 | Files changed relative to main | 137 (104 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1l_artificer_original_plan_materializer_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
