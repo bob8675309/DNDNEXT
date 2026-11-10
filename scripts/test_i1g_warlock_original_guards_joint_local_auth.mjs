@@ -974,6 +974,125 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
   assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
   console.log("PASS I1H-08: all three source-original Warlock triggers enabled; prior I1C-I1G Wizard/Battle Master/Story/Stage4 authority persists");
   console.log("I1H RESULT: signed original FIRST-creation Invocation acquisition plus two original deferred safeguards in reduced local PG17 catalogs; NOT full 31-trigger or production acceptance.");
+
+  // I1-I: add one genuinely missing original NON-WORLD-MAP trigger to the
+  // already verified I1-C..H joint real JWT/PostgREST/PG17 research suite.
+  // The five private Eladrin functions are exact live pg_get_functiondef
+  // captures; no source alteration, hosted migration or production writes.
+  if(env.DNDNEXT_I1I_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
+    sqlFile("scripts/fixtures/i1i_eladrin_original_materializer_pg17.sql");
+    const seasonGroup=(keys)=>({
+      placement:"species",ownerType:"species-runtime",ownerKey:"eladrin-season",
+      label:"Seasonal Fey Step",source:"MPMM",level:1,
+      metadata:{family:"eladrin-season",cadence:"long-rest",runtimeInitial:true},
+      fields:{season:{kind:"season",count:1,required:true,
+        selections:keys.map(key=>({key,value:key,name:key,source:"MPMM"}))}}
+    });
+    const seasonPayload=(name,nonce,choices,opts={})=>{
+      const payload=gearPayload(name,nonce);
+      payload.sheet.species=opts.species??"Eladrin";
+      payload.sheet.meta={speciesSource:opts.speciesSource??"MPMM"};
+      payload.sheet.sourceChoices=choices===null?{}:
+        {"species-runtime-eladrin-season":seasonGroup(choices)};
+      if(opts.warlock){
+        payload.sheet.classKey="warlock";
+        payload.sheet.sourceChoices["warlock-invocation-slot-1"]=
+          i1hSourceGroup(1,"Pact of the Blade");
+      }
+      return payload;
+    };
+    const seasonFor=id=>sql("SELECT state->'season'->>'key' FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='eladrin-season'");
+    const seasonCount=id=>Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='eladrin-season'"));
+    const seasonProjection=id=>sql("SELECT sheet#>>'{runtimeFeatures,eladrinSeason,season,key}' FROM public.character_sheets WHERE character_id="+wq(id));
+    const runtimeTotal=()=>Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices"));
+    const i1iSnapshot=()=>i1hSnap()+"|runtime="+runtimeTotal();
+    const seasonGuard=id=>{
+      assert.equal(seasonCount(id),1);
+      assert.equal(sql("SELECT source FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='eladrin-season'"),"MPMM");
+      assert.equal(sql("SELECT cadence FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='eladrin-season'"),"long_rest");
+      assert.equal(sql("SELECT state->>'configured' FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='eladrin-season'"),"true");
+      assert.equal(sql("SELECT state->>'initial' FROM public.character_runtime_feature_choices WHERE character_id="+wq(id)+" AND feature_key='eladrin-season'"),"true");
+    };
+    const winterNonce=randomUUID(),winterStory="I1I-ELADRIN-WINTER-PRIVATE-STORY";
+    const winterPayload=seasonPayload("I1I signed Eladrin winter Fighter",winterNonce,["winter"]);
+    const winterId=succeeded(await create(creator,winterStory,winterPayload),
+      "signed original Eladrin winter season first-creation commit");
+    seasonGuard(winterId);
+    assert.equal(seasonFor(winterId),"winter");
+    assert.equal(seasonProjection(winterId),"winter","Original projection helper must write sheet runtimeFeatures");
+    assert.equal(wNonce(winterNonce),1);
+    assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(winterId)),winterStory);
+    assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id="+wq(winterId)),"1");
+    console.log("PASS I1I-01: genuine signed MPMM Eladrin winter materializes original runtime row+sheet projection with Forge, private Story, inventory/currency and nonce");
+
+    const winterState=sql("SELECT md5(to_jsonb(r)::text) FROM public.character_runtime_feature_choices r WHERE character_id="+wq(winterId));
+    const winterGlobal=i1iSnapshot();
+    assert.equal(succeeded(await create(creator,winterStory,winterPayload),"unchanged Eladrin nonce"),winterId);
+    assert.equal(sql("SELECT md5(to_jsonb(r)::text) FROM public.character_runtime_feature_choices r WHERE character_id="+wq(winterId)),winterState);
+    assert.equal(i1iSnapshot(),winterGlobal);
+    denied(await create(creator,"I1I-WINTER-CHANGED-STORY",winterPayload),"changed private Eladrin Story same nonce","22023");
+    denied(await create(outsider,winterStory,winterPayload),"outsider Eladrin nonce replay","42501");
+    console.log("PASS I1I-02: identical nonce preserves original Eladrin season state/clock, changed private Story and cross-account replay denied");
+
+    const autumnNonce=randomUUID(),autumnStory="I1I-ELADRIN-AUTUMN-WARLOCK-STORY";
+    const autumnPayload=seasonPayload("I1I signed Eladrin autumn Warlock",autumnNonce,["autumn"],{warlock:true});
+    const autumnId=succeeded(await create(creator,autumnStory,autumnPayload),
+      "same signed creation must run BOTH original Eladrin and Warlock materializers");
+    seasonGuard(autumnId);
+    assert.equal(seasonFor(autumnId),"autumn");
+    assert.equal(seasonProjection(autumnId),"autumn");
+    assert.equal(wCount(autumnId),1,"Original Warlock Invocation must coexist with Eladrin runtime projection");
+    assert.equal(wNonce(autumnNonce),1);
+    assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(autumnId)),autumnStory);
+    assert.equal(succeeded(await create(creator,autumnStory,autumnPayload),"Eladrin Warlock exact replay"),autumnId);
+    console.log("PASS I1I-03: one signed Eladrin Warlock COMMIT composes original seasonal and Invocation materializers with Story/nonce, both projections intact");
+
+    const i1iReject=async(label,seasonSelections)=>{
+      const nonce=randomUUID(),before=i1iSnapshot();
+      const attempt=seasonPayload("I1I rejected "+label,nonce,seasonSelections);
+      const response=await create(creator,"I1I-REJECT-STORY-"+label,attempt);
+      assert.ok(response.error,label+" unexpectedly committed");
+      assert.equal(wNonce(nonce),0);
+      assert.equal(recordCount("public.characters","creation_request_id="+wq(nonce)),0);
+      assert.equal(i1iSnapshot(),before,label+" left canonical character/Story/inventory/nonce/runtime residue");
+      assert.equal(seasonFor(winterId),"winter");
+      return response.error.message;
+    };
+    const missing=await i1iReject("missing-season",null);
+    assert.match(missing,/Eladrin requires exactly one current season during Player Forge creation/i);
+    console.log("PASS I1I-04: signed MPMM Eladrin missing starting season fails at original deferred handler with atomic rollback");
+
+    const empty=await i1iReject("empty-selection",[]);
+    assert.match(empty,/Eladrin requires exactly one current season during Player Forge creation/i);
+    console.log("PASS I1I-05: empty Eladrin season group denied by original source");
+
+    const two=await i1iReject("two-seasons",["winter","autumn"]);
+    assert.match(two,/Eladrin requires exactly one current season during Player Forge creation/i);
+    console.log("PASS I1I-06: two simultaneous starting seasons rejected atomically");
+
+    const invented=await i1iReject("unknown-season",["monsoon"]);
+    assert.match(invented,/Eladrin Player Forge references an invalid season/i);
+    console.log("PASS I1I-07: invented seasonal key rejected by exact source option resolver, no state leakage");
+
+    const ordinaryNonce=randomUUID();
+    const ordinary=seasonPayload("I1I non-Eladrin skip",ordinaryNonce,null,
+      {species:"Human",speciesSource:"XPHB"});
+    const ordinaryId=succeeded(await create(creator,"I1I-NON-ELADRIN-STORY",ordinary),
+      "other species should not receive a fake Eladrin runtime feature");
+    assert.equal(seasonCount(ordinaryId),0);
+    assert.equal(wNonce(ordinaryNonce),1);
+    assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass AND NOT tgisinternal AND tgenabled='O' AND tgname IN ('character_progression_validate_player_forge_class_options_v1','character_progression_reject_unmarked_legacy_warlock_invocation','character_progression_validate_player_forge_class_options_v2','character_progression_materialize_eladrin_season_v1')"),"4");
+    assert.equal(sql("SELECT has_table_privilege('authenticated','public.character_runtime_feature_choices','INSERT')"),"f");
+    assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_eladrin_season_v1()'::regprocedure))"),"b866a8dff88bbfe6fb2c4f6d4c102fee");
+    assert.equal(wizardCount(sigId),9);
+    assert.equal(battleGrants(bm10id),7);
+    assert.equal(wCount(i1hOne),1);assert.equal(wCount(i1hTwo),3);
+    assert.equal(seasonFor(winterId),"winter");assert.equal(seasonFor(autumnId),"autumn");
+    assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
+    console.log("PASS I1I-08: other species never materialize Eladrin season; source trigger hashes, original Warlock/Wizard/Battle Master and Stage4 authorization preserved");
+    console.log("I1I RESULT: source-identical Eladrin materializer + four helpers PASS with real signed creation, source-owned Warlock coexistence and four atomic negative cases; reduced local catalogs/RLS, NOT 31/31 production acceptance.");
+  }
+
 }
 
 
