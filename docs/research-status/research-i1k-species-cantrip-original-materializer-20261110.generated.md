@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1k-species-cantrip-original-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `969dd5b00ed4b8dc4491fed412e37288e4d5fdbf` |
+| Exact source commit represented by this archive snapshot | `cbc4cd991885cab62a0ad1c459c09b9f64b6f1d9` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1j): append genuine signed Khoravar/Warlock source-authentic handoff receipt |
-| Files changed relative to main | 133 (101 non-docs; 32 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(i1k): stage original species cantrip materializer and source fixed spells in disposable PG17 |
+| Files changed relative to main | 134 (102 non-docs; 32 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/i1k_species_cantrip_original_materializer_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
-- … 83 more
+- … 84 more
 
 ## Trust and update procedure
 
