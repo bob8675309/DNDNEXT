@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1e-wizard-original-finalizer-signed-20261109` |
-| Exact source commit represented by this archive snapshot | `3995e21b746c502741ba329861e04f0bd62d35d8` |
+| Exact source commit represented by this archive snapshot | `2b10b86f1237de484974d686acbd16d47c29a1d6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: pin source-original Wizard Savant/Signature dependency and signed release gate matrix |
+| Last source commit title | docs: record signed Wizard Savant and Signature original-function PASS and I1F battle-master next gate |
 | Files changed relative to main | 112 (85 non-docs; 27 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
