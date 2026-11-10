@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `1203fb01b75a11319be0ca7dd52684d85dbd9ecc` |
+| Exact source commit represented by this archive snapshot | `ad94e1e0bf75ad13f0f1b1216ee57aab1d826f43` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | evidence: preserve original 31-trigger source census verbatim for I1D joint gap audit |
-| Files changed relative to main | 105 (80 non-docs; 25 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test: source-pinned 31-trigger gap census and C3.3 cross-suite reconciliation |
+| Files changed relative to main | 106 (81 non-docs; 25 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
+- `scripts/validate_i1d_trigger_gap_manifest.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/browser/c33_creator_backstory_dom.jsx`
 - `scripts/browser/c33_next_dynamic_shim.js`
 - `scripts/browser/c33_next_router_shim.js`
-- … 55 more
+- … 56 more
 
 ## Trust and update procedure
 
