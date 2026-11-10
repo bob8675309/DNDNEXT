@@ -1434,7 +1434,17 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
             return p;
           };
           const artGrants=id=>Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id="+wq(id)+" AND option_type='artificer-plan'"));
-          const artProjection=id=>JSON.parse(sql("SELECT sheet#>'{classFeatureChoices,artificer-magic-item-plans}' FROM public.character_sheets WHERE character_id="+wq(id)));
+          const artProjection=id=>{
+            const raw=sql("SELECT sheet#>'{classFeatureChoices,artificer-magic-item-plans}' FROM public.character_sheets WHERE character_id="+wq(id));
+            const meta=sql("SELECT jsonb_build_object("+
+              "'sheetExists',count(*)=1,"+
+              "'projectionPresent',bool_or(sheet#>'{classFeatureChoices,artificer-magic-item-plans}' IS NOT NULL),"+
+              "'classFeatureType',max(jsonb_typeof(sheet->'classFeatureChoices')),"+
+              "'planGrantCount',(SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id="+wq(id)+" AND option_type='artificer-plan'))::text "+
+              "FROM public.character_sheets WHERE character_id="+wq(id));
+            assert.ok(raw,"I1-L source-original Artificer classFeatureChoices projection not present after first signed COMMIT: "+meta);
+            return JSON.parse(raw);
+          };
           const artHash=id=>sql("SELECT md5(coalesce(string_agg(md5(to_jsonb(g)::text),'' ORDER BY g.instance_key),'')) FROM public.character_class_option_grant_instances g WHERE character_id="+wq(id)+" AND option_type='artificer-plan'");
           const artGlobal=()=>i1kSnapshot()+"|art-grants="+sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE option_type='artificer-plan'");
           const artCheck=(id,expected)=>{
