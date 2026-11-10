@@ -3,6 +3,17 @@
 **Status: source/test candidate only. NOT installed, merged, or deployment-approved.**
 Follow [I0–I6 original-PR integration](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) on draft #348. This independent source-only candidate is stacked on [I1-B #350](https://github.com/bob8675309/DNDNEXT/pull/350), which is itself stacked on [secure NPC C3.3 #345](https://github.com/bob8675309/DNDNEXT/pull/345). It does NOT discard any original #324/#328–#335 fixture, nor does it close a historical PR.
 
+## Verified signed RED-to-GREEN result — November 9 local / November 10 UTC
+
+**SUCCESS at source/test head `3a71ba7ea03ef98a868994eb56f686819398190d`.** [Exact-head original signed PG17/GoTrue Actions run 42753688755](https://github.com/bob8675309/DNDNEXT/actions/runs/42753688755) completed **five successful checks and one skipped Supabase Preview**, including original source validation, handoff registry, preservation, and new `story-complete-intent-signed` job. Disposable local services were shut down. No hosted Supabase was contacted.
+
+- **I1C-03 RED-to-GREEN:** previously confirmed #350 I1B-03 changed-only private Story under same nonce now rejects with `22023`, returns no stale canonical ID, and does not modify Story; only opaque final nonce SHA256 is stored.
+- **I1C-01/02/04/05/06 PASS:** signed original Forge/creator attribution and one-row creation; altered base intent and cross-account denied; legitimate identical retry after later Story edit is inert; overlong Story atomically rolls back both character and reservation; revoked editor denied.
+- **I1C-07/08/09/10/11 PASS:** original public v3 unchanged, old/new mixed API nonce incompatibility fails closed, client cannot forge internal digest marker, two concurrent changed-Story calls yield exactly one creation/one rejection, concurrent identical calls yield one canonical result, NULL/blank Story canonicalizes consistently.
+- **Limit:** The test invokes the source-original Forge v2/v3 and source-verified SQL through genuine local GoTrue/PostgREST against a reduced disposable PG17 schema. This is **not** the complete 31/31 original trigger environment, Stage4 inventory CHECK/RLS join, full ten-step browser, verified isolated backup restore or production release. No hosted data, code or permissions changed.
+
+**ONE NEXT TASK (I1-D):** inventory all 31 original trigger definitions (17 previously present, 14 absent in the original scratch environment), then compose the exact missing original trigger/source dependencies and #345 Stage4 inventory CHECK + four RLS policies into an isolated signed Forge/Story integration fixture. Do not bulk-install SQL into production or silently replace original triggers. Preserve old positive/negative control receipts, source fingerprints and current creator/nonce semantics.
+
 ## Confirmed baseline defect and security contract
 
 The genuine signed local GoTrue/PostgREST/PG17 [I1-B run 42740333918](https://github.com/bob8675309/DNDNEXT/actions/runs/42740333918) reproduced I1B-03: #324's reservation digest covers public v3 payload/spell/magic, not the separately supplied #345 Story text. Under the same nonce, an altered Story returned the prior character and was silently discarded by #345's intentional `ON CONFLICT DO NOTHING`. This is a complete-intent **failure**, even though all I1-B characterization checks were green.
