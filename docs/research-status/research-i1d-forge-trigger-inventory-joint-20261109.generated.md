@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `67f0ed6e9acc54a54df1ef2eea94e949c6417f42` |
+| Exact source commit represented by this archive snapshot | `f8c516b5e16b1221f8a87d9d16539e0a129ff168` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: compose signed I1C nonce plus source-original deferred Forge equipment and Stage4 inventory hardening |
+| Last source commit title | test: enforce explicit I1D local-only PostgREST and PG17 environment |
 | Files changed relative to main | 103 (79 non-docs; 24 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
