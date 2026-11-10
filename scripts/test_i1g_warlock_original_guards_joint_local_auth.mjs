@@ -1468,6 +1468,32 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
           assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))"),"67766989a466b82f170b5e00f9154e24");
           console.log("PASS I1L-01: exact original Artificer EFA six-function graph, 4 level2 slots, source fixed/wildcard options and eligible XDMG/noneligible potion");
 
+          // Original-source RED reproduction: grants materialize but the
+          // unmodified live projection helper fails to create absent parent.
+          // Do NOT call the candidate or privilege-write projection until the
+          // actual signed creation + missing projection are both established.
+          const redNonce=randomUUID(),redStory="I1L-ORIGINAL-SOURCE-RED-PROJECTION";
+          const redPayload=artPayload("I1L original projection defect specimen",redNonce,plans.map(x=>[x]));
+          const redId=succeeded(await create(creator,redStory,redPayload),
+            "original source must commit four Artificer grants and expose missing projection");
+          assert.equal(artGrants(redId),4);
+          assert.equal(wNonce(redNonce),1);
+          assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(redId)),redStory);
+          assert.equal(sql("SELECT sheet#>'{classFeatureChoices,artificer-magic-item-plans}' FROM public.character_sheets WHERE character_id="+wq(redId)),"",
+            "RED control: original null-unsafe projector must reproduce missing classFeatureChoices in this fresh source fixture");
+          assert.equal(sql("SELECT sheet->'classFeatureChoices' IS NULL FROM public.character_sheets WHERE character_id="+wq(redId)),"t");
+          assert.equal(sql("SELECT md5(pg_get_functiondef('private.sync_character_artificer_plan_projection_v1(uuid)'::regprocedure))"),"5ebf572db01143e9b523c7dba0d43ad5");
+          console.log("PASS I1L-02 SOURCE RED: genuine signed original Artificer writes 4 normalized grants, private Story+nonce but FAILS to project absent classFeatureChoices (unchanged live source null-parent bug)");
+
+          // Research-only GREEN candidate: preserve source-original function
+          // verbatim in I1L fixture and change exactly ONE SQL NULL guard in
+          // an additional scratch-only candidate file. Never alter hosted DB.
+          sqlFile("scripts/fixtures/i1l_artificer_projection_null_parent_candidate_pg17.sql");
+          assert.notEqual(sql("SELECT md5(pg_get_functiondef('private.sync_character_artificer_plan_projection_v1(uuid)'::regprocedure))"),"5ebf572db01143e9b523c7dba0d43ad5");
+          assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))"),"67766989a466b82f170b5e00f9154e24");
+          assert.equal(sql("SELECT sheet#>'{classFeatureChoices,artificer-magic-item-plans}' FROM public.character_sheets WHERE character_id="+wq(redId)),"",
+            "Candidate must not retroactively mutate earlier original-source RED specimen");
+
           const fixedNonce=randomUUID(),fixedStory="I1L-ARTIFICER-FOUR-FIXED-STORY";
           const fixedPayload=artPayload("I1L source fixed plan Artificer",fixedNonce,plans.map(x=>[x]));
           const fixedId=succeeded(await create(creator,fixedStory,fixedPayload),"Artificer 2 four original fixed EFA plans");
@@ -1476,14 +1502,14 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
           assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(fixedId)),fixedStory);
           assert.equal(sql("SELECT string_agg(o.option_key,',' ORDER BY g.instance_key) FROM public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o ON o.id=g.option_catalog_id WHERE g.character_id="+wq(fixedId)+" AND g.option_type='artificer-plan'"),
             plans.map(x=>x.key).join(","));
-          console.log("PASS I1L-02: genuine signed original EFA Artificer level2 first-COMMIT four canonical fixed plans + normalized sheet/player projection, private Story and nonce");
+          console.log("PASS I1L-03: genuine signed original EFA Artificer level2 first-COMMIT four canonical fixed plans + normalized sheet/player projection, private Story and nonce");
 
           const fixedHash=artHash(fixedId),fixedGlobal=artGlobal();
           assert.equal(succeeded(await create(creator,fixedStory,fixedPayload),"same source Artificer 4-plan nonce"),fixedId);
           assert.equal(artHash(fixedId),fixedHash);assert.equal(artGlobal(),fixedGlobal);
           denied(await create(creator,"I1L-ALTERED-STORY",fixedPayload),"Artificer plan same nonce changed Story","22023");
           denied(await create(outsider,fixedStory,fixedPayload),"Artificer plan cross-account replay","42501");
-          console.log("PASS I1L-03: original Artificer plans, private Story/nonce, runtime and inventory unchanged on identical replay; altered Story and outsider denied");
+          console.log("PASS I1L-04: original Artificer plans, private Story/nonce, runtime and inventory unchanged on identical replay; altered Story and outsider denied");
 
           const wildNonce=randomUUID(),wildStory="I1L-ARTIFICER-SOURCE-WILDCARD-STORY";
           const wildSlots=[[plans[0]],[wildcard,prosthetic],[plans[2]],[plans[3]]];
@@ -1495,7 +1521,7 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
           assert.equal(artProjection(wildId).selections[1].item.key,prosthetic);
           assert.equal(wNonce(wildNonce),1);
           assert.equal(succeeded(await create(creator,wildStory,wildPayload),"source wildcard nonce unchanged"),wildId);
-          console.log("PASS I1L-04: signed EFA wildcard Plan with authentic eligible XDMG Prosthetic Limb canonical child, four grants, normalized projection and inert replay");
+          console.log("PASS I1L-05: signed EFA wildcard Plan with authentic eligible XDMG Prosthetic Limb canonical child, four grants, normalized projection and inert replay");
 
           const artReject=async(label,slots,level=2)=>{
             const nonce=randomUUID(),before=artGlobal(),p=artPayload("I1L invalid "+label,nonce,slots,level);
@@ -1509,27 +1535,27 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
           };
           const absent=await artReject("missing-fourth-slot",plans.slice(0,3).map(x=>[x]));
           assert.match(absent,/Player Forge is missing Magic Item Plan slot 4/i);
-          console.log("PASS I1L-05: missing required fourth Magic Item Plan slot fails original deferred trigger and rolls back all first-create writes");
+          console.log("PASS I1L-06: missing required fourth Magic Item Plan slot fails original deferred trigger and rolls back all first-create writes");
 
           const dupe=await artReject("duplicate-nonrepeatable",[[plans[0]],[plans[0]],[plans[2]],[plans[3]]]);
           assert.match(dupe,/already a learned Magic Item Plan/i);
-          console.log("PASS I1L-06: duplicate original nonrepeatable Plan denied atomically, no grants or nonce consumed");
+          console.log("PASS I1L-07: duplicate original nonrepeatable Plan denied atomically, no grants or nonce consumed");
 
           const tooHigh=await artReject("future-level6-plan",[[upperArmor],[plans[1]],[plans[2]],[plans[3]]]);
           assert.match(tooHigh,/requires Artificer level 6/i);
-          console.log("PASS I1L-07: original level6 prerequisite rejects early level2 Forge plan without residue");
+          console.log("PASS I1L-08: original level6 prerequisite rejects early level2 Forge plan without residue");
 
           const missingChild=await artReject("wildcard-no-item",[[plans[0]],[wildcard,null],[plans[2]],[plans[3]]]);
           assert.match(missingChild,/requires one concrete magic item/i);
-          console.log("PASS I1L-08: wildcard plan without its mandatory concrete magic-item child is denied at original source validator");
+          console.log("PASS I1L-09: wildcard plan without its mandatory concrete magic-item child is denied at original source validator");
 
           const wrongItem=await artReject("illegal-XDMG-potion",[[plans[0]],[wildcard,potion],[plans[2]],[plans[3]]]);
           assert.match(wrongItem,/selected item is not legal/i);
-          console.log("PASS I1L-09: real canonical XDMG potion cannot satisfy non-potion wildcard Magic Item Plan; complete transaction rollback");
+          console.log("PASS I1L-10: real canonical XDMG potion cannot satisfy non-potion wildcard Magic Item Plan; complete transaction rollback");
 
           const impostor=await artReject("unknown-source-plan",[[plans[0]],[{key:"artificer-plan:unpublished|EFA",name:"Unpublished Plan"}],[plans[2]],[plans[3]]]);
           assert.match(impostor,/references an unknown plan/i);
-          console.log("PASS I1L-10: forged Magic Item Plan key fails source-catalog lookup before grants and nonce survive");
+          console.log("PASS I1L-11: forged Magic Item Plan key fails source-catalog lookup before grants and nonce survive");
 
           const unrelatedNonce=randomUUID(),unrelatedPayload=gearPayload("I1L unrelated Fighter no Artificer source",unrelatedNonce);
           const unrelatedId=succeeded(await create(creator,"I1L-UNRELATED-FIGHTER-STORY",unrelatedPayload),
@@ -1545,7 +1571,7 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
           assert.equal(spellIdFor(elfId,"high-elf-lineage-cantrip"),i1kPrest);
           assert.equal(spellIdFor(khFriendsId,"khoravar-fey-gift-cantrip"),i1kFriends);
           assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
-          console.log("PASS I1L-11: non-Artificer skip, seven original deferred CP triggers, original I1C-K Wizard/Battle Master/Warlock/Eladrin/Khoravar source grants+Stage4 RLS still intact");
+          console.log("PASS I1L-12: non-Artificer skip, seven original deferred CP triggers, original I1C-K Wizard/Battle Master/Warlock/Eladrin/Khoravar source grants+Stage4 RLS still intact");
           console.log("I1L RESULT: original EFA Artificer 4-slot fixed and source-wildcard Magic Item Plan first-creation grants and projection pass real signed JWT/GoTrue/PostgREST in reduced PG17 with exact six-function source hashes; NOT 31/31 production, actual full item catalog, or browser acceptance.");
         }
       }
