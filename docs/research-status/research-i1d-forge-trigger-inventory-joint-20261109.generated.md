@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7` |
+| Exact source commit represented by this archive snapshot | `1a8b0cbf504f4f764b319f1749173d7b94752c66` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record I1C signed GoTrue red-to-green CI and next trigger coverage gate |
-| Files changed relative to main | 101 (77 non-docs; 24 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test: prepare source-original deferred equipment alongside real Forge nonce and private Story |
+| Files changed relative to main | 102 (78 non-docs; 24 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
+- `scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/browser/c33_next_router_shim.js`
 - `scripts/browser/c33_original_forge_full_dom.jsx`
 - `scripts/browser/verify_c33_creator_backstory_dom.mjs`
-- … 51 more
+- … 52 more
 
 ## Trust and update procedure
 
