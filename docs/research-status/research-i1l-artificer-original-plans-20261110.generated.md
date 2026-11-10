@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1l-artificer-original-plans-20261110` |
-| Exact source commit represented by this archive snapshot | `a827c37d368b8a702f433c2a1c6955108c7b6dc3` |
+| Exact source commit represented by this archive snapshot | `d9ea5b5d894cbeb8c62da07361ae68495f723953` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1l): stage single-condition null-safe Artificer projection candidate only after source RED |
+| Last source commit title | test(i1l): retain source-original projection RED and test single-condition disposable candidate GREEN |
 | Files changed relative to main | 140 (106 non-docs; 34 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1l_artificer_projection_null_parent_candidate_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
