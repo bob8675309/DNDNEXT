@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1e-wizard-original-finalizer-signed-20261109` |
-| Exact source commit represented by this archive snapshot | `79c9607d12c6bc186f8208d9a3e715242060d806` |
+| Exact source commit represented by this archive snapshot | `9cf6a970156aa19cd1b6beb45bccbacd77eb5309` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record I1D signed Stage4 integration pass and nine live read-only source hash verifications |
-| Files changed relative to main | 107 (81 non-docs; 26 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research: preserve eight original Wizard finalizer/helper function bodies and source-MD5 guards |
+| Files changed relative to main | 108 (82 non-docs; 26 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
+- `scripts/fixtures/i1e_wizard_original_functions_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `pages/town/[id].js`
 - `scripts/browser/c33_creator_backstory_dom.jsx`
 - `scripts/browser/c33_next_dynamic_shim.js`
-- … 57 more
+- … 58 more
 
 ## Trust and update procedure
 
