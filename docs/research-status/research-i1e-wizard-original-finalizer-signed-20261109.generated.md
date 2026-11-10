@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1e-wizard-original-finalizer-signed-20261109` |
-| Exact source commit represented by this archive snapshot | `9cf6a970156aa19cd1b6beb45bccbacd77eb5309` |
+| Exact source commit represented by this archive snapshot | `0b021edb186800a4fbf31976160d7937b6e6e47a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research: preserve eight original Wizard finalizer/helper function bodies and source-MD5 guards |
-| Files changed relative to main | 108 (82 non-docs; 26 docs) |
+| Last source commit title | test: compose original Wizard Savant and Signature helpers with source-original subclass and reduced signed PG17 catalog |
+| Files changed relative to main | 109 (83 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1e_wizard_original_functions_pg17.sql`
+- `scripts/fixtures/i1e_wizard_joint_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `pages/town/[id].js`
 - `scripts/browser/c33_creator_backstory_dom.jsx`
 - `scripts/browser/c33_next_dynamic_shim.js`
-- … 58 more
+- … 59 more
 
 ## Trust and update procedure
 
