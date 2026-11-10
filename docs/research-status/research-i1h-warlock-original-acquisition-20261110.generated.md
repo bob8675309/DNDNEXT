@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1h-warlock-original-acquisition-20261110` |
-| Exact source commit represented by this archive snapshot | `cb578ff647472af4d7dacad0630824152430ba1a` |
+| Exact source commit represented by this archive snapshot | `c1b7fd5a21c8599d296b138d7bf51e2496e27542` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1h): signed fresh Warlock invocation acquisition and negative replay matrix |
-| Files changed relative to main | 125 (96 non-docs; 29 docs) |
+| Last source commit title | ci(i1h): run fresh original Warlock acquisition in disposable signed PostgreSQL 17 |
+| Files changed relative to main | 126 (97 non-docs; 29 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -31,6 +31,7 @@
 - `.github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml`
 - `.github/workflows/validate-i1f-battle-master-original-local-auth.yml`
 - `.github/workflows/validate-i1g-warlock-original-local-auth.yml`
+- `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/archive/npc_secure_profile_2026-11-04/NPC_Private_Reader_Client_Cutover_2026-11-04.md`
 - `docs/archive/npc_secure_profile_2026-11-04/NPC_Profile_First_Centered_Overlay_2026-11-04.md`
 - `docs/archive/npc_secure_profile_2026-11-04/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md`
-- `docs/data/c33_migration_history_snapshot_2026-11-08.json`
-- … 75 more
+- … 76 more
 
 ## Trust and update procedure
 
