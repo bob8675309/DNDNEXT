@@ -264,6 +264,30 @@ assert.equal(Number(sql("SELECT count(*) FROM public.character_currency WHERE ch
 assert.equal(recordCount("private.player_creation_intent_reservations_v1","request_id='"+gearNonce+"'"),1);
 console.log("PASS I1D-01: I1-C Story-aware nonce + true #324 reservation + original deferred equipment and currency commit");
 
+const levelupId=randomUUID();
+sql("INSERT INTO public.character_level_up_sessions(id,character_id,status) VALUES ('"+
+  levelupId+"','"+gearId+"','open')");
+sql("UPDATE public.character_progression SET pending_level_up=false WHERE character_id='"+gearId+"'");
+assert.equal(sql("SELECT status FROM public.character_level_up_sessions WHERE id='"+levelupId+"'"),"cancelled",
+  "Source-original progression cancellation trigger must run");
+const badSpriteId=randomUUID();
+const invalidSprite=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-c",
+  "INSERT INTO public.characters(id,name,kind,visual_asset_id) VALUES ('"+
+  badSpriteId+"','I1D bad synthetic sprite','npc','00000000-0000-0000-0000-000000007422')"],
+  {env,encoding:"utf8",timeout:20000});
+assert.notEqual(invalidSprite.status,0,"Original sprite guard must block invalid 32px directional source");
+assert.equal(recordCount("public.characters","id='"+badSpriteId+"'"),0);
+const mogId=randomUUID();
+sql("INSERT INTO public.characters(id,name,kind) VALUES ('"+mogId+"',' MoG ','npc')");
+const mogDelete=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-c",
+  "DELETE FROM public.characters WHERE id='"+mogId+"'"],
+  {env,encoding:"utf8",timeout:20000});
+assert.notEqual(mogDelete.status,0,"Original protected Mog cannot be deleted");
+assert.match(mogDelete.stderr,/Mog is protected and cannot be deleted/i);
+assert.equal(recordCount("public.characters","id='"+mogId+"'"),1);
+console.log("PASS I1D-11: three formerly unstaged source-exact original triggers verified (level-up cancel, invalid sprite guard, Mog protection); two world-map triggers untouched");
+
+
 const merchantId=randomUUID(),stockId=randomUUID();
 sql("INSERT INTO public.characters(id,name,kind) VALUES ('"+merchantId+"','I1D synthetic existing merchant','merchant')");
 sql("INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id) VALUES ('"+
