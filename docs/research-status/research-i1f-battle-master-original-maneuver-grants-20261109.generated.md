@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `e560d4f300063704121bdcab4bdefbb5c0a22ab2` |
+| Exact source commit represented by this archive snapshot | `70cbb93d0bc02a5aed1f30c55fd8d64c81cebf68` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record I1F original Battle Master source hashes, signed grant/validator matrix and release limits |
+| Last source commit title | ci: isolate signed I1F fixture on dedicated localhost database/API ports |
 | Files changed relative to main | 117 (89 non-docs; 28 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
+- `scripts/test_i1f_battle_master_original_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
