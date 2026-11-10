@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1f-battle-master-original-maneuver-grants-20261109` |
-| Exact source commit represented by this archive snapshot | `2b10b86f1237de484974d686acbd16d47c29a1d6` |
+| Exact source commit represented by this archive snapshot | `73b1ebfadb83c6dcb367a91fc14836ce7a4c45ef` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record signed Wizard Savant and Signature original-function PASS and I1F battle-master next gate |
-| Files changed relative to main | 112 (85 non-docs; 27 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test: capture five original Battle Master grant/validator functions and verify exact source MD5 |
+| Files changed relative to main | 113 (86 non-docs; 27 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
+- `scripts/fixtures/i1f_battle_master_original_functions_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `pages/inventory.js`
 - `pages/npcs.js`
 - `pages/town/[id].js`
-- … 62 more
+- … 63 more
 
 ## Trust and update procedure
 
