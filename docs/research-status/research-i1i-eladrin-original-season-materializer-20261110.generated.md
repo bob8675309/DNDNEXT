@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1i-eladrin-original-season-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `56f97d351f6f4b95ed515aed895c9dd823a43cc7` |
+| Exact source commit represented by this archive snapshot | `98ee4202bd7ebe4c073d56945208365ba810ce28` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1i): install source-identical Eladrin season trigger and helpers in disposable PG17 |
+| Last source commit title | test(i1i): source-original signed Eladrin seasonal materialization, Warlock coexistence and atomic negatives |
 | Files changed relative to main | 128 (98 non-docs; 30 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1i_eladrin_original_materializer_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
