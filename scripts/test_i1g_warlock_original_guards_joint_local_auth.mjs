@@ -698,7 +698,7 @@ const wq=x=>"'"+String(x).replaceAll("'","''")+"'";
 const wPayload=(name,level,nonce,opts={})=>({
  name,creation_request_id:nonce,secret:null,
  sheet:{classKey:"warlock",level,startingEquipmentSelections:{
- mode:"package",classOption:"B",ruleset:"vanilla"},
+ mode:"package",classOption:"A",ruleset:"vanilla"},
  sourceChoices:opts.sourceChoices??{"source-choice":{
  ownerType:"class-option",metadata:{family:"eldritch-invocation"}}},
  ...(opts.classFeatureChoices?{classFeatureChoices:opts.classFeatureChoices}:{})}
