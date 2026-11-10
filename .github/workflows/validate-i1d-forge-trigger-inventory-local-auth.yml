@@ -4,6 +4,11 @@ on:
     paths:
       - '.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml'
       - 'scripts/test_i1d_forge_story_inventory_joint_local_auth.mjs'
+      - 'docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md'
+      - 'scripts/validate_i1d_trigger_gap_manifest.mjs'
+      - 'scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql'
       - 'scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql'
       - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
       - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
@@ -47,6 +52,8 @@ jobs:
           cache: npm
       - name: Validate local-only signed fixture syntax
         run: |
+          node --check scripts/validate_i1d_trigger_gap_manifest.mjs
+          node scripts/validate_i1d_trigger_gap_manifest.mjs
           node --check scripts/test_i1d_forge_story_inventory_joint_local_auth.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
           node scripts/validate_npc_private_profile_cutover.mjs
