@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1j-khoravar-original-skill-versatility-20261110` |
-| Exact source commit represented by this archive snapshot | `57730a4ae1e8a577ff88f2ab0f108188fa170bed` |
+| Exact source commit represented by this archive snapshot | `881a32223091a344f2a0b817b36a1ea5f60fab09` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1i): append exact signed Eladrin/Warlock source research and negative-error receipt |
-| Files changed relative to main | 130 (99 non-docs; 31 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(i1j): source-identical Khoravar runtime original resolver/trigger in disposable PG17 |
+| Files changed relative to main | 131 (100 non-docs; 31 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/i1j_khoravar_original_skill_versatility_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/README.md`
 - `docs/SYSTEM_REGISTRY.json`
 - `docs/archive/npc_secure_profile_2026-11-04/Centered_Secure_NPC_Profile_Integration_2026-11-04.md`
-- … 80 more
+- … 81 more
 
 ## Trust and update procedure
 
