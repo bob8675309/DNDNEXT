@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1i-eladrin-original-season-materializer-20261110` |
-| Exact source commit represented by this archive snapshot | `e4afe2e2a22e0f18ca935a50996ece49c788536a` |
+| Exact source commit represented by this archive snapshot | `adfc6da74470a39d1cf9ec898eb0c12603a666e6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(i1i): run source-original Eladrin with Warlock signed PostgreSQL17 regression |
+| Last source commit title | test(i1i): assert exact original Eladrin missing-season NULL-path error |
 | Files changed relative to main | 129 (99 non-docs; 30 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1i-eladrin-original-local-auth.yml`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
