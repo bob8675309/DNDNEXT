@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T19:05:42Z | research/i1j-khoravar-original-skill-versatility-20261110 (0395e4e79f3ea6df55a66582c569bd277b956f63) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T19:06:21Z | research/i1j-khoravar-original-skill-versatility-20261110 (969dd5b00ed4b8dc4491fed412e37288e4d5fdbf) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
