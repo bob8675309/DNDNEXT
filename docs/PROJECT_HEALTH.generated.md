@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T05:00:59Z | research/i1e-wizard-original-finalizer-signed-20261109 (f09540c9bf77bc0f353f66b147ffe1b30a9e0b31) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T05:01:33Z | research/i1e-wizard-original-finalizer-signed-20261109 (8db76fe7a0a64738eb80adff5ede038b9f47553b) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1e-wizard-original-finalizer-signed-20261109` |
-| Exact source commit represented by this archive snapshot | `f09540c9bf77bc0f353f66b147ffe1b30a9e0b31` |
+| Exact source commit represented by this archive snapshot | `8db76fe7a0a64738eb80adff5ede038b9f47553b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: signed Wizard level3 Savant and level20 Signature source-original positive negative replay/rollback |
-| Files changed relative to main | 110 (84 non-docs; 26 docs) |
+| Last source commit title | ci: run original Wizard Savant/Signature with signed Stage4 Forge regression in disposable PostgreSQL17 |
+| Files changed relative to main | 111 (85 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1e_wizard_original_finalizer_joint_local_auth.mjs`
+- `.github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -28,6 +28,7 @@
 - `.github/workflows/validate-i1b-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-i1c-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
+- `.github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `pages/npcs.js`
 - `pages/town/[id].js`
 - `scripts/browser/c33_creator_backstory_dom.jsx`
-- `scripts/browser/c33_next_dynamic_shim.js`
-- … 60 more
+- … 61 more
 
 ## Trust and update procedure
 
