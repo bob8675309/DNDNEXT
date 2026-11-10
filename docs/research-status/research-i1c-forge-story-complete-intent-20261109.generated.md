@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1c-forge-story-complete-intent-20261109` |
-| Exact source commit represented by this archive snapshot | `90215e4b4b3cd3ca811cfe367589139089643fbb` |
+| Exact source commit represented by this archive snapshot | `28ad588772e1e5af021759ef1b897d66482e1688` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research: Story-inclusive immutable nonce through source-original Forge reservation |
-| Files changed relative to main | 98 (75 non-docs; 23 docs) |
+| Last source commit title | test: genuine GoTrue I1C Story-aware nonce red-to-green and signed concurrency |
+| Files changed relative to main | 99 (76 non-docs; 23 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `sql/candidates/20261109_player_story_complete_intent_i1c_research.sql`
+- `scripts/test_i1c_forge_private_story_nonce_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/browser/verify_c33_creator_backstory_dom.mjs`
 - `scripts/browser/verify_c33_next_town_route.mjs`
 - `scripts/browser/verify_c33_npc_pdf_visual.mjs`
-- … 48 more
+- … 49 more
 
 ## Trust and update procedure
 
