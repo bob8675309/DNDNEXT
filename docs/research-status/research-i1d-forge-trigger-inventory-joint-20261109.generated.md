@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `03b9250748a5355005b4146c0727efabf96c2ba6` |
+| Exact source commit represented by this archive snapshot | `79c9607d12c6bc186f8208d9a3e715242060d806` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: exact 14-trigger source gap ledger and I1D signed Story plus Stage4 integration scope |
+| Last source commit title | docs: record I1D signed Stage4 integration pass and nine live read-only source hash verifications |
 | Files changed relative to main | 107 (81 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
