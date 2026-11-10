@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `023714ba25ba3c78e07ff7cc0cebc05b04f895b9` |
+| Exact source commit represented by this archive snapshot | `2699067c77b1a7c9ce49d6e0bfbd2cc46f01cc73` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research: preserve exact original Warlock invocation guard and normalized validator source bodies |
-| Files changed relative to main | 118 (90 non-docs; 28 docs) |
+| Last source commit title | test: compose original Warlock legacy and normalized validator safeguards with source-grounded XPHB choices |
+| Files changed relative to main | 119 (91 non-docs; 28 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1g_warlock_original_functions_pg17.sql`
+- `scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/data/c33_migration_history_snapshot_2026-11-08.json`
 - `pages/_app.js`
 - `pages/inventory.js`
-- … 68 more
+- … 69 more
 
 ## Trust and update procedure
 
