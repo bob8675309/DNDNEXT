@@ -27,23 +27,28 @@ The wildcard option is `artificer-plan:common-magic-item-that-isn-t-a-potion-a-s
 - `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs` appends gated `DNDNEXT_I1L_LOCAL_CONFIRM=DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY` tests **after all previous I1C–I1K cases**. Earlier original positives, negatives and their historical RED controls are unmodified. Genuine local GoTrue/PostgREST signing exercises original Forge RPC and private Story/nonce transaction.
 - `.github/workflows/validate-i1l-artificer-original-local-auth.yml` runs on loopback using pinned Supabase CLI v2.120.0 with disposable PG17, GoTrue and PostgREST; prior I1-G/H/I/J/K signed workflows remain separate regressions.
 
-## Signed acceptance criteria — do not claim PASS without exact-head CI
+## Signed acceptance: original-source RED and disposable candidate GREEN
 
-| Case | Evidence sought |
+**Verified code-bearing RED→GREEN candidate evidence:** [I1-L local signed PG17/GoTrue/PostgREST run #42924581825](https://github.com/bob8675309/DNDNEXT/actions/runs/42924581825), job `130207659923`, on test-head `9cb537645464e5af3e5a473cf2c7f8f046f527c5`, **SUCCESS**. Decoded job logs explicitly show **PASS I1L-01–12**, the original-source **I1L-02 SOURCE RED** and a separate **scratch candidate GREEN** in I1L-03–12. Earlier I1C–I1K signed cases remain green within the same job.
+
+| Case | What actually passed |
 | --- | --- |
-| **I1L-01** | Exact six original hashes, EFA class/plan canonical source, level 2 = 4 slots, level 6 = slot 5, original wildcard eligibility for XDMG Prosthetic Limb but not potion |
-| **I1L-02** | Real signed EFA Artificer level-2 initial creation commits 4 distinct fixed plan grants, normalized `classFeatureChoices` projection, private Story/nonce and source gear/currency |
-| **I1L-03** | Exact nonce replay leaves grants, sheet, inventory and Story intact; changed Story and foreign actor denied |
-| **I1L-04** | Signed canonical wildcard with real XDMG Prosthetic Limb child and 3 fixed plans produces four normalized grants + source item metadata, without physical inventory materialization |
-| **I1L-05** | Missing required fourth plan slot rolls back entire transaction |
-| **I1L-06** | Duplicate nonrepeatable plan rejected by original validator |
-| **I1L-07** | Level-6 plan at level 2 rejected by original min-level gate |
-| **I1L-08** | Wildcard missing mandatory concrete item child rejected |
-| **I1L-09** | Ineligible canonical potion child rejected by exact original item eligibility |
-| **I1L-10** | Forged/unknown EFA plan key rejected |
-| **I1L-11** | Non-Artificer original bypass, seven original cumulative deferred triggers, previous I1C-K Wizard/Battle Master/Warlock/Eladrin/Khoravar source state and Stage4 RLS intact |
+| **I1L-01** | Exact six original source hashes, EFA class/plan canonical source, four level-2 slots, original wildcard eligibility for real XDMG Prosthetic Limb and rejection of potion |
+| **I1L-02 RED** | Real signed **unchanged original** Artificer level-2 creation commits four grants and Story/nonce **but lacks the required sheet projection**, confirming a source defect — expected RED, not accepted original complete creation |
+| **I1L-03 GREEN candidate** | After installing the one-condition disposable projection candidate, a *new signed* Artificer level-2 creation commits four distinct fixed plans, normalized sheet projection, private Story/nonce and source gear/currency at first COMMIT |
+| **I1L-04** | Exact nonce replay leaves grants, sheet, inventory and Story intact; changed Story and foreign actor denied |
+| **I1L-05** | Source-qualified XDMG Prosthetic Limb wildcard child and three fixed plans produce four normalized grants with metadata, no physical inventory materialization |
+| **I1L-06** | Missing fourth plan slot rolls back entire signed transaction |
+| **I1L-07** | Duplicate nonrepeatable plan rejected by original validator |
+| **I1L-08** | Level-6 plan at level 2 rejected by original prerequisite gate |
+| **I1L-09** | Wildcard missing mandatory concrete item child rejected |
+| **I1L-10** | Ineligible real canonical XDMG potion rejected by unchanged item-eligibility validator |
+| **I1L-11** | Forged/unknown plan key rejected by source-catalog lookup |
+| **I1L-12** | Non-Artificer bypass, seven original cumulative deferred trigger definitions, previous I1C–K Wizard/Battle Master/Warlock/Eladrin/Khoravar state and Stage4 RLS intact |
 
-**Important:** Magic Item Plans are normalized plan authority, not item-crafting, a merchant purchase or physical player inventory award; `materializesInventory=false` is explicitly checked. This is a source-faithful, *reduced* test catalog; the Artificer original starting-equipment helper in this research stack still uses its explicitly marked reduced fixture and is not full source-level starting-equipment production parity.
+**Interpretation:** The original Artificer grant materializer, validator, item eligibility and source catalog work together in a signed local environment. **The original projection helper remains functionally broken on a fresh sheet lacking `classFeatureChoices`.** The scratch-only, one-condition candidate repairs the defect for *new* characters; it does not retroactively alter the genuine original-source RED specimen. A passing CI run is therefore **not** proof that all six unchanged original functions are production-ready.
+
+Magic Item Plans are normalized plan authority, not item-crafting, a merchant purchase, or physical inventory awards; `materializesInventory=false` is asserted. The Artificer original starting-equipment helper is still reduced in the research stack, and the full live EFA item/option source-priority catalogs are not represented.
 
 ## Original-source RED discovered — NULL parent initialization defect
 
@@ -72,8 +77,8 @@ The candidate SQL requires original source MD5 first and verifies the patched de
 
 ## Verification and release hold
 
-**At first publication (superseded by the source-original RED discovery above):** signed I1-L workflow at code-head `11ca716edc11eba5ddb6b5793a02a06ca1701ee5` and the earlier signed regressions have been triggered; their conclusions must be independently verified. If a source-exact function fails with a real error, preserve it and adjust only bounded disposable schema/fixture or test assertions where appropriate. Do **not** change the original source body or weaken the negative checks to force a passing test.
+**Superseded initial CI note (see verified RED→GREEN candidate evidence above):** signed I1-L workflow at code-head `11ca716edc11eba5ddb6b5793a02a06ca1701ee5` and the earlier signed regressions have been triggered; their conclusions must be independently verified. If a source-exact function fails with a real error, preserve it and adjust only bounded disposable schema/fixture or test assertions where appropriate. Do **not** change the original source body or weaken the negative checks to force a passing test.
 
 **No promotion:** Not all 31 original creation-adjacent triggers or full source catalog priority/RLS/grant graph are co-resident; all-class source-original Forge, multi-client browser acceptance, CP/CS/G/I concurrent lock ordering, real crafting/Long Rest, full encrypted second backup and isolated PostgreSQL+Storage bytes restoration, and production go/no-go are outstanding. The two original world-map travel/resting triggers are deliberately protected. Original held PRs must not be closed/merged in bulk, optional paid #325 remains last/OFF.
 
-**Next single action:** inspect exact source/test-head CI and correct only genuine bounded fixture/test bugs without altering source hashes; preserve the code-head receipt, update the final documentation-inclusive head and recheck all signed independent suites before declaring I1-L research acceptance.
+**Next single action:** verify CI on the final documentation-inclusive I1-L research head; preserve the exact-head RED→candidate-GREEN signed receipt. Then present the original-source projection defect and bounded null-safe production migration candidate for explicit owner review before any live code/SQL, and proceed to production-equivalent co-resident trigger/catalog/RLS/browser/recovery gates. Do not describe the original projection helper as passing or bypass the RED control.
