@@ -27,6 +27,24 @@ For trustworthy positive/negative testing, the fixture adds the original Wizard 
 
 The signed fixture runs after I1-D has installed the **exact unchanged Stage4 inventory CHECK/four RLS** candidate in a disposable PG17 database. It uses genuine GoTrue-issued JWT via PostgREST and executes the original #324 nonce + #345 Story + I1-C corrected immutable complete intent. No production/staging endpoint is accepted. The workflow remains pinned to CLI `supabase@2.120.0`, avoiding the November 2026 CLI v3 breaking target/default changes.
 
+## Verified source-original signed result — November 9 local / November 10 UTC
+
+**PASS: [GitHub Actions run 42759579058](https://github.com/bob8675309/DNDNEXT/actions/runs/42759579058) on source-tested head `3995e21b746c502741ba329861e04f0bd62d35d8`.** Four overall checks succeeded (the original I1-E signed Wizard job plus validation, handoff-registry and docs); one Supabase Preview was intentionally skipped. No hosted SQL was executed. Disposable PostgreSQL17 and GoTrue/PostgREST were stopped after the signed run.
+
+The exact run shows all six cases passed with actual source-original Wizard functions and original BEFORE-INSERT subclass plus deferred AFTER-INSERT finalizer:
+
+- **I1E-01 PASS:** signed XPHB Evoker level3, two school-valid Savant book records, Story/nonce, identical replay inert, changed-only Story rejected
+- **I1E-02 PASS:** missing level3 Savant group rejected at deferred COMMIT with nonce/character/Story rollback
+- **I1E-03 PASS:** duplicate Savant canonical selections rejected with full rollback
+- **I1E-04 PASS:** signed level20 Evoker eight legal Savant acquisition groups → nine distinct source-owned spells; original Signature writer marks two level3 spellbook assignments prepared/always-available, one short-rest use each and updates sheet
+- **I1E-05 PASS:** missing level20 Signature after nine Savant inserts rejects whole transaction, no surviving nonce/character/Story or orphan spells
+- **I1E-06 PASS:** identical nonce after explicit Story edit preserves every canonical spell record and the later edit; changed Story under same nonce rejects
+- **Regression:** previous genuine signed I1C-01–11 and I1D-01–11 continue to pass in the same local DB including Stage4 old owner CHECK/four RLS, revocation, inventory, deferred equipment/currency and three original C3.3 guards
+
+**Original 31-trigger accounting remains evidence-specific:** I1-E adds one formerly missing original Wizard finalizer and reuses the previously source-staged original subclass handler; the prior static Forge-only baseline remains 17 matching DDL names / 14 historically unstaged, with **four** of those 14 now independently joined-tested (three from I1-D, Wizard from I1-E), **two** guarded world-map triggers and **eight** other non-map source/dependency paths. This is NOT 21 triggers running in one combined fixture and NOT full 31/31 acceptance. Source-qualified production spell preference and full production catalog/RLS/browser/grant/deadlock/restore remain unverified.
+
+**One next task (I1-F):** source-pin and signed-test the cohesive **Battle Master maneuver** family from the remaining original set: `materialize_player_forge_battle_master_maneuvers_v1` original MD5 `daf3fc12e7c30165dca50ca650f9d308` and `validate_existing_battle_master_maneuvers_v1` MD5 `8bc8a467e95b07e93df833bcfc585e80`, plus the exact live `is_xphb_battle_master_v1`, `battle_master_maneuver_count_v1`, `battle_master_maneuver_slot_level_v1` and normalized `character_class_option_grant_instances`/source-qualified catalog. Read-only current live metadata confirms the three supporting MD5s `17688ec8bceac3c06d58415de20a544b`, `32cbfe62f855affe40443da2fc9d20eb`, and `70b3639eb4b6535aab3efbfc80828a0e`. Preserve both original deferred triggers, granted instances, source priority, signed negative malformed/duplicate/level-gate/rollback, shared nonce idempotency and #353 Wizard/Story/Stage4 positive tests before advancing; no separate live migration or PR merge.
+
 ## Signed test matrix
 
 | Case | Positive / negative contract |
