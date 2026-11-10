@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1b-forge-story-nonce-joint-auth-20261109` |
-| Exact source commit represented by this archive snapshot | `3985479c1f1f6e05df0c3ec3d4d4df44493ff175` |
+| Exact source commit represented by this archive snapshot | `a8e13dc91b5076a1dcd95ea26731e0cb63b40f3b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
 | Last source commit title | test: add disposable signed I1-B joint nonce and private Story integration evidence |
-| Files changed relative to main | 96 (74 non-docs; 22 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Files changed relative to main | 97 (74 non-docs; 23 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1b-forge-story-nonce-local-auth.yml`
+- `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 
 ## Research-branch change inventory versus main
 
@@ -51,6 +51,7 @@
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
 - `docs/SYSTEM_REGISTRY.json`
@@ -70,8 +71,7 @@
 - `scripts/browser/verify_c33_creator_backstory_dom.mjs`
 - `scripts/browser/verify_c33_next_town_route.mjs`
 - `scripts/browser/verify_c33_npc_pdf_visual.mjs`
-- `scripts/browser/verify_c33_original_forge_full_dom.mjs`
-- … 46 more
+- … 47 more
 
 ## Trust and update procedure
 
