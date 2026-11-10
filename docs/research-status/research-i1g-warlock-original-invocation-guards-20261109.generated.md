@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `1e1ed3350544d58f3c6a3ff44c6b45516f2d641f` |
+| Exact source commit represented by this archive snapshot | `0c3ec510870dbbdf84679be421437f6f1dfd2327` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: source-locked Warlock safeguards matrix and explicit creation acquisition limitation |
+| Last source commit title | test: extend existing I1D origin grant stub rather than recreating it in I1G |
 | Files changed relative to main | 122 (93 non-docs; 29 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
+- `scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
