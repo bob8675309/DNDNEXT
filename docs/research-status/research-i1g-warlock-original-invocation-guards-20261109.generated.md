@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `727a7311981027cc9c3a3ad81bf23b3e71322ccd` |
+| Exact source commit represented by this archive snapshot | `cf07a868657394b892187fabe4e7fe33cae2fceb` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: use source-valid Warlock package A supported by explicitly reduced I1D equipment helper |
+| Last source commit title | test: distinguish genuinely unmarked legacy source from existing source-owned choice in both branch controls |
 | Files changed relative to main | 122 (93 non-docs; 29 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
