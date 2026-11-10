@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T17:45:57Z | research/i1i-eladrin-original-season-materializer-20261110 (57730a4ae1e8a577ff88f2ab0f108188fa170bed) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T18:58:30Z | research/i1j-khoravar-original-skill-versatility-20261110 (57730a4ae1e8a577ff88f2ab0f108188fa170bed) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
