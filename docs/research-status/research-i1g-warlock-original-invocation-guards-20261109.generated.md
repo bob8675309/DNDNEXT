@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1g-warlock-original-invocation-guards-20261109` |
-| Exact source commit represented by this archive snapshot | `7e91ef6268181b6a6b9754601678f4565d883b7a` |
+| Exact source commit represented by this archive snapshot | `203f282890873cb918681714e7163aeec49423f4` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: separate exact original Warlock deferred trigger install from pre-acquisition signed specimen setup |
+| Last source commit title | test: preserve source-only Warlock prep before signed baseline and defer original trigger installation |
 | Files changed relative to main | 124 (95 non-docs; 29 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql`
+- `scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
