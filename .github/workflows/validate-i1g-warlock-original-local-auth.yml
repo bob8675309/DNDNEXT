@@ -11,6 +11,7 @@ on:
       - 'scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql'
       - 'scripts/fixtures/i1g_warlock_original_functions_pg17.sql'
       - 'scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql'
+      - 'scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql'
       - 'scripts/fixtures/i1f_battle_master_original_functions_pg17.sql'
       - 'scripts/fixtures/i1f_battle_master_joint_setup_pg17.sql'
       - 'scripts/fixtures/i1e_wizard_original_functions_pg17.sql'
