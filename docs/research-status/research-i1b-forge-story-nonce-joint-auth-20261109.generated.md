@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1b-forge-story-nonce-joint-auth-20261109` |
-| Exact source commit represented by this archive snapshot | `a8e13dc91b5076a1dcd95ea26731e0cb63b40f3b` |
+| Exact source commit represented by this archive snapshot | `503e95a1cc1ee7151b5f16f8de60a45645bb818c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: add disposable signed I1-B joint nonce and private Story integration evidence |
+| Last source commit title | docs: record signed I1B-03 changed-Story nonce integration gap |
 | Files changed relative to main | 97 (74 non-docs; 23 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
