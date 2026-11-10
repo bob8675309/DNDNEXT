@@ -16,7 +16,7 @@ Canonical resume and policy: [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) 
 
 ## ONE next executable engineering task
 
-**Next single action (I1-B):** #349 head `c9a60f9d1a10d1e2459df18f0afe217f35d84a5a` has eight successful checks, one skipped, no failures. Now build and execute a source-locked disposable **PG17 + genuine GoTrue combined negative fixture** for #324 complete creation nonce and #345 private Story/creator/grants/inventory: changed-only-Story same-nonce must not silently accept a different creation intent, while legitimate replay must not overwrite a later authorized Story edit. Keep the original 17/31 trigger staging versus 14 absent distinct from full 31-trigger proof. No production SQL or merge.
+**Next single action:** **(I1-B)** #349 head `c9a60f9d1a10d1e2459df18f0afe217f35d84a5a` has eight successful checks, one skipped, no failures. Now build and execute a source-locked disposable **PG17 + genuine GoTrue combined negative fixture** for #324 complete creation nonce and #345 private Story/creator/grants/inventory: changed-only-Story same-nonce must not silently accept a different creation intent, while legitimate replay must not overwrite a later authorized Story edit. Keep the original 17/31 trigger staging versus 14 absent distinct from full 31-trigger proof. No production SQL or merge.
 
 **I1-A SHA audit completed as research:** [source crosswalk](I1_A_FORGE_C33_SOURCE_CONTRACT_CROSSWALK_2026-11-09.md), [104-path blob comparison](evidence/I1_A_FORGE_BLOB_CROSSWALK_2026-11-09.json), and [146 incremental PR-file occurrences](evidence/I1_A_FORGE_INCREMENTAL_PR_FILES_2026-11-09.json). This classification is not full test execution or release acceptance.
 
