@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1h-warlock-original-acquisition-20261110` |
-| Exact source commit represented by this archive snapshot | `03a34a8d497bbf5af040c286795ae91b9719ddde` |
+| Exact source commit represented by this archive snapshot | `c4a0ed241b282528b2c649fb57bcbe8be0c1b89a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i1h): record verified exact-head signed creation and rollback results |
+| Last source commit title | docs(i1h): route active research to signed Warlock acquisition milestone |
 | Files changed relative to main | 127 (97 non-docs; 30 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 

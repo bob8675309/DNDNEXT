@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T17:20:32Z | research/i1h-warlock-original-acquisition-20261110 (03a34a8d497bbf5af040c286795ae91b9719ddde) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T17:21:01Z | research/i1h-warlock-original-acquisition-20261110 (c4a0ed241b282528b2c649fb57bcbe8be0c1b89a) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
