@@ -573,7 +573,8 @@ const battleChoices=names=>({
 const battleIntent=(name,level,nonce,choices)=>({
   name,creation_request_id:nonce,secret:null,
   sheet:{classKey:"fighter",level,subclassName:"Battle Master",
-    subclassSource:"XPHB",classFeatureChoices:choices}
+    subclassSource:"XPHB",classFeatureChoices:choices,
+    startingEquipmentSelections:{mode:"package",classOption:"A",ruleset:"vanilla",wealthRoll:5}}
 });
 const battleGrants=(id)=>Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+id+"' AND option_type='battle-master-maneuver'"));
 const battleNonce=(nonce)=>Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+nonce+"'"));
