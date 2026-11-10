@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1e-wizard-original-finalizer-signed-20261109` |
-| Exact source commit represented by this archive snapshot | `8db76fe7a0a64738eb80adff5ede038b9f47553b` |
+| Exact source commit represented by this archive snapshot | `3995e21b746c502741ba329861e04f0bd62d35d8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci: run original Wizard Savant/Signature with signed Stage4 Forge regression in disposable PostgreSQL17 |
-| Files changed relative to main | 111 (85 non-docs; 26 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs: pin source-original Wizard Savant/Signature dependency and signed release gate matrix |
+| Files changed relative to main | 112 (85 non-docs; 27 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml`
+- `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
 
 ## Research-branch change inventory versus main
 
@@ -58,6 +58,7 @@
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
+- `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
 - `docs/SYSTEM_REGISTRY.json`
@@ -70,8 +71,7 @@
 - `pages/inventory.js`
 - `pages/npcs.js`
 - `pages/town/[id].js`
-- `scripts/browser/c33_creator_backstory_dom.jsx`
-- … 61 more
+- … 62 more
 
 ## Trust and update procedure
 
