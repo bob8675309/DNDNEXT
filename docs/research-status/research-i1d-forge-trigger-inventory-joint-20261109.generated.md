@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `253f0b2d56731791c519746b620d2876a2c0df17` |
+| Exact source commit represented by this archive snapshot | `03b9250748a5355005b4146c0727efabf96c2ba6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci: require source-pinned 31-trigger gap inventory before signed Stage4 integration |
-| Files changed relative to main | 106 (81 non-docs; 25 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs: exact 14-trigger source gap ledger and I1D signed Story plus Stage4 integration scope |
+| Files changed relative to main | 107 (81 non-docs; 26 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
+- `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
 
 ## Research-branch change inventory versus main
 
@@ -56,6 +56,7 @@
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
+- `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
 - `docs/SYSTEM_REGISTRY.json`
@@ -70,8 +71,7 @@
 - `pages/town/[id].js`
 - `scripts/browser/c33_creator_backstory_dom.jsx`
 - `scripts/browser/c33_next_dynamic_shim.js`
-- `scripts/browser/c33_next_router_shim.js`
-- … 56 more
+- … 57 more
 
 ## Trust and update procedure
 
