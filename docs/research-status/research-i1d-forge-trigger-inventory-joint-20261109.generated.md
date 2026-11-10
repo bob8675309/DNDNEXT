@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1d-forge-trigger-inventory-joint-20261109` |
-| Exact source commit represented by this archive snapshot | `f8c516b5e16b1221f8a87d9d16539e0a129ff168` |
+| Exact source commit represented by this archive snapshot | `1357ef3e3eb2c03ab2ca0c0ca119b4c4fa8d4642` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test: enforce explicit I1D local-only PostgREST and PG17 environment |
-| Files changed relative to main | 103 (79 non-docs; 24 docs) |
+| Last source commit title | ci: validate genuine signed PG17 I1D Story and Stage4 inventory integration |
+| Files changed relative to main | 104 (80 non-docs; 24 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1d_forge_story_inventory_joint_local_auth.mjs`
+- `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -27,6 +27,7 @@
 - `.github/workflows/validate-centered-npc-profile.yml`
 - `.github/workflows/validate-i1b-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-i1c-forge-story-nonce-local-auth.yml`
+- `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `scripts/browser/c33_next_dynamic_shim.js`
 - `scripts/browser/c33_next_router_shim.js`
 - `scripts/browser/c33_original_forge_full_dom.jsx`
-- `scripts/browser/verify_c33_creator_backstory_dom.mjs`
-- … 53 more
+- … 54 more
 
 ## Trust and update procedure
 
