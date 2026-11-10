@@ -1,8 +1,16 @@
+> **CURRENT OWNER WORK ORDER — NOVEMBER 9, 2026.** Integrate unique value from **all outstanding PRs** into main through the staged [I0–I6 plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) and [20 original PR dossiers](pr-integration/README.md), including #325 **last** without paid activation. Source crosswalk I1-A is complete and independent #349 source-only CI is verified (8 success, one skipped). **ONE NEXT TASK (I1-B):** source-locked PG17 + real GoTrue combined #324 immutable nonce and #345 creator-private Story negative fixture; changed-only-Story with same nonce must not silently pass, stale legitimate replay must not overwrite later Story edits. Release/merge/production SQL, world-map UI and paid agent activation remain separate approvals.
+
 > **2026-11-09 OWNER PRIORITY OVERRIDE — CURRENT NEXT ACTION.** All open PRs were reviewed in the [20 source-pinned dossiers](pr-integration/README.md); owner chose integration of Spell Engine, NPC shared control, combat authorization/replay/locks, Admin notices/rights, centered secure Profiles/private Story and immutable Forge source tests, with optional agent #325 **deferred**. Follow [I0–I6 integration-first phased plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) **before older C3.3-only instructions below**. Local Supabase database + all 340 Storage backup objects are captured; isolated restore/encrypted second copy remain OPEN. **ONE NEXT EXECUTABLE TASK:** source-locked Forge #324/#328–#335 versus C3.3 #345 compatibility/overlap matrix before writing any integrated feature code. No merge, SQL, Vercel, world-map UI or paid agent activation approved.
 
 # DNDNext — NEXT CHAT START HERE (one authoritative entry point)
 
-**Owner-reconciled November 7, 2026: PHASE CLOSEOUT AND PR CONSOLIDATION.** This is the current **navigation and priority**, not live telemetry. Dated old "current" handoffs have been retired into the [archive](ARCHIVED_HANDOFFS_2026-11-07.md). Do not follow historical "next task" text, including branch-local drafts, without explicit current owner override.
+## CURRENT November 9 integration-first route
+
+Read [ACTIVE_WORK](ACTIVE_WORK.md) → [I0–I6 plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) → [full 20-PR catalog](pr-integration/README.md) → latest [HANDOFF_LOG](HANDOFF_LOG.md). The original SHA-based Forge/#345 overlap audit is [complete](I1_A_FORGE_C33_SOURCE_CONTRACT_CROSSWALK_2026-11-09.md). #349's static trigger/JWT receipts are green, not full 31-trigger production acceptance. **Next engineering task is I1-B combined original-source nonce/private Story PG17+GoTrue negative fixture.**
+
+## November 7 status and task snapshot (HISTORICAL; superseded)
+
+**Owner-reconciled November 7, 2026: PHASE CLOSEOUT AND PR CONSOLIDATION.** This was the active priority on November 7, **not** the November 9 work order. Dated old "current" handoffs have been retired into the [archive](ARCHIVED_HANDOFFS_2026-11-07.md). Do not follow historical "next task" text, including branch-local drafts, without explicit current owner override.
 
 ## First five-minute recovery
 
@@ -12,7 +20,7 @@
 4. Follow [AGENTS.md](../AGENTS.md), [S0–S7 and P0–P6](PHASED_DEVELOPMENT_CHECKLIST.md), [SYSTEM_REGISTRY.json](SYSTEM_REGISTRY.json), [DOCUMENT_LIFECYCLE.md](DOCUMENT_LIFECYCLE.md), [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md) and scoped [WORKSTREAMS_AND_PR_DEPENDENCIES.md](WORKSTREAMS_AND_PR_DEPENDENCIES.md). Generated Project Health is a timestamped, incomplete four-anchor-PR snapshot, not an owner queue.
 5. End substantial work with branch-local `ACTIVE_WORK.md` update plus append-only `HANDOFF_LOG.md` receipt: tested SHA, passed/failed checks, rollback/DB effects, release approvals, blockers and **one next task**.
 
-## The ONE next bounded engineering task
+## Historical November 7 C3.3 task (no longer current)
 
 **C3.3 integrated NPC secure Profile/source candidate exists on a fresh main-based branch; 12/12 exact-head CI GREEN, NOT MERGED.** [Draft #345](https://github.com/bob8675309/DNDNEXT/pull/345) at `8ddbdbc6e3164be3857b1e738684b336a848a2a2` includes revised #322 GM/creator secret stages and integrated #323 Profile-first UI with the expected role-signed disposable V00–V24 security tests. No SQL is installed: safe player NPC Profile, GM dossier and creator-backstory RPCs are absent on live Supabase. A newly identified break in `PlayerCharacterProfilePanelUnified` when stage2 revokes five narrative columns has been patched on the **draft** and source-guarded. Production main remains `997902aafe2facd8a492b005f8da4acb8342aeb2` until this docs-only receipt is merged. See [C3.3 release evidence](C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md).
 
@@ -34,4 +42,4 @@ The **19 currently deployed XPHB** spell adapters are preserved regression oracl
 
 2024 XPHB identity is distinct from PHB. Human/GM-controlled future recipes must use existing authoritative server mechanics, closed operations, reviewed source and GM-assisted unsupported behavior; no AI/client combat authority or AI billing. Next.js Pages Router + Bootstrap/SCSS only; Tailwind must not be reintroduced. World map, town map and tactical hex board remain separate; **never alter world-map behavior without owner discussion**. Preserve Profile-first NPC/merchant interaction, map sprite/roster invariants, original equipment and resource authority. No production SQL/RLS/grant changes, gameplay merges, data deletions, manual Vercel release or paid agent activation without a separate scoped approval.
 
-**ONE next bounded engineering task:** source/role compatibility audit for every character/sheet reader and definer RPC under staged #345 NPC privacy RLS/ACL; no production NPC SQL/client release.
+**November 7 next-task record (later I2 dependency, NOT current):** source/role compatibility audit for character/sheet readers under #345 NPC privacy RLS/ACL; no production NPC SQL/client release.

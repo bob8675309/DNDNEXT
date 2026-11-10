@@ -253,3 +253,11 @@
 - **Original 31-trigger boundary:** 17/31 staged in held source fixture, two extra in separate #345 joint fixtures; no single full 19/31 suite or complete production-trigger Auth proof. Preserve all original J-series and browser failures/positive tests.
 - **No production action:** no main merge, DnDWeb write/grants, Storage edit, Vercel deploy, paid agent, world-map presentation or draft PR retirement.
 - **ONE NEXT TASK:** verify #349 exact-head ledger CI and build the first combined #324+#345 signed disposable nonce versus Story original-source negative fixture; the owner separately approves any migration/release.
+
+## 2026-11-09 — Owner reaffirmation: all original PR value into main, November 9 authoritative
+
+- Owner directed that **all outstanding PRs** be integrated in safe dependency order; #325 is last I6 integration and stays disabled/without paid use until separately approved.
+- Verified unchanged main `9437b9d0a2bedc3ba78110c612543f6033674a72`, PR #348 original `c2652dd4bfe45fc2c796b8806851b7a93de1ca89` five success / one skipped, and PR #349 `c9a60f9d1a10d1e2459df18f0afe217f35d84a5a` eight success / one skipped. Checks of this new documentation head must be verified independently.
+- Updated only canonical docs on #348 draft; superseded November 7 next-task text remains historical, with current I0–I6 handoff at top. No source runtime/SQL workflow/world-map changes, `main` merge, production DB/Storage, Vercel deployment, PR close or paid API activity.
+- Original Forge staging included 17/31 original trigger definitions and 14 missing; #349 static receipt success is NOT a complete combined trigger/GoTrue acceptance. Secondary encrypted backup and isolated full DB+Storage restore remain outstanding before live migration.
+- **ONE NEXT TASK (I1-B):** bounded original-source PG17 + real local GoTrue joint #324 nonce/#345 private Story negative fixture; changed Story under same nonce must reject rather than silently return old creation, and identical replay must not overwrite newer authorized Story edits. Maintain creator feat-grant and inventory rollback guarantees.

@@ -5,7 +5,7 @@
 ## Approved decisions
 
 - Integrate Spell Engine #309/#312/#347; NPC/familiar/sidekick independent shared control in #312; global security/concurrency #317 and #312; Admin notices/rights #318; NPC Profile/privacy #320–#323/#345; and immutable Forge/original source tests #324/#328–#335.
-- Keep #325 supervised developer agent and future Actor AI research for later; no paid API calls or AI activation.
+- Integrate #325 developer-agent research **last in I6**, not discard it; no paid API calls, model-key setup, or AI activation without separate owner approval.
 - Delegation-only NPC tactical spell visibility: **known and currently available only**, in both spell profile RPC v1 and v2. No unprepared/unknown/GM secrets or other source permissions.
 - Centered NPC Profile design is retained, **world-map backdrop/visual behavior must be reviewed before actual production approval**.
 - Owner policies TC1 one active encounter/character; R1 fail-closed unverifiable replay; R2 current-authority recheck for cached results; concealment wording Unknown Events; no GM approval for player creation, informational Admin notice; creator-only private Story with active edit/GM and separate GM Secret.
@@ -23,7 +23,7 @@
 | [#322](https://github.com/bob8675309/DNDNEXT/pull/322) | [PR-322.md](PR-322.md) | 10 | Safe NPC client and creator Story access | INTEGRATE |
 | [#323](https://github.com/bob8675309/DNDNEXT/pull/323) | [PR-323.md](PR-323.md) | 15 | Secure centered Profile reconciliation | INTEGRATE via #345 |
 | [#324](https://github.com/bob8675309/DNDNEXT/pull/324) | [PR-324.md](PR-324.md) | 77 | Immutable Forge requests, grants, materials, merchant/inventory proof | INTEGRATE |
-| [#325](https://github.com/bob8675309/DNDNEXT/pull/325) | [PR-325.md](PR-325.md) | 27 | Developer AI agent and in-game AI concept | KEEP FOR LATER |
+| [#325](https://github.com/bob8675309/DNDNEXT/pull/325) | [PR-325.md](PR-325.md) | 27 | Developer AI agent and in-game AI concept | INTEGRATE LAST (I6); paid activation separate |
 | [#328](https://github.com/bob8675309/DNDNEXT/pull/328) | [PR-328.md](PR-328.md) | 8 | Deterministic Forge signed seed harness | INTEGRATE |
 | [#329](https://github.com/bob8675309/DNDNEXT/pull/329) | [PR-329.md](PR-329.md) | 10 | Original starting-spell deferred validation | INTEGRATE |
 | [#330](https://github.com/bob8675309/DNDNEXT/pull/330) | [PR-330.md](PR-330.md) | 10 | XPHB Wizard source-valid spell counts | INTEGRATE |
