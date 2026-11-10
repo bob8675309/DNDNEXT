@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-10T04:06:16Z | research/i1c-forge-story-complete-intent-20261109 (3a71ba7ea03ef98a868994eb56f686819398190d) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-10T04:10:08Z | research/i1c-forge-story-complete-intent-20261109 (5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

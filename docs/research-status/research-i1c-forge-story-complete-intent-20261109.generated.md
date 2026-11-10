@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1c-forge-story-complete-intent-20261109` |
-| Exact source commit represented by this archive snapshot | `3a71ba7ea03ef98a868994eb56f686819398190d` |
+| Exact source commit represented by this archive snapshot | `5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: capture I1C Story-aware nonce source contract and signed release gates |
+| Last source commit title | docs: record I1C signed GoTrue red-to-green CI and next trigger coverage gate |
 | Files changed relative to main | 101 (77 non-docs; 24 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
