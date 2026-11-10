@@ -31,6 +31,32 @@ CREATE TABLE public.character_option_grant_instances(id uuid PRIMARY KEY);
 CREATE TABLE public.player_wallets(user_id uuid PRIMARY KEY);
 \i scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql
 
+-- Three previously unstaged (in forge_* scan) original character/progression
+-- triggers have separate #345 SOURCE-EXACT PG17 fixtures. Load these in
+-- this joined research environment, without importing the two world-map
+-- departure/camping handlers (their gameplay is separately protected).
+\i scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql
+\i scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql
+\i scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql
+DO $additional_orig$
+BEGIN
+ IF md5(pg_get_functiondef('private.cancel_invalid_level_up_session_v1()'::regprocedure))
+     <> 'f6dcf56f72091961d0e9958e86367dd1'
+ OR md5(pg_get_functiondef('private.guard_character_visual_asset_sprite_v1()'::regprocedure))
+     <> '7f9bda0599640617039a841b35e5d5a6'
+ OR md5(pg_get_functiondef('private.protect_mog_delete_v1()'::regprocedure))
+     <> '80798b0ae487f01f1b9c3025fbfe992b'
+ OR (SELECT count(*) FROM pg_trigger
+      WHERE NOT tgisinternal
+        AND ((tgrelid='public.character_progression'::regclass
+             AND tgname='cancel_invalid_level_up_session_v1')
+          OR (tgrelid='public.characters'::regclass
+             AND tgname IN ('guard_character_visual_asset_sprite_v1',
+                            'protect_mog_delete_v1')))) <> 3
+ THEN RAISE EXCEPTION 'I1-D additional original C3.3 source trigger drift';
+ END IF;
+END $additional_orig$;
+
 DO $source$
 BEGIN
  IF md5(pg_get_functiondef('private.materialize_player_forge_starting_equipment_v1(uuid)'::regprocedure))
