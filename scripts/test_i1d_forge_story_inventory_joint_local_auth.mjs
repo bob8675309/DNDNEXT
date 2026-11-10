@@ -12,14 +12,14 @@ import { createClient } from "@supabase/supabase-js";
 const env = process.env;
 for (const [key,value] of Object.entries({
   CI:"true", GITHUB_ACTIONS:"true",
-  DNDNEXT_I1C_LOCAL_CONFIRM:"DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY",
+  DNDNEXT_I1D_LOCAL_CONFIRM:"DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY",
   PGHOST:"127.0.0.1", PGPORT:"54322", PGDATABASE:"postgres"
 })) assert.equal(env[key],value,"Unsafe I1-B environment: "+key);
 assert.equal(env.PGUSER,"postgres");
-assert.match(env.DNDNEXT_I1C_LOCAL_URL||"",/^http:\/\/127\.0\.0\.1:54321\/?$/);
-assert.ok(env.DNDNEXT_I1C_LOCAL_ANON_KEY,"Missing disposable anon key");
-const makeClient=()=>createClient(env.DNDNEXT_I1C_LOCAL_URL,
-  env.DNDNEXT_I1C_LOCAL_ANON_KEY,
+assert.match(env.DNDNEXT_I1D_LOCAL_URL||"",/^http:\/\/127\.0\.0\.1:54321\/?$/);
+assert.ok(env.DNDNEXT_I1D_LOCAL_ANON_KEY,"Missing disposable anon key");
+const makeClient=()=>createClient(env.DNDNEXT_I1D_LOCAL_URL,
+  env.DNDNEXT_I1D_LOCAL_ANON_KEY,
   {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 const psql=(args)=>{
   const r=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1",...args],
