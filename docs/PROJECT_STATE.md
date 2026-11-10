@@ -1,3 +1,5 @@
+> **NOVEMBER 9 CURRENT PRIORITY:** This technical record preserves dated facts and older unresolved risks, not the active task queue. [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) govern integrating ALL original PRs, #325 last without agent activation. I1-A crosswalk and #349 static CI are verified; next I1-B genuine PG17/GoTrue original nonce/private Story test. Do not interpret old C3.3-only next actions below as superseding this direction.
+
 > **2026-11-09 PRIORITY NOTE:** This technical snapshot has older dated implementation statuses. For current owner integration-first task, [20 PR dossiers](pr-integration/README.md), [I0–I6 phased plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md), and [ACTIVE_WORK](ACTIVE_WORK.md) supersede prior next-task recommendations. No installed code/production SQL changed by this documentation exercise; old catalog, Auth, tactical and world-map behavior remain unchanged.
 
 # DNDNext — Verified Project State
