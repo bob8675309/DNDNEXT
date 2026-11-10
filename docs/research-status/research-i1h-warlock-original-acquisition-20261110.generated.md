@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1h-warlock-original-acquisition-20261110` |
-| Exact source commit represented by this archive snapshot | `71840f27c68f5e34937b91f95ed88d3859ba06c4` |
+| Exact source commit represented by this archive snapshot | `f56ddbbff6daf1baf3bf331dc42396314fc5b941` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record I1G 14-case original Warlock safeguard pass and explicit fresh creation red gate |
-| Files changed relative to main | 124 (95 non-docs; 29 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(i1h): stage original Warlock acquisition with both guards in disposable PG17 |
+| Files changed relative to main | 125 (96 non-docs; 29 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
+- `scripts/fixtures/i1h_warlock_acquisition_with_guards_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/archive/npc_secure_profile_2026-11-04/NPC_Profile_First_Centered_Overlay_2026-11-04.md`
 - `docs/archive/npc_secure_profile_2026-11-04/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md`
 - `docs/data/c33_migration_history_snapshot_2026-11-08.json`
-- … 74 more
+- … 75 more
 
 ## Trust and update procedure
 
