@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1j-khoravar-original-skill-versatility-20261110` |
-| Exact source commit represented by this archive snapshot | `cb8218b8144735fe615575a29805cf642087c517` |
+| Exact source commit represented by this archive snapshot | `3b4b4bd82ea0b363e6d40bf0bde70daebc91269e` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i1j): signed source Khoravar skill/tool projection, Warlock coexistence and atomic rollback matrix |
-| Files changed relative to main | 131 (100 non-docs; 31 docs) |
+| Last source commit title | ci(i1j): signed Khoravar source-original joined PG17/GoTrue regression |
+| Files changed relative to main | 132 (101 non-docs; 31 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1j-khoravar-original-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -33,6 +33,7 @@
 - `.github/workflows/validate-i1g-warlock-original-local-auth.yml`
 - `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
 - `.github/workflows/validate-i1i-eladrin-original-local-auth.yml`
+- `.github/workflows/validate-i1j-khoravar-original-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/NEXT_CHAT_START_HERE.md`
 - `docs/README.md`
 - `docs/SYSTEM_REGISTRY.json`
-- `docs/archive/npc_secure_profile_2026-11-04/Centered_Secure_NPC_Profile_Integration_2026-11-04.md`
-- … 81 more
+- … 82 more
 
 ## Trust and update procedure
 
