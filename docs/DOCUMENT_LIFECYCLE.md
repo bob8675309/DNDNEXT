@@ -1,4 +1,4 @@
-> **NOVEMBER 9 DOCUMENT ROUTING:** [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6 integration plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) are authoritative for the owner's all-outstanding-PR integration objective (#325 last, paid usage OFF). Historical handoffs and original evidence remain preserved; do not follow older dated NEXT directives. I1-B combined nonce/private Story signed original-source negative fixture is the one current task.
+> **NOVEMBER 9 ACTIVE HANDOFF ROUTE — I1-C:** [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) supersede all older dated ONE NEXT instructions. I1-B genuine GoTrue/PG17 [draft #350](https://github.com/bob8675309/DNDNEXT/pull/350) proved changed-only private Story silently accepted under same creation nonce; I1-C fixes that cross-PR contract via a bounded test-backed research candidate before any I2 rollout. Preserve historical records, exact failures, and all original PR assets (#325 last, paid OFF).
 
 # DNDNext — Documentation Lifecycle and Preservation Rules
 
