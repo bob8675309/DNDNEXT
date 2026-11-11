@@ -8,6 +8,8 @@ on:
       - 'scripts/fixtures/i2c_option_a_signup_profile_acl_scratch_pg17.sql'
       - 'scripts/test_i2c_option_a_signed_creation_profile.mjs'
       - 'docs/I2_C_OPTION_A_CREATOR_SIGNUP_SIGNED_RESEARCH_2026-11-11.md'
+      - 'docs/I2_C_OPTION_A_CREATION_SOURCE_WRITER_COVERAGE_2026-11-11.json'
+      - 'scripts/validate_i2c_creator_source_coverage.mjs'
       - 'scripts/fixtures/i1o_original_progression_hp_shared_forge_pg17.sql'
       - 'scripts/fixtures/i1o_progression_hp_legacy_mirror_candidate_pg17.sql'
       - 'docs/I1_O_CROSS_FAMILY_SIGNED_LEGACY_SHEET_RESEARCH_2026-11-11.md'
@@ -95,6 +97,8 @@ jobs:
           node scripts/validate_i1d_trigger_gap_manifest.mjs
           node --check scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
           node --check scripts/test_i2c_option_a_signed_creation_profile.mjs
+          node --check scripts/validate_i2c_creator_source_coverage.mjs
+          node scripts/validate_i2c_creator_source_coverage.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
           node scripts/validate_npc_private_profile_cutover.mjs
       - name: Install existing pinned application dependencies
