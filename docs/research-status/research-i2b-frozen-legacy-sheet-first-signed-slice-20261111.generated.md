@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `dd6cafa3be15247d4d2eb14249735a7726d033a2` |
+| Exact source commit represented by this archive snapshot | `a751d2a1a210d35b0faf2133e19b457cd5be61e1` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-B): record signed 8/8 Option A no-write acceptance and retained failed seed receipt |
+| Last source commit title | docs(I2-B): mark signed first Option A freeze slice and remaining 31+3 release blockers as active |
 | Files changed relative to main | 169 (127 non-docs; 42 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_B_OPTION_A_FIRST_SIGNED_FREEZE_SLICE_2026-11-11.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
