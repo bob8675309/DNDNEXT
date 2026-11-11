@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1p-earned-levelup-rest-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `af7b7fe2efb950d73d93f99d6dbebef4a6e4abc0` |
+| Exact source commit represented by this archive snapshot | `c421015d679381dccbeaedc030575dbe463bf5b3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-P): preserve exact live rest orchestration and three source helpers in signed earned-v5 scratch |
-| Files changed relative to main | 154 (116 non-docs; 38 docs) |
+| Last source commit title | test(I1-P): source-locked three-mirror predicate candidate for earned v5 and rest scratch only |
+| Files changed relative to main | 155 (117 non-docs; 38 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1p_original_rest_shared_p13_pg17.sql`
+- `scripts/fixtures/i1p_earned_levelup_rest_mirror_candidate_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
-- … 104 more
+- … 105 more
 
 ## Trust and update procedure
 
