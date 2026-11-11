@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111` |
-| Exact source commit represented by this archive snapshot | `c59d1a394c8a96b26356cd11c429cff719ec33de` |
+| Exact source commit represented by this archive snapshot | `04f2bcd34b1c2935125ad2369717e10140025047` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-A): promote owner Option A approval and source-preservation audit to active work |
+| Last source commit title | docs(I2-A): append explicit owner Option A authority, live read-only evidence and no-prod release gates |
 | Files changed relative to main | 162 (122 non-docs; 40 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
