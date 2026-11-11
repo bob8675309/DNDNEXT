@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1n-legacy-sheet-writer-reader-census-20261111` |
-| Exact source commit represented by this archive snapshot | `c817be92d750a4b670f25d6786903b5e5354d0f0` |
+| Exact source commit represented by this archive snapshot | `4aa24b17c04f633c123eb83a1500bf3b72ef2879` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I1-N): validate source-hashed writer manifest and read-only audit query without database access |
+| Last source commit title | ci(I1-N): detect executable SQL statements, not source-pattern literals in read-only queries |
 | Files changed relative to main | 149 (112 non-docs; 37 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
