@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `042899ff0c417c96ee4fd60fc3e88453f40e6b59` |
+| Exact source commit represented by this archive snapshot | `539944e1d0b459728b5da54fb9b48095f317a945` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | fix(I1-O): delimit six source-faithful function DDL statements in disposable fixture |
+| Last source commit title | fix(I1-O): match original pg_get_functiondef permission predicate exactly in guarded scratch candidate |
 | Files changed relative to main | 153 (115 non-docs; 38 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1o_original_progression_hp_shared_forge_pg17.sql`
+- `scripts/fixtures/i1o_progression_hp_legacy_mirror_candidate_pg17.sql`
 
 ## Research-branch change inventory versus main
 
