@@ -28,7 +28,7 @@ for(const x of ledger.insert_upserts){
  assert.equal(x.status,"not_option_a_tested");
 }
 const doc=fs.readFileSync("docs/I2_B_OPTION_A_FIRST_SIGNED_FREEZE_SLICE_2026-11-11.md","utf8");
-for(const word of ["Option A","same-character","different-character","31 UPDATE","3 INSERT/UPSERT","not Option-A-tested","no production","v1 character creator","IF NOT FOUND","source-original","account","RLS"]){
+for(const word of ["Option A","same-character","different-character","31 UPDATE","3 INSERT/UPSERT","not Option-A-tested","not frozen a single production writer","v1 character creator","IF NOT FOUND","source-original","account","RLS"]){
  assert.ok(doc.toLowerCase().includes(word.toLowerCase()),"Missing scope note: "+word);
 }
 const fixt=fs.readFileSync("scripts/fixtures/i2b_option_a_first_three_writers_scratch_pg17.sql","utf8");
