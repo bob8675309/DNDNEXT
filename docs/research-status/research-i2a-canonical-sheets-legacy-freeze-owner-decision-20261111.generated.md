@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111` |
-| Exact source commit represented by this archive snapshot | `2326bf3b2e7c18b12f45ddef9147a56631b1411c` |
+| Exact source commit represented by this archive snapshot | `8c4f32ba1e3a968188a51f4b5e26d0ab4fd6f69a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-A): enforce owner Option A decision, source census integrity and SELECT-only audit |
+| Last source commit title | test(I2-A): match owner's preserved source RED wording without weakening release gates |
 | Files changed relative to main | 161 (121 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
