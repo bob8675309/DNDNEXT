@@ -91,7 +91,7 @@ jobs:
       - name: Configure isolated PostgreSQL 17 + GoTrue
         run: |
           mkdir -p "$RUNNER_TEMP/i1m-local/supabase"
-          cat > "$RUNNER_TEMP/i1l-local/supabase/config.toml" <<'TOML'
+          cat > "$RUNNER_TEMP/i1m-local/supabase/config.toml" <<'TOML'
           project_id = "i1m-artificer-legacy-mirror-local-only"
           [api]
           port = 55621
@@ -104,7 +104,7 @@ jobs:
           TOML
       - name: Start disposable local Supabase services
         run: |
-          cd "$RUNNER_TEMP/i1l-local"
+          cd "$RUNNER_TEMP/i1m-local"
           npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - name: Signed original Forge v2/v3 plus private Story and #324 nonce research
         shell: bash
@@ -120,9 +120,9 @@ jobs:
           test "$DNDNEXT_I1K_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
           test "$DNDNEXT_I1L_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
           test "$DNDNEXT_I1M_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
-          (cd "$RUNNER_TEMP/i1l-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i1l-local-env"
+          (cd "$RUNNER_TEMP/i1m-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i1m-local-env"
           set -a
-          source "$RUNNER_TEMP/i1l-local-env"
+          source "$RUNNER_TEMP/i1m-local-env"
           set +a
           export DNDNEXT_I1G_LOCAL_URL='http://127.0.0.1:55621'
           export DNDNEXT_I1G_LOCAL_ANON_KEY="$ANON_KEY"
@@ -134,5 +134,5 @@ jobs:
       - name: Stop and discard local test services and data
         if: always()
         run: |
-          cd "$RUNNER_TEMP/i1l-local"
+          cd "$RUNNER_TEMP/i1m-local"
           npx --yes supabase@2.120.0 stop --no-backup || true
