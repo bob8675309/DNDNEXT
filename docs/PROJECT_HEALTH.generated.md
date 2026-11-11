@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T21:16:11Z | research/i2c-creation-signup-option-a-freeze-20261111 (931b65b54bbf794ad450af64fc7056566e7611c3) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T21:17:04Z | research/i2c-creation-signup-option-a-freeze-20261111 (963a04a9bc897e247f7e088ef5a99319c1ae3cdf) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
