@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `996028c6c51182b5bbfac96a5df1f7d74b4b4770` |
+| Exact source commit represented by this archive snapshot | `295eee4ad2813d99505407267d978002f860ef59` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-B): remove exactly three legacy account writes in disposable signed earned/rest scratch, original MD5-locked |
-| Files changed relative to main | 163 (123 non-docs; 40 docs) |
+| Last source commit title | test(I2-B): disposable JWT/RLS profile-only grants reject direct legacy sheet writes |
+| Files changed relative to main | 164 (124 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2b_option_a_first_three_writers_scratch_pg17.sql`
+- `scripts/fixtures/i2b_option_a_scratch_player_profile_acl_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
 - `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
-- … 113 more
+- … 114 more
 
 ## Trust and update procedure
 

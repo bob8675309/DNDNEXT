@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T12:56:55Z | research/i2b-frozen-legacy-sheet-first-signed-slice-20261111 (996028c6c51182b5bbfac96a5df1f7d74b4b4770) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T12:58:46Z | research/i2b-frozen-legacy-sheet-first-signed-slice-20261111 (295eee4ad2813d99505407267d978002f860ef59) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
