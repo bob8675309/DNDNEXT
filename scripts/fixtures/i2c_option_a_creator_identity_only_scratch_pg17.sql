@@ -45,4 +45,4 @@ BEGIN
    OR md5(pg_get_functiondef('public.character_source_priority_v1(text)'::regprocedure))<>'fdcc080cd95e6ce282631191869893c1'
  THEN RAISE EXCEPTION 'I2C original signup/spell helper source must not change'; END IF;
 END $i2c$;
-echo 'PASS I2C-CANDIDATE: exact v1 historical UPDATE+FOUND branch and v2 sheet UPSERT replaced with identity-only insert, both original source MD5s reversible; signup original untouched'
+\echo 'PASS I2C-CANDIDATE: exact v1 historical UPDATE+FOUND branch and v2 sheet UPSERT replaced with identity-only insert, both original source MD5s reversible; signup original untouched'
