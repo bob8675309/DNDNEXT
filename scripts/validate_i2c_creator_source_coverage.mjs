@@ -49,7 +49,7 @@ assert.match(aclSql,/GRANT UPDATE\(user_id,name,updated_at\)/);
 assert.match(testJs,/PASS I2C-02 EXPECTED ORIGINAL V1 RED/);
 assert.match(testJs,/PASS I2C-03 EXPECTED ORIGINAL V2 RED/);
 assert.match(testJs,/PASS I2C-10:/);
-for(const k of ["Option A","private.create_player_character_v2_source_20261105","not a hosted migration","original v1","original v2","signup"]){
+for(const k of ["Option A","private.create_player_character_v2_source_20261105","neither candidate is a hosted migration","original v1","the v2 scratch candidate","signup"]){
  assert.ok(doc.toLowerCase().includes(k.toLowerCase()),"Missing required scope: "+k);
 }
 console.log("PASS I2C-STATIC: 4/34 and 3/3 original source-path bounded signed coverage accounted; private v2/v3 untested blocker explicit");
