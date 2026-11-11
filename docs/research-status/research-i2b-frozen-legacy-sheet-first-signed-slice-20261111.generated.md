@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `ae5281f0241b5f620d65f4cca961ff4a68e49d98` |
+| Exact source commit represented by this archive snapshot | `6cfba7bc8dce36f507c7a2ba80581f2e08e2e3cf` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I2-B): run original P1.3 and I1-P signed suites unchanged before Option A no-mirror auth/ACL tests |
-| Files changed relative to main | 166 (126 non-docs; 40 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(I2-B): ledger 3 tested/31 untested UPDATE writers and 3 untested UPSERT source paths |
+| Files changed relative to main | 167 (126 non-docs; 41 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2b-option-a-first-signed-slice.yml`
+- `docs/I2_B_OPTION_A_SOURCE_WRITER_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
-- … 116 more
+- … 117 more
 
 ## Trust and update procedure
 
