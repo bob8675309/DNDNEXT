@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `e753ccbbf7b915eb5adffee011cfc98bd9b58404` |
+| Exact source commit represented by this archive snapshot | `99f8000994fd9194ebe21ab0801636ad24ad6760` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-M): advance branch-local active task to verified legacy Artificer RED/GREEN and next census |
+| Last source commit title | docs(I1-M): append exact signed RED/GREEN and failed-source guard evidence receipt |
 | Files changed relative to main | 144 (109 non-docs; 35 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
