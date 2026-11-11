@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `03888eb9d45ce602e4720dd97a6e629aad3d39b5` |
+| Exact source commit represented by this archive snapshot | `f40243b8740ecd89a16fde07a6194c24f2e505ae` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-O): source-faithfully handle HP versus Admin v2 whitespace in mirror predicate fingerprints |
+| Last source commit title | docs(I1-O): record signed 7/7 original RED/scratch GREEN exact test and failed strict source-gate evidence |
 | Files changed relative to main | 153 (115 non-docs; 38 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1o_progression_hp_legacy_mirror_candidate_pg17.sql`
+- `docs/I1_O_CROSS_FAMILY_SIGNED_LEGACY_SHEET_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
