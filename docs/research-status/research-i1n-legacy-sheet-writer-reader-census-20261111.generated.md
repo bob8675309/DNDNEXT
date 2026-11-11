@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1n-legacy-sheet-writer-reader-census-20261111` |
-| Exact source commit represented by this archive snapshot | `63942b002ceb83a8cc685a50256da7fbc18910cf` |
+| Exact source commit represented by this archive snapshot | `1cb8cab5f25cff6bcc92406e859323792f587d58` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(I1-N): record all 34 live players sheet writers, source hashes and six database lookups |
-| Files changed relative to main | 145 (109 non-docs; 36 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(I1-N): static contract for all live player-sheet writers and named source consumers |
+| Files changed relative to main | 146 (110 non-docs; 36 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_N_LEGACY_SHEET_LIVE_SOURCE_CENSUS_2026-11-11.json`
+- `scripts/validate_i1n_legacy_sheet_census.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
-- … 95 more
+- … 96 more
 
 ## Trust and update procedure
 
