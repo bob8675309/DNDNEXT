@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2c-creation-signup-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `c0ddb1bd3a1a956aac92aec24b88863c085d3754` |
+| Exact source commit represented by this archive snapshot | `521265c5330e41808172125644b304da31aacb17` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-C): original v1/v2/signup RED and scoped identity-only Option A candidate, private v3 source blocker |
+| Last source commit title | test(I2-C): use original Forge-signed source-backed Fighter equipment package for v1/v2 tests |
 | Files changed relative to main | 175 (132 non-docs; 43 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I2_C_OPTION_A_CREATOR_SIGNUP_SIGNED_RESEARCH_2026-11-11.md`
+- `scripts/test_i2c_option_a_signed_creation_profile.mjs`
 
 ## Research-branch change inventory versus main
 
