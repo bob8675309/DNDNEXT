@@ -94,7 +94,9 @@ const createCharacter=(cid,label,barbarian=false)=>{
   lit(cid)+","+lit("I2B "+label)+",'npc',"+lit(nonce)+");"+
   "INSERT INTO public.character_sheets(character_id,sheet) VALUES("+lit(cid)+","+lit(JSON.stringify(sheet))+"::jsonb);"+
   "INSERT INTO public.character_progression(character_id,class_id,class_level,experience_points,pending_level_up,created_by)"+
-  " VALUES("+lit(cid)+","+lit(uid(barbarian?8521:8201))+",1,"+(barbarian?"0,false":"300,true")+","+lit(owner.id)+");"+
+  " VALUES("+lit(cid)+","+lit(uid(barbarian?8521:8201))+",1,"+(barbarian?"0,false":"300,true")+","+lit(owner.id)+")"+
+  " ON CONFLICT(character_id) DO UPDATE SET class_id=excluded.class_id,class_level=excluded.class_level,"+
+  " experience_points=excluded.experience_points,pending_level_up=excluded.pending_level_up,created_by=excluded.created_by;"+
   "INSERT INTO public.character_level_up_sessions(character_id,from_level,to_level,metadata_ready,status,created_by)"+
   " VALUES("+lit(cid)+",1,2,true,'open',"+lit(owner.id)+");"+
   "INSERT INTO public.character_permissions(character_id,user_id,can_edit) VALUES"+
