@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `539944e1d0b459728b5da54fb9b48095f317a945` |
+| Exact source commit represented by this archive snapshot | `03888eb9d45ce602e4720dd97a6e629aad3d39b5` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | fix(I1-O): match original pg_get_functiondef permission predicate exactly in guarded scratch candidate |
+| Last source commit title | test(I1-O): source-faithfully handle HP versus Admin v2 whitespace in mirror predicate fingerprints |
 | Files changed relative to main | 153 (115 non-docs; 38 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 

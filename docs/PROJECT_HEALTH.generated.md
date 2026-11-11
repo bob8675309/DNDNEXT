@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T04:31:38Z | research/i1o-cross-family-legacy-sheet-signed-20261111 (539944e1d0b459728b5da54fb9b48095f317a945) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T04:32:17Z | research/i1o-cross-family-legacy-sheet-signed-20261111 (03888eb9d45ce602e4720dd97a6e629aad3d39b5) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
