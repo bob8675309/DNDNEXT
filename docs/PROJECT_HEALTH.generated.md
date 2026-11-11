@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T05:02:00Z | research/i1p-earned-levelup-rest-legacy-sheet-20261111 (0c413bc5b0d1378a55891f070f76e74394bd0044) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T05:03:24Z | research/i1p-earned-levelup-rest-legacy-sheet-20261111 (af7b7fe2efb950d73d93f99d6dbebef4a6e4abc0) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

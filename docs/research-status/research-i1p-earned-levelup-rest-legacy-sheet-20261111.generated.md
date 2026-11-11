@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1p-earned-levelup-rest-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `0c413bc5b0d1378a55891f070f76e74394bd0044` |
+| Exact source commit represented by this archive snapshot | `af7b7fe2efb950d73d93f99d6dbebef4a6e4abc0` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-O): append signed original cross-family RED and scratch GREEN exact-hash CI handoff receipt |
-| Files changed relative to main | 153 (115 non-docs; 38 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(I1-P): preserve exact live rest orchestration and three source helpers in signed earned-v5 scratch |
+| Files changed relative to main | 154 (116 non-docs; 38 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/i1p_original_rest_shared_p13_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
-- … 103 more
+- … 104 more
 
 ## Trust and update procedure
 
