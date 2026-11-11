@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111` |
-| Exact source commit represented by this archive snapshot | `8c4f32ba1e3a968188a51f4b5e26d0ab4fd6f69a` |
+| Exact source commit represented by this archive snapshot | `83a39a76aec3ac4fdded80d894c328b1ea50ddcb` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-A): match owner's preserved source RED wording without weakening release gates |
-| Files changed relative to main | 161 (121 non-docs; 40 docs) |
+| Last source commit title | ci(I2-A): verify source census and owner Option A preservation plan without database access |
+| Files changed relative to main | 162 (122 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i2a_option_a_legacy_freeze_plan.mjs`
+- `.github/workflows/validate-i2a-option-a-freeze-plan.yml`
 
 ## Research-branch change inventory versus main
 
@@ -40,6 +40,7 @@
 - `.github/workflows/validate-i1n-legacy-sheet-census.yml`
 - `.github/workflows/validate-i1o-cross-family-legacy-local-auth.yml`
 - `.github/workflows/validate-i1p-earned-v5-rest-legacy-local-auth.yml`
+- `.github/workflows/validate-i2a-option-a-freeze-plan.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
 - `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
-- `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
-- … 111 more
+- … 112 more
 
 ## Trust and update procedure
 
