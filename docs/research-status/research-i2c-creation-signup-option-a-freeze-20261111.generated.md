@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2c-creation-signup-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `e568c43ab39c759847f750f14eb4664a57a824de` |
+| Exact source commit represented by this archive snapshot | `245295a6e0aa2eba9a85f114a80133e704025cb4` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-B): append exact successful signed Option A acceptance, failed seed attempt and next source gates |
-| Files changed relative to main | 169 (127 non-docs; 42 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(I2-C): exact five deployed creator/signup/helper originals and local Auth trigger after historic Forge tests |
+| Files changed relative to main | 170 (128 non-docs; 42 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/i2c_original_creation_signup_shared_forge_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
-- … 119 more
+- … 120 more
 
 ## Trust and update procedure
 
