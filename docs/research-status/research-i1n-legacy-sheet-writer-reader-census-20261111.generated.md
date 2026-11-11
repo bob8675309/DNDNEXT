@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1n-legacy-sheet-writer-reader-census-20261111` |
-| Exact source commit represented by this archive snapshot | `4aa24b17c04f633c123eb83a1500bf3b72ef2879` |
+| Exact source commit represented by this archive snapshot | `9b2a6fdb4a8e06c855232f000c2763da17b26e9d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I1-N): detect executable SQL statements, not source-pattern literals in read-only queries |
+| Last source commit title | docs(I1-N): prioritize complete legacy sheet writer/reader audit and next cross-family signed regression |
 | Files changed relative to main | 149 (112 non-docs; 37 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1n-legacy-sheet-census.yml`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
