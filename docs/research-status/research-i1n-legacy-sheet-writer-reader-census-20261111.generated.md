@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1n-legacy-sheet-writer-reader-census-20261111` |
-| Exact source commit represented by this archive snapshot | `26a5fe5cb76137582c314e6d7076166a5372534b` |
+| Exact source commit represented by this archive snapshot | `c817be92d750a4b670f25d6786903b5e5354d0f0` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-N): align contract guard with exact review headings and recovery wording |
-| Files changed relative to main | 148 (111 non-docs; 37 docs) |
+| Last source commit title | ci(I1-N): validate source-hashed writer manifest and read-only audit query without database access |
+| Files changed relative to main | 149 (112 non-docs; 37 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i1n_legacy_sheet_census.mjs`
+- `.github/workflows/validate-i1n-legacy-sheet-census.yml`
 
 ## Research-branch change inventory versus main
 
@@ -37,6 +37,7 @@
 - `.github/workflows/validate-i1k-species-cantrip-original-local-auth.yml`
 - `.github/workflows/validate-i1l-artificer-original-local-auth.yml`
 - `.github/workflows/validate-i1m-artificer-legacy-local-auth.yml`
+- `.github/workflows/validate-i1n-legacy-sheet-census.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
-- `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
-- … 98 more
+- … 99 more
 
 ## Trust and update procedure
 
