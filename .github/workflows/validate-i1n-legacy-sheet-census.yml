@@ -43,6 +43,7 @@ jobs:
           const uncommented=sql.replace(/^\s*--.*$/gm,"");
           assert.match(uncommented,/pg_get_functiondef/);
           assert.match(uncommented,/pg_policies/);
-          assert.doesNotMatch(uncommented,/\b(?:INSERT|UPDATE|DELETE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|CREATE|COPY|DO|CALL)\s+(?:INTO|TABLE|FUNCTION|POLICY|ON|FROM|MATERIALIZED|TRIGGER|ROLE)\b/i);
+          assert.doesNotMatch(uncommented,/^\s*(?:INSERT|UPDATE|DELETE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|CREATE|COPY|DO|CALL|EXECUTE)\b/im);
+          assert.doesNotMatch(uncommented,/\b(?:pg_read_file|pg_ls_dir|dblink_exec)\s*\(/i);
           console.log("PASS I1-N SQL SAFETY: SELECT-only read-only source-census fixture");
           NODE
