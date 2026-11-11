@@ -35,8 +35,9 @@ async function rpc(client,method,args){
  throw Error("Disposable PostgREST RPC route unavailable: "+method);
 }
 const payload=(name,nonce=null)=>({
- name,...(nonce?{creation_request_id:nonce}:{}),
- sheet:{classKey:"fighter",level:1,marker:"I2C "+name}
+ name,...(nonce?{creation_request_id:nonce}:{}),secret:null,
+ sheet:{classKey:"fighter",level:1,marker:"I2C "+name,
+  startingEquipmentSelections:{mode:"package",classOption:"A",ruleset:"vanilla"}}
 });
 const actorName=async name=>{
  const client=make(),email="i2c-"+randomUUID()+"@example.invalid";
