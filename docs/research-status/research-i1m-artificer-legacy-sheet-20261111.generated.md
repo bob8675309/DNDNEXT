@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `59b26530f4c3c5f8b87e9a60f0781b7953808498` |
+| Exact source commit represented by this archive snapshot | `31ff677aa47500939e5962a7f1d71647ec112213` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-M): signed two-character Artificer legacy mirror RED/GREEN and delegation controls |
-| Files changed relative to main | 142 (108 non-docs; 34 docs) |
+| Last source commit title | ci(I1-M): signed disposable Artificer legacy mirror and full prior Forge acceptance |
+| Files changed relative to main | 143 (109 non-docs; 34 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `.github/workflows/validate-i1m-artificer-legacy-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -36,6 +36,7 @@
 - `.github/workflows/validate-i1j-khoravar-original-local-auth.yml`
 - `.github/workflows/validate-i1k-species-cantrip-original-local-auth.yml`
 - `.github/workflows/validate-i1l-artificer-original-local-auth.yml`
+- `.github/workflows/validate-i1m-artificer-legacy-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
-- `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
-- … 92 more
+- … 93 more
 
 ## Trust and update procedure
 
