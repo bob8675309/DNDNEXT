@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1p-earned-levelup-rest-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `5643fac5c4db0b40248310a377055e7ed906ebe9` |
+| Exact source commit represented by this archive snapshot | `344f91fafa01fc5038b6e5bf02b27c3311cd91b5` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-P): record verified signed 8/8 RED/GREEN source evidence and failed signature guard receipt |
+| Last source commit title | docs(I1-P): advance active milestone to signed earned-v5/rest original RED and scratch GREEN |
 | Files changed relative to main | 158 (119 non-docs; 39 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I1_P_EARNED_V5_REST_LEGACY_SHEET_RESEARCH_2026-11-11.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
