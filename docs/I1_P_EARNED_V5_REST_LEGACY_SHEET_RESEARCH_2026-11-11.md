@@ -2,6 +2,8 @@
 
 **Research only / 2026-11-11 UTC.** This work stacks on [I1-O #363](https://github.com/bob8675309/DNDNEXT/pull/363), and continues the owner-approved [Nov 9 I0–I6 integration-first plan #348](https://github.com/bob8675309/DNDNEXT/pull/348). No hosted database, release migrations, app runtime, frontend, Vercel, world/town/tactical maps, paid agents, or unrelated PRs are changed.
 
+> **2026-11-11 signed result — source RED and disposable candidate GREEN verified.** The dedicated [I1-P CI #42963989708](https://github.com/bob8675309/DNDNEXT/actions/runs/42963989708), signed GoTrue/PostgREST + PostgreSQL 17, job `130336830970`, **SUCCESS**: the unchanged P1.3 F06–F28 acceptance ran first, followed by all **I1P-01 through I1P-08 PASS**. I1P-02 proves original earned-v5 overwrites unrelated owner/coeditor legacy sheets, and I1P-03 proves original short-rest/Rage does the same. Only *after both RED reproductions*, I1P-04 stages three scratch-only mirror predicates; I1P-05–08 prove preservation, same-character sync, and signed negative behavior. The previous [run #42963682576](https://github.com/bob8675309/DNDNEXT/actions/runs/42963682576) preserved both source REDs and failed the candidate lookup because the generated `regprocedure` signatures included parameter names; it was corrected to positional type-only signatures without changing original source or RED assertions. **Live DnDWeb source and data remain unchanged.** Final documentation-inclusive exact-head CI will be checked separately.
+
 ## Scope
 
 I1-O [signed results](https://github.com/bob8675309/DNDNEXT/actions/runs/42960316507) proved the original **Admin** `set_character_progression_v2` and the original HP action overwrite another character's legacy account-wide `players.sheet`; the test did **not** exercise player-earned level-up or actual rest.
@@ -56,6 +58,6 @@ The candidate requires an empty account mirror or an exact existing `meta.creati
 - `scripts/fixtures/i1p_earned_levelup_rest_mirror_candidate_pg17.sql`: three exact source-original private functions with mirror-only predicates, scratch-only.
 - `.github/workflows/validate-i1p-earned-v5-rest-legacy-local-auth.yml`: dedicated pinned local Supabase 2.120.0 PG17 with disposable Auth, strict opt-in, complete original tests, new signed suite and cleanup.
 
-**Acceptance pending exact-head job logs.** Do not mark the candidate GREEN merely because source files exist. Preserve all failed source-identity attempts and never weaken original RED assertions.
+**Signed source RED / bounded scratch GREEN accepted at code/test CI #42963989708; final docs-inclusive head still requires its own CI check.** Do not confuse these disposable results with production acceptance. Preserve all failed source-identity attempts and never weaken original RED assertions.
 
 **Next bounded task:** verify I1P-01–08 at exact final head; then review owner decision and source-authentic concurrent rest/earned level-up permissions across the remaining account-mirror writer graph before any I2 release.
