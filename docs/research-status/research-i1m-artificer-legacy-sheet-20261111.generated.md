@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `2b5b8703cc4ffe123d40a9918266b429740d7a66` |
+| Exact source commit represented by this archive snapshot | `59b26530f4c3c5f8b87e9a60f0781b7953808498` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-M): disposable source-guarded Artificer legacy mirror compatibility candidate |
+| Last source commit title | test(I1-M): signed two-character Artificer legacy mirror RED/GREEN and delegation controls |
 | Files changed relative to main | 142 (108 non-docs; 34 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1m_artificer_legacy_projection_candidate_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
