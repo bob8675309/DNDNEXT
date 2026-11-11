@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `295eee4ad2813d99505407267d978002f860ef59` |
+| Exact source commit represented by this archive snapshot | `76c00b101f01ae1a19234ebc7b331e9647f67ef0` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-B): disposable JWT/RLS profile-only grants reject direct legacy sheet writes |
-| Files changed relative to main | 164 (124 non-docs; 40 docs) |
+| Last source commit title | test(I2-B): new signed Option A same/cross-character no-mirror-write, legacy ACL and profile-name acceptance |
+| Files changed relative to main | 165 (125 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2b_option_a_scratch_player_profile_acl_pg17.sql`
+- `scripts/test_i2b_option_a_first_slice_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
 - `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
-- … 114 more
+- … 115 more
 
 ## Trust and update procedure
 
