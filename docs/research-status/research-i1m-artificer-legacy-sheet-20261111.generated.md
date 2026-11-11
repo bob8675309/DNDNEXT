@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `bacab6441f3b0436efba1e7b5a1f930537ba33d6` |
+| Exact source commit represented by this archive snapshot | `967d5440d1dc34da90a2ec628a2138bf19008d95` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I1-M): correct all isolated workflow scratch paths before integration test |
+| Last source commit title | fix(I1-M): verify existing #319 guard already in #324 private v2 source instead of reinstalling |
 | Files changed relative to main | 144 (109 non-docs; 35 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1m-artificer-legacy-local-auth.yml`
+- `scripts/fixtures/i1m_legacy_v2_source_guard_local_pg17.sql`
 
 ## Research-branch change inventory versus main
 
