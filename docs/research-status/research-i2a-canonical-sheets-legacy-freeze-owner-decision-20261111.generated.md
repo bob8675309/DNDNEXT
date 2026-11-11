@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111` |
-| Exact source commit represented by this archive snapshot | `83a39a76aec3ac4fdded80d894c328b1ea50ddcb` |
+| Exact source commit represented by this archive snapshot | `c59d1a394c8a96b26356cd11c429cff719ec33de` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I2-A): verify source census and owner Option A preservation plan without database access |
+| Last source commit title | docs(I2-A): promote owner Option A approval and source-preservation audit to active work |
 | Files changed relative to main | 162 (122 non-docs; 40 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2a-option-a-freeze-plan.yml`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
