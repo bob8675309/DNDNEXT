@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `015ec3b85ce95e1e29aec408382ec5feb2861722` |
+| Exact source commit represented by this archive snapshot | `737bb2328a5c3f9ee484e365ad7159ad3d0cbff8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-B): align scope guard with explicit no-live-writer-change wording |
+| Last source commit title | ci(I2-B): enforce coverage ledger and source-only constraints before disposable signed tests |
 | Files changed relative to main | 169 (127 non-docs; 42 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i2b_first_slice_scope.mjs`
+- `.github/workflows/validate-i2b-option-a-first-signed-slice.yml`
 
 ## Research-branch change inventory versus main
 
