@@ -14,11 +14,11 @@ BEGIN
  THEN RAISE EXCEPTION 'I1-P candidate requires disposable signed source RED with complete original v5 and rest'; END IF;
  FOR r IN
    SELECT * FROM (VALUES
-   ('private.sync_player_forge_class_spell_summary_v1(p_character_id uuid)','5b1b275a268a57591a2e35a05ce7480d','where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);'),
-   ('private.complete_character_level_up_base_v3(p_character_id uuid, p_selections jsonb)','e33639d549ef557976a3970ea51f5238','where p.user_id in (
+   ('private.sync_player_forge_class_spell_summary_v1(uuid)','5b1b275a268a57591a2e35a05ce7480d','where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);'),
+   ('private.complete_character_level_up_base_v3(uuid,jsonb)','e33639d549ef557976a3970ea51f5238','where p.user_id in (
     select cp.user_id from public.character_permissions cp where cp.character_id = p_character_id
   );'),
-   ('private.restore_character_rest_action_state_v1(p_character_id uuid, p_rest_type text)','d75edf2ac583e3790882155c702e2165','where p.user_id in (
+   ('private.restore_character_rest_action_state_v1(uuid,text)','d75edf2ac583e3790882155c702e2165','where p.user_id in (
     select cp.user_id
     from public.character_permissions cp
     where cp.character_id=p_character_id and cp.can_edit
