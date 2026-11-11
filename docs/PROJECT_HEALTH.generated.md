@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T05:15:00Z | research/i1p-earned-levelup-rest-legacy-sheet-20261111 (f969af0a15cc8a7e517808cb2eeeefea3119f6fd) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T05:43:09Z | research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111 (f969af0a15cc8a7e517808cb2eeeefea3119f6fd) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
