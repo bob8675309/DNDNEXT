@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `744c344917f824487509ad392aa574b28182677b` |
+| Exact source commit represented by this archive snapshot | `dd6cafa3be15247d4d2eb14249735a7726d033a2` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | fix(I2-B): preserve P1.3 automatic character_progression trigger by idempotent seed upsert |
+| Last source commit title | docs(I2-B): record signed 8/8 Option A no-write acceptance and retained failed seed receipt |
 | Files changed relative to main | 169 (127 non-docs; 42 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i2b_option_a_first_slice_local_auth.mjs`
+- `docs/I2_B_OPTION_A_FIRST_SIGNED_FREEZE_SLICE_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
