@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `f40243b8740ecd89a16fde07a6194c24f2e505ae` |
+| Exact source commit represented by this archive snapshot | `95a7f422c9d377a3904295a60b35c86750633171` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-O): record signed 7/7 original RED/scratch GREEN exact test and failed strict source-gate evidence |
+| Last source commit title | docs(I1-O): advance active work to proven HP/Admin progression RED and bounded scratch GREEN |
 | Files changed relative to main | 153 (115 non-docs; 38 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I1_O_CROSS_FAMILY_SIGNED_LEGACY_SHEET_RESEARCH_2026-11-11.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
