@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2c-creation-signup-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `521265c5330e41808172125644b304da31aacb17` |
+| Exact source commit represented by this archive snapshot | `be23ebc26a9715f4d2cabf0f6b3536072e691120` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-C): use original Forge-signed source-backed Fighter equipment package for v1/v2 tests |
+| Last source commit title | fix(I2-C): restore psql backslash-echo terminator after source-reversible creator candidate DO block |
 | Files changed relative to main | 175 (132 non-docs; 43 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2c_option_a_signed_creation_profile.mjs`
+- `scripts/fixtures/i2c_option_a_creator_identity_only_scratch_pg17.sql`
 
 ## Research-branch change inventory versus main
 
