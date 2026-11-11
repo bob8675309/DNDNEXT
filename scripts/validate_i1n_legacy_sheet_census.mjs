@@ -77,8 +77,8 @@ const canonicalSource=fs.readFileSync("sql/20260804_01_multi_player_character_fo
 assert.match(canonicalSource,/create or replace function public\.get_my_player_characters_v2\(\)/);
 assert.match(canonicalSource,/join public\.character_sheets cs/);
 const plan=fs.readFileSync("docs/I1_N_LEGACY_PLAYER_SHEET_AUTHORITY_REVIEW_2026-11-11.md","utf8");
-for(const token of ["34","6 database","nonempty", "31", "#361",
-  "canonical","recovery","cross-account","owner approval"]){
+for(const token of ["34","Six database","nonempty", "31", "#361",
+  "canonical","isolated restore","unrelated","owner approval"]){
   assert.ok(plan.toLowerCase().includes(token.toLowerCase()),"Missing risk/hand-off token "+token);
 }
 console.log("PASS I1N-CENSUS: 34 source-hashed legacy writers (4 edit-restricted update predicates, 29 broad permission updates, 1 direct v1 account writer), 3 insert sources, 6 DB player-row lookups, 7 named app identity consumers; canonical character-sheet path and held-original fingerprints preserved.");
