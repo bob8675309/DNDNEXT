@@ -1573,6 +1573,102 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
           assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
           console.log("PASS I1L-12: non-Artificer skip, seven original deferred CP triggers, original I1C-K Wizard/Battle Master/Warlock/Eladrin/Khoravar source grants+Stage4 RLS still intact");
           console.log("I1L RESULT: original source first-COMMIT RED (4 Artificer grants, MISSING projection) reproduced under genuine signed GoTrue/PostgREST; isolated one-condition NULL-safe projection candidate GREEN (new fixed/wildcard signed grants and projection, immutable replay and negative rollback) with other five original source function hashes unchanged. Live original remains RED; NOT production-ready or full 31/31.");
+
+          // I1-M is a separate signed research extension, not an edit to I1-L
+          // source-original RED or its independently validated NULL candidate.
+          if(env.DNDNEXT_I1M_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
+            const legacyFor=user=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+wq(user.id));
+            const legacyNonce=user=>sql("SELECT sheet#>>'{meta,creationRequestId}' FROM public.players WHERE user_id="+wq(user.id));
+            const canonicalNonce=id=>sql("SELECT sheet#>>'{meta,creationRequestId}' FROM public.character_sheets WHERE character_id="+wq(id));
+            const planSlots=plans.map(x=>[x]);
+            const firstOwner=await signedActor();
+            const firstNonce=randomUUID();
+            const firstId=succeeded(await create(firstOwner,"I1M-FIRST-FIGHTER-STORY",
+              gearPayload("I1M RED baseline first Fighter",firstNonce)),"first Fighter before legacy-sheet guard");
+            assert.equal(legacyNonce(firstOwner),firstNonce);
+            assert.equal(canonicalNonce(firstId),firstNonce);
+            const oldLegacy=legacyFor(firstOwner);
+            const originalPrivateV2=sql("SELECT md5(pg_get_functiondef('private.create_player_character_v2_source_20261105(jsonb,jsonb)'::regprocedure))");
+            sqlFile("scripts/fixtures/i1m_legacy_v2_source_guard_local_pg17.sql");
+            assert.equal(sql("SELECT md5(pg_get_functiondef('private.create_player_character_v2_source_20261105(jsonb,jsonb)'::regprocedure))"),originalPrivateV2);
+            console.log("PASS I1M-01: original #324 private v2 already contains exact #319 guard, source-hash proven without function changes");
+
+            // Expected RED: #319 already protects the private v2 UPSERT but the unchanged
+            // Artificer projector still overwrites account-wide legacy sheet.
+            const secondNonce=randomUUID();
+            const secondId=succeeded(await create(firstOwner,"I1M-RED-ARTIFICER-STORY",
+              artPayload("I1M red second character Artificer",secondNonce,planSlots)),
+              "second Artificer with v2 snapshot protection installed");
+            artCheck(secondId,4);
+            assert.equal(canonicalNonce(firstId),firstNonce);
+            assert.equal(canonicalNonce(secondId),secondNonce);
+            assert.equal(legacyNonce(firstOwner),secondNonce,
+              "RED: exact I1-L Artificer projector must still overwrite the first character's legacy mirror");
+            assert.notEqual(legacyFor(firstOwner),oldLegacy);
+            console.log("PASS I1M-02 EXPECTED SOURCE RED: source #319 v2 guard is bypassed by I1-L Artificer projector and older character legacy snapshot is replaced");
+
+            // Narrow, research-only projected-mirror predicate correction.
+            sqlFile("scripts/fixtures/i1m_artificer_legacy_projection_candidate_pg17.sql");
+            const safeOwner=await signedActor();
+            const safeNonce=randomUUID();
+            const safeFirst=succeeded(await create(safeOwner,"I1M-GREEN-FIRST-STORY",
+              gearPayload("I1M green first Fighter",safeNonce)),"green first Fighter");
+            const safeLegacy=legacyFor(safeOwner);
+            assert.equal(legacyNonce(safeOwner),safeNonce);
+            const safeArtNonce=randomUUID(),safeArtStory="I1M-GREEN-ARTIFICER-STORY";
+            const safeArtPayload=artPayload("I1M green second Artificer",safeArtNonce,planSlots);
+            const safeArt=succeeded(await create(safeOwner,safeArtStory,safeArtPayload),
+              "green second Artificer signed first-COMMIT");
+            artCheck(safeArt,4);
+            assert.equal(legacyFor(safeOwner),safeLegacy,"second Artificer must not change established legacy Fighter snapshot");
+            assert.equal(legacyNonce(safeOwner),safeNonce);
+            assert.equal(canonicalNonce(safeFirst),safeNonce);
+            assert.equal(canonicalNonce(safeArt),safeArtNonce);
+            assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(safeArt)),safeArtStory);
+            const safeGrantHash=artHash(safeArt);
+            assert.equal(succeeded(await create(safeOwner,safeArtStory,safeArtPayload),"green Artificer retry"),safeArt);
+            assert.equal(artHash(safeArt),safeGrantHash);
+            assert.equal(legacyFor(safeOwner),safeLegacy);
+            denied(await create(safeOwner,"I1M-CHANGED-STORY",safeArtPayload),"green changed Story","22023");
+            console.log("PASS I1M-03: second character's Artificer grants + canonical sheet, immutable nonce/Story and original legacy Fighter sheet all preserved");
+
+            const freshArtOwner=await signedActor(),freshNonce=randomUUID();
+            const freshArt=succeeded(await create(freshArtOwner,"I1M-FIRST-ARTIFICER-STORY",
+              artPayload("I1M first character Artificer",freshNonce,planSlots)),
+              "first-account Artificer must receive legacy snapshot projection");
+            artCheck(freshArt,4);
+            assert.equal(legacyNonce(freshArtOwner),freshNonce);
+            assert.equal(sql("SELECT sheet#>>'{classFeatureChoices,artificer-magic-item-plans,count}' FROM public.players WHERE user_id="+wq(freshArtOwner.id)),"4");
+            console.log("PASS I1M-04: first character Artificer still projects four plans into canonical sheet and its own matching legacy account snapshot");
+
+            // Delegation is staged via privileged local fixture SQL (NOT
+            // authorization proof); the projector must not clobber another
+            // account merely because it has a permission row for the Artificer.
+            const delegate=await signedActor(),delegateNonce=randomUUID();
+            const delegateFirst=succeeded(await create(delegate,"I1M-DELEGATE-OWN-STORY",
+              gearPayload("I1M delegate independent Fighter",delegateNonce)),"delegate independent own character");
+            const delegateHash=legacyFor(delegate);
+            sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) VALUES ("+
+              wq(safeArt)+","+wq(delegate.id)+",false,false,false)");
+            sql("SELECT private.sync_character_artificer_plan_projection_v1("+wq(safeArt)+")");
+            assert.equal(legacyFor(delegate),delegateHash,"delegated viewer legacy sheet must not be replaced");
+            assert.equal(legacyNonce(delegate),delegateNonce);
+            assert.equal(canonicalNonce(delegateFirst),delegateNonce);
+            assert.equal(legacyFor(safeOwner),safeLegacy);
+            assert.equal(artHash(safeArt),safeGrantHash);
+            assert.equal(sql("SELECT count(*) FROM public.character_permissions WHERE character_id="+wq(safeArt)+" AND user_id="+wq(delegate.id)),"1");
+            console.log("PASS I1M-05: privileged local delegated-visibility specimen does not overwrite second account legacy sheet; no new grants or cross-account Story read");
+
+            const badNonce=randomUUID(),before=artGlobal();
+            const bad=artPayload("I1M invalid after compatibility candidate",badNonce,[[plans[0]],[plans[0]],[plans[2]],[plans[3]]]);
+            denied(await create(safeOwner,"I1M-INVALID-ARTIFICER",bad),"invalid duplicate Artificer","P0001");
+            assert.equal(wNonce(badNonce),0);assert.equal(recordCount("public.characters","creation_request_id="+wq(badNonce)),0);
+            assert.equal(artGlobal(),before);assert.equal(legacyFor(safeOwner),safeLegacy);
+            assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))"),"67766989a466b82f170b5e00f9154e24");
+            console.log("PASS I1M-06: original deferred duplicate rejection remains atomic and source grant materializer unchanged");
+            console.log("I1M RESULT: #319 guard + I1-L Artificer signed RED reproduced; only disposable account mirror predicate candidate GREEN for two-character owner, first-character Artificer and separate delegated account. Legacy mirror is shared by 34 live updater functions; this fixes ONLY the Artificer writer and is NOT a general multi-character release.");
+          }
+
         }
       }
     }
