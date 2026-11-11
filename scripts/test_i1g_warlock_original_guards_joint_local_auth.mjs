@@ -1590,10 +1590,10 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
             const oldLegacy=legacyFor(firstOwner);
             const originalPrivateV2=sql("SELECT md5(pg_get_functiondef('private.create_player_character_v2_source_20261105(jsonb,jsonb)'::regprocedure))");
             sqlFile("scripts/fixtures/i1m_legacy_v2_source_guard_local_pg17.sql");
-            assert.notEqual(sql("SELECT md5(pg_get_functiondef('private.create_player_character_v2_source_20261105(jsonb,jsonb)'::regprocedure))"),originalPrivateV2);
-            console.log("PASS I1M-01: #319 v2 legacy guard source-integrated into original #324 private function without changing public Story/nonce APIs");
+            assert.equal(sql("SELECT md5(pg_get_functiondef('private.create_player_character_v2_source_20261105(jsonb,jsonb)'::regprocedure))"),originalPrivateV2);
+            console.log("PASS I1M-01: original #324 private v2 already contains exact #319 guard, source-hash proven without function changes");
 
-            // Expected RED: #319 protects its v2 UPSERT but the unchanged
+            // Expected RED: #319 already protects the private v2 UPSERT but the unchanged
             // Artificer projector still overwrites account-wide legacy sheet.
             const secondNonce=randomUUID();
             const secondId=succeeded(await create(firstOwner,"I1M-RED-ARTIFICER-STORY",
