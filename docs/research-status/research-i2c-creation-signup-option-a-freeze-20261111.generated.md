@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2c-creation-signup-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `80b2d13f18c4f59171bdf25f6d6a66c1b38bb003` |
+| Exact source commit represented by this archive snapshot | `13bbea813c31139991b26d7398d3242e52d0e45c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I2-C): verify held 34+3 source ledger and private-v3 blocker before signed disposable acceptance |
+| Last source commit title | docs(I2-C): record exact signed 10/10 source RED and scratch GREEN with failed fixture attempts retained |
 | Files changed relative to main | 177 (133 non-docs; 44 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2c-creation-signup-option-a-local-auth.yml`
+- `docs/I2_C_OPTION_A_CREATOR_SIGNUP_SIGNED_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
