@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1n-legacy-sheet-writer-reader-census-20261111` |
-| Exact source commit represented by this archive snapshot | `dbe390b3ec5b4135560f2c94c875f04f7a437075` |
+| Exact source commit represented by this archive snapshot | `26a5fe5cb76137582c314e6d7076166a5372534b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-N): complete 34-function matrix, app consumers, privacy and multi-character mirror decision gates |
+| Last source commit title | test(I1-N): align contract guard with exact review headings and recovery wording |
 | Files changed relative to main | 148 (111 non-docs; 37 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_N_LEGACY_PLAYER_SHEET_AUTHORITY_REVIEW_2026-11-11.md`
+- `scripts/validate_i1n_legacy_sheet_census.mjs`
 
 ## Research-branch change inventory versus main
 
