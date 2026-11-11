@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2c-creation-signup-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `13bbea813c31139991b26d7398d3242e52d0e45c` |
+| Exact source commit represented by this archive snapshot | `931b65b54bbf794ad450af64fc7056566e7611c3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-C): record exact signed 10/10 source RED and scratch GREEN with failed fixture attempts retained |
+| Last source commit title | docs(I2-C): promote 10/10 signed source-original creator RED and Option A scratch GREEN, private v3 gap |
 | Files changed relative to main | 177 (133 non-docs; 44 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_C_OPTION_A_CREATOR_SIGNUP_SIGNED_RESEARCH_2026-11-11.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
