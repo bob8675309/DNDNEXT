@@ -44,7 +44,7 @@ AS $function$
         and cp.user_id = auth.uid()
         and cp.can_edit
     );
-$function$
+$function$;
 
 
 -- EXACT LIVE PG17 original public.xp_threshold_for_level_v1 source MD5 d6111bcc35c85343df319fd5dc3d76e2
@@ -58,7 +58,7 @@ AS $function$
     0::bigint, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
     85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000
   ])[greatest(1, least(20, coalesce(p_level, 1)))];
-$function$
+$function$;
 
 
 -- EXACT LIVE PG17 original public.get_character_progression_v1 source MD5 8df340fa72ee78973e6c6616e32e1ba8
@@ -133,7 +133,7 @@ begin
     'events', v_events
   );
 end;
-$function$
+$function$;
 
 
 -- EXACT LIVE PG17 original public.set_character_progression_v1 source MD5 eb467b7c7a8d548581a36cfcb0d8f77b
@@ -225,7 +225,7 @@ begin
 
   return public.get_character_progression_v1(p_character_id);
 end;
-$function$
+$function$;
 
 
 -- EXACT LIVE PG17 original public.set_character_progression_v2 source MD5 c4ea1c7993912f6b4c6fe9ee7b25343f
@@ -300,7 +300,7 @@ begin
 
   return public.get_character_progression_v1(p_character_id);
 end;
-$function$
+$function$;
 
 
 -- EXACT LIVE PG17 original public.adjust_character_hit_points_v1 source MD5 f855be60d971aa63e32ade327d14c369
@@ -382,7 +382,7 @@ begin
     'sheet',v_sheet
   );
 end;
-$function$
+$function$;
 
 
 
