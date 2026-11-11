@@ -1667,6 +1667,132 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
             assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))"),"67766989a466b82f170b5e00f9154e24");
             console.log("PASS I1M-06: original deferred duplicate rejection remains atomic and source grant materializer unchanged");
             console.log("I1M RESULT: #319 guard + I1-L Artificer signed RED reproduced; only disposable account mirror predicate candidate GREEN for two-character owner, first-character Artificer and separate delegated account. Legacy mirror is shared by 34 live updater functions; this fixes ONLY the Artificer writer and is NOT a general multi-character release.");
+
+            // I1-O keeps all original I1C..M proof unchanged, then exercises
+            // two MORE deployed source-original writer families in the SAME
+            // signed Artificer/Forge/Story database: HP action and Admin
+            // progression setter (not earned level-up v5 or full rest).
+            if(env.DNDNEXT_I1O_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
+              sqlFile("scripts/fixtures/i1o_original_progression_hp_shared_forge_pg17.sql");
+              assert.equal(sql("SELECT md5(pg_get_functiondef('public.adjust_character_hit_points_v1(uuid,integer,integer)'::regprocedure))"),"f855be60d971aa63e32ade327d14c369");
+              assert.equal(sql("SELECT md5(pg_get_functiondef('public.set_character_progression_v2(uuid,text,text,integer,bigint,text,text)'::regprocedure))"),"c4ea1c7993912f6b4c6fe9ee7b25343f");
+              assert.equal(sql("SELECT md5(pg_get_functiondef('public.set_character_progression_v1(uuid,text,text,integer,bigint,text,text)'::regprocedure))"),"eb467b7c7a8d548581a36cfcb0d8f77b");
+              const hp=(actor,id,amount=0,temp=7)=>rpc(actor.client,"adjust_character_hit_points_v1",{
+                p_character_id:id,p_amount:amount,p_temp_hp:temp
+              });
+              const progress=(actor,id,xp=300)=>rpc(actor.client,"set_character_progression_v2",{
+                p_character_id:id,p_class_key:"artificer",p_source:"EFA",p_level:2,
+                p_experience_points:xp,p_subclass_name:null,p_subclass_source:null
+              });
+              const makePair=async(actor,label)=>{
+                const firstNonce=randomUUID(),secondNonce=randomUUID();
+                const firstStory="I1O-"+label+"-FIRST-PRIVATE-STORY";
+                const secondStory="I1O-"+label+"-ARTIFICER-PRIVATE-STORY";
+                const first=succeeded(await create(actor,firstStory,gearPayload("I1O "+label+" first Fighter",firstNonce)),"I1O "+label+" first signed");
+                const secondPayload=artPayload("I1O "+label+" second Artificer",secondNonce,planSlots);
+                const second=succeeded(await create(actor,secondStory,secondPayload),"I1O "+label+" second signed");
+                artCheck(second,4);
+                assert.equal(legacyNonce(actor),firstNonce);
+                assert.equal(canonicalNonce(first),firstNonce);
+                assert.equal(canonicalNonce(second),secondNonce);
+                return {first,second,firstNonce,secondNonce,firstStory,secondStory,secondPayload,
+                  original:legacyFor(actor),grants:artHash(second)};
+              };
+              const gm=await signedActor();
+              sql("INSERT INTO private.test_admins(id) VALUES ("+wq(gm.id)+")");
+              assert.equal(sql("SELECT count(*) FROM private.test_admins WHERE id="+wq(gm.id)),"1");
+              console.log("PASS I1O-01: exact live HP and Admin progression functions source/MD5 installed in disposable signed Forge, with unchanged I1-L/I1-M Artificer graph");
+
+              // Source RED: original HP authorization is correct for the
+              // editor, but its account-wide mirror UPDATE uses permission
+              // membership rather than the mirror's owning creation nonce.
+              const redHpOwner=await signedActor(),redHp=await makePair(redHpOwner,"original-hp-red");
+              const hpRedRes=succeeded(await hp(redHpOwner,redHp.second,0,7),"I1O original HP change on second Artificer");
+              assert.equal(hpRedRes.tempHp,7);
+              assert.equal(sql("SELECT sheet->>'tempHp' FROM public.character_sheets WHERE character_id="+wq(redHp.second)),"7");
+              assert.equal(legacyNonce(redHpOwner),redHp.secondNonce,"HP source RED must overwrite preexisting Fighter legacy sheet");
+              assert.notEqual(legacyFor(redHpOwner),redHp.original);
+              assert.equal(canonicalNonce(redHp.first),redHp.firstNonce);
+              assert.equal(artHash(redHp.second),redHp.grants);
+              console.log("PASS I1O-02 EXPECTED ORIGINAL HP RED: signed edit of second Artificer overwrites first Fighter's nonempty legacy players.sheet despite I1-M Artificer candidate");
+
+              // Source RED: authentic signed Admin setter v2->v1 changes the
+              // canonical second character AND later writes the unrelated
+              // account-wide mirror via can_edit permissions membership.
+              const redPgOwner=await signedActor(),redPg=await makePair(redPgOwner,"original-admin-progression-red");
+              const pgRedRes=succeeded(await progress(gm,redPg.second,300),"I1O original Admin progression of second Artificer");
+              assert.equal(pgRedRes.progression?.class_level,2);
+              assert.equal(legacyNonce(redPgOwner),redPg.secondNonce,"Admin progression source RED must overwrite first Fighter legacy");
+              assert.notEqual(legacyFor(redPgOwner),redPg.original);
+              assert.equal(canonicalNonce(redPg.first),redPg.firstNonce);
+              assert.equal(canonicalNonce(redPg.second),redPg.secondNonce);
+              assert.equal(artHash(redPg.second),redPg.grants);
+              console.log("PASS I1O-03 EXPECTED ORIGINAL PROGRESSION RED: source Admin set_character_progression_v2 rewrites first Fighter legacy sheet, canonical first Fighter remains unchanged");
+
+              // Two mutually independent writer-family corrections in scratch
+              // ONLY: replace the mirror UPDATE predicates (not canonical
+              // write, source checks, progression v1, HP math or grants).
+              sqlFile("scripts/fixtures/i1o_progression_hp_legacy_mirror_candidate_pg17.sql");
+              const greenOwner=await signedActor(),green=await makePair(greenOwner,"candidate-green");
+              const greenLegacy=green.original;
+              const greenStorySql="SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+wq(green.second);
+              assert.equal(sql(greenStorySql),green.secondStory);
+              succeeded(await hp(greenOwner,green.second,0,6),"I1O HP mirror green second character");
+              assert.equal(sql("SELECT sheet->>'tempHp' FROM public.character_sheets WHERE character_id="+wq(green.second)),"6");
+              assert.equal(legacyFor(greenOwner),greenLegacy,"HP candidate cannot overwrite first Fighter account snapshot");
+              assert.equal(legacyNonce(greenOwner),green.firstNonce);
+              assert.equal(canonicalNonce(green.second),green.secondNonce);
+              assert.equal(artHash(green.second),green.grants);
+              console.log("PASS I1O-04: signed second-character HP edit updates canonical Artificer and preserves first Fighter account mirror under scratch candidate");
+
+              const gp=succeeded(await progress(gm,green.second,300),"I1O Admin progression green second character");
+              assert.equal(gp.progression?.class_level,2);
+              assert.equal(sql("SELECT experience_points FROM public.character_progression WHERE character_id="+wq(green.second)),"300");
+              assert.equal(legacyFor(greenOwner),greenLegacy,"Admin progression candidate cannot overwrite other character legacy");
+              assert.equal(legacyNonce(greenOwner),green.firstNonce);
+              assert.equal(sql(greenStorySql),green.secondStory);
+              assert.equal(artHash(green.second),green.grants);
+              assert.equal(succeeded(await create(greenOwner,green.secondStory,green.secondPayload),"same nonce after progression"),green.second);
+              denied(await create(greenOwner,"I1O-CHANGED-STORY",green.secondPayload),"after progression changed Story","22023");
+              assert.equal(legacyFor(greenOwner),greenLegacy);
+              console.log("PASS I1O-05: signed Admin progression updates canonical second character, keeps first Fighter mirror and private Story/nonce/grants unchanged");
+
+              // When a character genuinely IS the account's legacy snapshot,
+              // retain the original same-character compatibility projection.
+              const firstArtBefore=legacyFor(freshArtOwner);
+              succeeded(await hp(freshArtOwner,freshArt,0,4),"first Artificer same mirror HP");
+              assert.equal(legacyNonce(freshArtOwner),freshNonce);
+              assert.equal(sql("SELECT sheet->>'tempHp' FROM public.players WHERE user_id="+wq(freshArtOwner.id)),"4");
+              succeeded(await progress(gm,freshArt,300),"first Artificer matching mirror progression");
+              assert.equal(legacyNonce(freshArtOwner),freshNonce);
+              assert.equal(sql("SELECT sheet#>>'{meta,level}' FROM public.players WHERE user_id="+wq(freshArtOwner.id)),"2");
+              assert.notEqual(legacyFor(freshArtOwner),firstArtBefore);
+              assert.equal(artGrants(freshArt),4);
+              console.log("PASS I1O-06: both scratch candidates still synchronize legitimate first-character Artificer legacy mirror under matching nonce");
+
+              // Auth and rollback: non-admin cannot use admin setter; a
+              // permission row without can_edit cannot use original HP RPC;
+              // out-of-range parameters must not mutate canonical or legacy.
+              const negativeMirror=legacyFor(greenOwner);
+              const negativeSheet=sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id="+wq(green.second));
+              denied(await progress(greenOwner,green.second,650),"non-admin cannot set progression","42501");
+              denied(await hp(delegate,safeArt,0,8),"delegated non-editor cannot modify HP","42501");
+              const invalidHp=await hp(greenOwner,green.second,0,-1);
+              assert.ok(invalidHp.error,"Invalid negative temp HP must fail source validation");
+              assert.equal(legacyFor(greenOwner),negativeMirror);
+              assert.equal(sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id="+wq(green.second)),negativeSheet);
+              assert.equal(artHash(green.second),green.grants);
+              assert.equal(sql(greenStorySql),green.secondStory);
+              console.log("PASS I1O-07: signed admin/editor/delegate denials and invalid HP leave canonical, legacy, Story and grants unchanged");
+
+              // The I1M Artificer helper has NOT been broadened. Neither has
+              // original Admin progression v1 nor the seven deferred triggers.
+              assert.equal(sql("SELECT md5(pg_get_functiondef('public.set_character_progression_v1(uuid,text,text,integer,bigint,text,text)'::regprocedure))"),"eb467b7c7a8d548581a36cfcb0d8f77b");
+              assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))"),"67766989a466b82f170b5e00f9154e24");
+              assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass AND NOT tgisinternal AND tgenabled='O' AND tgname IN ('character_progression_validate_player_forge_class_options_v1','character_progression_reject_unmarked_legacy_warlock_invocation','character_progression_validate_player_forge_class_options_v2','character_progression_materialize_eladrin_season_v1','character_progression_materialize_player_forge_khoravar_skill_v','character_progression_materialize_species_cantrip_v1','character_progression_materialize_player_forge_artificer_plans_')"),"7");
+              console.log("I1O RESULT: source-original signed creation + HP action and signed Admin progression RED both reproduced on distinct two-character accounts after I1-M; disposable two-writer mirror-only candidates GREEN. Not earned v5 level-up, not full rest, not all 34 writers, not production I2 acceptance.");
+            }
+
           }
 
         }
