@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2c-creation-signup-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `2aac92bc1175f00a120e2724468bea7dac5984dd` |
+| Exact source commit represented by this archive snapshot | `9138eb9af84ec0e39e2b3ec20bd9caf6ab900220` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-C): signed signup/creator profile-only grants with direct legacy sheet write denial in scratch |
-| Files changed relative to main | 172 (130 non-docs; 42 docs) |
+| Last source commit title | test(I2-C): signed original v1/v2 creator and signup RED, scratch Option A frozen-sheet/profile GREEN |
+| Files changed relative to main | 173 (131 non-docs; 42 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2c_option_a_signup_profile_acl_scratch_pg17.sql`
+- `scripts/test_i2c_option_a_signed_creation_profile.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
-- … 122 more
+- … 123 more
 
 ## Trust and update procedure
 
