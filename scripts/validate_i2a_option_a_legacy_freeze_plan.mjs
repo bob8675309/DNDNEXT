@@ -19,7 +19,7 @@ const required=[
   "players.sheet","frozen legacy compatibility snapshot",
   "no automatic write","all 34","three INSERT/UPSERT",
   "SECURITY DEFINER","table-level","name",
-  "no automatic backfill","source-original RED",
+  "no automatic backfill","source RED",
   "same character","all 34+3","isolated restore",
   "owner approval","No production"
 ];
