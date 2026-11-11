@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T05:50:56Z | research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111 (04f2bcd34b1c2935125ad2369717e10140025047) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T12:55:43Z | research/i2b-frozen-legacy-sheet-first-signed-slice-20261111 (04f2bcd34b1c2935125ad2369717e10140025047) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
