@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `724595f277ba115838c3dd29a6ae7187c1da735a` |
+| Exact source commit represented by this archive snapshot | `ae5281f0241b5f620d65f4cca961ff4a68e49d98` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-B): allow same-user ON CONFLICT profile upsert while restricting legacy sheet writes |
-| Files changed relative to main | 165 (125 non-docs; 40 docs) |
+| Last source commit title | ci(I2-B): run original P1.3 and I1-P signed suites unchanged before Option A no-mirror auth/ACL tests |
+| Files changed relative to main | 166 (126 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2b_option_a_scratch_player_profile_acl_pg17.sql`
+- `.github/workflows/validate-i2b-option-a-first-signed-slice.yml`
 
 ## Research-branch change inventory versus main
 
@@ -41,6 +41,7 @@
 - `.github/workflows/validate-i1o-cross-family-legacy-local-auth.yml`
 - `.github/workflows/validate-i1p-earned-v5-rest-legacy-local-auth.yml`
 - `.github/workflows/validate-i2a-option-a-freeze-plan.yml`
+- `.github/workflows/validate-i2b-option-a-first-signed-slice.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
-- `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
-- … 115 more
+- … 116 more
 
 ## Trust and update procedure
 
