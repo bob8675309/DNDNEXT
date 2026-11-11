@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `3983ec60cadd49a3ccb98b365bded7664f2d8316` |
+| Exact source commit represented by this archive snapshot | `e5bd78ef990e733bfd12924e456180a23e42e1c4` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-O): signed Forge/HP/Admin progression shared-account original RED and scratch mirror GREEN cases |
-| Files changed relative to main | 151 (114 non-docs; 37 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(I1-O): exact source-locked HP/Admin progression signed RED/GREEN acceptance and release exclusions |
+| Files changed relative to main | 152 (114 non-docs; 38 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `docs/I1_O_CROSS_FAMILY_SIGNED_LEGACY_SHEET_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
-- … 101 more
+- … 102 more
 
 ## Trust and update procedure
 
