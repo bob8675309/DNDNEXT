@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2c-creation-signup-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `0479266858046b228ac98e459a6531c98d4d8e32` |
+| Exact source commit represented by this archive snapshot | `80b2d13f18c4f59171bdf25f6d6a66c1b38bb003` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-C): align static contract markers to exact documented no-hosted-migration and v2 wording |
+| Last source commit title | ci(I2-C): verify held 34+3 source ledger and private-v3 blocker before signed disposable acceptance |
 | Files changed relative to main | 177 (133 non-docs; 44 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i2c_creator_source_coverage.mjs`
+- `.github/workflows/validate-i2c-creation-signup-option-a-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
