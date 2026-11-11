@@ -1,0 +1,238 @@
+{
+  "schema_version": "i2b-option-a-legacy-write-test-coverage-v1",
+  "owner_policy": "Option A — never rewrite existing legacy players.sheet, including on same-character actions",
+  "source_baseline": "I1-N read-only live source census; all 34 source MD5 verified identical on Nov 11",
+  "note": "Coverage is about Option A test behavior, not general source quality or previously passed I1-M/O/P matching-nonce research",
+  "updater_family_total": 34,
+  "updater_scratch_tested": 3,
+  "updater_not_yet_tested": 31,
+  "insert_path_total": 3,
+  "insert_path_scratch_tested": 0,
+  "insert_path_not_yet_tested": 3,
+  "updaters": [
+    {
+      "signature": "private.apply_additional_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "c847b3656b1f006f4020d2b23f73efcc",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_character_level_advancement_v1(p_character_id uuid, p_to_level integer, p_option_id uuid, p_instance jsonb)",
+      "source_md5": "46dd0af4f6ca816422a75e91a292c634",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_battle_master_maneuvers_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_selected_subclass text)",
+      "source_md5": "4154e92e9228cdc42bad2bc9fed37562",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_lore_discoveries_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "source_md5": "f3c2e92a7df5c388c4f92cfbe3f6bf25",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_magic_initiate_replacements_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "01f21c1f197aa4d1fa138b05de238690",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_metamagic_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "source_md5": "96b9b4d327057d34af9e59f49219de0d",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_mystic_arcanum_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "source_md5": "6c181bbb230a7c7021b48140906cb58d",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_subclass_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "53fc79f26851efbc698d6e7c8546af00",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_warlock_invocation_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_all_class_selections jsonb, p_feat_instances jsonb)",
+      "source_md5": "434994105f465b6ed92fdb80942f9942",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_warlock_invocations_v1(p_character_id uuid, p_to_level integer, p_selections jsonb, p_feat_instances jsonb)",
+      "source_md5": "ed0655adf02e9413157efe8a8bd414f9",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_wizard_savant_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_selected_subclass text)",
+      "source_md5": "77f643e44aa6048689a66ff4d01c4694",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_simple_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "e2078d079f8bbb1a397c2a43d13bae9b",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_source_owned_origin_feat_v1(p_character_id uuid, p_level integer, p_option_id uuid, p_instance jsonb, p_instance_key text, p_owner_type text, p_owner_key text)",
+      "source_md5": "b7d69d8643a6b2ba2be8efbb4ee41243",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_tough_progression_bonus_v1(p_character_id uuid, p_to_level integer)",
+      "source_md5": "2b8bca48b7067e2e67b66defcb7f2c10",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_wizard_signature_spell_ids_v1(p_character_id uuid, p_selected jsonb, p_cadence text, p_creator text)",
+      "source_md5": "c6d23dc8eccb824e9199ca027139a7da",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.complete_character_level_up_base_v3(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "e33639d549ef557976a3970ea51f5238",
+      "status": "first_signed_no_write_slice",
+      "note": "Tested in reduced, signed P1.3 earned v5 / noncaster Rage rest context; no full Forge/31-trigger equivalence"
+    },
+    {
+      "signature": "private.complete_epic_level_up_base_v1(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "0688ae4f53e4a5e02e8228473ff4d0e0",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.ensure_character_source_choices_v1(p_character_id uuid)",
+      "source_md5": "69bedf66148d2ce3dab97baa5de606cc",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.remove_source_owned_origin_feat_v1(p_character_id uuid, p_instance_key text, p_owner_type text, p_owner_key text)",
+      "source_md5": "ca278b2eb83d2a70aec369edf79a32a6",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.restore_character_rest_action_state_v1(p_character_id uuid, p_rest_type text)",
+      "source_md5": "d75edf2ac583e3790882155c702e2165",
+      "status": "first_signed_no_write_slice",
+      "note": "Tested in reduced, signed P1.3 earned v5 / noncaster Rage rest context; no full Forge/31-trigger equivalence"
+    },
+    {
+      "signature": "private.set_species_runtime_projection_v1(p_character_id uuid, p_projection_key text, p_state jsonb)",
+      "source_md5": "7f6e7d7d99ff79db1372462b4320c21b",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
+      "source_md5": "f2b6190ecc9400772e054892f63cdc47",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_character_artificer_plan_projection_v1(p_character_id uuid)",
+      "source_md5": "5ebf572db01143e9b523c7dba0d43ad5",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_character_eldritch_invocations_v1(p_character_id uuid)",
+      "source_md5": "69361283a0ba3b9d83a2104256a86f66",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_character_runtime_weapon_mastery_projection_v1(p_character_id uuid)",
+      "source_md5": "851b6da1a2b26e8652df20746fb0aa60",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_player_forge_class_spell_summary_v1(p_character_id uuid)",
+      "source_md5": "5b1b275a268a57591a2e35a05ce7480d",
+      "status": "first_signed_no_write_slice",
+      "note": "Tested in reduced, signed P1.3 earned v5 / noncaster Rage rest context; no full Forge/31-trigger equivalence"
+    },
+    {
+      "signature": "public.adjust_character_hit_points_v1(p_character_id uuid, p_amount integer, p_temp_hp integer)",
+      "source_md5": "f855be60d971aa63e32ade327d14c369",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "1500703592c3cb8e1738126eac508e6a",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.complete_character_level_up_v2(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "28a227a1dfb9a3cc5516c5b7afb874b0",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.configure_character_weapon_mastery_v1(p_character_id uuid, p_item_ids uuid[])",
+      "source_md5": "32fa55b69478af07f8f0002b967a5704",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.create_player_character_v1(p_payload jsonb, p_spell_choices jsonb)",
+      "source_md5": "e2db5802f1f51b93f5b9d374a835e4b9",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.recover_character_invocations_v1(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "05f6d19a7e2f45d890c62c27cb419e7f",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.set_character_progression_v2(p_character_id uuid, p_class_key text, p_source text, p_level integer, p_experience_points bigint, p_subclass_name text, p_subclass_source text)",
+      "source_md5": "c4ea1c7993912f6b4c6fe9ee7b25343f",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.update_character_sheet_action_state_v1(p_character_id uuid, p_action_key text, p_operation text)",
+      "source_md5": "313a533250724b2e2abc754899d0f8d4",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    }
+  ],
+  "insert_upserts": [
+    {
+      "signature": "public.create_player_character_v1(p_payload jsonb, p_spell_choices jsonb)",
+      "source_md5": "e2db5802f1f51b93f5b9d374a835e4b9",
+      "status": "not_option_a_tested",
+      "note": "Account creation/signup insertion must be preserved, legacy sheet population retired; separate source/auth test required"
+    },
+    {
+      "signature": "public.create_player_character_v2(p_payload jsonb, p_spell_choices jsonb)",
+      "source_md5": "0351f0a00acae023278e1b8b065b00c9",
+      "status": "not_option_a_tested",
+      "note": "Account creation/signup insertion must be preserved, legacy sheet population retired; separate source/auth test required"
+    },
+    {
+      "signature": "public.sync_user_profile()",
+      "source_md5": "dd7113eec05655a661309838acce6030",
+      "status": "not_option_a_tested",
+      "note": "Account creation/signup insertion must be preserved, legacy sheet population retired; separate source/auth test required"
+    }
+  ]
+}
