@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `cbd1b599e9aa15fb5c69d32b8c05c3c198454e3d` |
+| Exact source commit represented by this archive snapshot | `015ec3b85ce95e1e29aec408382ec5feb2861722` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-B): enforce exact three source-backed freeze tests and 31+3 untested coverage ledger |
+| Last source commit title | test(I2-B): align scope guard with explicit no-live-writer-change wording |
 | Files changed relative to main | 169 (127 non-docs; 42 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
