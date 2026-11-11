@@ -1,0 +1,465 @@
+{
+  "schema_version": "i1n-legacy-player-sheet-census-v1",
+  "source_kind": "read_only_live_pg_get_functiondef",
+  "source_date": "2026-11-10 America/Chicago (2026-11-11 UTC)",
+  "repository_base_pr": 361,
+  "note": "Source fingerprints, short code excerpts and classifications only. No private data or user identifiers.",
+  "totals": {
+    "updaters": 34,
+    "inserters": 3,
+    "functions_looking_up_player_rows": 6,
+    "source_updaters_edit_filter": 4,
+    "source_updaters_no_edit_filter": 30
+  },
+  "writers": [
+    {
+      "sig": "private.apply_additional_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "fingerprint": "c847b3656b1f006f4020d2b23f73efcc",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "er_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id; update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id); return v_summary; end; $function$\n"
+    },
+    {
+      "sig": "private.apply_character_level_advancement_v1(p_character_id uuid, p_to_level integer, p_option_id uuid, p_instance jsonb)",
+      "fingerprint": "46dd0af4f6ca816422a75e91a292c634",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "er_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id; update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id); insert into public.character_option_grant_instances(character_id,option_id,option_key,option_type,option_name,option_source,instance_key,acquisition_owner_type,acquisition_owner_key,acquisition_label,acquisition_level,choices,effects,fixed_spell_tokens,repeatable,granted_by,updated_at) values(p_character_id,v_option.id,v_option.option_key,v_option.option_type,v_opti"
+    },
+    {
+      "sig": "private.apply_level_up_battle_master_maneuvers_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_selected_subclass text)",
+      "fingerprint": "4154e92e9228cdc42bad2bc9fed37562",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  return v_summary;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_lore_discoveries_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "fingerprint": "f3c2e92a7df5c388c4f92cfbe3f6bf25",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  return jsonb_build_array(jsonb_build_object('family','magical-discoveries','replaced',v_old_spell.name,'with',v_new_spell.name,'source','XPHB'));\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_magic_initiate_replacements_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "fingerprint": "01f21c1f197aa4d1fa138b05de238690",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "heets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n    update public.players p set sheet=v_sheet,updated_at=now()\n    where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n    v_summary:=v_summary||jsonb_build_array(jsonb_build_object(\n      'family','magic-initiate','instanceKey',v_instance_key,'spellList',initcap(v_list),\n      'spellLevel',v_new_spell.level,'replaced',v_old_spell.name,'with',v_new_spell.name,'source','XPHB'\n    ));\n  end loop;\n  return v_summary;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_metamagic_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "fingerprint": "96b9b4d327057d34af9e59f49219de0d",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  return jsonb_build_array(jsonb_build_object('family','metamagic','replaced',v_old.name,'with',v_new.name,'source','XPHB'));\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_mystic_arcanum_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "fingerprint": "6c181bbb230a7c7021b48140906cb58d",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  return jsonb_build_array(jsonb_build_object('family','mystic-arcanum','sourceKey',v_source_key,'replaced',v_old_spell.name,'with',v_new_spell.name,'spellLevel',v_new_spell.level,'source','XPHB'));\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_subclass_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "fingerprint": "53fc79f26851efbc698d6e7c8546af00",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "er_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id; update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n return v_summary;\nend; $function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_warlock_invocation_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_all_class_selections jsonb, p_feat_instances jsonb)",
+      "fingerprint": "434994105f465b6ed92fdb80942f9942",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n  return jsonb_build_array(v_summary);\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_warlock_invocations_v1(p_character_id uuid, p_to_level integer, p_selections jsonb, p_feat_instances jsonb)",
+      "fingerprint": "ed0655adf02e9413157efe8a8bd414f9",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  return v_summary;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_level_up_wizard_savant_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_selected_subclass text)",
+      "fingerprint": "77f643e44aa6048689a66ff4d01c4694",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  return v_summary;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_simple_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "fingerprint": "e2078d079f8bbb1a397c2a43d13bae9b",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "er_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id; update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id); return v_summary; end; $function$\n"
+    },
+    {
+      "sig": "private.apply_source_owned_origin_feat_v1(p_character_id uuid, p_level integer, p_option_id uuid, p_instance jsonb, p_instance_key text, p_owner_type text, p_owner_key text)",
+      "fingerprint": "b7d69d8643a6b2ba2be8efbb4ee41243",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n  v_notes:='source-owned Origin feat; instance='||p_instance_key||'; owner='||coalesce(p_owner_type,'')||':'||coalesce(p_owner_key,'');\n  insert into public.character_option_grants(character_id,option_id,notes,granted_by)\n  values(p_character_id,v_option.id,v_notes,auth.uid())\n  on conflict(character_id,option_id) do update\n  set notes=excluded.notes,\n      grant"
+    },
+    {
+      "sig": "private.apply_tough_progression_bonus_v1(p_character_id uuid, p_to_level integer)",
+      "fingerprint": "2b8bca48b7067e2e67b66defcb7f2c10",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  return 2;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.apply_wizard_signature_spell_ids_v1(p_character_id uuid, p_selected jsonb, p_cadence text, p_creator text)",
+      "fingerprint": "c6d23dc8eccb824e9199ca027139a7da",
+      "security_definer": true,
+      "group_key": "feature_or_other",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n  return v_summary;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.complete_character_level_up_base_v3(p_character_id uuid, p_selections jsonb)",
+      "fingerprint": "e33639d549ef557976a3970ea51f5238",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "et sheet = v_sheet, updated_at = now()\n  where character_id = p_character_id;\n  update public.players p set sheet = v_sheet, updated_at = now()\n  where p.user_id in (\n    select cp.user_id from public.character_permissions cp where cp.character_id = p_character_id\n  );\n\n  v_pending_next := v_next.class_level < 20\n    and v_progression.experience_points >= public.xp_threshold_for_level_v1(v_next.class_level + 1);\n  update public.character_progression\n  set class_level = v_next.class_level,\n      subclass_name = coalesce(v_subclass_name, subclass_name),\n      subclass_source = coalesce(v_subclass_source, subclass_s"
+    },
+    {
+      "sig": "private.complete_epic_level_up_base_v1(p_character_id uuid, p_selections jsonb)",
+      "fingerprint": "0688ae4f53e4a5e02e8228473ff4d0e0",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  v_pending_next:=v_next.class_level<20 and v_progression.experience_points>=public.xp_threshold_for_level_v1(v_next.class_level+1);\n  update public.character_progression set class_level=v_next.class_level,pending_level_up=v_pending_next,level_choices=coalesce(level_choices,'{}'::jsonb)||jsonb_build_object(v_next.class_level::text,v_selections),updated_at=now() wher"
+    },
+    {
+      "sig": "private.ensure_character_source_choices_v1(p_character_id uuid)",
+      "fingerprint": "69bedf66148d2ce3dab97baa5de606cc",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "heets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n    update public.players p set sheet=v_sheet,updated_at=now()\n    where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  end if;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.remove_source_owned_origin_feat_v1(p_character_id uuid, p_instance_key text, p_owner_type text, p_owner_key text)",
+      "fingerprint": "ca278b2eb83d2a70aec369edf79a32a6",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n  return jsonb_build_object(\n    'instanceKey',p_instance_key,\n    'optionId',v_option.id,\n    'optionKey',v_option.option_key,\n    'name',v_option.name,\n    'source',v_option.source,\n    'removedEffects',v_instance.effects\n  );\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.restore_character_rest_action_state_v1(p_character_id uuid, p_rest_type text)",
+      "fingerprint": "d75edf2ac583e3790882155c702e2165",
+      "security_definer": true,
+      "group_key": "resource_or_action",
+      "update_filters_edit": true,
+      "update_mentions_permissions": true,
+      "update_excerpt": "-- sheet action RPC. Character-scoped character_sheets remains authoritative.\n  update public.players p\n  set sheet=v_sheet,updated_at=now()\n  where p.user_id in (\n    select cp.user_id\n    from public.character_permissions cp\n    where cp.character_id=p_character_id and cp.can_edit\n  );\n\n  return jsonb_build_object(\n    'restoredClassFeatureUses',v_restored,\n    'sheet',v_sheet,\n    'features',jsonb_build_array(jsonb_build_object(\n      'actionKey','rage',\n      'classSource',v_class_source,\n      'usesBefore',v_remaining,\n      'usesRemaining',v_next_remaining,\n      'usesMax',v_max,\n      'restoredUses',v_rest"
+    },
+    {
+      "sig": "private.set_species_runtime_projection_v1(p_character_id uuid, p_projection_key text, p_state jsonb)",
+      "fingerprint": "7f6e7d7d99ff79db1372462b4320c21b",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
+      "fingerprint": "f2b6190ecc9400772e054892f63cdc47",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in (select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.sync_character_artificer_plan_projection_v1(p_character_id uuid)",
+      "fingerprint": "5ebf572db01143e9b523c7dba0d43ad5",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "heets set sheet=v_sheet,updated_at=now()\n  where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(\n    select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id\n  );\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.sync_character_eldritch_invocations_v1(p_character_id uuid)",
+      "fingerprint": "69361283a0ba3b9d83a2104256a86f66",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.sync_character_runtime_weapon_mastery_projection_v1(p_character_id uuid)",
+      "fingerprint": "851b6da1a2b26e8652df20746fb0aa60",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "heets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n    update public.players p set sheet=v_sheet,updated_at=now()\n    where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n  end if;\n  return v_names;\nend;\n$function$\n"
+    },
+    {
+      "sig": "private.sync_player_forge_class_spell_summary_v1(p_character_id uuid)",
+      "fingerprint": "5b1b275a268a57591a2e35a05ce7480d",
+      "security_definer": true,
+      "group_key": "projection_or_source",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.adjust_character_hit_points_v1(p_character_id uuid, p_amount integer, p_temp_hp integer)",
+      "fingerprint": "f855be60d971aa63e32ade327d14c369",
+      "security_definer": true,
+      "group_key": "resource_or_action",
+      "update_filters_edit": true,
+      "update_mentions_permissions": true,
+      "update_excerpt": "ts\n  set sheet=v_sheet,updated_at=now()\n  where character_id=p_character_id;\n\n  update public.players p\n  set sheet=v_sheet,updated_at=now()\n  where p.user_id in (\n    select cp.user_id\n    from public.character_permissions cp\n    where cp.character_id=p_character_id and cp.can_edit\n  );\n\n  return jsonb_build_object(\n    'characterId',p_character_id,\n    'currentHp',v_current,\n    'maxHp',v_max,\n    'tempHp',v_temp,\n    'sheet',v_sheet\n  );\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)",
+      "fingerprint": "1500703592c3cb8e1738126eac508e6a",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in (select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n  v_pending_next:=v_next.class_level<20 and v_progression.experience_points>=public.xp_threshold_for_level_v1(v_next.class_level+1);\n  update public.character_progression\n  set class_level=v_next.class_level,\n      subclass_name=coalesce(v_subclass,subclass_name),\n      subclass_source=case when v_subclass is not null then 'XPHB' else subclass_source end,\n      "
+    },
+    {
+      "sig": "public.complete_character_level_up_v2(p_character_id uuid, p_selections jsonb)",
+      "fingerprint": "28a227a1dfb9a3cc5516c5b7afb874b0",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "eet = v_sheet, updated_at = now()\n    where character_id = p_character_id;\n\n    update public.players p\n    set sheet = v_sheet, updated_at = now()\n    where p.user_id in (\n      select cp.user_id\n      from public.character_permissions cp\n      where cp.character_id = p_character_id\n    );\n  end if;\n\n  return public.get_character_progression_v1(p_character_id);\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.configure_character_weapon_mastery_v1(p_character_id uuid, p_item_ids uuid[])",
+      "fingerprint": "32fa55b69478af07f8f0002b967a5704",
+      "security_definer": true,
+      "group_key": "feature_or_other",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n  return public.get_character_weapon_mastery_v1(p_character_id)||jsonb_build_object(\n    'changedExisting',v_changed_existing,\n    'addedCapacity',greatest(0,v_capacity-v_old_count)\n  );\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.create_player_character_v1(p_payload jsonb, p_spell_choices jsonb)",
+      "fingerprint": "e2db5802f1f51b93f5b9d374a835e4b9",
+      "security_definer": true,
+      "group_key": "legacy_creator",
+      "update_filters_edit": false,
+      "update_mentions_permissions": false,
+      "update_excerpt": "',v_class.source,'creator','player_character_creator_v1')\n    );\n  end loop;\n\n  update public.players set name=v_name,sheet=v_sheet,updated_at=now() where user_id=v_user;\n  if not found then\n    insert into public.players(user_id,name,sheet,updated_at) values(v_user,v_name,v_sheet,now());\n  end if;\n\n  return v_character_id;\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.recover_character_invocations_v1(p_character_id uuid, p_selections jsonb)",
+      "fingerprint": "05f6d19a7e2f45d890c62c27cb419e7f",
+      "security_definer": true,
+      "group_key": "feature_or_other",
+      "update_filters_edit": false,
+      "update_mentions_permissions": true,
+      "update_excerpt": "_sheets set sheet=v_sheet,updated_at=now() where character_id=p_character_id;\n  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n\n  return public.get_character_invocation_recovery_v1(p_character_id);\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.set_character_progression_v2(p_character_id uuid, p_class_key text, p_source text, p_level integer, p_experience_points bigint, p_subclass_name text, p_subclass_source text)",
+      "fingerprint": "c4ea1c7993912f6b4c6fe9ee7b25343f",
+      "security_definer": true,
+      "group_key": "progression_or_class_choice",
+      "update_filters_edit": true,
+      "update_mentions_permissions": true,
+      "update_excerpt": "t sheet = v_sheet, updated_at = now()\n  where character_id = p_character_id;\n\n  update public.players p\n  set sheet = v_sheet, updated_at = now()\n  where p.user_id in (\n    select cp.user_id\n    from public.character_permissions cp\n    where cp.character_id = p_character_id and cp.can_edit\n  );\n\n  return public.get_character_progression_v1(p_character_id);\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.update_character_sheet_action_state_v1(p_character_id uuid, p_action_key text, p_operation text)",
+      "fingerprint": "313a533250724b2e2abc754899d0f8d4",
+      "security_definer": true,
+      "group_key": "resource_or_action",
+      "update_filters_edit": true,
+      "update_mentions_permissions": true,
+      "update_excerpt": "ts\n  set sheet=v_sheet,updated_at=now()\n  where character_id=p_character_id;\n\n  update public.players p\n  set sheet=v_sheet,updated_at=now()\n  where p.user_id in (\n    select cp.user_id\n    from public.character_permissions cp\n    where cp.character_id=p_character_id and cp.can_edit\n  );\n\n  return jsonb_build_object(\n    'characterId',p_character_id,\n    'actionKey',v_action_key,\n    'operation',v_operation,\n    'active',v_active,\n    'usesRemaining',v_remaining,\n    'usesMax',v_max,\n    'sheet',v_sheet\n  );\nend;\n$function$\n"
+    }
+  ],
+  "inserts": [
+    {
+      "sig": "public.create_player_character_v1(p_payload jsonb, p_spell_choices jsonb)",
+      "fingerprint": "e2db5802f1f51b93f5b9d374a835e4b9",
+      "inserts_players": true,
+      "player_row_lookups": false,
+      "source_mentions_sheet": true,
+      "excerpt": "layers set name=v_name,sheet=v_sheet,updated_at=now() where user_id=v_user;\n  if not found then\n    insert into public.players(user_id,name,sheet,updated_at) values(v_user,v_name,v_sheet,now());\n  end if;\n\n  return v_character_id;\nend;\n$function$\n"
+    },
+    {
+      "sig": "public.create_player_character_v2(p_payload jsonb, p_spell_choices jsonb)",
+      "fingerprint": "0351f0a00acae023278e1b8b065b00c9",
+      "inserts_players": true,
+      "player_row_lookups": false,
+      "source_mentions_sheet": true,
+      "excerpt": "bject('grantedAtCreationLevel', v_level, 'creator', 'shared_character_forge_player_v2')); end loop; insert into public.players(user_id, name, sheet, updated_at) values(v_user, v_name, v_sheet, now()) on conflict (user_id) do update set sheet = excluded.sheet, updated_at = now(); return v_character_id; exception when unique_violation then if v_creation_request_id is not null then select c.id into v_character_id from public.characters c join public.character_permissions cp on c"
+    },
+    {
+      "sig": "public.sync_user_profile()",
+      "fingerprint": "dd7113eec05655a661309838acce6030",
+      "inserts_players": true,
+      "player_row_lookups": false,
+      "source_mentions_sheet": false,
+      "excerpt": " INTO public.user_profiles (id, role)\n  VALUES (NEW.id, 'player')\n  ON CONFLICT (id) DO NOTHING;\n\n  INSERT INTO public.players (user_id, name)\n  VALUES (NEW.id, profile_name)\n  ON CONFLICT (user_id) DO NOTHING;\n\n  RETURN NEW;\nEND;\n$function$\n"
+    }
+  ],
+  "database_player_row_lookups": [
+    {
+      "sig": "private.complete_craft_plan_v1_impl(p_plan_id uuid, p_attempt_id uuid)",
+      "fingerprint": "43383fb3cb93c013d84d133cd235cf24",
+      "inserts_players": false,
+      "player_row_lookups": true,
+      "source_mentions_sheet": false,
+      "excerpt": "se\n      v_owner_type := 'npc';\n    end if;\n  else\n    select user_id\n    into v_target_user_id\n    from public.players\n    where id = v_plan.target_character_id;\n\n    if found then\n      v_target_kind := 'player';\n      v_owner_type := 'player';\n    else\n      raise exception 'Craft target % was not found in characters or players', v_plan.target_character_id;\n    end if;\n  end if;\n\n  if v_owner_type = 'player' then\n    if v_target_user_id is null then\n      raise exception '"
+    },
+    {
+      "sig": "private.complete_enchanting_craft_plan_v1_impl(p_plan_id uuid, p_attempt_id uuid)",
+      "fingerprint": "0dd054d44dc82540ab48c4ec7fce5d59",
+      "inserts_players": false,
+      "player_row_lookups": true,
+      "source_mentions_sheet": false,
+      "excerpt": "aracter_id::text;\n    v_target_user_id := null;\n  else\n    select user_id into v_target_user_id\n    from public.players\n    where id = v_plan.target_character_id;\n    if not found or v_target_user_id is null then\n      raise exception 'Craft target % was not found or has no user_id', v_plan.target_character_id;\n    end if;\n    v_owner_type := 'player';\n    v_owner_id := v_target_user_id::text;\n  end if;\n\n  for v_material in\n    select value from jsonb_array_elements(coalesce("
+    },
+    {
+      "sig": "public.get_recent_site_activity_v1()",
+      "fingerprint": "332a03d2f4004ddb40cdd69fd758b8c0",
+      "inserts_players": false,
+      "player_row_lookups": true,
+      "source_mentions_sheet": false,
+      "excerpt": "st_activity_at\n    from auth.users u\n    left join public.user_profiles up on up.id = u.id\n    left join public.players p on p.user_id = u.id\n    left join visit_rollup vr on vr.user_id = u.id\n    left join latest_visit lv on lv.user_id = u.id\n    where\n      u.created_at >= now() - interval '30 days'\n      or u.last_sign_in_at >= now() - interval '30 days'\n      or vr.last_seen >= now() - interval '30 days'\n  ),\n  anonymous_rows as (\n    select\n      'visitor'::text as activ"
+    },
+    {
+      "sig": "public.list_item_send_targets_v1()",
+      "fingerprint": "da6dbe35fbac7fc6b0f5ddfe7e938041",
+      "inserts_players": false,
+      "player_row_lookups": true,
+      "source_mentions_sheet": false,
+      "excerpt": "         p.user_id::text as id,\n           coalesce(nullif(p.name, ''), 'Player')::text as name\n    from public.players p\n    where p.user_id is not null\n      and p.user_id <> caller\n\n    union all\n\n    select 'npc'::text as kind,\n           c.id::text as id,\n           coalesce(nullif(c.name, ''), 'NPC')::text as name\n    from public.characters c\n    where c.kind = 'npc'\n\n    union all\n\n    select 'merchant'::text as kind,\n           c.id::text as id,\n           coalesce(nu"
+    },
+    {
+      "sig": "public.list_transfer_targets()",
+      "fingerprint": "23ff483720a4bb5f787c38b13b6798f8",
+      "inserts_players": false,
+      "player_row_lookups": true,
+      "source_mentions_sheet": false,
+      "excerpt": ";\r\n  end if;\r\n\r\n  return query\r\n  select 'player'::text as kind, p.user_id::text as id, p.name\r\n    from public.players p\r\n   where p.user_id is not null\r\n  union all\r\n  select c.kind::text as kind, c.id::text as id, c.name\r\n    from public.characters c\r\n   where c.kind in ('npc','merchant')\r\n  order by kind, name;\r\nend;\r\n$function$\n"
+    },
+    {
+      "sig": "public.transfer_inventory_item_v1(p_item_id uuid, p_target_type text, p_target_id text)",
+      "fingerprint": "8c373a9d6438cb12baabeb375fd35305",
+      "inserts_players": false,
+      "player_row_lookups": true,
+      "source_mentions_sheet": false,
+      "excerpt": "tation then\n      raise exception 'Invalid player target id';\n    end;\n\n    if not exists (select 1 from public.players p where p.user_id = v_target_uuid) then\n      raise exception 'Player target not found';\n    end if;\n  else\n    begin\n      v_target_uuid := p_target_id::uuid;\n    exception when invalid_text_representation then\n      raise exception 'Invalid character target id';\n    end;\n\n    if not exists (\n      select 1\n      from public.characters c\n      where c.id = "
+    }
+  ],
+  "app_player_row_reads": [
+    {
+      "path": "components/PlayerAccountPanel.js",
+      "fields": [
+        "id",
+        "user_id",
+        "name"
+      ],
+      "note": "account identity and profile name"
+    },
+    {
+      "path": "components/PlayerCharacterProfilePanelUnified.js",
+      "fields": [
+        "id",
+        "user_id",
+        "name"
+      ],
+      "note": "identity fallback; canonical sheet from get_my_player_characters_v2"
+    },
+    {
+      "path": "components/OfferTradeButton.js",
+      "fields": [
+        "user_id",
+        "name"
+      ],
+      "note": "recipient labels"
+    },
+    {
+      "path": "pages/admin.js",
+      "fields": [
+        "user_id",
+        "name"
+      ],
+      "note": "Admin player choices"
+    },
+    {
+      "path": "pages/npcs.js",
+      "fields": [
+        "user_id",
+        "name"
+      ],
+      "note": "NPC page player choices"
+    },
+    {
+      "path": "pages/inventory.js",
+      "fields": [
+        "user_id",
+        "name"
+      ],
+      "note": "inventory player targeting and name lookup"
+    },
+    {
+      "path": "pages/encounters/live.js",
+      "fields": [
+        "user_id",
+        "name"
+      ],
+      "note": "encounter controller options"
+    }
+  ],
+  "caveats": [
+    "Snapshot only: compare exact live source hashes before any follow-up.",
+    "Code search and named SQL source matching cannot prove absence of dynamic SQL, external clients or unknown indirect readers.",
+    "Four update statements include cp.can_edit; original v1 creator has cp.can_edit elsewhere but NOT in the account-wide update predicate.",
+    "SELECT on players is available to own user under active RLS; no approved change to those policies.",
+    "No live updates, private sheet values or account IDs were read."
+  ]
+}

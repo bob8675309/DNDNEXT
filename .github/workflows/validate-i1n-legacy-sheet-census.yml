@@ -1,0 +1,49 @@
+name: I1-N legacy player-sheet writer and reader source census
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-i1n-legacy-sheet-census.yml'
+      - 'docs/I1_N_LEGACY_SHEET_LIVE_SOURCE_CENSUS_2026-11-11.json'
+      - 'docs/I1_N_LEGACY_PLAYER_SHEET_AUTHORITY_REVIEW_2026-11-11.md'
+      - 'scripts/validate_i1n_legacy_sheet_census.mjs'
+      - 'scripts/research/i1n_legacy_player_sheet_live_readonly_census.sql'
+      - 'components/PlayerAccountPanel.js'
+      - 'components/PlayerCharacterProfilePanelUnified.js'
+      - 'components/OfferTradeButton.js'
+      - 'pages/admin.js'
+      - 'pages/npcs.js'
+      - 'pages/inventory.js'
+      - 'pages/encounters/live.js'
+      - 'sql/20260804_01_multi_player_character_forge_v2.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-census:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate 34 live source fingerprints and named app consumers
+        run: |
+          node --check scripts/validate_i1n_legacy_sheet_census.mjs
+          node scripts/validate_i1n_legacy_sheet_census.mjs
+      - name: Assert live-census SQL has no production writes
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import assert from "node:assert/strict";
+          const sql=fs.readFileSync("scripts/research/i1n_legacy_player_sheet_live_readonly_census.sql","utf8");
+          const uncommented=sql.replace(/^\s*--.*$/gm,"");
+          assert.match(uncommented,/pg_get_functiondef/);
+          assert.match(uncommented,/pg_policies/);
+          assert.doesNotMatch(uncommented,/^\s*(?:INSERT|UPDATE|DELETE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|CREATE|COPY|DO|CALL|EXECUTE)\b/im);
+          assert.doesNotMatch(uncommented,/\b(?:pg_read_file|pg_ls_dir|dblink_exec)\s*\(/i);
+          console.log("PASS I1-N SQL SAFETY: SELECT-only read-only source-census fixture");
+          NODE
