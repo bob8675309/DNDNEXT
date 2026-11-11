@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `95a7f422c9d377a3904295a60b35c86750633171` |
+| Exact source commit represented by this archive snapshot | `0c413bc5b0d1378a55891f070f76e74394bd0044` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-O): advance active work to proven HP/Admin progression RED and bounded scratch GREEN |
+| Last source commit title | docs(I1-O): append signed original cross-family RED and scratch GREEN exact-hash CI handoff receipt |
 | Files changed relative to main | 153 (115 non-docs; 38 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
