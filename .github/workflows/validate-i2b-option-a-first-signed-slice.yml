@@ -7,6 +7,8 @@ on:
       - 'scripts/fixtures/i2b_option_a_scratch_player_profile_acl_pg17.sql'
       - 'scripts/test_i2b_option_a_first_slice_local_auth.mjs'
       - 'docs/I2_B_OPTION_A_FIRST_SIGNED_FREEZE_SLICE_2026-11-11.md'
+      - 'docs/I2_B_OPTION_A_SOURCE_WRITER_COVERAGE_2026-11-11.json'
+      - 'scripts/validate_i2b_first_slice_scope.mjs'
       - 'scripts/fixtures/i1p_original_rest_shared_p13_pg17.sql'
       - 'scripts/fixtures/i1p_earned_levelup_rest_mirror_candidate_pg17.sql'
       - 'scripts/test_i1p_earned_rest_local_auth.mjs'
@@ -51,6 +53,8 @@ jobs:
           node --check scripts/test_p1_3_levelup_v5_real_jwt_local.mjs
           node --check scripts/test_i1p_earned_rest_local_auth.mjs
           node --check scripts/test_i2b_option_a_first_slice_local_auth.mjs
+          node --check scripts/validate_i2b_first_slice_scope.mjs
+          node scripts/validate_i2b_first_slice_scope.mjs
           node --check scripts/validate_p1_3_levelup_v5_source.mjs
           node scripts/validate_p1_3_levelup_v5_source.mjs
       - name: Install existing pinned project dependencies
