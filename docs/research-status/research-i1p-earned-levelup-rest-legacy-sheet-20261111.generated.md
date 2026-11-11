@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1p-earned-levelup-rest-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `344f91fafa01fc5038b6e5bf02b27c3311cd91b5` |
+| Exact source commit represented by this archive snapshot | `f969af0a15cc8a7e517808cb2eeeefea3119f6fd` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-P): advance active milestone to signed earned-v5/rest original RED and scratch GREEN |
+| Last source commit title | docs(I1-P): append signed original earned/rest RED, scratch three-writer GREEN and source/CI handoff receipt |
 | Files changed relative to main | 158 (119 non-docs; 39 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
