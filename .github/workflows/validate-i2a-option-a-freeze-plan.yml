@@ -1,0 +1,35 @@
+name: I2-A owner-approved canonical sheet and legacy snapshot freeze planning
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-i2a-option-a-freeze-plan.yml'
+      - 'docs/I2_A_CANONICAL_SHEETS_LEGACY_FREEZE_OWNER_DECISION_2026-11-11.md'
+      - 'scripts/audits/i2a_option_a_legacy_sheet_readonly_readiness.sql'
+      - 'scripts/validate_i2a_option_a_legacy_freeze_plan.mjs'
+      - 'docs/I1_N_LEGACY_SHEET_LIVE_SOURCE_CENSUS_2026-11-11.json'
+      - 'scripts/validate_i1n_legacy_sheet_census.mjs'
+      - 'components/PlayerAccountPanel.js'
+      - 'components/PlayerCharacterProfilePanelUnified.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  option-a-readonly-research:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify historical I1-N original source/consumer census
+        run: |
+          node --check scripts/validate_i1n_legacy_sheet_census.mjs
+          node scripts/validate_i1n_legacy_sheet_census.mjs
+      - name: Verify owner Option A decision, source registry, and read-only audit
+        run: |
+          node --check scripts/validate_i2a_option_a_legacy_freeze_plan.mjs
+          node scripts/validate_i2a_option_a_legacy_freeze_plan.mjs
