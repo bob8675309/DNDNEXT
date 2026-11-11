@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1p-earned-levelup-rest-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `3de42bffe06533b336c2ac156a5415ec79daa4d7` |
+| Exact source commit represented by this archive snapshot | `5643fac5c4db0b40248310a377055e7ed906ebe9` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | fix(I1-P): use positional regprocedure signatures in scratch three-writer source guard |
+| Last source commit title | docs(I1-P): record verified signed 8/8 RED/GREEN source evidence and failed signature guard receipt |
 | Files changed relative to main | 158 (119 non-docs; 39 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1p_earned_levelup_rest_mirror_candidate_pg17.sql`
+- `docs/I1_P_EARNED_V5_REST_LEGACY_SHEET_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
