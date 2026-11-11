@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `6cfba7bc8dce36f507c7a2ba80581f2e08e2e3cf` |
+| Exact source commit represented by this archive snapshot | `fade64be71c7ec5067e883bc76d6596637d6416d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(I2-B): ledger 3 tested/31 untested UPDATE writers and 3 untested UPSERT source paths |
-| Files changed relative to main | 167 (126 non-docs; 41 docs) |
+| Last source commit title | docs(I2-B): new same/cross-character Option A signed no-mirror acceptance and explicit untested scope |
+| Files changed relative to main | 168 (126 non-docs; 42 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_B_OPTION_A_SOURCE_WRITER_COVERAGE_2026-11-11.json`
+- `docs/I2_B_OPTION_A_FIRST_SIGNED_FREEZE_SLICE_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
-- … 117 more
+- … 118 more
 
 ## Trust and update procedure
 
