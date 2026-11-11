@@ -36,6 +36,16 @@ BEGIN
   SELECT 'public.set_character_progression_v2(uuid,text,text,integer,bigint,text,text)',
    'c4ea1c7993912f6b4c6fe9ee7b25343f'
  LOOP
+  -- Exact original formatting differs between the two deployed bodies:
+  -- HP uses "cp.character_id=p_character_id" while Admin v2 uses spaces.
+  -- Preserve both original bodies exactly; this is not a normalization patch.
+  IF v_target.sig LIKE '%set_character_progression_v2%' THEN
+    v_old := replace(v_old,'cp.character_id=p_character_id','cp.character_id = p_character_id');
+    v_new := replace(v_new,'cp.character_id=p_character_id','cp.character_id = p_character_id');
+  ELSE
+    v_old := replace(v_old,'cp.character_id = p_character_id','cp.character_id=p_character_id');
+    v_new := replace(v_new,'cp.character_id = p_character_id','cp.character_id=p_character_id');
+  END IF;
   v_source := pg_get_functiondef(v_target.sig::regprocedure);
   IF md5(v_source)<>v_target.original_md5
    OR length(v_source)-length(replace(v_source,v_old,''))<>length(v_old)
