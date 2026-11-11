@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `7fb8c28085c417ce9fbf63550a0c998bb53cfe5f` |
+| Exact source commit represented by this archive snapshot | `3983ec60cadd49a3ccb98b365bded7664f2d8316` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-O): two original public RPCs identity-gated in disposable mirror-only compatibility candidate |
+| Last source commit title | test(I1-O): signed Forge/HP/Admin progression shared-account original RED and scratch mirror GREEN cases |
 | Files changed relative to main | 151 (114 non-docs; 37 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1o_progression_hp_legacy_mirror_candidate_pg17.sql`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
