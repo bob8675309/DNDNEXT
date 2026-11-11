@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `52cdd2d72e60279846fc433834f521cb2d8caa1a` |
+| Exact source commit represented by this archive snapshot | `e753ccbbf7b915eb5adffee011cfc98bd9b58404` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-M): correct source provenance; #319 snapshot clause already integrated by #324 |
+| Last source commit title | docs(I1-M): advance branch-local active task to verified legacy Artificer RED/GREEN and next census |
 | Files changed relative to main | 144 (109 non-docs; 35 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I1_M_ARTIFICER_LEGACY_MULTI_CHARACTER_RESEARCH_2026-11-11.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
