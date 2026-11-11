@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T04:06:35Z | research/i1n-legacy-sheet-writer-reader-census-20261111 (61f7e8f109f5327049cd1dc7f62322f13e891a2b) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T04:19:39Z | research/i1o-cross-family-legacy-sheet-signed-20261111 (61f7e8f109f5327049cd1dc7f62322f13e891a2b) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
