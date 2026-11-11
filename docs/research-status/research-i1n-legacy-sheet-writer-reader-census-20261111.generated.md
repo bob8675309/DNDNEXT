@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1n-legacy-sheet-writer-reader-census-20261111` |
-| Exact source commit represented by this archive snapshot | `1cb8cab5f25cff6bcc92406e859323792f587d58` |
+| Exact source commit represented by this archive snapshot | `580cfe0b60c84af4f015f32739db19e0af737ead` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-N): static contract for all live player-sheet writers and named source consumers |
-| Files changed relative to main | 146 (110 non-docs; 36 docs) |
+| Last source commit title | research(I1-N): reproducible SELECT-only writer, reader and RLS source audit query |
+| Files changed relative to main | 147 (111 non-docs; 36 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i1n_legacy_sheet_census.mjs`
+- `scripts/research/i1n_legacy_player_sheet_live_readonly_census.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
-- … 96 more
+- … 97 more
 
 ## Trust and update procedure
 
