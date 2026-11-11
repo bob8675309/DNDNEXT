@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `dfd9c357cf0128f209c2fdef6d0ce06d89a28403` |
+| Exact source commit represented by this archive snapshot | `2b5b8703cc4ffe123d40a9918266b429740d7a66` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I1-M): stage exact #319 multi-character v2 guard in disposable #324 source copy |
-| Files changed relative to main | 141 (107 non-docs; 34 docs) |
+| Last source commit title | test(I1-M): disposable source-guarded Artificer legacy mirror compatibility candidate |
+| Files changed relative to main | 142 (108 non-docs; 34 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1m_legacy_v2_source_guard_local_pg17.sql`
+- `scripts/fixtures/i1m_artificer_legacy_projection_candidate_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md`
 - `docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md`
-- … 91 more
+- … 92 more
 
 ## Trust and update procedure
 
