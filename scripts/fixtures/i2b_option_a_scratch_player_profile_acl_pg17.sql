@@ -34,7 +34,10 @@ REVOKE ALL ON TABLE public.players FROM PUBLIC,anon,authenticated;
 -- IMPORTANT: revoking UPDATE(sheet) alone cannot override table-wide UPDATE.
 GRANT SELECT ON TABLE public.players TO authenticated;
 GRANT INSERT (user_id,name) ON TABLE public.players TO authenticated;
-GRANT UPDATE (name,updated_at) ON TABLE public.players TO authenticated;
+-- The existing UI's onConflict user_id/name UPSERT may include user_id in
+-- DO UPDATE SET. Self-row RLS USING + WITH CHECK prohibits reassignment to
+-- another account, while allowing same-user idempotent UPSERT.
+GRANT UPDATE (user_id,name,updated_at) ON TABLE public.players TO authenticated;
 NOTIFY pgrst,'reload schema';
 
 DO $verify$
@@ -43,6 +46,7 @@ BEGIN
  OR has_table_privilege('authenticated','public.players','INSERT')
  OR has_column_privilege('authenticated','public.players','sheet','UPDATE')
  OR has_column_privilege('authenticated','public.players','sheet','INSERT')
+ OR NOT has_column_privilege('authenticated','public.players','user_id','UPDATE')
  OR NOT has_column_privilege('authenticated','public.players','name','UPDATE')
  OR NOT has_column_privilege('authenticated','public.players','name','INSERT')
  OR NOT has_column_privilege('authenticated','public.players','user_id','INSERT')
