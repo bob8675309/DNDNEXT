@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `e5bd78ef990e733bfd12924e456180a23e42e1c4` |
+| Exact source commit represented by this archive snapshot | `514be6be58336fe40c6c4226b6064246e41336bc` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-O): exact source-locked HP/Admin progression signed RED/GREEN acceptance and release exclusions |
-| Files changed relative to main | 152 (114 non-docs; 38 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | ci(I1-O): signed real GoTrue/PostgREST shared Forge original HP and Admin progression RED/GREEN |
+| Files changed relative to main | 153 (115 non-docs; 38 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_O_CROSS_FAMILY_SIGNED_LEGACY_SHEET_RESEARCH_2026-11-11.md`
+- `.github/workflows/validate-i1o-cross-family-legacy-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -38,6 +38,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i1l-artificer-original-local-auth.yml`
 - `.github/workflows/validate-i1m-artificer-legacy-local-auth.yml`
 - `.github/workflows/validate-i1n-legacy-sheet-census.yml`
+- `.github/workflows/validate-i1o-cross-family-legacy-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
-- `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
-- … 102 more
+- … 103 more
 
 ## Trust and update procedure
 
