@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111` |
-| Exact source commit represented by this archive snapshot | `f969af0a15cc8a7e517808cb2eeeefea3119f6fd` |
+| Exact source commit represented by this archive snapshot | `251ed94019415b08189f6fc013d40e94093b6a51` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-P): append signed original earned/rest RED, scratch three-writer GREEN and source/CI handoff receipt |
-| Files changed relative to main | 158 (119 non-docs; 39 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research(I2-A): source-only and aggregate read-only canonical-sheet legacy freeze readiness audit |
+| Files changed relative to main | 159 (120 non-docs; 39 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/audits/i2a_option_a_legacy_sheet_readonly_readiness.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md`
 - `docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
-- … 108 more
+- … 109 more
 
 ## Trust and update procedure
 
