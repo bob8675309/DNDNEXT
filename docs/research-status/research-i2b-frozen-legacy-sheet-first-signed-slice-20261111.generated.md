@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2b-frozen-legacy-sheet-first-signed-slice-20261111` |
-| Exact source commit represented by this archive snapshot | `76c00b101f01ae1a19234ebc7b331e9647f67ef0` |
+| Exact source commit represented by this archive snapshot | `724595f277ba115838c3dd29a6ae7187c1da735a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-B): new signed Option A same/cross-character no-mirror-write, legacy ACL and profile-name acceptance |
+| Last source commit title | test(I2-B): allow same-user ON CONFLICT profile upsert while restricting legacy sheet writes |
 | Files changed relative to main | 165 (125 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2b_option_a_first_slice_local_auth.mjs`
+- `scripts/fixtures/i2b_option_a_scratch_player_profile_acl_pg17.sql`
 
 ## Research-branch change inventory versus main
 
