@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1n-legacy-sheet-writer-reader-census-20261111` |
-| Exact source commit represented by this archive snapshot | `9b2a6fdb4a8e06c855232f000c2763da17b26e9d` |
+| Exact source commit represented by this archive snapshot | `61f7e8f109f5327049cd1dc7f62322f13e891a2b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-N): prioritize complete legacy sheet writer/reader audit and next cross-family signed regression |
+| Last source commit title | docs(I1-N): append exact source inventory, access evidence, CI correction and next signed test handoff |
 | Files changed relative to main | 149 (112 non-docs; 37 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
