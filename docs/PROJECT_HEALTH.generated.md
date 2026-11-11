@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-11T02:57:58Z | research/i1m-artificer-legacy-sheet-20261111 (31ff677aa47500939e5962a7f1d71647ec112213) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-11T02:58:34Z | research/i1m-artificer-legacy-sheet-20261111 (2d63267198f0862e2ca9da256613ed31de86b4b9) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
