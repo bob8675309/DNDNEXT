@@ -11,12 +11,12 @@ DECLARE
  v_old text := 'where p.user_id in ('||chr(10)||
    '    select cp.user_id'||chr(10)||
    '    from public.character_permissions cp'||chr(10)||
-   '    where cp.character_id = p_character_id and cp.can_edit'||chr(10)||
+   '    where cp.character_id=p_character_id and cp.can_edit'||chr(10)||
    '  );';
  v_new text := 'where p.user_id in ('||chr(10)||
    '    select cp.user_id'||chr(10)||
    '    from public.character_permissions cp'||chr(10)||
-   '    where cp.character_id = p_character_id and cp.can_edit'||chr(10)||
+   '    where cp.character_id=p_character_id and cp.can_edit'||chr(10)||
    '  ) and ('||chr(10)||
    '    p.sheet = ''{}''::jsonb'||chr(10)||
    '    or p.sheet #>> ''{meta,creationRequestId}'' = ('||chr(10)||
