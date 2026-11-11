@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1o-cross-family-legacy-sheet-signed-20261111` |
-| Exact source commit represented by this archive snapshot | `61f7e8f109f5327049cd1dc7f62322f13e891a2b` |
+| Exact source commit represented by this archive snapshot | `42944c06bfff493dd66c7f6dbe063663a3cf2f01` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-N): append exact source inventory, access evidence, CI correction and next signed test handoff |
-| Files changed relative to main | 149 (112 non-docs; 37 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(I1-O): stage six exact live progression/HP functions in signed Forge scratch with source MD5 locks |
+| Files changed relative to main | 150 (113 non-docs; 37 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/i1o_original_progression_hp_shared_forge_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md`
 - `docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md`
-- … 99 more
+- … 100 more
 
 ## Trust and update procedure
 
