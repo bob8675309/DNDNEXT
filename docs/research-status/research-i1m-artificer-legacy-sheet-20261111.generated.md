@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `967d5440d1dc34da90a2ec628a2138bf19008d95` |
+| Exact source commit represented by this archive snapshot | `52cdd2d72e60279846fc433834f521cb2d8caa1a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | fix(I1-M): verify existing #319 guard already in #324 private v2 source instead of reinstalling |
+| Last source commit title | docs(I1-M): correct source provenance; #319 snapshot clause already integrated by #324 |
 | Files changed relative to main | 144 (109 non-docs; 35 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i1m_legacy_v2_source_guard_local_pg17.sql`
+- `docs/I1_M_ARTIFICER_LEGACY_MULTI_CHARACTER_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
