@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i1m-artificer-legacy-sheet-20261111` |
-| Exact source commit represented by this archive snapshot | `2d63267198f0862e2ca9da256613ed31de86b4b9` |
+| Exact source commit represented by this archive snapshot | `bacab6441f3b0436efba1e7b5a1f930537ba33d6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I1-M): preserve legacy-sheet source RED and bounded compatibility research gates |
+| Last source commit title | ci(I1-M): correct all isolated workflow scratch paths before integration test |
 | Files changed relative to main | 144 (109 non-docs; 35 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I1_M_ARTIFICER_LEGACY_MULTI_CHARACTER_RESEARCH_2026-11-11.md`
+- `.github/workflows/validate-i1m-artificer-legacy-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
