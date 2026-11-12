@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2h-tough-levelup-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `b5c95788895e99165f93a6be8d5c695ce99cf504` |
+| Exact source commit represented by this archive snapshot | `f5af608360d2e61e6b844f9a8daad92fe3ad3385` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2h): promote active next task after verified signed Tough source RED/GREEN |
+| Last source commit title | docs(i2h): append exact signed original Tough RED and scratch GREEN test receipt |
 | Files changed relative to main | 212 (158 non-docs; 54 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
