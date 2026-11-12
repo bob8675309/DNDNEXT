@@ -1,8 +1,8 @@
 {
   "date": "2026-11-12",
   "mainHead": "00c5c4416b99ac256913b48ef96387f3eabfde44",
-  "note": "Part 1/2: original Nov 9 PR dossiers with exact-head file SHA compared against Nov 12 main. A modified path is NOT proof of lost behavior, and an identical blob is NOT runtime acceptance. Part2 will append remaining 10.",
-  "reviewed_original_pr_count": 10,
+  "note": "Full 20 exact original PR dossiers and all 584 PR-scoped changed-file rows compared to pinned main Git blobs. This inventories literal path/blob parity ONLY, not full semantic porting or deployment approval.",
+  "reviewed_original_pr_count": 20,
   "prs": [
     {
       "pr": 309,
@@ -3377,6 +3377,1450 @@
           "pathStatus": "different_blob_on_main"
         }
       ]
+    },
+    {
+      "pr": 328,
+      "originalDossier": "docs/pr-integration/PR-328.md",
+      "expectedPRScopedChanges": 8,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "originalDiffStatus": "modified",
+          "delta": "11/0",
+          "sourceBlob": "c7483706fb1dae7cf9c977f5b2963b438c0e96dd",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "14/0",
+          "sourceBlob": "48e50f83d21854760ce071d771e66654a0a6a786",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Seeded_Scenario_Runner_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "43/0",
+          "sourceBlob": "d85863d1ab7ba99755e4a35e440a4b3ce69d896c",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "18/0",
+          "sourceBlob": "d337b0d7ffb83aa1970c4c2219194365308dd193",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_seeded_scenarios.mjs",
+          "originalDiffStatus": "added",
+          "delta": "185/0",
+          "sourceBlob": "1aec2b43da2ef7d0fbd7a6fea620d6ad1d4eef55",
+          "mainBlob": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_scenarios_v1.json",
+          "originalDiffStatus": "added",
+          "delta": "64/0",
+          "sourceBlob": "550f00899330fd7bec8d166047a4f70d1612cbe8",
+          "mainBlob": "550f00899330fd7bec8d166047a4f70d1612cbe8",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "74/0",
+          "sourceBlob": "1fce63d01e0f2599aabf404a34da1e9dfdc29544",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_scenarios.mjs",
+          "originalDiffStatus": "added",
+          "delta": "43/0",
+          "sourceBlob": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7",
+          "mainBlob": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 329,
+      "originalDossier": "docs/pr-integration/PR-329.md",
+      "expectedPRScopedChanges": 10,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "originalDiffStatus": "modified",
+          "delta": "11/0",
+          "sourceBlob": "aec9140e5135ea44c37a8940c3687bdf77224c2d",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "22/0",
+          "sourceBlob": "aabe772f237d934d08a3e43b20d88f9e4bb1f401",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+          "originalDiffStatus": "modified",
+          "delta": "9/1",
+          "sourceBlob": "6f2301772b526461710a69364d40f77bebe7b40e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Seeded_Starting_Spells_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "46/0",
+          "sourceBlob": "1b3108327a13f3b05d23b1ddba4057ed0d07e867",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "26/0",
+          "sourceBlob": "ae2304dfb648e691d385f7477c66ea1dc48e0e35",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_starting_spells_v1.json",
+          "originalDiffStatus": "added",
+          "delta": "21/0",
+          "sourceBlob": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1",
+          "mainBlob": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "62/0",
+          "sourceBlob": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897",
+          "mainBlob": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_starting_spells_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "156/0",
+          "sourceBlob": "d56ed5ea44289bbb20720c1323f9b22f362b31c5",
+          "mainBlob": "d56ed5ea44289bbb20720c1323f9b22f362b31c5",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "79/0",
+          "sourceBlob": "4ca957b44082f215842473777c067334f66f0874",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_starting_spells.mjs",
+          "originalDiffStatus": "added",
+          "delta": "48/0",
+          "sourceBlob": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4",
+          "mainBlob": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 330,
+      "originalDossier": "docs/pr-integration/PR-330.md",
+      "expectedPRScopedChanges": 10,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "originalDiffStatus": "modified",
+          "delta": "9/0",
+          "sourceBlob": "56d0236cc7a1e4e1d8b9f57e055710d6a58a1ae7",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "22/0",
+          "sourceBlob": "21e18b8f622873bf38c18394df83e2f465f015ba",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+          "originalDiffStatus": "modified",
+          "delta": "2/0",
+          "sourceBlob": "d8054f14b9eb7a2e8ef232478bcfba71eb4b8f21",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "57/0",
+          "sourceBlob": "0b3340f8df8b1c7ed1b72bf6898884ae436030fb",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "27/0",
+          "sourceBlob": "8e44d7cf7b2c26e92de761189a160497dafe6dc0",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_seeded_scenarios.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "24/10",
+          "sourceBlob": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+          "mainBlob": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_wizard_spells_v1.json",
+          "originalDiffStatus": "added",
+          "delta": "152/0",
+          "sourceBlob": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08",
+          "mainBlob": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "73/0",
+          "sourceBlob": "bbf8cece98f46b1008d8e2ff79650647f89a5e20",
+          "mainBlob": "bbf8cece98f46b1008d8e2ff79650647f89a5e20",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "138/0",
+          "sourceBlob": "2d2553f69d4100152bbdaef2d93154addccbbf59",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_wizard_spells.mjs",
+          "originalDiffStatus": "added",
+          "delta": "124/0",
+          "sourceBlob": "c1f18766081d10d391682cb77bfd7ebe635f1d14",
+          "mainBlob": "c1f18766081d10d391682cb77bfd7ebe635f1d14",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 331,
+      "originalDossier": "docs/pr-integration/PR-331.md",
+      "expectedPRScopedChanges": 10,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "originalDiffStatus": "modified",
+          "delta": "10/0",
+          "sourceBlob": "6cc5d18854369bc6cb73b7209da2869800e91f8d",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "22/0",
+          "sourceBlob": "043258a737bfd769814a16acbaa7351b79316b7e",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Nested_Choice_Dependencies_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "38/0",
+          "sourceBlob": "130b12ca56e251efd2e1fae63a6d27d803e0bca0",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+          "originalDiffStatus": "modified",
+          "delta": "7/1",
+          "sourceBlob": "efd2917c04e460fed96a3ed600e53cbba21cb202",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "19/0",
+          "sourceBlob": "fbb8fc162dad12759af0730b8ceb14dbf125eec5",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_nested_choices_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "60/0",
+          "sourceBlob": "44e0fdf6257c5a3a982540fece96296af0046f9a",
+          "mainBlob": "44e0fdf6257c5a3a982540fece96296af0046f9a",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_nested_choices_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "71/0",
+          "sourceBlob": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a",
+          "mainBlob": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_nested_choices_v1.json",
+          "originalDiffStatus": "added",
+          "delta": "32/0",
+          "sourceBlob": "1b913ceb8005880acfef31437227136e949cb1bd",
+          "mainBlob": "1b913ceb8005880acfef31437227136e949cb1bd",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "91/0",
+          "sourceBlob": "9e4585f032a61f0088e79ea211dd683216d1701c",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_nested_choices.mjs",
+          "originalDiffStatus": "added",
+          "delta": "72/0",
+          "sourceBlob": "0143ddff591831260723b435ac15b7525334f165",
+          "mainBlob": "0143ddff591831260723b435ac15b7525334f165",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 332,
+      "originalDossier": "docs/pr-integration/PR-332.md",
+      "expectedPRScopedChanges": 10,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "originalDiffStatus": "modified",
+          "delta": "10/0",
+          "sourceBlob": "fee2f6cd7e9b849bd854255a16778c97573a8051",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "28/0",
+          "sourceBlob": "bfaa82fac651c26b7d768cd912ad6b7cddda47a8",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+          "originalDiffStatus": "modified",
+          "delta": "6/0",
+          "sourceBlob": "5d3a32c5b6661e47b36794bfe7723296c4b0631b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "57/0",
+          "sourceBlob": "f17aa8fb573581ef1fc40f9af869646d0e8a9b03",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "33/0",
+          "sourceBlob": "eef183e555a37cfef4f57b892841d580943c40ee",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+          "originalDiffStatus": "added",
+          "delta": "161/0",
+          "sourceBlob": "9b8d222774854a44b2a0c968a9fb48582489505f",
+          "mainBlob": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "135/0",
+          "sourceBlob": "94fa076d8e3e075aab551a5610bcff79393f3460",
+          "mainBlob": "94fa076d8e3e075aab551a5610bcff79393f3460",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "139/0",
+          "sourceBlob": "f9bf748582986a452110f9b5c326cead61e76374",
+          "mainBlob": "f9bf748582986a452110f9b5c326cead61e76374",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "138/0",
+          "sourceBlob": "8ea8fbf960fe031fadaa841f8eccec825e4ba9e3",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_warlock_child_completion.mjs",
+          "originalDiffStatus": "added",
+          "delta": "109/0",
+          "sourceBlob": "09748f626fd33c04ea2dfc626878bc9cbe4323cd",
+          "mainBlob": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+          "pathStatus": "different_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 333,
+      "originalDossier": "docs/pr-integration/PR-333.md",
+      "expectedPRScopedChanges": 6,
+      "rows": [
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "24/0",
+          "sourceBlob": "4c3621978fc8b7028704a5335b78665d81808968",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+          "originalDiffStatus": "modified",
+          "delta": "25/0",
+          "sourceBlob": "dfbb84cc5b65fd2cedd08ea6d9837efed4815c9a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "23/0",
+          "sourceBlob": "422c53b99cfe530894815bbeb0be182b0dd2e9bf",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+          "originalDiffStatus": "modified",
+          "delta": "5/0",
+          "sourceBlob": "b6a8c90f1d6ac4ba756d81531d7db7c97cd8d8e4",
+          "mainBlob": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "42/2",
+          "sourceBlob": "a398c5d42f2e3aa420b804f2b8c0284d90981014",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_warlock_child_completion.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "24/3",
+          "sourceBlob": "4b17edb5ee0af57328db02a6ecf15b0078015f3c",
+          "mainBlob": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+          "pathStatus": "different_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 334,
+      "originalDossier": "docs/pr-integration/PR-334.md",
+      "expectedPRScopedChanges": 8,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "originalDiffStatus": "modified",
+          "delta": "5/0",
+          "sourceBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "32/0",
+          "sourceBlob": "0ac548ef88b359eb22869f6f997a624af65b5b4d",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+          "originalDiffStatus": "modified",
+          "delta": "32/0",
+          "sourceBlob": "fe2fd5083d94649ebe01eef6607742404aab751d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "21/0",
+          "sourceBlob": "8bf97b01892f11d1754ffa616bcdd82d93121b44",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_warlock_client_wire.mjs",
+          "originalDiffStatus": "added",
+          "delta": "127/0",
+          "sourceBlob": "a90013d3dbb590af4dfae76e87863453daa04d9b",
+          "mainBlob": "a90013d3dbb590af4dfae76e87863453daa04d9b",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+          "originalDiffStatus": "modified",
+          "delta": "5/0",
+          "sourceBlob": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+          "mainBlob": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "61/2",
+          "sourceBlob": "3f5db10af33ecb1e635d7f4480053ee9928b6007",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_warlock_child_completion.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "3/3",
+          "sourceBlob": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+          "mainBlob": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 335,
+      "originalDossier": "docs/pr-integration/PR-335.md",
+      "expectedPRScopedChanges": 7,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-forge-browser-warlock-choice.yml",
+          "originalDiffStatus": "added",
+          "delta": "48/0",
+          "sourceBlob": "f2c19df4eaf5955f02735c1326723fa80695ed12",
+          "mainBlob": "f2c19df4eaf5955f02735c1326723fa80695ed12",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "28/0",
+          "sourceBlob": "f0166e03edfeb4a6ce78cfe63ab28885ad5cce63",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+          "originalDiffStatus": "modified",
+          "delta": "28/0",
+          "sourceBlob": "2fc89548ae5aa4d43e6496967b3cf2d4ab9d6e9d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "20/0",
+          "sourceBlob": "d14b628608088af565e5ec54e38b5cbcb0037670",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/browser/forge_warlock_choice_dom.jsx",
+          "originalDiffStatus": "added",
+          "delta": "92/0",
+          "sourceBlob": "83a3b9653bd50aada19252358146b9904b9344fd",
+          "mainBlob": "83a3b9653bd50aada19252358146b9904b9344fd",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/browser/verify_forge_warlock_choice_dom.mjs",
+          "originalDiffStatus": "added",
+          "delta": "153/0",
+          "sourceBlob": "14e81cc8495f1d3a537e39e76f7427830dce9d88",
+          "mainBlob": "14e81cc8495f1d3a537e39e76f7427830dce9d88",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "19/0",
+          "sourceBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 345,
+      "originalDossier": "docs/pr-integration/PR-345.md",
+      "expectedPRScopedChanges": 94,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-c3-3-atomic-disposable.yml",
+          "originalDiffStatus": "added",
+          "delta": "116/0",
+          "sourceBlob": "e255863d55840dfe7ec2f23bfd21d834185dc2cb",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-c3-3-forge-privacy-original.yml",
+          "originalDiffStatus": "added",
+          "delta": "147/0",
+          "sourceBlob": "5bff721b87e73f29bbccdf6f2b3f7d0931038498",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-c3-3-npc-pdf-visual.yml",
+          "originalDiffStatus": "added",
+          "delta": "50/0",
+          "sourceBlob": "5d72663fff20556cb7a5a1909b5e6b902cbfefe0",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-centered-npc-profile.yml",
+          "originalDiffStatus": "added",
+          "delta": "51/0",
+          "sourceBlob": "565419d081144869754de43856a9ab8483f4be03",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-npc-private-profile-cutover.yml",
+          "originalDiffStatus": "added",
+          "delta": "45/0",
+          "sourceBlob": "35e37eebd4a9ebe756bc21cf7b66e35a93ba4523",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-p1-3-npc-profile-rls.yml",
+          "originalDiffStatus": "added",
+          "delta": "79/0",
+          "sourceBlob": "93f94bbb4d5debc59a682b2fa46bab8bf2fd2e20",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/CreatorBackstoryPanel.js",
+          "originalDiffStatus": "added",
+          "delta": "95/0",
+          "sourceBlob": "23b0e86aab7a80b7243365ba107c1d37a5ec5812",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/GlobalNpcProfileOverlay.js",
+          "originalDiffStatus": "added",
+          "delta": "191/0",
+          "sourceBlob": "a0e133a7c2446cba3f8c672a1df78f6a5aa73763",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/MapPageClient.js",
+          "originalDiffStatus": "modified",
+          "delta": "2/2",
+          "sourceBlob": "3e6bf39d48de6f28aac90f6bac1400fa9a00bf1f",
+          "mainBlob": "61f8738da2ca3d8635b5a413bfdc18c094228a0a",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/NewNpcModalV3.js",
+          "originalDiffStatus": "modified",
+          "delta": "7/2",
+          "sourceBlob": "27c8aa95bf95c88adeb80274e7139dbe17270098",
+          "mainBlob": "5b4f3cc4e56a0055b57d7ae792ed77c7d3fdcead",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/NewNpcModalV3Refined.js",
+          "originalDiffStatus": "modified",
+          "delta": "3/0",
+          "sourceBlob": "3ddcbb6672d9a1655de1bca626317b1bb857bd34",
+          "mainBlob": "1772c63392532cfde5661d5d7c5a95352bff25e6",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/NpcForgeStepContent.js",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "a7b17e898c4634aacb98d33ca1db399039866295",
+          "mainBlob": "c4899549592e898ebbf5f07a9627c9378afec446",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/NpcPanel.js",
+          "originalDiffStatus": "modified",
+          "delta": "63/55",
+          "sourceBlob": "606db96649dcdf6646afbd4d24f67a6fc54426eb",
+          "mainBlob": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/PlayerCharacterProfilePanelUnified.js",
+          "originalDiffStatus": "modified",
+          "delta": "8/4",
+          "sourceBlob": "d4500ee5aacb11e69bb666b33d587fd8a4b4839a",
+          "mainBlob": "8a561e51eafd9e8507db7a4d3f15fd4699d6d1b8",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/town/TownCrafterInteractionPanel.js",
+          "originalDiffStatus": "modified",
+          "delta": "2/1",
+          "sourceBlob": "6be8eb9e041d74f784d136e672c0df9d2d27774d",
+          "mainBlob": "345629409b45cd5da5bf305a8124fbbe46ec0d15",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "69/1",
+          "sourceBlob": "09a4b4619734067a04a5bed1ec46d2bba1f161f9",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md",
+          "originalDiffStatus": "added",
+          "delta": "97/0",
+          "sourceBlob": "a0a1560c8b2a21d497d43152073504d3b148d4f1",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_ATOMIC_DISPOSABLE_COMMIT_2026-11-08.md",
+          "originalDiffStatus": "added",
+          "delta": "39/0",
+          "sourceBlob": "15fe744db6ad1764f69b409aba0b298aa78ba9aa",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md",
+          "originalDiffStatus": "added",
+          "delta": "39/0",
+          "sourceBlob": "402bd78c778cdae31c9004bffd031506f9c73c5e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_MIGRATION_HISTORY_RECONCILIATION_2026-11-08.md",
+          "originalDiffStatus": "added",
+          "delta": "81/0",
+          "sourceBlob": "120684b15a56a7cd07571ead1713b3efd4f4e466",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_NPC_PRINT_VISUAL_QA_2026-11-08.md",
+          "originalDiffStatus": "added",
+          "delta": "33/0",
+          "sourceBlob": "a63ed29cdf9e21d0c16350cd2e18c7ea254772f7",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_NPC_PRIVACY_INVENTORY_RELEASE_PREFLIGHT_2026-11-08.md",
+          "originalDiffStatus": "added",
+          "delta": "81/0",
+          "sourceBlob": "0a68beb8be79deacbea1ddd8ec6c964942c92a90",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md",
+          "originalDiffStatus": "modified",
+          "delta": "25/0",
+          "sourceBlob": "6005fea0dfd6dde361a65f1dc1b988b304e410ac",
+          "mainBlob": "7996e7c68c9da2713f46733b2cc9369adbebd14b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md",
+          "originalDiffStatus": "added",
+          "delta": "60/0",
+          "sourceBlob": "4ab3be51c90184a3e7dd9bba28ade0282d708a63",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json",
+          "originalDiffStatus": "added",
+          "delta": "256/0",
+          "sourceBlob": "72998dc396f775b8b173835033e2220b6aaac789",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md",
+          "originalDiffStatus": "added",
+          "delta": "78/0",
+          "sourceBlob": "66b7306eb217d175331b5eb43d5d419a747069e3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md",
+          "originalDiffStatus": "added",
+          "delta": "65/0",
+          "sourceBlob": "336718bf170ea32ddbce205c15aa8114ed608252",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md",
+          "originalDiffStatus": "added",
+          "delta": "66/0",
+          "sourceBlob": "3ca0ae9c16469bc626926259c52fa4fad4bb6ddb",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "277/0",
+          "sourceBlob": "8a6c4c30ac26aabcb0930b1b794d4ed3246c1bfc",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/NEXT_CHAT_START_HERE.md",
+          "originalDiffStatus": "modified",
+          "delta": "12/0",
+          "sourceBlob": "e88bccc1fee25e84920f4c5a931bcd64f672e39d",
+          "mainBlob": "e691d951bd2bbb958b8e42bfa28651900bf1f3b5",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "originalDiffStatus": "modified",
+          "delta": "5/0",
+          "sourceBlob": "de534035ee80867ac2d69b3d1eb5997e4e9f5ee5",
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/SYSTEM_REGISTRY.json",
+          "originalDiffStatus": "modified",
+          "delta": "8/3",
+          "sourceBlob": "e5abadc50cd76e0fae0878bcd721382b2d3e2f6b",
+          "mainBlob": "811e89ca3f37eb93f2dfb8c9af52473fc0dc6e19",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/archive/npc_secure_profile_2026-11-04/Centered_Secure_NPC_Profile_Integration_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "28/0",
+          "sourceBlob": "fd1f2282ca721c4eca26a932cfe44fb6a2d026c6",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/archive/npc_secure_profile_2026-11-04/NPC_Private_Reader_Client_Cutover_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "26/0",
+          "sourceBlob": "f13fe5ae3c26230fe7f0ed6adff9c9c6df4b69d4",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/archive/npc_secure_profile_2026-11-04/NPC_Profile_First_Centered_Overlay_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "33/0",
+          "sourceBlob": "994cdbe09230cd71c652fe6d676d50b82e63f2de",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/archive/npc_secure_profile_2026-11-04/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "153/0",
+          "sourceBlob": "4c6fe3ea0918b15afc53a4707f5c2cfcc27cf748",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/data/c33_migration_history_snapshot_2026-11-08.json",
+          "originalDiffStatus": "added",
+          "delta": "2204/0",
+          "sourceBlob": "ac0fb111963c0eed79f8bd7634b5bac8b3f7ec9f",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "pages/_app.js",
+          "originalDiffStatus": "modified",
+          "delta": "3/0",
+          "sourceBlob": "5a1981d58af0f0b99519538093157d27a0d60d35",
+          "mainBlob": "e5f68c0abb293089d6ad09d4e3e4035612eac598",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/inventory.js",
+          "originalDiffStatus": "modified",
+          "delta": "46/6",
+          "sourceBlob": "de0a9e7d787365998a7f08815a330d706bc8f54d",
+          "mainBlob": "02d52821d0f22aa82ad92263c5014712906ee385",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/npcs.js",
+          "originalDiffStatus": "modified",
+          "delta": "88/54",
+          "sourceBlob": "2e08fa07384958478f323516c4e1b342228bd436",
+          "mainBlob": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/town/[id].js",
+          "originalDiffStatus": "modified",
+          "delta": "53/3",
+          "sourceBlob": "22aeb1c18f148ab84e24d1da67b9a2f9d47949ce",
+          "mainBlob": "a4e790e5941afb16660a112ee9189e4a84d4afb7",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/browser/c33_creator_backstory_dom.jsx",
+          "originalDiffStatus": "added",
+          "delta": "55/0",
+          "sourceBlob": "6ed044d5039b98ccc9f8c805b1d4e81b931df907",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/c33_next_dynamic_shim.js",
+          "originalDiffStatus": "added",
+          "delta": "7/0",
+          "sourceBlob": "fed89a73a1b65075b338b34a341e05c6aee68430",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/c33_next_router_shim.js",
+          "originalDiffStatus": "added",
+          "delta": "9/0",
+          "sourceBlob": "84cd9a1ed82699255bc793b64668ac8f087526f9",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/c33_original_forge_full_dom.jsx",
+          "originalDiffStatus": "added",
+          "delta": "41/0",
+          "sourceBlob": "8faf3946e94721cdce3b8686d269a1322d4e1524",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/verify_c33_creator_backstory_dom.mjs",
+          "originalDiffStatus": "added",
+          "delta": "302/0",
+          "sourceBlob": "7b3a813d11d4b9e0fcd1ba8aef9d4e8463f58aa4",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/verify_c33_next_town_route.mjs",
+          "originalDiffStatus": "added",
+          "delta": "215/0",
+          "sourceBlob": "d19b134fdb4e4b58833fe339f918c027959eae02",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/verify_c33_npc_pdf_visual.mjs",
+          "originalDiffStatus": "added",
+          "delta": "166/0",
+          "sourceBlob": "1ee0f29a5c017906f2029eff25a9b1c1b88c5760",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/verify_c33_original_forge_full_dom.mjs",
+          "originalDiffStatus": "added",
+          "delta": "288/0",
+          "sourceBlob": "238093e708b49d9c970f005daa5fd43d91e52405",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs",
+          "originalDiffStatus": "added",
+          "delta": "80/0",
+          "sourceBlob": "9f65ac6c523c27c69e8bf451c2182d4bd8714f64",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/diagnostics/c33_migration_history_audit.mjs",
+          "originalDiffStatus": "added",
+          "delta": "34/0",
+          "sourceBlob": "3519a95fbf8ab3e8dbb961c000a735388e388433",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/diagnostics/c33_prototype_spell_item_preservation_readonly.sql",
+          "originalDiffStatus": "added",
+          "delta": "89/0",
+          "sourceBlob": "a9467f3502105c88298a1d884423815a7f2c0fb3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/diagnostics/c33_release_preflight_readonly.sql",
+          "originalDiffStatus": "added",
+          "delta": "39/0",
+          "sourceBlob": "e430abbd2e56bf9b6b47c379b3a74c93a74f8c68",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_atomic_preprivacy_inventory_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "85/0",
+          "sourceBlob": "bab4b9f1ae5f923fcbebbe23d7ebd5df87b8387d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_forge_full_component_browser_catalog_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "235/0",
+          "sourceBlob": "d64b85f8d38ef45bff31a247d20993b18a9822af",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "354ad33e1d86881244c48d090317e1906e3ed671",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "41/0",
+          "sourceBlob": "53bd80d36e94d3ac0f97d02d16a85881bdcf6b15",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "105/0",
+          "sourceBlob": "d2f925129d198a443f1cea29d73ea56bff8b7a76",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_forge_privacy_inventory_join_setup_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "52/0",
+          "sourceBlob": "a874ec87f3fc177a9dc7647a504f8e0b735827b2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "123/0",
+          "sourceBlob": "12612c4acbe861817037e1ab5a79ddb7c40a55e9",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/c33_next_town_route_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "47/0",
+          "sourceBlob": "0d3f1b261b7600944121c9be6f808fa190e8dddc",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_creation_replay_local_auth_pg17.sql",
+          "originalDiffStatus": "modified",
+          "delta": "7/0",
+          "sourceBlob": "aa701c679712475cd4f04d4e0a01fedc4616bafa",
+          "mainBlob": "3da82b85babbb37d4aee1744e22ec24716082997",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_npc_creator_replay_fixture_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "35/0",
+          "sourceBlob": "7fc70929c7b7b21f836a8347139e356ed7e906dd",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "85/0",
+          "sourceBlob": "2355ceaf306d6dde1ec90c634f71e919894d3859",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "121/0",
+          "sourceBlob": "9c479d3f044268f73da3a5515d229096ce03f94a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/release/c33_capture_sensitive_db_backup_windows.ps1",
+          "originalDiffStatus": "added",
+          "delta": "96/0",
+          "sourceBlob": "37df430cc6c5eda8a43db84beabd7661e25379a2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/release/c33_compose_disposable_joint_sql.mjs",
+          "originalDiffStatus": "added",
+          "delta": "100/0",
+          "sourceBlob": "1c677929faebf9fb31fbdacdde790ab2b63ee26c",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/release/c33_compose_production_review_sql.mjs",
+          "originalDiffStatus": "added",
+          "delta": "123/0",
+          "sourceBlob": "68cbbdfbd70c0ea4af366c5127d88e7c73ccd262",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/release/test_c33_compose_disposable_joint_sql.mjs",
+          "originalDiffStatus": "added",
+          "delta": "22/0",
+          "sourceBlob": "d97b31e3f05bbbe13124626d3bc9f02ac7756f62",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/release/test_c33_compose_production_review_sql.mjs",
+          "originalDiffStatus": "added",
+          "delta": "22/0",
+          "sourceBlob": "0da97c8a790b8151e56e72e57e703715fa28271f",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_c33_forge_privacy_original_local_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "591/0",
+          "sourceBlob": "c8314cb9311d5e00e7b377f91484941536dd9e87",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "584/0",
+          "sourceBlob": "949da8a7047db370e48bbf024d8acd89e89d26fa",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_centered_npc_profile_entrypoints.mjs",
+          "originalDiffStatus": "added",
+          "delta": "108/0",
+          "sourceBlob": "b814ff42ff4cfb349b42d2072cffe2f574bcae60",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_character_forge_resilience.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "3b726eced223cbca4528a54221a643569bb447d8",
+          "mainBlob": "f53515db442a198bea6baa90d2ed40142b63d2ae",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_immutable_creation_replay.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "2/0",
+          "sourceBlob": "f206e6250aef3075049ea619e117ad38709d7f34",
+          "mainBlob": "00d85baf34bac0813036724dfe57d29c32b712ad",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_inventory_ui_release_contract.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "9fb2bcb008d700659503710da77945c2e449a364",
+          "mainBlob": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_warlock_child_completion.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "d469363de4f20983386f733ca05d43356cbfaf74",
+          "mainBlob": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_handoff_registry.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "4/1",
+          "sourceBlob": "23c9206e04f2653ea6e693ce61e3c11f01dc70ed",
+          "mainBlob": "65f7603eff4719aa0995d0908db51cd3982f44cd",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_private_profile_cutover.mjs",
+          "originalDiffStatus": "added",
+          "delta": "79/0",
+          "sourceBlob": "ee6915116ea49597449de4652b5f50f10450c90d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_profile_consumer_acl.mjs",
+          "originalDiffStatus": "added",
+          "delta": "95/0",
+          "sourceBlob": "dd779d9e89703f427ca96e1556e616b8cfc30fc4",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_secure_centered_integration.mjs",
+          "originalDiffStatus": "added",
+          "delta": "63/0",
+          "sourceBlob": "5d841ac6efa7914f0b7e5b33defc8c55f03e8d46",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_p1_3_npc_profile_rls_source.mjs",
+          "originalDiffStatus": "added",
+          "delta": "138/0",
+          "sourceBlob": "8d44b78b9e21184bd68884a86274bb736fceb618",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_player_forge_multi_legacy_sheet_candidate.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "2/2",
+          "sourceBlob": "95a537f19cc8f822e801082cc5a9600b43e330fb",
+          "mainBlob": "c1e2be5818c72b413c6ea662f2dcf6e928b9bc7d",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_player_forge_starting_magic_v3.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "e66ab7f7d38a3ceb1482a9a15f9f22a5f30f48d7",
+          "mainBlob": "3a47944d093c357137f22126c318e5b931f8132b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_printable_character_sheet.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "8/1",
+          "sourceBlob": "1d3825a0a540eb6fb42482376b018c05d7d79917",
+          "mainBlob": "5f2580d6c3b559d9b3c1459f28c3625d2b6138de",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_security_hardening_roadmap.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "f7b2b39ed6bfb38694af5f8d341d72acf7bace3d",
+          "mainBlob": "b216a78fb116edc5ec325cd48af961e7ca190bba",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_town_crafter_interaction_component.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "25d6d25e4b088d5f0f55be8e328343a163b4d401",
+          "mainBlob": "df5e99047c1d2b483e2c52085eb1e82cc500efb4",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_unified_character_forge.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "e124d1d752254099fa756388cefe1a47997d8293",
+          "mainBlob": "2dd655d9ee9bb81fa8c62d73c29ee63b392b91f2",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+          "originalDiffStatus": "added",
+          "delta": "431/0",
+          "sourceBlob": "01e48823ac3a46aa5880e98200e97c2595501ce7",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql",
+          "originalDiffStatus": "added",
+          "delta": "83/0",
+          "sourceBlob": "afdd2849c3ae2be5929fd8c11c9b4e19f4f6a7ac",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
+          "originalDiffStatus": "added",
+          "delta": "155/0",
+          "sourceBlob": "9dfe44eee49df6ead8c8ccfc7a0454a996b8bee3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "styles/npc-profile-centered.css",
+          "originalDiffStatus": "added",
+          "delta": "214/0",
+          "sourceBlob": "150eb9ad78aeba268be955e63c8451e3c0ed0e14",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/npcProfileOverlay.js",
+          "originalDiffStatus": "added",
+          "delta": "15/0",
+          "sourceBlob": "3d809c47a9aaae18d0e7e5ec6500199a9266baac",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/officialCharacterSheetPdf.js",
+          "originalDiffStatus": "modified",
+          "delta": "26/12",
+          "sourceBlob": "c3ba3651e2e3d8aafbae3b4ad195d53ee25199f0",
+          "mainBlob": "a11c3432b40aa938c572d543ecb2e9316878cce2",
+          "pathStatus": "different_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 347,
+      "originalDossier": "docs/pr-integration/PR-347.md",
+      "expectedPRScopedChanges": 8,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-spell-recipe-p1-extraction.yml",
+          "originalDiffStatus": "added",
+          "delta": "25/0",
+          "sourceBlob": "ebfffc41036229c39a8fb81c1bed73e57de5a561",
+          "mainBlob": "ebfffc41036229c39a8fb81c1bed73e57de5a561",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "2/0",
+          "sourceBlob": "74f18b8dae541b8853d35818f4f6887f6101c0d7",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "10/0",
+          "sourceBlob": "e8ca989f910097a05c14d6f00efcdeb0cc535a83",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_recipe_p1_examples.mjs",
+          "originalDiffStatus": "added",
+          "delta": "108/0",
+          "sourceBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "mainBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_preflight_p1.mjs",
+          "originalDiffStatus": "added",
+          "delta": "130/0",
+          "sourceBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "mainBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_schema_p1.mjs",
+          "originalDiffStatus": "added",
+          "delta": "116/0",
+          "sourceBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "mainBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/preflightSpellRecipe.mjs",
+          "originalDiffStatus": "added",
+          "delta": "150/0",
+          "sourceBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "mainBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/validateSpellRecipe.mjs",
+          "originalDiffStatus": "added",
+          "delta": "217/0",
+          "sourceBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "mainBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
     }
-  ]
+  ],
+  "totalPRScopedRows": 584,
+  "summary": {
+    "exact_blob_on_main": 185,
+    "different_blob_on_main": 130,
+    "absent_on_main": 269
+  }
 }
