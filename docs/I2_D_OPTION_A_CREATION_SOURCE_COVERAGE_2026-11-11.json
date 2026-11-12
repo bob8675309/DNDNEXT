@@ -238,28 +238,34 @@
       "signature": "private.create_player_character_v2_source_20261105(jsonb,jsonb)",
       "source_file": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
       "original_statement": "INSERT/UPSERT public.players(user_id,name,sheet,updated_at), overwrite only WHERE players.sheet='{}'::jsonb",
-      "status": "i2d_signed_test_and_source_reversible_candidate_pending_CI",
-      "detail": "This copied #324 private v2 source, NOT the public v2 source patched in I2-C, is called through private v3 source by both public v3 and private-Story/nonce wrappers. Original RED expected for empty legacy sheet; original NONEMPTY guard must remain recorded separately. Option A candidate must insert identity only if missing, never write old sheet, name or updated_at."
+      "status": "signed_i2d_source_RED_then_scratch_GREEN_verified",
+      "detail": "This copied #324 private v2 source, NOT the public v2 source patched in I2-C, is called through private v3 source by both public v3 and private-Story/nonce wrappers. Original RED expected for empty legacy sheet; original NONEMPTY guard must remain recorded separately. Option A candidate must insert identity only if missing, never write old sheet, name or updated_at.",
+      "original_pg_get_functiondef_md5": "1d06d00eb4b4aa4c125796d761f5e259",
+      "scratch_candidate_md5": "00b2167041b9c2e4e1a98d3873839f37"
     },
     {
       "signature": "private.create_player_character_v3_source_20261105(jsonb,jsonb,jsonb)",
-      "status": "i2d_signed_call_path_test_pending_CI",
-      "detail": "Must remain byte-identical; invokes private v2 copied source while materializing original v3 magic choices"
+      "status": "signed_i2d_private_v3_caller_source_unchanged",
+      "detail": "Must remain byte-identical; invokes private v2 copied source while materializing original v3 magic choices",
+      "original_pg_get_functiondef_md5": "798090559c434fbb21c4b27cab21865b"
     },
     {
       "signature": "public.create_player_character_v3(jsonb,jsonb,jsonb)",
-      "status": "i2d_signed_no_story_public_entry_test_pending_CI",
-      "detail": "Public #324 immutable intent v3 wrapper must remain source-identical"
+      "status": "signed_i2d_public_v3_no_story_source_unchanged",
+      "detail": "Public #324 immutable intent v3 wrapper must remain source-identical",
+      "original_pg_get_functiondef_md5": "ab48d46376075a79b3f5a5de21fdada6"
     },
     {
       "signature": "public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)",
-      "status": "i2d_signed_private_story_entry_test_pending_CI",
-      "detail": "Original private Story RLS and immutable nonce wrapper must remain source-identical"
+      "status": "signed_i2d_public_private_story_source_unchanged",
+      "detail": "Original private Story RLS and immutable nonce wrapper must remain source-identical",
+      "original_pg_get_functiondef_md5": "6e39477f971c9d40c6726c9f4dbc456e"
     },
     {
       "signature": "private.create_player_character_v3_with_story_intent_i1c(jsonb,jsonb,jsonb,text)",
-      "status": "i2d_signed_story_intent_wrapper_test_pending_CI",
-      "detail": "Original Story/nonce digest wrapper must remain source-identical"
+      "status": "signed_i2d_private_story_intent_source_unchanged",
+      "detail": "Original Story/nonce digest wrapper must remain source-identical",
+      "original_pg_get_functiondef_md5": "5fac54802474043d8233cc17a75f4c0f"
     }
   ],
   "release_blockers": [
@@ -270,5 +276,19 @@
     "Cross-family writer concurrency and rollback",
     "Encrypted offsite backup plus independently restored database and all storage objects",
     "Owner explicit release approval; no production changes from research"
-  ]
+  ],
+  "evidence": {
+    "kind": "source-original RED plus isolated Option A source-reversible GREEN",
+    "code_test_commit": "101a40a7817b537b2a2a9dacc96ae3e352beb070",
+    "github_actions_run": 43143457573,
+    "job_id": 130935703511,
+    "conclusion": "success",
+    "cases": "I2D-01 through I2D-11 PASS",
+    "historical_suites": "original I1-B..O signed Forge, I2C-01..10 pass before new I2D suite",
+    "retained_failed_runs": [
+      43142926681,
+      43143057359
+    ],
+    "final_documentation_inclusive_ci": "pending_revalidation"
+  }
 }
