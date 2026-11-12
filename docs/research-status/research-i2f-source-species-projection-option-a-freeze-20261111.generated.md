@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `b2c16d4e8d47824c4e2692d43b31a83eee319488` |
+| Exact source commit represented by this archive snapshot | `167bf10b3d640d87f5fc00026d758f7c1769fd00` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-F): require exact signed 11/11 success report instead of obsolete pending-CI wording |
+| Last source commit title | docs(I2-F): state explicit NOT signed public/private helper RPC boundary in both verified ledger entries |
 | Files changed relative to main | 197 (147 non-docs; 50 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/validate_i2f_private_projection_coverage.mjs`
+- `docs/I2_F_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
