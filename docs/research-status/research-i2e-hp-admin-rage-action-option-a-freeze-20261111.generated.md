@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `23d98dcb4e850007e550ddbe0acfeb57428be4bf` |
+| Exact source commit represented by this archive snapshot | `1132a33b64e24197e974276cd58c48cbdded3baa` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-E): set active signed HP/Admin/Rage 11/11 milestone and remaining 27 original writer blockers |
+| Last source commit title | docs(I2-E): append signed 11-case original HP/Admin/Rage RED and strict Option A scratch GREEN receipt with 27-writer limit |
 | Files changed relative to main | 190 (142 non-docs; 48 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
