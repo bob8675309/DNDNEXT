@@ -1,10 +1,10 @@
 {
-  "schema_version": "i2i-admin-feature-original-signed-option-a-pending-v1",
+  "schema_version": "i2i-admin-feature-original-signed-option-a-verified-v1",
   "owner_decision": "Option A — freeze all historical players.sheet contents including same-character/empty sheets, canonical character_sheets per-character authority",
   "source_baseline": "Unmodified #324 private source copied from original v2, in sql/candidates/20261105_player_creation_immutable_intent_v1.sql; full signed I1-B..O and I2-C first",
   "original_update_writer_total": 34,
-  "original_update_writer_scratch_tested": 11,
-  "original_update_writer_untested": 23,
+  "original_update_writer_scratch_tested": 12,
+  "original_update_writer_untested": 22,
   "original_update_writers": [
     {
       "signature": "private.apply_additional_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
@@ -135,8 +135,8 @@
     {
       "signature": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
       "source_md5": "f2b6190ecc9400772e054892f63cdc47",
-      "status": "not_option_a_tested",
-      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+      "status": "i2i_signed_original_admin_RED_then_scratch_GREEN_verified",
+      "note": "Original public signed Admin grant MD5 aa0f6a0c6c6a6f2b9aacf57bd40e434c invokes original private.sync_admin_feature_array_v1 MD5 f2b6190ecc9400772e054892f63cdc47; I2I-03 original RED reproduced two unrelated legacy account overwrites after canonical grant, I2I-05 guarded reversible local scratch GREEN preserved canonical feat/boon/G and legacy sheet + timestamp freeze. I2I-01..11 original-source signed Auth/PG17 PASS on Actions #43319584048 job #131539899439. Reduced source P1.3 fixture, not full production roles/RLS/31 triggers. I2I-11 SQL-role privilege finding NOT REST exposure."
     },
     {
       "signature": "private.sync_character_artificer_plan_projection_v1(p_character_id uuid)",
@@ -408,11 +408,11 @@
     "scope": "SQL-seeded reduced Fighter P1.3 original v5 with synthetic Tough grants, not original full 31-trigger Forge, real feat acquisition or browser"
   },
   "i2i_pending_test_count": 1,
-  "i2i_counted_writers": 0,
+  "i2i_counted_writers": 1,
   "i2i_source_signature": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
   "i2i_source_md5": "f2b6190ecc9400772e054892f63cdc47",
   "i2i_original_public_grant_md5": "aa0f6a0c6c6a6f2b9aacf57bd40e434c",
-  "i2i_status": "PENDING exact-head Auth/PG17 signed original Admin grant RED then isolated scratch Option A GREEN; prior coverage 11/34 remains until proven",
+  "i2i_status": "Verified signed public original Admin grant RED and private helper source reversible scratch GREEN with SQL-role-only ACL finding; final docs-inclusive exact-head CI pending",
   "i2i_scope": "Source-original signed public.grant_character_option_v1 invokes original private.sync_admin_feature_array_v1 with reduced local P1.3 Postgres17/GoTrue, SQL-seeded Admin/character/catalog/grant and legacy account records, original source MD5s preserved.",
   "i2i_live_acl_readonly_observation": "2026-11-12 DnDWeb PG17 read-only: authenticated has private schema USAGE and sync_admin_feature_array_v1 EXECUTE, anon lacks schema USAGE but has function EXECUTE, public grant only authenticated EXECUTE; private not proven REST exposed. P1.3 fixture intentionally revokes private EXECUTE; SQL-role parity restored ONLY inside local ROLLBACK.",
   "i2i_release_boundaries": [
@@ -422,5 +422,17 @@
     "No application runtime/map, paid agent or Vercel code changes",
     "No owner production release without independent encrypted DB+Storage restored backup, RLS/ACL and real browser."
   ],
-  "i2i_next_one_action": "Verify exact signed Admin RED/scratch GREEN (and local rolled-back database-role ACL finding) in PR CI; promote 11->12/34 only if all passes; restore no original source negatives, no production SQL."
+  "i2i_next_one_action": "Verify documentation-inclusive final I2-I exact-head CI; then merge safe research to parent only with original RED/GREEN and all inherited checks, no live DB or production release. Next select one original writer of 22 remaining.",
+  "i2i_result": {
+    "run_id": 43319584048,
+    "job_id": 131539899439,
+    "head_at_source_test": "6f1aeeee6dd48408456220bf12f9758125c4208d",
+    "conclusion": "success",
+    "cases": "I2I-01 through I2I-11 PASS",
+    "original_red": "I2I-03 genuine signed original public grant Lucky inserted original G and canonical CS, original private helper clobbered TWO unrelated editors' historical players.sheet",
+    "scratch_green": "I2I-05 original signed Admin grant with only one source-exact reversible local private account UPDATE no-op preserved original canonical grant/CS and account snapshot+timestamp freeze",
+    "role_probe": "I2I-11 authenticated SQL role direct private SECURITY DEFINER helper invocation using scratch-local GRANT and ROLLBACK; NOT evidence of public PostgREST schema exposure",
+    "inherited_jobs": "In same run inherited I2F, I2G, I2H all SUCCESS",
+    "scope": "Reduced P1.3 SQL seeded character/catalog/permissions and local GoTrue signed Admin/other roles; no full production ACL browser/31-trigger proof."
+  }
 }
