@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `d375ac97af5ddccd8bdc032e89e1c26447ccca6a` |
+| Exact source commit represented by this archive snapshot | `6ac53e22ea6fe75ee6c2d6879fd24429d21b1567` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2i): preserve 11/34 while original signed Admin feature writer RED/GREEN is pending |
-| Files changed relative to main | 216 (161 non-docs; 55 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(i2i): enforce exact original signed Admin, no source drift, and one-writer ledger |
+| Files changed relative to main | 217 (162 non-docs; 55 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I2_I_ADMIN_FEATURE_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
+- `scripts/validate_i2i_admin_feature_scope.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- … 166 more
+- … 167 more
 
 ## Trust and update procedure
 
