@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-12T03:54:23Z | research/i2f-source-species-projection-option-a-freeze-20261111 (167bf10b3d640d87f5fc00026d758f7c1769fd00) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-12T03:54:50Z | research/i2f-source-species-projection-option-a-freeze-20261111 (e4934a3c0c411c9d5d00aa3a1f38729f1de10783) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

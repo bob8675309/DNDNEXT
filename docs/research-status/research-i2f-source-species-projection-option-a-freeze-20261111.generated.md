@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `167bf10b3d640d87f5fc00026d758f7c1769fd00` |
+| Exact source commit represented by this archive snapshot | `e4934a3c0c411c9d5d00aa3a1f38729f1de10783` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-F): state explicit NOT signed public/private helper RPC boundary in both verified ledger entries |
+| Last source commit title | docs(I2-F): preserve failed final-head static scope-wording receipt and strengthened private helper limitation |
 | Files changed relative to main | 197 (147 non-docs; 50 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_F_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
+- `docs/I2_F_SOURCE_SPECIES_PROJECTION_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
