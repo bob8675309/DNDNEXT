@@ -1,0 +1,438 @@
+{
+  "schema_version": "i2i-admin-feature-original-signed-option-a-verified-v1",
+  "owner_decision": "Option A — freeze all historical players.sheet contents including same-character/empty sheets, canonical character_sheets per-character authority",
+  "source_baseline": "Unmodified #324 private source copied from original v2, in sql/candidates/20261105_player_creation_immutable_intent_v1.sql; full signed I1-B..O and I2-C first",
+  "original_update_writer_total": 34,
+  "original_update_writer_scratch_tested": 12,
+  "original_update_writer_untested": 22,
+  "original_update_writers": [
+    {
+      "signature": "private.apply_additional_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "c847b3656b1f006f4020d2b23f73efcc",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_character_level_advancement_v1(p_character_id uuid, p_to_level integer, p_option_id uuid, p_instance jsonb)",
+      "source_md5": "46dd0af4f6ca816422a75e91a292c634",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_battle_master_maneuvers_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_selected_subclass text)",
+      "source_md5": "4154e92e9228cdc42bad2bc9fed37562",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_lore_discoveries_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "source_md5": "f3c2e92a7df5c388c4f92cfbe3f6bf25",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_magic_initiate_replacements_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "01f21c1f197aa4d1fa138b05de238690",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_metamagic_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "source_md5": "96b9b4d327057d34af9e59f49219de0d",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_mystic_arcanum_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb)",
+      "source_md5": "6c181bbb230a7c7021b48140906cb58d",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_subclass_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "53fc79f26851efbc698d6e7c8546af00",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_warlock_invocation_replacement_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_all_class_selections jsonb, p_feat_instances jsonb)",
+      "source_md5": "434994105f465b6ed92fdb80942f9942",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_warlock_invocations_v1(p_character_id uuid, p_to_level integer, p_selections jsonb, p_feat_instances jsonb)",
+      "source_md5": "ed0655adf02e9413157efe8a8bd414f9",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_level_up_wizard_savant_v1(p_character_id uuid, p_to_level integer, p_group jsonb, p_selected_subclass text)",
+      "source_md5": "77f643e44aa6048689a66ff4d01c4694",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_simple_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
+      "source_md5": "e2078d079f8bbb1a397c2a43d13bae9b",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_source_owned_origin_feat_v1(p_character_id uuid, p_level integer, p_option_id uuid, p_instance jsonb, p_instance_key text, p_owner_type text, p_owner_key text)",
+      "source_md5": "b7d69d8643a6b2ba2be8efbb4ee41243",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.apply_tough_progression_bonus_v1(p_character_id uuid, p_to_level integer)",
+      "source_md5": "2b8bca48b7067e2e67b66defcb7f2c10",
+      "status": "i2h_signed_v5_original_RED_then_scratch_GREEN_verified",
+      "note": "Exact original private Tough HP source (MD5 2b8bca...) invoked by unchanged genuine signed public v5 (not direct private RPC), original RED I2H-04 overwrote two unrelated editor account sheets after canonical +2 Tough HP. Prior I2-B base-v3 and class-summary mirrors isolated with MD5-reversible local scratch before new source-original RED. Only after RED, local exact source reversible Tough UPDATE removal; signed coeditor I2H-06 canonical +2/HP/progression/session/event and all old sheets/timestamps preserved. I2H-01..10 PASS Actions #43310669290, job #131508381880. Reduced P1.3 SQL-seeded Fighter and synthetic Tough grant, NOT full modern Forge/31-trigger or production."
+    },
+    {
+      "signature": "private.apply_wizard_signature_spell_ids_v1(p_character_id uuid, p_selected jsonb, p_cadence text, p_creator text)",
+      "source_md5": "c6d23dc8eccb824e9199ca027139a7da",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.complete_character_level_up_base_v3(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "e33639d549ef557976a3970ea51f5238",
+      "status": "signed_i2b_first_no_write_slice",
+      "note": "Tested in reduced, signed P1.3 earned v5 / noncaster Rage rest context; no full Forge/31-trigger equivalence"
+    },
+    {
+      "signature": "private.complete_epic_level_up_base_v1(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "0688ae4f53e4a5e02e8228473ff4d0e0",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.ensure_character_source_choices_v1(p_character_id uuid)",
+      "source_md5": "69bedf66148d2ce3dab97baa5de606cc",
+      "status": "i2f_privileged_original_RED_then_scratch_GREEN_verified",
+      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT signed public/private helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
+    },
+    {
+      "signature": "private.remove_source_owned_origin_feat_v1(p_character_id uuid, p_instance_key text, p_owner_type text, p_owner_key text)",
+      "source_md5": "ca278b2eb83d2a70aec369edf79a32a6",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.restore_character_rest_action_state_v1(p_character_id uuid, p_rest_type text)",
+      "source_md5": "d75edf2ac583e3790882155c702e2165",
+      "status": "signed_i2b_first_no_write_slice",
+      "note": "Tested in reduced, signed P1.3 earned v5 / noncaster Rage rest context; no full Forge/31-trigger equivalence"
+    },
+    {
+      "signature": "private.set_species_runtime_projection_v1(p_character_id uuid, p_projection_key text, p_state jsonb)",
+      "source_md5": "7f6e7d7d99ff79db1372462b4320c21b",
+      "status": "i2f_privileged_original_RED_then_scratch_GREEN_verified",
+      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT signed public/private helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
+    },
+    {
+      "signature": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
+      "source_md5": "f2b6190ecc9400772e054892f63cdc47",
+      "status": "i2i_signed_original_admin_RED_then_scratch_GREEN_verified",
+      "note": "Original public signed Admin grant MD5 aa0f6a0c6c6a6f2b9aacf57bd40e434c invokes original private.sync_admin_feature_array_v1 MD5 f2b6190ecc9400772e054892f63cdc47; I2I-03 original RED reproduced two unrelated legacy account overwrites after canonical grant, I2I-05 guarded reversible local scratch GREEN preserved canonical feat/boon/G and legacy sheet + timestamp freeze. I2I-01..11 original-source signed Auth/PG17 PASS on Actions #43319584048 job #131539899439. Reduced source P1.3 fixture, not full production roles/RLS/31 triggers. I2I-11 SQL-role privilege finding NOT REST exposure."
+    },
+    {
+      "signature": "private.sync_character_artificer_plan_projection_v1(p_character_id uuid)",
+      "source_md5": "5ebf572db01143e9b523c7dba0d43ad5",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_character_eldritch_invocations_v1(p_character_id uuid)",
+      "source_md5": "69361283a0ba3b9d83a2104256a86f66",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_character_runtime_weapon_mastery_projection_v1(p_character_id uuid)",
+      "source_md5": "851b6da1a2b26e8652df20746fb0aa60",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "private.sync_player_forge_class_spell_summary_v1(p_character_id uuid)",
+      "source_md5": "5b1b275a268a57591a2e35a05ce7480d",
+      "status": "signed_i2b_first_no_write_slice",
+      "note": "Tested in reduced, signed P1.3 earned v5 / noncaster Rage rest context; no full Forge/31-trigger equivalence"
+    },
+    {
+      "signature": "public.adjust_character_hit_points_v1(p_character_id uuid, p_amount integer, p_temp_hp integer)",
+      "source_md5": "f855be60d971aa63e32ade327d14c369",
+      "status": "i2e_signed_original_RED_then_scratch_no_write_GREEN_verified",
+      "note": "Signed original live-source RED proved owner/editor account collision; exact one-update source-MD5 reversible scratch GREEN proved canonical gameplay+permissions and zero legacy writes in local PG17, CI #43146151864, I2E-01..11. Barbarian sheet specimen was locally synthetic."
+    },
+    {
+      "signature": "public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "1500703592c3cb8e1738126eac508e6a",
+      "status": "i2g_genuine_signed_original_RED_then_scratch_GREEN_verified",
+      "note": "Original exact public v1 source signed via local GoTrue/PostgREST after reduced featureless P1.3 Fighter 1->2 SQL-seeded review; expected RED overwrote both unrelated editor account sheets, source reversible single UPDATE no-op after RED preserved canonical HP/level-up/event/session and same/unrelated legacy bytes/timestamps. I2G-01..09 ALL PASS, Actions #43296779345 job #131458834795. NOT modern v3 Forge/Story or complete 31-trigger release."
+    },
+    {
+      "signature": "public.complete_character_level_up_v2(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "28a227a1dfb9a3cc5516c5b7afb874b0",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.configure_character_weapon_mastery_v1(p_character_id uuid, p_item_ids uuid[])",
+      "source_md5": "32fa55b69478af07f8f0002b967a5704",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.create_player_character_v1(p_payload jsonb, p_spell_choices jsonb)",
+      "source_md5": "e2db5802f1f51b93f5b9d374a835e4b9",
+      "status": "signed_v1_source_no_write_scratch",
+      "note": "I2C-02 v1 SOURCE RED then I2C-05/07/09 source-exact signed scratch Option A identity-only: preserves legacy sheet/name"
+    },
+    {
+      "signature": "public.recover_character_invocations_v1(p_character_id uuid, p_selections jsonb)",
+      "source_md5": "05f6d19a7e2f45d890c62c27cb419e7f",
+      "status": "not_option_a_tested",
+      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+    },
+    {
+      "signature": "public.set_character_progression_v2(p_character_id uuid, p_class_key text, p_source text, p_level integer, p_experience_points bigint, p_subclass_name text, p_subclass_source text)",
+      "source_md5": "c4ea1c7993912f6b4c6fe9ee7b25343f",
+      "status": "i2e_signed_original_RED_then_scratch_no_write_GREEN_verified",
+      "note": "Signed original live-source RED proved owner/editor account collision; exact one-update source-MD5 reversible scratch GREEN proved canonical gameplay+permissions and zero legacy writes in local PG17, CI #43146151864, I2E-01..11. Barbarian sheet specimen was locally synthetic."
+    },
+    {
+      "signature": "public.update_character_sheet_action_state_v1(p_character_id uuid, p_action_key text, p_operation text)",
+      "source_md5": "313a533250724b2e2abc754899d0f8d4",
+      "status": "i2e_signed_original_RED_then_scratch_no_write_GREEN_verified",
+      "note": "Signed original live-source RED proved owner/editor account collision; exact one-update source-MD5 reversible scratch GREEN proved canonical gameplay+permissions and zero legacy writes in local PG17, CI #43146151864, I2E-01..11. Barbarian sheet specimen was locally synthetic."
+    }
+  ],
+  "original_insert_upsert_total": 3,
+  "original_insert_upsert_scratch_tested": 3,
+  "original_insert_upserts": [
+    {
+      "signature": "public.create_player_character_v1(p_payload jsonb, p_spell_choices jsonb)",
+      "source_md5": "e2db5802f1f51b93f5b9d374a835e4b9",
+      "status": "signed_i2c_source_and_candidate",
+      "note": "Original v1 update and dependent IF NOT FOUND/INSERT replaced by identity-only insert; one-character limit retained"
+    },
+    {
+      "signature": "public.create_player_character_v2(p_payload jsonb, p_spell_choices jsonb)",
+      "source_md5": "0351f0a00acae023278e1b8b065b00c9",
+      "status": "signed_i2c_source_and_candidate",
+      "note": "Original v2 sheet UPSERT replaced by identity-only insert; signed multi-character canonical creation/nonce tested"
+    },
+    {
+      "signature": "public.sync_user_profile()",
+      "source_md5": "dd7113eec05655a661309838acce6030",
+      "status": "signed_i2c_source_and_candidate",
+      "note": "Original sync_user_profile remains source-identical, insert identity only, real local Auth trigger tested"
+    }
+  ],
+  "additional_private_source_paths": [
+    {
+      "signature": "private.create_player_character_v2_source_20261105(jsonb,jsonb)",
+      "source_file": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+      "original_statement": "INSERT/UPSERT public.players(user_id,name,sheet,updated_at), overwrite only WHERE players.sheet='{}'::jsonb",
+      "status": "signed_i2d_source_RED_then_scratch_GREEN_verified",
+      "detail": "This copied #324 private v2 source, NOT the public v2 source patched in I2-C, is called through private v3 source by both public v3 and private-Story/nonce wrappers. Original RED expected for empty legacy sheet; original NONEMPTY guard must remain recorded separately. Option A candidate must insert identity only if missing, never write old sheet, name or updated_at.",
+      "original_pg_get_functiondef_md5": "1d06d00eb4b4aa4c125796d761f5e259",
+      "scratch_candidate_md5": "00b2167041b9c2e4e1a98d3873839f37"
+    },
+    {
+      "signature": "private.create_player_character_v3_source_20261105(jsonb,jsonb,jsonb)",
+      "status": "signed_i2d_private_v3_caller_source_unchanged",
+      "detail": "Must remain byte-identical; invokes private v2 copied source while materializing original v3 magic choices",
+      "original_pg_get_functiondef_md5": "798090559c434fbb21c4b27cab21865b"
+    },
+    {
+      "signature": "public.create_player_character_v3(jsonb,jsonb,jsonb)",
+      "status": "signed_i2d_public_v3_no_story_source_unchanged",
+      "detail": "Public #324 immutable intent v3 wrapper must remain source-identical",
+      "original_pg_get_functiondef_md5": "ab48d46376075a79b3f5a5de21fdada6"
+    },
+    {
+      "signature": "public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)",
+      "status": "signed_i2d_public_private_story_source_unchanged",
+      "detail": "Original private Story RLS and immutable nonce wrapper must remain source-identical",
+      "original_pg_get_functiondef_md5": "6e39477f971c9d40c6726c9f4dbc456e"
+    },
+    {
+      "signature": "private.create_player_character_v3_with_story_intent_i1c(jsonb,jsonb,jsonb,text)",
+      "status": "signed_i2d_private_story_intent_source_unchanged",
+      "detail": "Original Story/nonce digest wrapper must remain source-identical",
+      "original_pg_get_functiondef_md5": "5fac54802474043d8233cc17a75f4c0f"
+    }
+  ],
+  "release_blockers": [
+    "30 untested original UPDATE source functions",
+    "Other direct/indirect INSERT/UPSERT/dynamic SQL source paths outside I1-N name-based grep",
+    "Full original 31 Forge trigger graph and real production RLS/Admin/service roles",
+    "Real browser/character selection/profile and permissions",
+    "Cross-family writer concurrency and rollback",
+    "Encrypted offsite backup plus independently restored database and all storage objects",
+    "Owner explicit release approval; no production changes from research"
+  ],
+  "evidence": {
+    "kind": "source-original RED plus isolated Option A source-reversible GREEN",
+    "code_test_commit": "101a40a7817b537b2a2a9dacc96ae3e352beb070",
+    "github_actions_run": 43143457573,
+    "job_id": 130935703511,
+    "conclusion": "success",
+    "cases": "I2D-01 through I2D-11 PASS",
+    "historical_suites": "original I1-B..O signed Forge, I2C-01..10 pass before new I2D suite",
+    "retained_failed_runs": [
+      43142926681,
+      43143057359
+    ],
+    "final_documentation_inclusive_ci": "pending_revalidation"
+  },
+  "i2e_source_fingerprints": {
+    "public.adjust_character_hit_points_v1": "f855be60d971aa63e32ade327d14c369",
+    "public.set_character_progression_v2": "c4ea1c7993912f6b4c6fe9ee7b25343f",
+    "public.update_character_sheet_action_state_v1": "313a533250724b2e2abc754899d0f8d4"
+  },
+  "i2e_admin_v1_no_legacy_writer_fingerprint": "eb467b7c7a8d548581a36cfcb0d8f77b",
+  "i2e_synthetic_specimen_caveat": "Barbarian Rage state test uses a signed real v3 Fighter character whose canonical sheet is locally reshaped with privileged SQL to source-shaped Barbarian for action RPC; NOT a signed Barbarian Forge test.",
+  "pending_release_gates": [
+    "27 original account UPDATE functions remain untested under Option A",
+    "Extra indirect/dynamic/INSERT/UPSERT writers may exist beyond 34-name census",
+    "Original full 31-trigger Forge graph and production RLS/Admin/service role parity",
+    "Real browser/character sheet and account profile E2E",
+    "Concurrent owner/editor/grants and rollback",
+    "Encrypted second offsite DB+Storage backup and isolated restore",
+    "Separate explicit owner release permission"
+  ],
+  "i2e_evidence": {
+    "kind": "original source RED then isolated Option A scratch GREEN",
+    "code_test_commit": "1e757834d7c14876d9729cbccae8a9e2f20fbb22",
+    "github_actions_run": 43146151864,
+    "job_id": 130944312890,
+    "conclusion": "success",
+    "acceptance": "I2E-01 through I2E-11 PASS",
+    "original_red": [
+      "I2E-03 HP",
+      "I2E-04 Admin",
+      "I2E-05 Rage"
+    ],
+    "candidate_source_md5_reversible": true,
+    "final_docs_inclusive_ci": "pending"
+  },
+  "i2f_source_md5": {
+    "private.ensure_character_source_choices_v1": "69bedf66148d2ce3dab97baa5de606cc",
+    "private.set_species_runtime_projection_v1": "7f6e7d7d99ff79db1372462b4320c21b"
+  },
+  "i2f_execution_boundary": "SIGNED GoTrue/Forge creates characters; BOTH private helper invocations are guarded PRIVILEGED local PostgreSQL17 SQL because authenticated EXECUTE is denied. Do not claim signed helper RPC or browser/full creation trigger acceptance.",
+  "i2f_result": "Original REDs and source-reversible scratch GREEN verified in CI #43150417164; 11/11 PASS, no production changes; private helpers called with privileged local SQL, not signed user RPCs.",
+  "release_gates": [
+    "25 original source UPDATE functions still not Option A covered",
+    "Original 31-trigger Forge graph not reproduced",
+    "Actual source- and species-specific full creation-trigger calls not signed-tested",
+    "Production role, RLS, Admin, browser, legacy external client audit not certified",
+    "All indirect/dynamic SQL and direct INSERT/UPSERT writers not exhaustively inventoried",
+    "Cross-writer and cross-character concurrency/locks and rollback not independently proven",
+    "Encrypted backup DB + Storage and independent isolated restore unverified",
+    "Separate explicit owner production cutover/merge approval"
+  ],
+  "i2f_evidence": {
+    "github_actions_run": 43150417164,
+    "job_id": 130957990966,
+    "code_test_commit": "b5a8fc220c035347f63f30715f567146f3a82155",
+    "conclusion": "success",
+    "acceptance": "I2F-01 through I2F-11 PASS",
+    "original_red": [
+      "I2F-03 original sourceChoices account overwrite",
+      "I2F-04 original species runtime account overwrite"
+    ],
+    "repaired_test_seed_runs": [
+      43149979952
+    ],
+    "final_documentation_inclusive_ci": "pending"
+  },
+  "pending_source_signature": "public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)",
+  "pending_source_md5": "1500703592c3cb8e1738126eac508e6a",
+  "i2g_pending_test_count": 0,
+  "i2g_scope": "Exact original signed public.complete_character_level_up_v1 via local signed GoTrue/PostgREST with reduced featureless Fighter 1->2 helper; inherited I2F signed suite runs separately first; not original full 31-trigger modern Forge v3 or class-source/GM parity.",
+  "i2g_status": "VERIFIED exact-head executable source/test CI 43296779345, I2G-01..09 all pass; final documentation-inclusive CI must be separately rechecked",
+  "i2g_release_boundaries": [
+    "No production migrations/grants/writes",
+    "No merges or deployments",
+    "Inherited original Forge/Story suite is independently executed on disposable local PG17",
+    "Modern original v5 source retained; v1 standalone uses reduced original P1.3 Fighter helper",
+    "25 original UPDATE writers remain untested until I2G accepted"
+  ],
+  "i2g_result": {
+    "run_id": 43296779345,
+    "job_id": 131458834795,
+    "head_at_test": "e57713e12ffea7835998ad78ea51df13a24cc365",
+    "conclusion": "success",
+    "cases": "I2G-01..09",
+    "original_red": "I2G-03 signed public v1 account overwrites two unrelated editors",
+    "scratch_green": "I2G-06 real signed coeditor canonical success, all historical account sheet/timestamp snapshots frozen",
+    "inherited_i2f_job": "SUCCESS",
+    "limitation": "Only reduced featureless SQL-seeded Fighter level1->2 under authentic signed original public v1; no modern Forge/browser/full triggers"
+  },
+  "i2h_writer_signature": "private.apply_tough_progression_bonus_v1(p_character_id uuid, p_to_level integer)",
+  "i2h_source_md5": "2b8bca48b7067e2e67b66defcb7f2c10",
+  "i2h_normalizer_md5": "dd8cdd5b47efe99b1cfff9c2bf7635dd",
+  "i2h_status": "Verified executable signed original Tough RED and local scratch GREEN; final documentation-inclusive exact-head CI recheck required.",
+  "i2h_counted_writers": 1,
+  "i2h_isolation": "Prior 2 already covered I2-B sources private.complete_character_level_up_base_v3 and private.sync_player_forge_class_spell_summary_v1 are source-locked, MD5-reversible scratch no-mirrors before ORIGINAL Tough writer RED. Live original public.complete_character_level_up_v5/v4/v3 remains unchanged.",
+  "i2h_specimen_limits": "Signed GoTrue/PostgREST public v5 call but SQL-seeded featureless Fighter 1->2, synthetic Tough option acquisition rows, reduced class-choice helpers; not actual signed full Forge/feat acquisition or original 31-trigger graph.",
+  "i2h_release_boundaries": [
+    "No hosted SQL writes, migrations, grants or modifications",
+    "No production map/gameplay/SSR/app modifications, merge or deployment",
+    "No authorization for full original 31-trigger Forge/roles/browser/concurrency/independent backup restore"
+  ],
+  "i2h_next_one_action": "Verify I2-H draft documentation-inclusive final head CI and append closeout receipt; only then select one additional original class-feature/level-up writer of 23 remaining; no production release.",
+  "i2h_result": {
+    "run_id": 43310669290,
+    "job_id": 131508381880,
+    "head_at_source_test": "daf7a3f5da74e69f634880ce1376c444943a11e6",
+    "conclusion": "success",
+    "cases": "I2H-01 through I2H-10 PASS",
+    "original_red": "I2H-04 signed v5 original Tough +2 HP canonical but clobbered TWO unrelated editor players.sheet rows",
+    "scratch_green": "I2H-06 signed coeditor v5 Tough +2 HP canonical with full account snapshot/timestamp freeze",
+    "inherited_i2f_job": {
+      "id": 131505612572,
+      "conclusion": "success"
+    },
+    "inherited_i2g_job": {
+      "id": 131507223514,
+      "conclusion": "success"
+    },
+    "scope": "SQL-seeded reduced Fighter P1.3 original v5 with synthetic Tough grants, not original full 31-trigger Forge, real feat acquisition or browser"
+  },
+  "i2i_pending_test_count": 1,
+  "i2i_counted_writers": 1,
+  "i2i_source_signature": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
+  "i2i_source_md5": "f2b6190ecc9400772e054892f63cdc47",
+  "i2i_original_public_grant_md5": "aa0f6a0c6c6a6f2b9aacf57bd40e434c",
+  "i2i_status": "Verified signed public original Admin grant RED and private helper source reversible scratch GREEN with SQL-role-only ACL finding; final docs-inclusive exact-head CI pending",
+  "i2i_scope": "Source-original signed public.grant_character_option_v1 invokes original private.sync_admin_feature_array_v1 with reduced local P1.3 Postgres17/GoTrue, SQL-seeded Admin/character/catalog/grant and legacy account records, original source MD5s preserved.",
+  "i2i_live_acl_readonly_observation": "2026-11-12 DnDWeb PG17 read-only: authenticated has private schema USAGE and sync_admin_feature_array_v1 EXECUTE, anon lacks schema USAGE but has function EXECUTE, public grant only authenticated EXECUTE; private not proven REST exposed. P1.3 fixture intentionally revokes private EXECUTE; SQL-role parity restored ONLY inside local ROLLBACK.",
+  "i2i_release_boundaries": [
+    "No hosted SQL/data/grant/migration changes",
+    "No conclusions about private REST exposure from SQL role grant/USAGE alone",
+    "No full original 31 trigger Forge, NPC privacy SQL or browser rollout",
+    "No application runtime/map, paid agent or Vercel code changes",
+    "No owner production release without independent encrypted DB+Storage restored backup, RLS/ACL and real browser."
+  ],
+  "i2i_next_one_action": "Verify documentation-inclusive final I2-I exact-head CI; then merge safe research to parent only with original RED/GREEN and all inherited checks, no live DB or production release. Next select one original writer of 22 remaining.",
+  "i2i_result": {
+    "run_id": 43319584048,
+    "job_id": 131539899439,
+    "head_at_source_test": "6f1aeeee6dd48408456220bf12f9758125c4208d",
+    "conclusion": "success",
+    "cases": "I2I-01 through I2I-11 PASS",
+    "original_red": "I2I-03 genuine signed original public grant Lucky inserted original G and canonical CS, original private helper clobbered TWO unrelated editors' historical players.sheet",
+    "scratch_green": "I2I-05 original signed Admin grant with only one source-exact reversible local private account UPDATE no-op preserved original canonical grant/CS and account snapshot+timestamp freeze",
+    "role_probe": "I2I-11 authenticated SQL role direct private SECURITY DEFINER helper invocation using scratch-local GRANT and ROLLBACK; NOT evidence of public PostgREST schema exposure",
+    "inherited_jobs": "In same run inherited I2F, I2G, I2H all SUCCESS",
+    "scope": "Reduced P1.3 SQL seeded character/catalog/permissions and local GoTrue signed Admin/other roles; no full production ACL browser/31-trigger proof."
+  }
+}
