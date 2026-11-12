@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `da3c4ec7902faaf326792f566f567647ad7960d4` |
+| Exact source commit represented by this archive snapshot | `9fc093767c55646d811ca3300580aae8eca25a64` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-F): source-locked original private projection RED and no-mirror scratch acceptance with explicit privileged-helper limitation |
-| Files changed relative to main | 196 (146 non-docs; 50 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(I2-F): enforce exact two private projection source MD5s, privilege boundary and 9/34 bounded ledger |
+| Files changed relative to main | 197 (147 non-docs; 50 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I2_F_SOURCE_SPECIES_PROJECTION_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
+- `scripts/validate_i2f_private_projection_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- … 146 more
+- … 147 more
 
 ## Trust and update procedure
 
