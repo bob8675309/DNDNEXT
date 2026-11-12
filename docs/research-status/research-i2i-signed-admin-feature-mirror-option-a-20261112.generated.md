@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `6ac53e22ea6fe75ee6c2d6879fd24429d21b1567` |
+| Exact source commit represented by this archive snapshot | `b7670798f0d94ee9cda15844522d84e526e9b5b9` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2i): enforce exact original signed Admin, no source drift, and one-writer ledger |
-| Files changed relative to main | 217 (162 non-docs; 55 docs) |
+| Last source commit title | ci(i2i): preserve I2F/I2G/I2H signed regressions before original signed Admin RED/GREEN |
+| Files changed relative to main | 218 (163 non-docs; 55 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i2i_admin_feature_scope.mjs`
+- `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -48,6 +48,7 @@
 - `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
 - `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
 - `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
+- `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
-- `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- … 167 more
+- … 168 more
 
 ## Trust and update procedure
 
