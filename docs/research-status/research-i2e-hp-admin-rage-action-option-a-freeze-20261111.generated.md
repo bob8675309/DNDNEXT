@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `6e5a226895da249161ce3164f89316904afbe058` |
+| Exact source commit represented by this archive snapshot | `1e757834d7c14876d9729cbccae8a9e2f20fbb22` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-E): original HP/Admin/Rage signed RED and source-exact Option A no-write acceptance with explicit synthetic Rage limitation |
-| Files changed relative to main | 189 (141 non-docs; 48 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(I2-E): source-fingerprint and 7/34 coverage static safety guard before signed scratch acceptance |
+| Files changed relative to main | 190 (142 non-docs; 48 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I2_E_HP_ADMIN_RAGE_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
+- `scripts/validate_i2e_hp_admin_rage_scope.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
-- … 139 more
+- … 140 more
 
 ## Trust and update procedure
 
