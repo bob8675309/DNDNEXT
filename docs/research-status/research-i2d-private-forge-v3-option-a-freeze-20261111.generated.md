@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `72052c1a0e2e1e4a9eb8f7cb137e34b6180349ba` |
+| Exact source commit represented by this archive snapshot | `6aa658727dac5270cdee386c024b3c0649987475` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-D): strict-source-reversible private #324 v2 sheet UPSERT removal for signed v3/Story scratch only |
-| Files changed relative to main | 178 (134 non-docs; 44 docs) |
+| Last source commit title | test(I2-D): signed original private v2/v3 Story empty-snapshot RED and source-reversible Option A scratch GREEN |
+| Files changed relative to main | 179 (135 non-docs; 44 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2d_option_a_private_forge_source_scratch_pg17.sql`
+- `scripts/test_i2d_private_v3_story_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
 - `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
-- … 128 more
+- … 129 more
 
 ## Trust and update procedure
 
