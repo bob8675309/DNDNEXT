@@ -326,5 +326,9 @@ jobs:
       - name: Destroy disposable database/Auth and test users
         if: always()
         run: |
-          cd "$RUNNER_TEMP/i2i-local"
-          npx --yes supabase@2.120.0 stop --no-backup || true
+          if [ -d "$RUNNER_TEMP/i2i-local" ]; then
+            cd "$RUNNER_TEMP/i2i-local"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          else
+            echo "No disposable Supabase directory created; nothing to clean up."
+          fi
