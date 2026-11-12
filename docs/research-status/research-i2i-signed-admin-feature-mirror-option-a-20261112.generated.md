@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `311a6da79ea5cf0a4538ecbe9dcb2a360210e42c` |
+| Exact source commit represented by this archive snapshot | `6df166cffe4b9d990687409869bdd99854d2e27e` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2i): source-locked reversible single Admin mirror no-op for disposable signed tests |
-| Files changed relative to main | 214 (160 non-docs; 54 docs) |
+| Last source commit title | test(i2i): reproduce signed original Admin account overwrite, scratch freeze, and rolled-back SQL role ACL risk |
+| Files changed relative to main | 215 (161 non-docs; 54 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2i_option_a_admin_feature_scratch_pg17.sql`
+- `scripts/test_i2i_signed_admin_feature_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- … 164 more
+- … 165 more
 
 ## Trust and update procedure
 
