@@ -1,0 +1,192 @@
+name: I2-G original level-up v1 source RED and Option A no-mirror scratch GREEN
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml'
+      - 'scripts/fixtures/i2g_original_levelup_v1_shared_forge_pg17.sql'
+      - 'scripts/fixtures/i2g_option_a_levelup_v1_scratch_pg17.sql'
+      - 'scripts/test_i2g_signed_levelup_v1_option_a_local_auth.mjs'
+      - 'scripts/validate_i2g_levelup_v1_scope.mjs'
+      - 'docs/I2_G_LEVELUP_V1_OPTION_A_SIGNED_RESEARCH_2026-11-12.md'
+      - 'docs/ACTIVE_WORK.md'
+      - 'docs/HANDOFF_LOG.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inherited-i2f-source-species-signed:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '55622'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_I1G_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1H_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1I_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1J_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1K_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1L_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1M_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1O_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I2C_LOCAL_CONFIRM: DISPOSABLE_I2C_OPTION_A_CREATION_ONLY
+      DNDNEXT_I2D_LOCAL_CONFIRM: DISPOSABLE_I2D_PRIVATE_V3_STORY_ONLY
+      DNDNEXT_I2E_LOCAL_CONFIRM: DISPOSABLE_I2E_HP_ADMIN_RAGE_ONLY
+      DNDNEXT_I2F_LOCAL_CONFIRM: DISPOSABLE_I2F_PRIVATE_SOURCE_SPECIES_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate local-only signed fixture syntax
+        run: |
+          node --check scripts/validate_i1d_trigger_gap_manifest.mjs
+          node scripts/validate_i1d_trigger_gap_manifest.mjs
+          node --check scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
+          node --check scripts/test_i2c_option_a_signed_creation_profile.mjs
+          node --check scripts/test_i2d_private_v3_story_option_a_local_auth.mjs
+          node --check scripts/test_i2e_signed_hp_admin_rage_option_a_local_auth.mjs
+          node --check scripts/test_i2f_source_species_projection_option_a_local_auth.mjs
+          node --check scripts/validate_i2f_private_projection_coverage.mjs
+          node scripts/validate_i2f_private_projection_coverage.mjs
+          node --check scripts/validate_i2e_hp_admin_rage_scope.mjs
+          node scripts/validate_i2e_hp_admin_rage_scope.mjs
+          node --check scripts/validate_i2d_source_coverage.mjs
+          node scripts/validate_i2d_source_coverage.mjs
+          node --check scripts/validate_i2c_creator_source_coverage.mjs
+          node scripts/validate_i2c_creator_source_coverage.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+          node scripts/validate_npc_private_profile_cutover.mjs
+      - name: Install existing pinned application dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure isolated PostgreSQL 17 + GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/i2f-local/supabase"
+          cat > "$RUNNER_TEMP/i2f-local/supabase/config.toml" <<'TOML'
+          project_id = "i2f-source-species-option-a-local-only"
+          [api]
+          port = 55621
+          [db]
+          port = 55622
+          shadow_port = 55620
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local Supabase services
+        run: |
+          cd "$RUNNER_TEMP/i2f-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Signed original Forge v2/v3 plus private Story and #324 nonce research
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '55622'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_I1G_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1H_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1I_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1J_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1K_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1L_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1M_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1O_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I2C_LOCAL_CONFIRM" = DISPOSABLE_I2C_OPTION_A_CREATION_ONLY
+          test "$DNDNEXT_I2D_LOCAL_CONFIRM" = DISPOSABLE_I2D_PRIVATE_V3_STORY_ONLY
+          test "$DNDNEXT_I2E_LOCAL_CONFIRM" = DISPOSABLE_I2E_HP_ADMIN_RAGE_ONLY
+          test "$DNDNEXT_I2F_LOCAL_CONFIRM" = DISPOSABLE_I2F_PRIVATE_SOURCE_SPECIES_ONLY
+          (cd "$RUNNER_TEMP/i2f-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i2f-local-env"
+          set -a
+          source "$RUNNER_TEMP/i2f-local-env"
+          set +a
+          export DNDNEXT_I1G_LOCAL_URL='http://127.0.0.1:55621'
+          export DNDNEXT_I1G_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
+            -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          node scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
+          node scripts/test_i2c_option_a_signed_creation_profile.mjs
+          node scripts/test_i2d_private_v3_story_option_a_local_auth.mjs
+          node scripts/test_i2e_signed_hp_admin_rage_option_a_local_auth.mjs
+          node scripts/test_i2f_source_species_projection_option_a_local_auth.mjs
+      - name: Stop and discard local test services and data
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/i2f-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
+
+  original-levelup-v1-signed-auth:
+    name: Signed original v1 Fighter level-up source RED and scratch GREEN
+    needs: inherited-i2f-source-species-signed
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_I2G_LOCAL_CONFIRM: I2G_SIGNED_LEVELUP_V1_DISPOSABLE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Static source fingerprints and test syntax
+        run: |
+          node --check scripts/test_i2g_signed_levelup_v1_option_a_local_auth.mjs
+          node --check scripts/validate_i2g_levelup_v1_scope.mjs
+          node scripts/validate_i2g_levelup_v1_scope.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+      - name: Install existing pinned project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure isolated PostgreSQL 17 and GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/i2g-local/supabase"
+          cat > "$RUNNER_TEMP/i2g-local/supabase/config.toml" <<'TOML'
+          project_id = "i2g-signed-original-v1-levelup-only"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local Supabase
+        run: |
+          cd "$RUNNER_TEMP/i2g-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Original-source RED followed by exact reversible Option A GREEN
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGPORT" = "54322"
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_I2G_LOCAL_CONFIRM" = I2G_SIGNED_LEVELUP_V1_DISPOSABLE_ONLY
+          (cd "$RUNNER_TEMP/i2g-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i2g-local-env"
+          set -a
+          source "$RUNNER_TEMP/i2g-local-env"
+          set +a
+          export DNDNEXT_I2G_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_I2G_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/i2g_original_levelup_v1_shared_forge_pg17.sql
+          node scripts/test_i2g_signed_levelup_v1_option_a_local_auth.mjs
+      - name: Destroy all disposable users and databases
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/i2g-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
