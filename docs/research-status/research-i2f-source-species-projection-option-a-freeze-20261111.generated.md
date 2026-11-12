@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `7d8d762576caa423505c66dac452f19795316770` |
+| Exact source commit represented by this archive snapshot | `27d1b57a44ece8db02b4fa0f0e9f9deb5effbdea` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-F): MD5-locked no-op for two private projection legacy writes in isolated signed Forge |
-| Files changed relative to main | 192 (144 non-docs; 48 docs) |
+| Last source commit title | test(I2-F): signed Forge-created characters + privileged private projection original RED then source-exact no-mirror GREEN |
+| Files changed relative to main | 193 (145 non-docs; 48 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2f_option_a_source_species_projection_scratch_pg17.sql`
+- `scripts/test_i2f_source_species_projection_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
-- … 142 more
+- … 143 more
 
 ## Trust and update procedure
 
