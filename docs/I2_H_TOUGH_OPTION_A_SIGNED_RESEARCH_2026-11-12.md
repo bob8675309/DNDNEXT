@@ -1,6 +1,8 @@
 # I2-H — Original Tough feat HP progression: signed v5 source RED → Option A scratch GREEN
 
-**RESEARCH ONLY; NEW SIGNED TESTS PENDING; NOT production.** November 12, 2026 (America/Chicago). Draft stack: I2-H on exact-verified I2-G #371 → I2-F #370 → prior signed I2C/D/E/B and original I1-B–O Forge/Story/nonce. Owner-selected Option A remains per-character `public.character_sheets` canonical authority and **every historical `public.players.sheet` frozen, including empty or same-character account rows**. Never infer permission to rewrite production functions, ACLs or migrate snapshots.
+**RESEARCH ONLY; SIGNED ORIGINAL RED and SCRATCH GREEN VERIFIED; NOT production.** November 12, 2026 (America/Chicago). Draft stack: I2-H on exact-verified I2-G #371 → I2-F #370 → prior signed I2C/D/E/B and original I1-B–O Forge/Story/nonce. Owner-selected Option A remains per-character `public.character_sheets` canonical authority and **every historical `public.players.sheet` frozen, including empty or same-character account rows**. Never infer permission to rewrite production functions, ACLs or migrate snapshots.
+
+> **2026-11-12 SIGNED SOURCE-TEST RECEIPT — VERIFIED I2H-01 through I2H-10 PASS.** [Actions #43310669290](https://github.com/bob8675309/DNDNEXT/actions/runs/43310669290) at executable+initial-doc head `daf7a3f5da74e69f634880ce1376c444943a11e6`: unchanged I2-F full Forge/Story/nonce job **SUCCESS** `131505612572`, unchanged I2-G signed original v1 RED/GREEN job **SUCCESS** `131507223514`, and independent exact original Tough private helper invoked by signed public v5 job **SUCCESS** `131508381880`, explicitly **PASS I2H-01 through I2H-10 in log**. I2H-04 ORIGINAL source Tough +2 HP canonical succeeded but overwrote *two unrelated* account sheets; only afterward source-locked local one-statement scratch I2H-06 preserved canonical +2/HP/level/session/event and same/unrelated historical snapshots+timestamps. Prior two already-tested base-v3/class-summary mirrors were source-MD5-reversibly disabled before new original Tough RED, preventing confounded attribution. No other writer is counted. Ledger now **11/34 bounded-tested, 23 original UPDATE writers untested**. **Final documentation-inclusive head CI still requires independent recheck after these receipts.** Not signed modern Player Forge v3/real origin-feat grant/full 31 triggers; no production SQL/ACL, map/app, deployment or merge.
 
 ## Why this original writer
 
@@ -14,7 +16,7 @@ The new workflow contains three sequential disposable GitHub Actions PostgreSQL1
 
 This is not an authentic v3 Forge/Story-based Tough grant, real origin-feat materialization, complete level-up catalog/31-trigger graph, production RLS/Admin/role configuration, or browser test.
 
-## New acceptance cases (PENDING CI, not claimed PASS)
+## New acceptance cases (all PASS at tested source head; final documentation-inclusive head recheck pending)
 
 | Case | Required assertion |
 |---|---|
@@ -29,10 +31,10 @@ This is not an authentic v3 Forge/Story-based Tough grant, real origin-feat mate
 | I2H-09 | Revoked editor and unrelated JWT cannot level character, no canonical/account changes |
 | I2H-10 | Public original v5/v4/v3, private normalizer source, inherited test boundaries and frozen snapshots retained |
 
-The 34-original-UPDATE writer ledger stays **10/34 bounded tested, 24 untested** until the exact original I2H-04 RED, source-reversible isolated scratch I2H-06 GREEN, and unchanged inherited signed tests pass. Then and only then one new function can be counted as **11/34, 23 untested**. No extrapolation to other writers or automatic production de-mirroring.
+After the original I2H-04 RED and scratch I2H-06 GREEN passed alongside unchanged inherited tests, the source-verified 34-original-UPDATE ledger now counts **11/34 bounded tested and 23 untested**. Exactly one new function was promoted; no extrapolation to other writers or automatic production de-mirroring.
 
 ## Release gates and one next task
 
 Original 31-trigger/modern signed Forge with real feat grants, complete production role/RLS/ACL/service paths, other direct/indirect writers, real browser consumers/profile switching, locks/multiwriter concurrency, separately verified encrypted offsite backup and isolated database+Storage restore, and explicit owner production release approval remain required. This research does **not** change the app/world/town/tactical maps, deployed DB SQL/data/grants, any hosting, Vercel, PR merges, `main`, or paid agents.
 
-**ONE NEXT TASK:** verify draft I2-H exact-head signed CI and investigate only reproducible isolated test failures without weakening original source MD5, previous tests, or the expected original RED. Record the actual job IDs/commit and update coverage only after confirmed source RED/GREEN; then select another small original class/level-up writer from the remaining list.
+**ONE NEXT TASK:** verify documentation-inclusive final draft I2-H head and all four or more GitHub checks, preserve the verified original MD5 and prior REDs, and append final-head receipt. Then select one more small original class/level-up writer from the remaining **23**, keeping release gates closed.
