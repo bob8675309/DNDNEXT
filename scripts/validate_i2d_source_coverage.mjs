@@ -24,7 +24,12 @@ assert.equal(original.inserts.length,3);
 assert.equal(ledger.additional_private_source_paths.length,5);
 const privateEntry=ledger.additional_private_source_paths.find(x=>x.signature==="private.create_player_character_v2_source_20261105(jsonb,jsonb)");
 assert.ok(privateEntry);
-assert.match(privateEntry.status,/i2d/);
+assert.equal(privateEntry.status,"signed_i2d_source_RED_then_scratch_GREEN_verified");
+assert.equal(privateEntry.original_pg_get_functiondef_md5,"1d06d00eb4b4aa4c125796d761f5e259");
+assert.equal(privateEntry.scratch_candidate_md5,"00b2167041b9c2e4e1a98d3873839f37");
+assert.equal(ledger.evidence.github_actions_run,43143457573);
+assert.equal(ledger.evidence.conclusion,"success");
+assert.equal(ledger.evidence.cases,"I2D-01 through I2D-11 PASS");
 const originalPrivateSourceStart=source.indexOf("CREATE OR REPLACE FUNCTION private.create_player_character_v2_source_20261105(");
 const originalPrivateSourceEnd=source.indexOf("CREATE OR REPLACE FUNCTION private.create_player_character_v3_source_20261105(",originalPrivateSourceStart);
 assert.ok(originalPrivateSourceStart>=0&&originalPrivateSourceEnd>originalPrivateSourceStart);
@@ -42,8 +47,8 @@ for(let id=1;id<=11;id++){
  signed.includes("PASS I2D-"+String(id).padStart(2,"0")+" ORIGINAL"),
  "Signed source/script test missing I2D-"+String(id).padStart(2,"0"));
 }
-for(const word of ["EMPTY","populated","private Story","30 original UPDATE","signed","no automatic","do not mark GREEN","31 original Forge triggers"]){
+for(const word of ["EMPTY","populated","private Story","30 original UPDATE","signed","no automatic","not production","31 original Forge triggers"]){
  assert.ok(doc.toLowerCase().includes(word.toLowerCase()),"Document missing critical caution: "+word);
 }
 console.log("PASS I2D-STATIC: #324 private copied v2 original UPSERT exact witness, one account-write statement, source-reversible private-only candidate and I2D-01..11 signed acceptance retained");
-console.log("I2D-STATIC LIMIT: 4/34 original UPDATE family bounded and 30 untested; private v3/Story behavior requires separate successful disposable signed CI, no production approval");
+console.log("I2D-STATIC LIMIT: I2D-01..11 signed source RED/GREEN confirmed in disposable CI #43143457573, but 4/34 original UPDATE writers bounded, 30 untested; NO production approval");
