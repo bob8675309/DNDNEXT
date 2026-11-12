@@ -2,6 +2,8 @@
 
 **Research only — November 11, 2026 America/Chicago.** Stacked directly on [I2-D #368](https://github.com/bob8675309/DNDNEXT/pull/368). **Owner-approved Option A:** individual `public.character_sheets` records are authoritative, all current legacy `public.players.sheet` snapshots (empty or populated) remain byte-identical, and every automatic account-sheet mirror must eventually retire after its callers, permissions, and consumers are audited. No production data, function, ACL/RLS, frontend, map, merge, or deployment changes are authorized.
 
+> **2026-11-11 America/Chicago (Nov 12 UTC) signed acceptance VERIFIED:** [dedicated PostgreSQL 17/GoTrue/PostgREST Actions run #43146151864](https://github.com/bob8675309/DNDNEXT/actions/runs/43146151864), job `130944312890`, **SUCCESS**, code/test source commit `1e757834d7c14876d9729cbccae8a9e2f20fbb22`. Unchanged full historical I1-B–O signed Forge/nonce/Story, I2C-01–10 and I2D-01–11 ran first; then **I2E-01–11 all PASS**. Source-original REDs I2E-03 (HP), I2E-04 (Admin progression) and I2E-05 (Rage action) independently show each original function overwrites two unrelated editable accounts' populated legacy sheets while canonical target and other unrelated canonical sheets remain correct. After all three REDs, exact-source-reversible private scratch candidate I2E-06 disables just their three account UPDATEs. Signed I2E-07–11 prove matching/unrelated snapshot freeze, HP/temporary HP, canonical Admin XP and events, Rage resource counts, owner/delegate/Admin rights and negative/rollback checks, unchanged private Story and preserved profile name updates. **This is not a production fix; 27 other original account UPDATE functions remain untested.** The Rage-specific canonical state is deliberately a **privileged-local synthetic Barbarian sheet**, not signed Barbarian Forge creation. Final documentation-inclusive exact-head CI must still be verified.
+
 ## Source-original read-only audit
 
 The following **exact deployed PostgreSQL 17** function bodies were retrieved through SELECT-only `pg_get_functiondef`, without reading live character/account content:
@@ -38,7 +40,7 @@ The new independent `scripts/test_i2e_signed_hp_admin_rage_option_a_local_auth.m
 
 The two source fixtures are `scripts/fixtures/i2e_original_hp_admin_rage_shared_forge_pg17.sql` and `scripts/fixtures/i2e_option_a_hp_admin_rage_scratch_pg17.sql`. The scratch fixture checks all three original MD5s, requires exactly one original legacy account statement per function, checks for downstream `FOUND/ROW_COUNT` dependencies, replaces that statement with an explicit `NULL;` sentinel, and demands exact MD5 recovery when reverting the sentinel. It also source-pins original canonical Admin-v1 and v3/Story so unrelated functions cannot be changed silently.
 
-**Acceptance pending the first signed workflow logs.** Source-only tests and branch creation are not proof that the candidate works. All original SOURCE RED witnesses and historical I2C/I2D regression tests must be retained unchanged.
+**Signed I2E-01–11 behavior accepted in local CI #43146151864; final documentation-inclusive PR head requires separate verification.** Source-only checks alone do not prove this result. All original SOURCE RED witnesses and historical I2C/I2D regression tests must be retained unchanged.
 
 ## Scope limitations and release gates
 
