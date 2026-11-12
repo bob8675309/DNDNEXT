@@ -51,7 +51,7 @@ assert.ok(flow.includes("needs: inherited-i2f-source-species-signed"));
 assert.ok(flow.includes("test_i2f_source_species_projection_option_a_local_auth.mjs"));
 assert.ok(flow.includes("test_i2g_signed_levelup_v1_option_a_local_auth.mjs"));
 assert.ok(flow.includes("stop --no-backup"));
-assert.ok(doc.includes("NOT production") && doc.includes("PENDING"));
+assert.ok(doc.includes("NOT production") && doc.includes("I2G-01 through I2G-09 PASS") && doc.includes("10/34"));
 assert.equal(fresh.i2g_result.run_id,43296779345);
 assert.equal(fresh.i2g_result.job_id,131458834795);
 assert.equal(fresh.i2g_result.conclusion,"success");
