@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `85a0b5b03b91400ee8e366a4915ccf72279a1ac7` |
+| Exact source commit represented by this archive snapshot | `e55cd41961ae92d527117a71c0c50f25d35b7108` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2g): preserve 9/34 verified coverage while signed level-up v1 research awaits CI |
-| Files changed relative to main | 203 (152 non-docs; 51 docs) |
+| Last source commit title | docs(i2g): document exact signed v1 source RED and scratch GREEN gates without claiming PASS |
+| Files changed relative to main | 204 (152 non-docs; 52 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_G_LEVELUP_V1_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
+- `docs/I2_G_LEVELUP_V1_OPTION_A_SIGNED_RESEARCH_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- … 153 more
+- … 154 more
 
 ## Trust and update procedure
 
