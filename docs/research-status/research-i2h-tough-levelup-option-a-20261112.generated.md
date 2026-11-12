@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2h-tough-levelup-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `daf7a3f5da74e69f634880ce1376c444943a11e6` |
+| Exact source commit represented by this archive snapshot | `8533bab97bb7e36e2390999b1a0e1b73c5eaaa3c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2h): append original source Tough CI-pending staging receipt |
+| Last source commit title | docs(i2h): promote only signed-original Tough to 11/34 after 10/10 RED/GREEN evidence |
 | Files changed relative to main | 212 (158 non-docs; 54 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/I2_H_TOUGH_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
