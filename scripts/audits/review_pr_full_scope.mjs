@@ -135,8 +135,8 @@ function markdown(info){
  return md.join("\n")+"\n";
 }
 function selfTest(){
- const a=new Map([["docs/a.md","aa"],["pages/a.js","bb"],["src/fromparent.js","cc"]]);
- const m=new Map([["docs/a.md","aa"],["pages/a.js","zz"],["src/onmain.js","oo"]]);
+ const a=new Map([["docs/a.md","a".repeat(40)],["pages/a.js","b".repeat(40)],["src/fromparent.js","c".repeat(40)]]);
+ const m=new Map([["docs/a.md","a".repeat(40)],["pages/a.js","d".repeat(40)],["src/onmain.js","e".repeat(40)]]);
  const c=compareTrees(a,m,new Set(["pages/a.js"]));
  assert.equal(c.inheritedNonImmediateCount,1);
  assert.equal(c.inheritedNonImmediate[0].path,"src/fromparent.js");
@@ -150,7 +150,7 @@ function selfTest(){
  const old=reviewBody({created_at:"2026-11-12T10:00:00Z",body:""});
  assert.ok(!old.enforcementApplies);
  const p={number:123,title:"Source-only extraction",head:{sha:"0".repeat(40),ref:"research/abc"},base:{sha:"1".repeat(40),ref:"main",repo:{full_name:"o/r",default_branch:"main"}},created_at:"2026-11-14T00:00:00Z",changed_files:1,body:""};
- const entry=inventory({p,files:[{filename:"pages/a.js",status:"modified",sha:"bb"}],head:a,base:m,main:m});
+ const entry=inventory({p,files:[{filename:"pages/a.js",status:"modified",sha:"b".repeat(40)}],head:a,base:m,main:m});
  assert.equal(entry.riskSummary.sourceOnlyClaimConflict,true);
  assert.equal(entry.fileEntries.length,1);
  console.log("PASS PR scope guard: complete file pagination, exact HEAD/blob, inherited full-tree, source-only contradiction, future evidence and legacy warning");
