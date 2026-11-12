@@ -29,7 +29,7 @@ for(const entry of next.original_update_writers){
  if(md5.has(name)){
   newly++;
   assert.equal(entry.source_md5,md5.get(name));
-  assert.equal(entry.status,"i2f_original_privileged_helper_RED_and_scratch_no_write_pending_CI");
+  assert.equal(entry.status,"i2f_privileged_original_RED_then_scratch_GREEN_verified");
   assert.match(entry.note,/NOT signed public\/private helper RPC/);
  } else {
   const before=old.original_update_writers.find(x=>x.signature===entry.signature);
@@ -37,6 +37,10 @@ for(const entry of next.original_update_writers){
  }
 }
 assert.equal(newly,2);assert.equal(tested,9);
+assert.equal(next.i2f_evidence.github_actions_run,43150417164);
+assert.equal(next.i2f_evidence.job_id,130957990966);
+assert.equal(next.i2f_evidence.conclusion,"success");
+assert.equal(next.i2f_evidence.acceptance,"I2F-01 through I2F-11 PASS");
 assert.deepEqual(Object.entries(next.i2f_source_md5).sort(),[...md5.entries()].sort());
 assert.match(next.i2f_execution_boundary,/PRIVILEGED local PostgreSQL17 SQL/);
 for(const [name,hash] of md5){
@@ -56,4 +60,4 @@ for(const word of ["Option A","signed local GoTrue","privileged","not signed use
  assert.ok(report.toLowerCase().includes(word.toLowerCase()),"Documentation scope missing "+word);
 }
 console.log("PASS I2F-STATIC: 2 exact live private projection source MD5s, reversible account-update-only test candidate and authenticated EXECUTE denial source guarded");
-console.log("PASS I2F-COVERAGE: bounded original writer accounting 9/34, 25 untested; private helper tests use privileged local SQL on signed-created characters, NOT signed helper RPCs");
+console.log("PASS I2F-COVERAGE: signed-created local private helper RED/scratch GREEN 11/11 verified in #43150417164, 9/34 original writers bounded, 25 untested; NOT signed helper RPCs or production acceptance");
