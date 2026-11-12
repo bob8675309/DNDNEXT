@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `5d1835abe98eb6678ee436cfb8499cd6eb45d9c4` |
+| Exact source commit represented by this archive snapshot | `0f0fe9b47222588885dad09309b2917fb7a83dfe` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-E): source-MD5-locked disposable no-op for three HP/Admin/Rage legacy mirror writes |
-| Files changed relative to main | 185 (139 non-docs; 46 docs) |
+| Last source commit title | test(I2-E): signed original HP/Admin/Rage cross-editor legacy RED and same/other-character Option A no-write GREEN |
+| Files changed relative to main | 186 (140 non-docs; 46 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2e_option_a_hp_admin_rage_scratch_pg17.sql`
+- `scripts/test_i2e_signed_hp_admin_rage_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
-- … 135 more
+- … 136 more
 
 ## Trust and update procedure
 
