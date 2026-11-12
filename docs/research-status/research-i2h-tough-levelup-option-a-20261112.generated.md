@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2h-tough-levelup-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `8318b4456eb982d24c1fd3171b893c6131944c9f` |
+| Exact source commit represented by this archive snapshot | `7769ad625fa416227fb9040c0b4303f235e79295` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): align static acceptance wording with verified signed CI, not pending state |
-| Files changed relative to main | 204 (152 non-docs; 52 docs) |
+| Last source commit title | test(i2h): preserve exact original Tough level-up source in signed scratch fixture |
+| Files changed relative to main | 205 (153 non-docs; 52 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i2g_levelup_v1_scope.mjs`
+- `scripts/fixtures/i2h_original_tough_shared_p13_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- … 154 more
+- … 155 more
 
 ## Trust and update procedure
 
