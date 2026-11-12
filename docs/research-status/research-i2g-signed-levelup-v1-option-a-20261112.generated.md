@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `8318b4456eb982d24c1fd3171b893c6131944c9f` |
+| Exact source commit represented by this archive snapshot | `6abb8d9957834a2fd8198b274e24a7d5bb0aea64` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): align static acceptance wording with verified signed CI, not pending state |
-| Files changed relative to main | 204 (152 non-docs; 52 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | Merge I2-H signed original Tough research into I2-G research branch |
+| Files changed relative to main | 212 (158 non-docs; 54 docs) |
+| Last source commit | 0 files (0 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest commit did not change non-docs source files. Do not infer a technical behavior change.
 
 ## Latest source commit paths
 
-- `scripts/validate_i2g_levelup_v1_scope.mjs`
+- No changed paths found
 
 ## Research-branch change inventory versus main
 
@@ -47,6 +47,7 @@
 - `.github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml`
 - `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
 - `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
+- `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- … 154 more
+- … 162 more
 
 ## Trust and update procedure
 
