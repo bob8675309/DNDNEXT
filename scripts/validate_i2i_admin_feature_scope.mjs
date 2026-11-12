@@ -61,6 +61,9 @@ assert.ok(report.includes("unproven")&&report.includes("REST"));
 if(next.i2i_counted_writers===1){
  assert.equal(next.i2i_result.conclusion,"success");
  assert.ok(next.i2i_result.run_id>0);
- assert.ok(report.includes("I2I-01 through I2I-11"));
+ assert.equal(next.i2i_result.cases,"I2I-01 through I2I-11 PASS");
+ assert.equal(next.i2i_result.head_at_source_test,"6f1aeeee6dd48408456220bf12f9758125c4208d");
+ assert.ok(report.includes("11/11 CASES PASS"),"Report must preserve the original tested cases");
+ assert.ok(report.includes("43319584048"),"Report must name the original signed evidence run");
 }
 console.log("I2-I exact original Admin writer/ACL and one-writer provisional/accepted ledger scope PASS. Signed source RED/GREEN is a separate disposable CI requirement.");
