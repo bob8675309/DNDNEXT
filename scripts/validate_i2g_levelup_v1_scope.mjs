@@ -9,17 +9,22 @@ assert.equal(old.original_update_writer_total,34);
 assert.equal(old.original_update_writer_scratch_tested,9);
 assert.equal(old.original_update_writer_untested,25);
 assert.equal(fresh.original_update_writer_total,34);
-assert.equal(fresh.original_update_writer_scratch_tested,9,"Prior I2F 9/34 remains the only verified coverage until exact-head CI proves I2G");
-assert.equal(fresh.original_update_writer_untested,25);
-assert.equal(fresh.i2g_pending_test_count,1);
+assert.equal(fresh.original_update_writer_scratch_tested,10,"I2G must add exactly one tested writer after signed RED/GREEN");
+assert.equal(fresh.original_update_writer_untested,24);
+assert.equal(fresh.i2g_pending_test_count,0);
 assert.equal(fresh.pending_source_signature,"public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)");
 assert.equal(fresh.pending_source_md5,"1500703592c3cb8e1738126eac508e6a");
 assert.equal(fresh.original_update_writers.length,old.original_update_writers.length);
 for(let i=0;i<34;i++){
  assert.equal(fresh.original_update_writers[i].signature,old.original_update_writers[i].signature);
  assert.equal(fresh.original_update_writers[i].source_md5,old.original_update_writers[i].source_md5);
- assert.equal(fresh.original_update_writers[i].status,old.original_update_writers[i].status,
-   "Do not count I2G before signed source original RED and scratch GREEN");
+ if(old.original_update_writers[i].signature.startsWith("public.complete_character_level_up_v1(")){
+   assert.equal(old.original_update_writers[i].status,"not_option_a_tested");
+   assert.equal(fresh.original_update_writers[i].status,"i2g_genuine_signed_original_RED_then_scratch_GREEN_verified");
+ }else{
+   assert.equal(fresh.original_update_writers[i].status,old.original_update_writers[i].status,
+     "Do not change any inherited writer's prior acceptance state");
+ }
 }
 const src=read("scripts/fixtures/i2g_original_levelup_v1_shared_forge_pg17.sql");
 const cand=read("scripts/fixtures/i2g_option_a_levelup_v1_scratch_pg17.sql");
@@ -47,4 +52,7 @@ assert.ok(flow.includes("test_i2f_source_species_projection_option_a_local_auth.
 assert.ok(flow.includes("test_i2g_signed_levelup_v1_option_a_local_auth.mjs"));
 assert.ok(flow.includes("stop --no-backup"));
 assert.ok(doc.includes("NOT production") && doc.includes("PENDING"));
-console.log("I2-G static source-scope and pending writer-ledger guard PASS; original RED/GREEN must still pass CI.");
+assert.equal(fresh.i2g_result.run_id,43296779345);
+assert.equal(fresh.i2g_result.job_id,131458834795);
+assert.equal(fresh.i2g_result.conclusion,"success");
+console.log("I2-G 10/34 static ledger/source-scope PASS; local signed original RED/GREEN must still pass exact-head CI.");
