@@ -112,7 +112,7 @@
       "signature": "private.ensure_character_source_choices_v1(p_character_id uuid)",
       "source_md5": "69bedf66148d2ce3dab97baa5de606cc",
       "status": "i2f_privileged_original_RED_then_scratch_GREEN_verified",
-      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT direct signed helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
+      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT signed public/private helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
     },
     {
       "signature": "private.remove_source_owned_origin_feat_v1(p_character_id uuid, p_instance_key text, p_owner_type text, p_owner_key text)",
@@ -130,7 +130,7 @@
       "signature": "private.set_species_runtime_projection_v1(p_character_id uuid, p_projection_key text, p_state jsonb)",
       "source_md5": "7f6e7d7d99ff79db1372462b4320c21b",
       "status": "i2f_privileged_original_RED_then_scratch_GREEN_verified",
-      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT direct signed helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
+      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT signed public/private helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
     },
     {
       "signature": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
