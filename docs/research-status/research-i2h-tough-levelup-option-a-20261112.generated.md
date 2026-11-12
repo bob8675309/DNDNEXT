@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2h-tough-levelup-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `cb3402f6a106fb9b7623439bc63ffa79c4e52e88` |
+| Exact source commit represented by this archive snapshot | `9351c10a2d7928f7e1465bf0b672a0d5c7749f76` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2h): isolate prior covered base and summary mirrors with reversible MD5 guards |
-| Files changed relative to main | 206 (154 non-docs; 52 docs) |
+| Last source commit title | test(i2h): add original Tough RED-gated reversible Option A scratch candidate |
+| Files changed relative to main | 207 (155 non-docs; 52 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2h_inherited_levelup_no_mirror_isolation_pg17.sql`
+- `scripts/fixtures/i2h_option_a_tough_progression_scratch_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- … 156 more
+- … 157 more
 
 ## Trust and update procedure
 
