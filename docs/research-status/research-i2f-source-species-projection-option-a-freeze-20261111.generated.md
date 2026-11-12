@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `531c2afd8e6a367af436d6750f589365277abadd` |
+| Exact source commit represented by this archive snapshot | `a9d14213c88a54f249b7336177354dae1e9b6199` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-F): record 11/11 successful signed-created/private SQL source-RED scratch-GREEN and retained faulty test comparison |
+| Last source commit title | docs(I2-F): advance active source/species projection 11/11 accepted local milestone and remaining 25 writer gaps |
 | Files changed relative to main | 197 (147 non-docs; 50 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_F_SOURCE_SPECIES_PROJECTION_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
