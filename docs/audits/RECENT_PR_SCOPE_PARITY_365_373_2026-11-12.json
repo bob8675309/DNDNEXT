@@ -1,0 +1,691 @@
+{
+  "auditDate": "2026-11-12",
+  "mainSHA": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+  "batch": "365-373 excluding merged #372",
+  "method": "Exact full GitHub PR Files rows plus nontruncated main tree; stacked branches contain inherited code beyond incremental diff.",
+  "prs": [
+    {
+      "pr": 365,
+      "title": "I2-A research: owner-approved canonical per-character sheets and frozen legacy snapshot plan",
+      "head": "04f2bcd34b1c2935125ad2369717e10140025047",
+      "baseBranch": "research/i1p-earned-levelup-rest-legacy-sheet-20261111",
+      "baseSHA": "f969af0a15cc8a7e517808cb2eeeefea3119f6fd",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 6,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2a-option-a-freeze-plan.yml",
+          "change": "added",
+          "sourceBlob": "8fe1e04f77ecf8873ffc3863ada19fcef06feb5d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "361abeec65358058a00bb45f1fe820d28ce507fe",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "7901c5548fe417a44a418393665d80f6beb5de1a",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_A_CANONICAL_SHEETS_LEGACY_FREEZE_OWNER_DECISION_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "a7f4938681cbce7dd8477a5c2f82ea840991a832",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/i2a_option_a_legacy_sheet_readonly_readiness.sql",
+          "change": "added",
+          "sourceBlob": "2fd629646b81331a5e1e94bab1495ea073da62d3",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2a_option_a_legacy_freeze_plan.mjs",
+          "change": "added",
+          "sourceBlob": "6a7668bb87b56c0c4e1e46b01481c559730cd075",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 4
+      }
+    },
+    {
+      "pr": 366,
+      "title": "I2-B research: signed Option A frozen legacy-sheet first slice (3 original writers + profile ACL)",
+      "head": "e568c43ab39c759847f750f14eb4664a57a824de",
+      "baseBranch": "research/i2a-canonical-sheets-legacy-freeze-owner-decision-20261111",
+      "baseSHA": "04f2bcd34b1c2935125ad2369717e10140025047",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 9,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2b-option-a-first-signed-slice.yml",
+          "change": "added",
+          "sourceBlob": "9198cce0aa3968834bac84d54084d2e318d0c243",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "e5ed749f66bc9265174be4f4ee4b1d92c4927e15",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "e6c3e5601994c796ec245994bf3208d1ebc37f3c",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_B_OPTION_A_FIRST_SIGNED_FREEZE_SLICE_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "8fe402a742745cf9ca6db4daa2e6292ccd62c98b",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_B_OPTION_A_SOURCE_WRITER_COVERAGE_2026-11-11.json",
+          "change": "added",
+          "sourceBlob": "dee333f58f01df1ea08da01e7e6e8b3ded009617",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2b_option_a_first_three_writers_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "7d2ddf2c4bee60ba63f6b5eb3e00d97b4a79e623",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2b_option_a_scratch_player_profile_acl_pg17.sql",
+          "change": "added",
+          "sourceBlob": "d8f5cd251e4cd312815ab1e3864fefd8b62dff23",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2b_option_a_first_slice_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "dc9867cdce8df83678f7e9cb2ad982f486e01fc7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2b_first_slice_scope.mjs",
+          "change": "added",
+          "sourceBlob": "e31af69ed02596e7814cfbafca4f3cae7dfb503d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 7
+      }
+    },
+    {
+      "pr": 367,
+      "title": "I2-C research: signed original v1/v2 creation and signup Option A freeze RED/GREEN",
+      "head": "963a04a9bc897e247f7e088ef5a99319c1ae3cdf",
+      "baseBranch": "research/i2b-frozen-legacy-sheet-first-signed-slice-20261111",
+      "baseSHA": "e568c43ab39c759847f750f14eb4664a57a824de",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 10,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2c-creation-signup-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "9098cb7f5d93c1264dc79977375ea31adcb2c35c",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "3966550696e97e5fd0cecb4c0fd52dc551e9c607",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "f75e220622039519a6e0a8c8ce715e4393b9d87e",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_C_OPTION_A_CREATION_SOURCE_WRITER_COVERAGE_2026-11-11.json",
+          "change": "added",
+          "sourceBlob": "7b5867aba9cb6daf0f4f6ac0eee64735b99bb2c7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_C_OPTION_A_CREATOR_SIGNUP_SIGNED_RESEARCH_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "4287196fbcbc6241d9bded2d02c35e84db0acd9b",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2c_option_a_creator_identity_only_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "c9957a542055ba5aea6e28402c8bc8b6469dcfa7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2c_option_a_signup_profile_acl_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "4a3b270b1f303698737d5bf2b321eb063a93c481",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2c_original_creation_signup_shared_forge_pg17.sql",
+          "change": "added",
+          "sourceBlob": "1717bbac40bb4f53c87857675bf70c7181982c34",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2c_option_a_signed_creation_profile.mjs",
+          "change": "added",
+          "sourceBlob": "4992c7b6d91b3f4682d31c61ad88071136dad298",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2c_creator_source_coverage.mjs",
+          "change": "added",
+          "sourceBlob": "7e22c35f3b8d188c68327304ef037aff7555171d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 8
+      }
+    },
+    {
+      "pr": 368,
+      "title": "I2-D research: signed modern v3/Story private Forge Option A freeze for empty legacy sheets",
+      "head": "88a39d5e7a888dc63ebe53736aa2734a480442ac",
+      "baseBranch": "research/i2c-creation-signup-option-a-freeze-20261111",
+      "baseSHA": "963a04a9bc897e247f7e088ef5a99319c1ae3cdf",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 8,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2d-private-v3-story-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "d9dfb8ef4f343a4fc18dfed548a165462b70ce6e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "9a6187a1de03844001e1182e05341a4760698a6c",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "9a05d6b24695ab5f8a95b9d6d1704787b2a88564",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_D_OPTION_A_CREATION_SOURCE_COVERAGE_2026-11-11.json",
+          "change": "added",
+          "sourceBlob": "5848fd601f932da387f2fe119f1eaf3f988e44eb",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_D_PRIVATE_V3_STORY_OPTION_A_SIGNED_RESEARCH_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "ac31f15b826459ba3cab2c3ba0a8388b816967ef",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2d_option_a_private_forge_source_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "889b661aef1317ca91a44eeac2d2ef7238d8cad6",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2d_private_v3_story_option_a_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "ff6530fe32d6e64418e60e69b910a5ca7da4a3f4",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2d_source_coverage.mjs",
+          "change": "added",
+          "sourceBlob": "da3ab2fff3ee9e4a311e5ccce157e68a30c3c88b",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 6
+      }
+    },
+    {
+      "pr": 369,
+      "title": "I2-E research: signed original HP/Admin/Rage account-overwrite RED and Option A no-mirror GREEN",
+      "head": "1132a33b64e24197e974276cd58c48cbdded3baa",
+      "baseBranch": "research/i2d-private-forge-v3-option-a-freeze-20261111",
+      "baseSHA": "88a39d5e7a888dc63ebe53736aa2734a480442ac",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 9,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "2b983deb3903909255abf0c9d0c5ecca51c0eb8d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "3c39881afad7cfac4eac37fb5b81e36d73721c4a",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "6d15561453661fe560bdb6e77c002403643978cb",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_E_HP_ADMIN_RAGE_OPTION_A_SIGNED_RESEARCH_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "356101659b7c2a069c1f97ae2042f5db27e8b952",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_E_OPTION_A_ACCOUNT_WRITER_COVERAGE_2026-11-11.json",
+          "change": "added",
+          "sourceBlob": "fc78cb2883056da07d3f5399eca269e27aedaf4b",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2e_option_a_hp_admin_rage_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "e2fe6a15007b8db786c0f3dc04389630b5de04df",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2e_original_hp_admin_rage_shared_forge_pg17.sql",
+          "change": "added",
+          "sourceBlob": "1fc10f9ef53bf219ed42a2f8ec6d57de7c4899ea",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2e_signed_hp_admin_rage_option_a_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "43e87b4de5ed368fd18a583f22187c23100cce52",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2e_hp_admin_rage_scope.mjs",
+          "change": "added",
+          "sourceBlob": "611edac587f4a9fcd390cd2ddef08c1abf0b4399",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 7
+      }
+    },
+    {
+      "pr": 370,
+      "title": "I2-F research: sourceChoices/species runtime private projection Option A no-mirror RED/GREEN",
+      "head": "ea43938da626292cb7b3f8f8459955b426874f9d",
+      "baseBranch": "research/i2e-hp-admin-rage-action-option-a-freeze-20261111",
+      "baseSHA": "1132a33b64e24197e974276cd58c48cbdded3baa",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 9,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2f-source-species-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "19a8ea0d6432a7a13fbfc0838dcf87906874886d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "3e9375b3f6a456219e6c70c2c01a4b2355788c04",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "aa1ea66f9d392bd7fdaed8e582888faea7dfc1b9",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_F_ACCOUNT_WRITER_COVERAGE_2026-11-11.json",
+          "change": "added",
+          "sourceBlob": "5914cb954904e11f3b127cca5b20c422f1197dbc",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_F_SOURCE_SPECIES_PROJECTION_OPTION_A_SIGNED_RESEARCH_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "fe089ca30cb74b231cbaaa291502a6d79ff3cd4d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2f_option_a_source_species_projection_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "1719715b85f0c1f3f7fc8a99860e22cdda188ad7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2f_original_source_species_projection_shared_forge_pg17.sql",
+          "change": "added",
+          "sourceBlob": "4662370011a7084a888a861f98f42daca7c689d0",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2f_source_species_projection_option_a_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "e4ef3f7a0987ece78fe525740dc63ed961eff20d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2f_private_projection_coverage.mjs",
+          "change": "added",
+          "sourceBlob": "4cb9c3720797e1307353c3bda15c750a53c089cc",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 7
+      }
+    },
+    {
+      "pr": 371,
+      "title": "I2-G research: original signed level-up v1 account-overwrite RED and Option A no-mirror scratch GREEN",
+      "head": "6abb8d9957834a2fd8198b274e24a7d5bb0aea64",
+      "baseBranch": "research/i2f-source-species-projection-option-a-freeze-20261111",
+      "baseSHA": "ea43938da626292cb7b3f8f8459955b426874f9d",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 17,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "d4b6c5135ea67788ddead7830bb1fc675de20ed7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-i2h-tough-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "f44ea50f652d8d8ca67f99d80bac8b721146dfc5",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "cdad603382b25f8b7b6b7708758553933c6610f8",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "4325c2fd6b3ef785112d6c4a1aeb43c230ffcc0d",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_G_LEVELUP_V1_OPTION_A_SIGNED_RESEARCH_2026-11-12.md",
+          "change": "added",
+          "sourceBlob": "b5908e0349b6ae60b5647ae6781ec904cb96f8e7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_G_LEVELUP_V1_OPTION_A_WRITER_COVERAGE_2026-11-12.json",
+          "change": "added",
+          "sourceBlob": "105629359bd86bfe2b82abb2b37a2edc586238df",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_H_TOUGH_OPTION_A_SIGNED_RESEARCH_2026-11-12.md",
+          "change": "added",
+          "sourceBlob": "015833c65bf101de7c2ced3f658ef7f4fd3e7b7f",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_H_TOUGH_OPTION_A_WRITER_COVERAGE_2026-11-12.json",
+          "change": "added",
+          "sourceBlob": "29ea69c02421d3f155910e03a41ecf7879e5f288",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2g_option_a_levelup_v1_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "4b0e3ebe502e073fe969ac25eec676cf6df1073a",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2g_original_levelup_v1_shared_forge_pg17.sql",
+          "change": "added",
+          "sourceBlob": "35b519c805c306ce7248820b0873640850d9c637",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2h_inherited_levelup_no_mirror_isolation_pg17.sql",
+          "change": "added",
+          "sourceBlob": "c579905c9d61e463f3c6a498fc2f5aaacaa6f80e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2h_option_a_tough_progression_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "02d814e00cadd404c7e8504b45136d0caffbf1dd",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2h_original_tough_shared_p13_pg17.sql",
+          "change": "added",
+          "sourceBlob": "6a8b36d819465617c17aefc6695113631c125d5c",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2g_signed_levelup_v1_option_a_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "a8695200a72140a8c2c89583e8a1e2d130fb7c3a",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2h_tough_option_a_signed_v5_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "b64cba79b59957979129ec3ca8eb7ad6c151fea0",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2g_levelup_v1_scope.mjs",
+          "change": "added",
+          "sourceBlob": "f24e581df712d6f46d7e4fb8a665f2875908f05d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2h_tough_option_a_scope.mjs",
+          "change": "added",
+          "sourceBlob": "2310577a76e995260403c1b466d4b14a4a741f21",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 15
+      }
+    },
+    {
+      "pr": 373,
+      "title": "I2-I research: original signed Admin feat/boon legacy-sheet RED and Option A scratch GREEN",
+      "head": "b1b6a5179aee3bb27a0bf534c3e001b4222ba642",
+      "baseBranch": "research/i2g-signed-levelup-v1-option-a-20261112",
+      "baseSHA": "6abb8d9957834a2fd8198b274e24a7d5bb0aea64",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 9,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "bd243935ace9aa3bded1911013c603f010ecb02d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_I_ADMIN_FEATURE_OPTION_A_WRITER_COVERAGE_2026-11-12.json",
+          "change": "added",
+          "sourceBlob": "772af5e05ec494f9526445a5ad9eb05bad0f5d78",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_I_SIGNED_ADMIN_FEATURE_OPTION_A_RESEARCH_2026-11-12.md",
+          "change": "added",
+          "sourceBlob": "73605207fedf17990c67b2d4bcc3758ea1576d08",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2i_option_a_admin_feature_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "291ffb590913451f347652a0bf788d3fc094dc6a",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2i_original_admin_feature_source_gate_pg17.sql",
+          "change": "added",
+          "sourceBlob": "c97878fb7f808f1447875f163ba4f611f22eee9e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2i_signed_admin_feature_option_a_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "a44276890f016c9a34bd1b318318c9da0416c355",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2i_admin_feature_scope.mjs",
+          "change": "added",
+          "sourceBlob": "1d7cc8fb870218f32bcc3f3086a7e4679cba0c6f",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 7
+      }
+    }
+  ]
+}
