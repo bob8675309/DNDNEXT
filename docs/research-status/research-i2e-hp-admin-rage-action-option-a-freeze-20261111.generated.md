@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `1e757834d7c14876d9729cbccae8a9e2f20fbb22` |
+| Exact source commit represented by this archive snapshot | `95a02b2d2baf2efc530b0372ef763b8e0c77d918` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-E): source-fingerprint and 7/34 coverage static safety guard before signed scratch acceptance |
+| Last source commit title | docs(I2-E): mark signed original three REDs and 11-case scratch GREEN as verified without inflating 7/34 coverage |
 | Files changed relative to main | 190 (142 non-docs; 48 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/validate_i2e_hp_admin_rage_scope.mjs`
+- `docs/I2_E_OPTION_A_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
