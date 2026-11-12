@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `a067e6f6b3ced01f7b5303c9961ec22a14fc50bf` |
+| Exact source commit represented by this archive snapshot | `031d4093adbb436fb0e25014337eecc01148427f` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I2-D): preserve historical Forge and I2C tests before signed private v3/Story no-mirror RED/GREEN |
-| Files changed relative to main | 180 (136 non-docs; 44 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(I2-D): source coverage ledger distinguishes extra private v2/v3 Story chain from original 34 UPDATE writers |
+| Files changed relative to main | 181 (136 non-docs; 45 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2d-private-v3-story-option-a-local-auth.yml`
+- `docs/I2_D_OPTION_A_CREATION_SOURCE_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
-- … 130 more
+- … 131 more
 
 ## Trust and update procedure
 
