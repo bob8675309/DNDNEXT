@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `240bd0f968309681a152aed4c6d4a757729b5c76` |
+| Exact source commit represented by this archive snapshot | `85a0b5b03b91400ee8e366a4915ccf72279a1ac7` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): statically guard original source, inherited ledger and pending coverage |
-| Files changed relative to main | 202 (152 non-docs; 50 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i2g): preserve 9/34 verified coverage while signed level-up v1 research awaits CI |
+| Files changed relative to main | 203 (152 non-docs; 51 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/validate_i2g_levelup_v1_scope.mjs`
+- `docs/I2_G_LEVELUP_V1_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- … 152 more
+- … 153 more
 
 ## Trust and update procedure
 
