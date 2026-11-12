@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `a3761f626a5697509ef5cce5e4b8604d282737f7` |
+| Exact source commit represented by this archive snapshot | `22607e79844cc7d0466d7e2a8dc7255b7148a5cd` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2g): promote active handoff after signed source RED/Option A scratch GREEN |
+| Last source commit title | docs(i2g): append exact signed source RED and scratch GREEN acceptance receipt |
 | Files changed relative to main | 204 (152 non-docs; 52 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
