@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `6f1aeeee6dd48408456220bf12f9758125c4208d` |
+| Exact source commit represented by this archive snapshot | `6004e9b5f96d8292434b5ed76b383e8a6f41f0a6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2i): check SQL authenticated role projection inside rolled-back transaction and restore ACL |
+| Last source commit title | docs(i2i): promote only source-exact signed Admin writer to 12/34 after 11 original RED/scratch GREEN cases PASS |
 | Files changed relative to main | 219 (163 non-docs; 56 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i2i_signed_admin_feature_option_a_local_auth.mjs`
+- `docs/I2_I_ADMIN_FEATURE_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
