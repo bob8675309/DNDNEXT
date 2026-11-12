@@ -13,6 +13,19 @@ const batches=[
  "RECENT_PR_SCOPE_PARITY_365_373_2026-11-12.json",
  "RECENT_PR_SCOPE_PARITY_MERGED_AND_PRESERVED_2026-11-12.json",
 ].map(load);
+const mergedNeighbor=load("RELATED_MERGED_319_337_341_SOURCE_PARITY_2026-11-12.json");
+assert.equal(mergedNeighbor.mainSha,"00c5c4416b99ac256913b48ef96387f3eabfde44");
+assert.deepEqual(mergedNeighbor.cases.map(x=>x.pr),[319,337,341]);
+assert.equal(mergedNeighbor.cases.reduce((n,x)=>n+x.files.length,0),81);
+for(const x of mergedNeighbor.cases){
+ assert.equal(x.merged,true);
+ assert.equal(x.count,x.files.length);
+ for(const f of x.files){
+  assert.match(f.blob,/^[0-9a-f]{40}$/);
+  if(f.parity==="identical")assert.equal(f.blob,f.mainBlob);
+  else assert.notEqual(f.blob,f.mainBlob);
+ }
+}
 const source=register.sourceMainSHA;
 assert.equal(source,"00c5c4416b99ac256913b48ef96387f3eabfde44");
 assert.equal(register.count,45);
