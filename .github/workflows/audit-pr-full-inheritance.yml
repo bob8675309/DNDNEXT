@@ -9,6 +9,7 @@ on:
       - '.github/PULL_REQUEST_TEMPLATE.md'
       - 'docs/audits/ALL_OPEN_PR_REGISTER_2026-11-12.json'
       - 'docs/audits/RECENT_PR_SCOPE_PARITY_*.json'
+      - 'docs/audits/RELATED_MERGED_319_337_341_SOURCE_PARITY_2026-11-12.json'
       - 'docs/audits/RECENT_PR_NO_LOST_WORK_REVIEW_2026-11-12.md'
       - 'docs/PR_FULL_SCOPE_REVIEW_PROTOCOL.md'
   pull_request_target:
