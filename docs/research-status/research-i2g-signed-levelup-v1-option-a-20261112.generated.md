@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `d95612189d95d345cb05582ec283c379d1a4e0b2` |
+| Exact source commit represented by this archive snapshot | `5a64970d6f51dbf1cf827f338420f75eee79f306` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2g): record pending bounded signed legacy level-up v1 action |
+| Last source commit title | docs(i2g): append factual staging receipt and exact CI next task |
 | Files changed relative to main | 204 (152 non-docs; 52 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
