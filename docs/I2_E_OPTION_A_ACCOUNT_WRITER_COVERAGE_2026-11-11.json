@@ -165,8 +165,8 @@
     {
       "signature": "public.adjust_character_hit_points_v1(p_character_id uuid, p_amount integer, p_temp_hp integer)",
       "source_md5": "f855be60d971aa63e32ade327d14c369",
-      "status": "i2e_original_RED_and_scratch_no_write_pending_signed_CI",
-      "note": "Original live PG17 source MD5 locked; signed original two-editor overwrite RED, then exact-source-reversible scratch-only no-account-update candidate, same/other-character owner/editor/GM signed behavior acceptance pending."
+      "status": "i2e_signed_original_RED_then_scratch_no_write_GREEN_verified",
+      "note": "Signed original live-source RED proved owner/editor account collision; exact one-update source-MD5 reversible scratch GREEN proved canonical gameplay+permissions and zero legacy writes in local PG17, CI #43146151864, I2E-01..11. Barbarian sheet specimen was locally synthetic."
     },
     {
       "signature": "public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)",
@@ -201,14 +201,14 @@
     {
       "signature": "public.set_character_progression_v2(p_character_id uuid, p_class_key text, p_source text, p_level integer, p_experience_points bigint, p_subclass_name text, p_subclass_source text)",
       "source_md5": "c4ea1c7993912f6b4c6fe9ee7b25343f",
-      "status": "i2e_original_RED_and_scratch_no_write_pending_signed_CI",
-      "note": "Original live PG17 source MD5 locked; signed original two-editor overwrite RED, then exact-source-reversible scratch-only no-account-update candidate, same/other-character owner/editor/GM signed behavior acceptance pending."
+      "status": "i2e_signed_original_RED_then_scratch_no_write_GREEN_verified",
+      "note": "Signed original live-source RED proved owner/editor account collision; exact one-update source-MD5 reversible scratch GREEN proved canonical gameplay+permissions and zero legacy writes in local PG17, CI #43146151864, I2E-01..11. Barbarian sheet specimen was locally synthetic."
     },
     {
       "signature": "public.update_character_sheet_action_state_v1(p_character_id uuid, p_action_key text, p_operation text)",
       "source_md5": "313a533250724b2e2abc754899d0f8d4",
-      "status": "i2e_original_RED_and_scratch_no_write_pending_signed_CI",
-      "note": "Original live PG17 source MD5 locked; signed original two-editor overwrite RED, then exact-source-reversible scratch-only no-account-update candidate, same/other-character owner/editor/GM signed behavior acceptance pending."
+      "status": "i2e_signed_original_RED_then_scratch_no_write_GREEN_verified",
+      "note": "Signed original live-source RED proved owner/editor account collision; exact one-update source-MD5 reversible scratch GREEN proved canonical gameplay+permissions and zero legacy writes in local PG17, CI #43146151864, I2E-01..11. Barbarian sheet specimen was locally synthetic."
     }
   ],
   "original_insert_upsert_total": 3,
@@ -306,5 +306,20 @@
     "Concurrent owner/editor/grants and rollback",
     "Encrypted second offsite DB+Storage backup and isolated restore",
     "Separate explicit owner release permission"
-  ]
+  ],
+  "i2e_evidence": {
+    "kind": "original source RED then isolated Option A scratch GREEN",
+    "code_test_commit": "1e757834d7c14876d9729cbccae8a9e2f20fbb22",
+    "github_actions_run": 43146151864,
+    "job_id": 130944312890,
+    "conclusion": "success",
+    "acceptance": "I2E-01 through I2E-11 PASS",
+    "original_red": [
+      "I2E-03 HP",
+      "I2E-04 Admin",
+      "I2E-05 Rage"
+    ],
+    "candidate_source_md5_reversible": true,
+    "final_docs_inclusive_ci": "pending"
+  }
 }
