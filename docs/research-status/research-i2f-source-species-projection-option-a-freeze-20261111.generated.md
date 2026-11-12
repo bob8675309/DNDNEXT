@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `9fc093767c55646d811ca3300580aae8eca25a64` |
+| Exact source commit represented by this archive snapshot | `b5a8fc220c035347f63f30715f567146f3a82155` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-F): enforce exact two private projection source MD5s, privilege boundary and 9/34 bounded ledger |
+| Last source commit title | test(I2-F): compare restored B sourceChoices to immediately missing canonical state, not pre-removal same JSON |
 | Files changed relative to main | 197 (147 non-docs; 50 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i2f_private_projection_coverage.mjs`
+- `scripts/test_i2f_source_species_projection_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
