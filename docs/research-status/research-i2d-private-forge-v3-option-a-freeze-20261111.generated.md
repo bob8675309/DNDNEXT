@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `6aa658727dac5270cdee386c024b3c0649987475` |
+| Exact source commit represented by this archive snapshot | `a067e6f6b3ced01f7b5303c9961ec22a14fc50bf` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-D): signed original private v2/v3 Story empty-snapshot RED and source-reversible Option A scratch GREEN |
-| Files changed relative to main | 179 (135 non-docs; 44 docs) |
+| Last source commit title | ci(I2-D): preserve historical Forge and I2C tests before signed private v3/Story no-mirror RED/GREEN |
+| Files changed relative to main | 180 (136 non-docs; 44 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2d_private_v3_story_option_a_local_auth.mjs`
+- `.github/workflows/validate-i2d-private-v3-story-option-a-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -43,6 +43,7 @@
 - `.github/workflows/validate-i2a-option-a-freeze-plan.yml`
 - `.github/workflows/validate-i2b-option-a-first-signed-slice.yml`
 - `.github/workflows/validate-i2c-creation-signup-option-a-local-auth.yml`
+- `.github/workflows/validate-i2d-private-v3-story-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
-- `docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md`
-- … 129 more
+- … 130 more
 
 ## Trust and update procedure
 
