@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `95e8e6c1823521c2f8a08029ffbc9de57b313495` |
+| Exact source commit represented by this archive snapshot | `f612edd44a0a9ddfa4e62b5de0fa7c4bcc43782e` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-D): mark 11/11 signed private v3/Story RED-GREEN source coverage with original/candidate MD5 receipts |
+| Last source commit title | docs(I2-D): capture signed 11/11 private-v3 source RED/Option A scratch GREEN and all five fingerprints |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_D_OPTION_A_CREATION_SOURCE_COVERAGE_2026-11-11.json`
+- `docs/I2_D_PRIVATE_V3_STORY_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
