@@ -1,0 +1,124 @@
+name: Validate Admin character creation notice candidate
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-admin-character-creation-notices.yml'
+      - 'sql/candidates/20261104_admin_character_creation_notices_v1.sql'
+      - 'scripts/fixtures/admin_character_creation_notice_candidate_pg17.sql'
+      - 'scripts/validate_admin_character_creation_notices_candidate.mjs'
+      - 'pages/admin/activity.js'
+      - 'pages/npcs.js'
+      - 'components/character/AdminCharacterPermissionsPanel.js'
+      - 'scripts/validate_npc_character_permission_editor.mjs'
+      - 'scripts/fixtures/admin_character_creation_notice_local_auth_pg17.sql'
+      - 'scripts/test_admin_character_creation_notice_local_auth.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  disposable-pg17-and-build:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify source, UI and permissions contract
+        run: |
+          node --check scripts/validate_admin_character_creation_notices_candidate.mjs
+          node scripts/validate_admin_character_creation_notices_candidate.mjs
+          node --check scripts/validate_npc_character_permission_editor.mjs
+          node scripts/validate_npc_character_permission_editor.mjs
+      - name: Execute isolated PostgreSQL 17 candidate + Admin/outsider assertions
+        run: |
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/admin_character_creation_notice_candidate_pg17.sql
+      - name: Install project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Production build compilation gate (not deployment)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel
+  genuine-gotrue-jwt:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_ADMIN_NOTICE_LOCAL_CONFIRM: EPHEMERAL_LOCAL_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure free, disposable Supabase PostgreSQL 17 and GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/admin-creation-notices/supabase"
+          cat > "$RUNNER_TEMP/admin-creation-notices/supabase/config.toml" <<'TOML'
+          project_id = "admin-creation-notices-ci"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start ephemeral local Auth-only services
+        run: |
+          cd "$RUNNER_TEMP/admin-creation-notices"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Exercise Admin and player identities through real GoTrue / PostgREST
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          (cd "$RUNNER_TEMP/admin-creation-notices" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/admin-creation-notices-env"
+          set -a
+          source "$RUNNER_TEMP/admin-creation-notices-env"
+          set +a
+          export DNDNEXT_ADMIN_NOTICE_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_ADMIN_NOTICE_LOCAL_ANON_KEY="$ANON_KEY"
+          node --check scripts/test_admin_character_creation_notice_local_auth.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/admin_character_creation_notice_local_auth_pg17.sql
+          node scripts/test_admin_character_creation_notice_local_auth.mjs
+      - name: Destroy ephemeral test database and accounts
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/admin-creation-notices"
+          npx --yes supabase@2.120.0 stop --no-backup || true
