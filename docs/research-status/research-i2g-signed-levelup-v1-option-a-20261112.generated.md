@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `88ae94453e2d05c03612a482cefc0946945cfb93` |
+| Exact source commit represented by this archive snapshot | `b360f7e246b95e5b6aa59c3d3316e52cca2c0dd3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): preserve exact original signed level-up v1 writer in disposable fixture |
+| Last source commit title | test(i2g): isolate original v1 against independent signed P1.3 Fighter fixture |
 | Files changed relative to main | 198 (148 non-docs; 50 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
