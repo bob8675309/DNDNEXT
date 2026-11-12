@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `0e0b76d77ddf11b3a5e4a5a3d3a79ed6b496391b` |
+| Exact source commit represented by this archive snapshot | `88a39d5e7a888dc63ebe53736aa2734a480442ac` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-D): append signed original empty-sheet RED, nonempty control, 11/11 scratch GREEN and retained failed CI receipts |
+| Last source commit title | docs(I2-D): explicit no-production-approval guard for final signed coverage validator |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/I2_D_PRIVATE_V3_STORY_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
