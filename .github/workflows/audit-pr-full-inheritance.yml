@@ -1,0 +1,73 @@
+name: PR full source inheritance and preserved-work audit (NOT release approval)
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/audits/review_pr_full_scope.mjs'
+      - 'scripts/audits/validate_recent_pr_scope_register.mjs'
+      - '.github/workflows/audit-pr-full-inheritance.yml'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - 'docs/audits/ALL_OPEN_PR_REGISTER_2026-11-12.json'
+      - 'docs/audits/RECENT_PR_SCOPE_PARITY_*.json'
+      - 'docs/audits/RELATED_MERGED_319_337_341_SOURCE_PARITY_2026-11-12.json'
+      - 'docs/audits/RECENT_PR_NO_LOST_WORK_REVIEW_2026-11-12.md'
+      - 'docs/PR_FULL_SCOPE_REVIEW_PROTOCOL.md'
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Open PR number to audit, including drafts targeting research branches'
+        required: true
+        type: number
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  source-ledger-self-test:
+    name: Self-test full source/branch inventory (no remote PR calls)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate script syntax, simulated future PR event, original 45-PR evidence and scope
+        run: |
+          node --check scripts/audits/review_pr_full_scope.mjs
+          node --check scripts/audits/validate_recent_pr_scope_register.mjs
+          node scripts/audits/review_pr_full_scope.mjs --self-test
+          node scripts/audits/validate_recent_pr_scope_register.mjs
+  trusted-pr-review:
+    name: Enumerate PR files AND inherited source tree (not merge/release approval)
+    if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted default branch only (never execute PR HEAD code)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read GitHub PR+all paginated files, full HEAD/BASE/default trees, source evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AUDIT_PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+          AUDIT_REPORT_FILE: ${{ runner.temp }}/pr-full-scope.json
+        run: |
+          node scripts/audits/review_pr_full_scope.mjs
+      - name: Retain actual PR file/ancestry evidence as JSON for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-full-scope-${{ github.event.pull_request.number || inputs.pr_number }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/pr-full-scope.json
+          if-no-files-found: warn
+          retention-days: 90

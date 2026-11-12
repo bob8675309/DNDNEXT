@@ -1,0 +1,588 @@
+{
+  "auditDate": "2026-11-12",
+  "mainSHA": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+  "batch": "recent source-only and merged 347/348/372/374/375",
+  "method": "Full immediate PR diff file SHA vs non-truncated main tree; branch merge destinations separately recorded.",
+  "prs": [
+    {
+      "pr": 347,
+      "title": "C4 research: extract source-only P1 Spell Recipe validator and preflight",
+      "head": "18e889ffc668ee9af45d04b6faf24d93f2d9f8ae",
+      "baseBranch": "main",
+      "baseSHA": "9437b9d0a2bedc3ba78110c612543f6033674a72",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 8,
+      "records": [
+        {
+          "path": ".github/workflows/validate-spell-recipe-p1-extraction.yml",
+          "change": "added",
+          "sourceBlob": "ebfffc41036229c39a8fb81c1bed73e57de5a561",
+          "mainBlob": "ebfffc41036229c39a8fb81c1bed73e57de5a561",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "74f18b8dae541b8853d35818f4f6887f6101c0d7",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "e8ca989f910097a05c14d6f00efcdeb0cc535a83",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_recipe_p1_examples.mjs",
+          "change": "added",
+          "sourceBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "mainBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_preflight_p1.mjs",
+          "change": "added",
+          "sourceBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "mainBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_schema_p1.mjs",
+          "change": "added",
+          "sourceBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "mainBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/preflightSpellRecipe.mjs",
+          "change": "added",
+          "sourceBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "mainBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/validateSpellRecipe.mjs",
+          "change": "added",
+          "sourceBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "mainBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "parity": "identical_blob_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 6,
+        "different": 2,
+        "absent": 0
+      }
+    },
+    {
+      "pr": 348,
+      "title": "docs: preserve every open PR and reprioritize DNDNext integration before new features",
+      "head": "1af494966210c62a5ea6705bdb27a1ce90485207",
+      "baseBranch": "main",
+      "baseSHA": "9437b9d0a2bedc3ba78110c612543f6033674a72",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "changedFiles": 38,
+      "records": [
+        {
+          "path": "AGENTS.md",
+          "change": "modified",
+          "sourceBlob": "52fa9375a825de8a01cfe002df1945a9b89b0a00",
+          "mainBlob": "52fa9375a825de8a01cfe002df1945a9b89b0a00",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "c994b272436f050c26b8e93afee1fcd3f838d084",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md",
+          "change": "modified",
+          "sourceBlob": "7996e7c68c9da2713f46733b2cc9369adbebd14b",
+          "mainBlob": "7996e7c68c9da2713f46733b2cc9369adbebd14b",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/DOCUMENT_LIFECYCLE.md",
+          "change": "modified",
+          "sourceBlob": "891cd23b872edc49fbd138163bff591129303eb2",
+          "mainBlob": "891cd23b872edc49fbd138163bff591129303eb2",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "d9103e92f46e969f7fe23d4842f3613cfb813ed0",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_RECEIPT_TEMPLATE.md",
+          "change": "modified",
+          "sourceBlob": "72a5151fb9b2482e24f0bca34d8528bc5a44ddc5",
+          "mainBlob": "72a5151fb9b2482e24f0bca34d8528bc5a44ddc5",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/I1_A_FORGE_C33_SOURCE_CONTRACT_CROSSWALK_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "724fcb2179af6b22910bc9fccadd22c811794ea9",
+          "mainBlob": "724fcb2179af6b22910bc9fccadd22c811794ea9",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/NEXT_CHAT_START_HERE.md",
+          "change": "modified",
+          "sourceBlob": "e691d951bd2bbb958b8e42bfa28651900bf1f3b5",
+          "mainBlob": "e691d951bd2bbb958b8e42bfa28651900bf1f3b5",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/PHASED_DEVELOPMENT_CHECKLIST.md",
+          "change": "modified",
+          "sourceBlob": "660eb66e5360eab38478355b77f74cfcd4689544",
+          "mainBlob": "660eb66e5360eab38478355b77f74cfcd4689544",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md",
+          "change": "modified",
+          "sourceBlob": "1b53b9193ba9e24abeaede9bcded359f09aebdd2",
+          "mainBlob": "1b53b9193ba9e24abeaede9bcded359f09aebdd2",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/PROJECT_STATE.md",
+          "change": "modified",
+          "sourceBlob": "d3d8c09c3ce13c07ac8ac9cf59eabc0400f35750",
+          "mainBlob": "d3d8c09c3ce13c07ac8ac9cf59eabc0400f35750",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "2fded1a8166b6d68cd4f6229a6de2cdd11bb7fe6",
+          "mainBlob": "2fded1a8166b6d68cd4f6229a6de2cdd11bb7fe6",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "change": "modified",
+          "sourceBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md",
+          "change": "modified",
+          "sourceBlob": "df10a3f1558be06d4ac67cf71328562e702da1e0",
+          "mainBlob": "df10a3f1558be06d4ac67cf71328562e702da1e0",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/archive/ACTIVE_WORK_C3_3_PRE_OWNER_OVERRIDE_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "060cc99045960958dfba0e8b89c336c6ffd6b983",
+          "mainBlob": "060cc99045960958dfba0e8b89c336c6ffd6b983",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/evidence/I1_A_FORGE_BLOB_CROSSWALK_2026-11-09.json",
+          "change": "added",
+          "sourceBlob": "460064e20fd3abe86cbede2a3db2dedf408c9c7d",
+          "mainBlob": "460064e20fd3abe86cbede2a3db2dedf408c9c7d",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/evidence/I1_A_FORGE_INCREMENTAL_PR_FILES_2026-11-09.json",
+          "change": "added",
+          "sourceBlob": "72a8dee54f15aee6d3c1344db60280eb4c6bd728",
+          "mainBlob": "72a8dee54f15aee6d3c1344db60280eb4c6bd728",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-309.md",
+          "change": "added",
+          "sourceBlob": "88bd8cd00516f2e52e127e8a95a9edb5b7210771",
+          "mainBlob": "88bd8cd00516f2e52e127e8a95a9edb5b7210771",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-312.md",
+          "change": "added",
+          "sourceBlob": "946197fbab958e965890b9e55f1ac169afa03382",
+          "mainBlob": "946197fbab958e965890b9e55f1ac169afa03382",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-317.md",
+          "change": "added",
+          "sourceBlob": "491f7940781f473c133c676064295cfc771b8237",
+          "mainBlob": "491f7940781f473c133c676064295cfc771b8237",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-318.md",
+          "change": "added",
+          "sourceBlob": "b9e00ecf330f344defd601bcfba0eaeaa9ef3a2d",
+          "mainBlob": "b9e00ecf330f344defd601bcfba0eaeaa9ef3a2d",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-320.md",
+          "change": "added",
+          "sourceBlob": "8dd7c5e011b8c068a625b473d3949a2caf3e1b4f",
+          "mainBlob": "8dd7c5e011b8c068a625b473d3949a2caf3e1b4f",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-321.md",
+          "change": "added",
+          "sourceBlob": "b8f83e0f5de269d614234e2b8fd2b3faae461a32",
+          "mainBlob": "b8f83e0f5de269d614234e2b8fd2b3faae461a32",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-322.md",
+          "change": "added",
+          "sourceBlob": "d04d4f7e03711284273f67b68291c986a1e6fbbb",
+          "mainBlob": "d04d4f7e03711284273f67b68291c986a1e6fbbb",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-323.md",
+          "change": "added",
+          "sourceBlob": "44bb9bafbf66f844294f4316567178622ba37267",
+          "mainBlob": "44bb9bafbf66f844294f4316567178622ba37267",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-324.md",
+          "change": "added",
+          "sourceBlob": "358d1c5181e5d9dd6b6b2293b7baa521ac1d0721",
+          "mainBlob": "358d1c5181e5d9dd6b6b2293b7baa521ac1d0721",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-325.md",
+          "change": "added",
+          "sourceBlob": "636143789f9d866e1b48a2b0767362101cdb718f",
+          "mainBlob": "636143789f9d866e1b48a2b0767362101cdb718f",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-328.md",
+          "change": "added",
+          "sourceBlob": "f08ed500ac1a23b2c222a8f1c3e96a9762abe07b",
+          "mainBlob": "f08ed500ac1a23b2c222a8f1c3e96a9762abe07b",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-329.md",
+          "change": "added",
+          "sourceBlob": "f2f0d885dcc716741f0929cf836a48935ebcf871",
+          "mainBlob": "f2f0d885dcc716741f0929cf836a48935ebcf871",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-330.md",
+          "change": "added",
+          "sourceBlob": "929ae6c9e6c4ff9c9f49196d28ee1545411d1de7",
+          "mainBlob": "929ae6c9e6c4ff9c9f49196d28ee1545411d1de7",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-331.md",
+          "change": "added",
+          "sourceBlob": "bfa030e978951427247ab886f609a2749852dbfb",
+          "mainBlob": "bfa030e978951427247ab886f609a2749852dbfb",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-332.md",
+          "change": "added",
+          "sourceBlob": "cbced5d630cfa30d8ccbd1b5baeca7fc37a48874",
+          "mainBlob": "cbced5d630cfa30d8ccbd1b5baeca7fc37a48874",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-333.md",
+          "change": "added",
+          "sourceBlob": "e1f3be213000b9f85e3d5c3b60cccc9fd0de5f3b",
+          "mainBlob": "e1f3be213000b9f85e3d5c3b60cccc9fd0de5f3b",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-334.md",
+          "change": "added",
+          "sourceBlob": "07c9fb9eae0f864f257d7388ff0c522647c62450",
+          "mainBlob": "07c9fb9eae0f864f257d7388ff0c522647c62450",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-335.md",
+          "change": "added",
+          "sourceBlob": "3012c1ae73a50fecb6a8eb2ba4fa15975509e084",
+          "mainBlob": "3012c1ae73a50fecb6a8eb2ba4fa15975509e084",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-345.md",
+          "change": "added",
+          "sourceBlob": "c18e21caacad8a59075041c117f979eba2d54187",
+          "mainBlob": "c18e21caacad8a59075041c117f979eba2d54187",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/PR-347.md",
+          "change": "added",
+          "sourceBlob": "7656b6215e618f40ce06837fb291bd550ccf58be",
+          "mainBlob": "7656b6215e618f40ce06837fb291bd550ccf58be",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/pr-integration/README.md",
+          "change": "added",
+          "sourceBlob": "5656d08cfe06d61390f3f9caea649c0431ef9b62",
+          "mainBlob": "5656d08cfe06d61390f3f9caea649c0431ef9b62",
+          "parity": "identical_blob_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 36,
+        "different": 2,
+        "absent": 0
+      }
+    },
+    {
+      "pr": 372,
+      "title": "I2-H: signed original v5 Tough HP progression legacy overwrite RED and Option A scratch GREEN",
+      "head": "f5af608360d2e61e6b844f9a8daad92fe3ad3385",
+      "baseBranch": "research/i2g-signed-levelup-v1-option-a-20261112",
+      "baseSHA": "8318b4456eb982d24c1fd3171b893c6131944c9f",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "changedFiles": 10,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i2h-tough-option-a-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "f44ea50f652d8d8ca67f99d80bac8b721146dfc5",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "cdad603382b25f8b7b6b7708758553933c6610f8",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "4325c2fd6b3ef785112d6c4a1aeb43c230ffcc0d",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I2_H_TOUGH_OPTION_A_SIGNED_RESEARCH_2026-11-12.md",
+          "change": "added",
+          "sourceBlob": "015833c65bf101de7c2ced3f658ef7f4fd3e7b7f",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I2_H_TOUGH_OPTION_A_WRITER_COVERAGE_2026-11-12.json",
+          "change": "added",
+          "sourceBlob": "29ea69c02421d3f155910e03a41ecf7879e5f288",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2h_inherited_levelup_no_mirror_isolation_pg17.sql",
+          "change": "added",
+          "sourceBlob": "c579905c9d61e463f3c6a498fc2f5aaacaa6f80e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2h_option_a_tough_progression_scratch_pg17.sql",
+          "change": "added",
+          "sourceBlob": "02d814e00cadd404c7e8504b45136d0caffbf1dd",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i2h_original_tough_shared_p13_pg17.sql",
+          "change": "added",
+          "sourceBlob": "6a8b36d819465617c17aefc6695113631c125d5c",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i2h_tough_option_a_signed_v5_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "b64cba79b59957979129ec3ca8eb7ad6c151fea0",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i2h_tough_option_a_scope.mjs",
+          "change": "added",
+          "sourceBlob": "2310577a76e995260403c1b466d4b14a4a741f21",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 8
+      }
+    },
+    {
+      "pr": 374,
+      "title": "C4 P1 source-only: preserve exact original #347 recipe schema and preflight validator on current main",
+      "head": "5ef87bd8621bd98acc739d74d1d249cb22a81f4f",
+      "baseBranch": "main",
+      "baseSHA": "621de3cbd09c71f82d3ac4f02a858035cac9e207",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "changedFiles": 8,
+      "records": [
+        {
+          "path": ".github/workflows/validate-spell-recipe-p1-extraction.yml",
+          "change": "added",
+          "sourceBlob": "ebfffc41036229c39a8fb81c1bed73e57de5a561",
+          "mainBlob": "ebfffc41036229c39a8fb81c1bed73e57de5a561",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_recipe_p1_examples.mjs",
+          "change": "added",
+          "sourceBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "mainBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_preflight_p1.mjs",
+          "change": "added",
+          "sourceBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "mainBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_schema_p1.mjs",
+          "change": "added",
+          "sourceBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "mainBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/preflightSpellRecipe.mjs",
+          "change": "added",
+          "sourceBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "mainBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "parity": "identical_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/validateSpellRecipe.mjs",
+          "change": "added",
+          "sourceBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "mainBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "parity": "identical_blob_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 8,
+        "different": 0,
+        "absent": 0
+      }
+    },
+    {
+      "pr": 375,
+      "title": "Audit: preserve full Spell Engine #309/#312, deployed 19 adapters, archived effects, and all 20 original PR source files",
+      "head": "2bb3e4d5a545da89b6b796885eecf43eadbc23bf",
+      "baseBranch": "main",
+      "baseSHA": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 6,
+      "records": [
+        {
+          "path": ".github/workflows/validate-spell-engine-original-pr-preservation.yml",
+          "change": "added",
+          "sourceBlob": "0f924850f08fafad75e33a9ac2d5b6b34c6782ff",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/audits/ORIGINAL_20_PR_DOSSIER_MAIN_BLOB_PARITY_2026-11-12.json",
+          "change": "added",
+          "sourceBlob": "fc7f3b2add5454a406c1d674bbe0ab615a46c546",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/audits/SPELL_EFFECTS_ARCHIVED_RESEARCH_MAIN_BLOB_PARITY_2026-11-12.json",
+          "change": "added",
+          "sourceBlob": "fe57bac25519f9db774eac87f9fe0f370a6bd3da",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/audits/SPELL_ENGINE_AND_ORIGINAL_PR_NO_LOST_WORK_AUDIT_2026-11-12.md",
+          "change": "added",
+          "sourceBlob": "ec057fcb69674baa8a55392e3b285cc956c480af",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/audits/SPELL_ENGINE_PR309_PR312_EXACT_SOURCE_MANIFEST_2026-11-12.json",
+          "change": "added",
+          "sourceBlob": "28d125cf84f52217e9289bb2318108ff4e22c8af",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/validate_spell_engine_full_pr_preservation.mjs",
+          "change": "added",
+          "sourceBlob": "f9b09412af630584baaf093b7951484545addb3a",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 0,
+        "absent": 6
+      }
+    }
+  ]
+}

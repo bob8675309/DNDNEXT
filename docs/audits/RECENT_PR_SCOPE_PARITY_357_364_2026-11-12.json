@@ -1,0 +1,523 @@
+{
+  "auditDate": "2026-11-12",
+  "mainSHA": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+  "batch": "357-364",
+  "method": "Exact full GitHub PR Files rows plus nontruncated main tree; historical source code may inherit from earlier stack.",
+  "prs": [
+    {
+      "pr": 357,
+      "title": "I1-I research: source-original Eladrin season materializer with signed Warlock coexistence",
+      "head": "57730a4ae1e8a577ff88f2ab0f108188fa170bed",
+      "baseBranch": "research/i1h-warlock-original-acquisition-20261110",
+      "baseSHA": "f6fe276a305e292ed343b1bae122924983fedc2d",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 6,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1i-eladrin-original-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "ab02b5bbd468f1a517bef989e9fa7be349441fee",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "9b72bc0b3a030e28b47f0b7205135c8d8b4c4d4b",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "bd7a29b99b498fc2d4c4a14f7f98904e044acb06",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md",
+          "change": "added",
+          "sourceBlob": "102c981eb39abb3f4d3aee69a4f41b1aa215ca5e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1i_eladrin_original_materializer_pg17.sql",
+          "change": "added",
+          "sourceBlob": "323ef20258d8b3a7c7bc96e0b1d279ba755fcce5",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "modified",
+          "sourceBlob": "f92e1f790c1fb4494f2a98b54f99e1370a2cc43d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 4
+      }
+    },
+    {
+      "pr": 358,
+      "title": "I1-J research: source-original Khoravar skill/tool materializer with signed Eladrin and Warlock coexistence",
+      "head": "969dd5b00ed4b8dc4491fed412e37288e4d5fdbf",
+      "baseBranch": "research/i1i-eladrin-original-season-materializer-20261110",
+      "baseSHA": "57730a4ae1e8a577ff88f2ab0f108188fa170bed",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 6,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1j-khoravar-original-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "13f8cd737e4a581bb4d17ce1d57d8887909fe860",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "702605d66a962355a83fafce5bd4bf09959cd7a2",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "b3486065abcb7fb9cb736c45cda78beb878fb6ea",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md",
+          "change": "added",
+          "sourceBlob": "a7298e5fa6483d7cfc52557230530fca71d8fc3d",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1j_khoravar_original_skill_versatility_pg17.sql",
+          "change": "added",
+          "sourceBlob": "d84d149b5bc4ef0e62f69a048ab77620f472a94a",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "modified",
+          "sourceBlob": "ca1b91abd58faa77ee521225507a3da2bacff8ea",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 4
+      }
+    },
+    {
+      "pr": 359,
+      "title": "I1-K research: original High Elf and Khoravar species cantrip first-creation with Warlock coexistence",
+      "head": "d0f6aad93772cbadee5c5547b37cbaf18de3ddd2",
+      "baseBranch": "research/i1j-khoravar-original-skill-versatility-20261110",
+      "baseSHA": "969dd5b00ed4b8dc4491fed412e37288e4d5fdbf",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 6,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1k-species-cantrip-original-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "df4b0e39459fe8d371230c77a5b6131d5a29a637",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "4d243e69556b9b1f3c79206f79faed6fb7900595",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "fd1d75e61086370590e559b73819981a1b645aad",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_K_SPECIES_CANTRIP_ORIGINAL_SIGNED_RESEARCH_2026-11-10.md",
+          "change": "added",
+          "sourceBlob": "1ff7ffcba43d95e850fbb34adb3f2e826b5e52c1",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1k_species_cantrip_original_materializer_pg17.sql",
+          "change": "added",
+          "sourceBlob": "5af193bb5f3de0cb84a1ba83b081b9d76a471a6a",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "modified",
+          "sourceBlob": "723cb3c220aea09a59a79000dc202b2507300fc1",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 4
+      }
+    },
+    {
+      "pr": 360,
+      "title": "I1-L research: original EFA Artificer Magic Item Plans at signed first creation",
+      "head": "4763a00a6a9afc387090b2853754dd22a7544b80",
+      "baseBranch": "research/i1k-species-cantrip-original-materializer-20261110",
+      "baseSHA": "d0f6aad93772cbadee5c5547b37cbaf18de3ddd2",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 7,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1l-artificer-original-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "c2c141977da54917e9c0a2469040eea7bc8c76be",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "6dfa41238dd86342f24eb3496b6900946270986f",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "31557264bb477e6a1775e87a89f7235fabac919c",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_L_ARTIFICER_ORIGINAL_MAGIC_ITEM_PLANS_SIGNED_RESEARCH_2026-11-10.md",
+          "change": "added",
+          "sourceBlob": "7fc6c5d8bf1134ce5b1202e51b1b438f58636183",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1l_artificer_original_plan_materializer_pg17.sql",
+          "change": "added",
+          "sourceBlob": "975d92fa5fef8f77e4fb690921ebba84113dfa41",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1l_artificer_projection_null_parent_candidate_pg17.sql",
+          "change": "added",
+          "sourceBlob": "f8e01104bf8d6cccf144808235dcacb372d843ff",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "modified",
+          "sourceBlob": "dd61d4fd760d9971f14ea7f08f17f59265d172b9",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 5
+      }
+    },
+    {
+      "pr": 361,
+      "title": "I1-M research: signed Artificer multi-character legacy-sheet RED/GREEN compatibility",
+      "head": "99f8000994fd9194ebe21ab0801636ad24ad6760",
+      "baseBranch": "research/i1l-artificer-original-plans-20261110",
+      "baseSHA": "4763a00a6a9afc387090b2853754dd22a7544b80",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 7,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1m-artificer-legacy-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "07b5c25d2e60e1bef1fdefdfdcd53a142a240d30",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "7c07b44ad53b369bc2fba149fcb9541b85624c56",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "36e464dd8cfc13f48905cc702a3236814f4defe4",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_M_ARTIFICER_LEGACY_MULTI_CHARACTER_RESEARCH_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "4a0e1b08e21fe0679c25a821896565c4de86c1f7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1m_artificer_legacy_projection_candidate_pg17.sql",
+          "change": "added",
+          "sourceBlob": "0d439a30e35d8504b5bd24a51a71746dfd38dcba",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1m_legacy_v2_source_guard_local_pg17.sql",
+          "change": "added",
+          "sourceBlob": "0d4ad2ab541ea4904ed5981954daa325757f028f",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "modified",
+          "sourceBlob": "51b67dbc475be4b6d95f10283bb12e0b2b4f1caf",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 5
+      }
+    },
+    {
+      "pr": 362,
+      "title": "I1-N research: 34 legacy player-sheet writer census and canonical authority contract",
+      "head": "61f7e8f109f5327049cd1dc7f62322f13e891a2b",
+      "baseBranch": "research/i1m-artificer-legacy-sheet-20261111",
+      "baseSHA": "99f8000994fd9194ebe21ab0801636ad24ad6760",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 7,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1n-legacy-sheet-census.yml",
+          "change": "added",
+          "sourceBlob": "8609ca1fb610d8b8b6818c69a704292a517cc24e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "af974605a008c52c2c409270632376e141ee5b61",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "ba09fe7d393cf8d5e10d05afc2c9fa00673b28b1",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_N_LEGACY_PLAYER_SHEET_AUTHORITY_REVIEW_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "2b4381055ba8db1cafd5f8c65bd4d25c4803bcc5",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I1_N_LEGACY_SHEET_LIVE_SOURCE_CENSUS_2026-11-11.json",
+          "change": "added",
+          "sourceBlob": "f8d1d42b2e8f651027f27d416df6419b7b40f2c5",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/research/i1n_legacy_player_sheet_live_readonly_census.sql",
+          "change": "added",
+          "sourceBlob": "49575c8c1ebaa9ea387773036ca9263da48848f8",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i1n_legacy_sheet_census.mjs",
+          "change": "added",
+          "sourceBlob": "d91b7894c2b57d3a2666b07835e9c53b4e6ad47c",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 5
+      }
+    },
+    {
+      "pr": 363,
+      "title": "I1-O research: signed cross-family legacy-sheet RED/GREEN for HP and Admin progression",
+      "head": "0c413bc5b0d1378a55891f070f76e74394bd0044",
+      "baseBranch": "research/i1n-legacy-sheet-writer-reader-census-20261111",
+      "baseSHA": "61f7e8f109f5327049cd1dc7f62322f13e891a2b",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 7,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1o-cross-family-legacy-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "ac02f800f8e14c3f5cdbe96261a6316dd8d2eccc",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "8dfdf005c49feb9a89f9cae042ee50f00149ac0f",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "9998baaef3462b1b2b115291294423f16572a8bd",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_O_CROSS_FAMILY_SIGNED_LEGACY_SHEET_RESEARCH_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "2b37fe455a169e90e725253d3d10f49bdbd817bb",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1o_original_progression_hp_shared_forge_pg17.sql",
+          "change": "added",
+          "sourceBlob": "3c34a06abd94d0044ecba9c77056bb5128ebf884",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1o_progression_hp_legacy_mirror_candidate_pg17.sql",
+          "change": "added",
+          "sourceBlob": "f604bbed76e48baa47be6bb31ecce03905a76708",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "modified",
+          "sourceBlob": "0bb0217682299fea8225b6480ef794eefbc61508",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 5
+      }
+    },
+    {
+      "pr": 364,
+      "title": "I1-P research: signed original earned level-up v5 and Rage-rest cross-character mirror RED/GREEN",
+      "head": "f969af0a15cc8a7e517808cb2eeeefea3119f6fd",
+      "baseBranch": "research/i1o-cross-family-legacy-sheet-signed-20261111",
+      "baseSHA": "0c413bc5b0d1378a55891f070f76e74394bd0044",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 7,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1p-earned-v5-rest-legacy-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "fd4b9b2228fdddbbc4e196e7b97c9f9d9027e3b0",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "4b182335e1179229b9c6935923efa80e0569f2e1",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "bf93a7753cc8518d1b4a2ed9d345a73463274b98",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_P_EARNED_V5_REST_LEGACY_SHEET_RESEARCH_2026-11-11.md",
+          "change": "added",
+          "sourceBlob": "44f2e8590e0d7399dcf2d63c061c364f89e7ce96",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1p_earned_levelup_rest_mirror_candidate_pg17.sql",
+          "change": "added",
+          "sourceBlob": "9e064ac60d1601411e566e9bdcee96f1e583f1ba",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1p_original_rest_shared_p13_pg17.sql",
+          "change": "added",
+          "sourceBlob": "039868c4ac5cdd62e0efc1e46f584df2bdc34a9c",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1p_earned_rest_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "4c9a0935cbfe7c979ff38eadd401d54a1213efb9",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 5
+      }
+    }
+  ]
+}
