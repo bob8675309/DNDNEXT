@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `e57713e12ffea7835998ad78ea51df13a24cc365` |
+| Exact source commit represented by this archive snapshot | `15f4cc2e332e4e9bb04558fd5e5a1b91b3241129` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): terminate original pg_get_functiondef DDL in SQL fixture |
+| Last source commit title | docs(i2g): promote v1 only to 10/34 after exact signed original RED and scratch GREEN |
 | Files changed relative to main | 204 (152 non-docs; 52 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2g_original_levelup_v1_shared_forge_pg17.sql`
+- `docs/I2_G_LEVELUP_V1_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
