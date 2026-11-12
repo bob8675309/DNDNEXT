@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `9ddb0817d3201a7e95f3322d49dddd0743f51dac` |
+| Exact source commit represented by this archive snapshot | `42a82a1f25c2e42d9dad398fbc82645a2b67d6fd` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2i): scope real signed Admin grant original RED, scratch GREEN, and unproven API exposure risk |
+| Last source commit title | docs(i2i): append accurate original Admin research, safe merges and single pending signed test |
 | Files changed relative to main | 219 (163 non-docs; 56 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_I_SIGNED_ADMIN_FEATURE_OPTION_A_RESEARCH_2026-11-12.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
