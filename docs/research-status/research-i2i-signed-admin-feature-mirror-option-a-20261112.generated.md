@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `f919925e337b1dc80d44356ebc7e7cb375898681` |
+| Exact source commit represented by this archive snapshot | `6f1aeeee6dd48408456220bf12f9758125c4208d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2i): append accurate original Admin research, safe merges and single pending signed test |
+| Last source commit title | test(i2i): check SQL authenticated role projection inside rolled-back transaction and restore ACL |
 | Files changed relative to main | 219 (163 non-docs; 56 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/test_i2i_signed_admin_feature_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
