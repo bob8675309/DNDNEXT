@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `031d4093adbb436fb0e25014337eecc01148427f` |
+| Exact source commit represented by this archive snapshot | `701b1ca6b3c57c888aee176f62e0cf76daadf6bf` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(I2-D): source coverage ledger distinguishes extra private v2/v3 Story chain from original 34 UPDATE writers |
-| Files changed relative to main | 181 (136 non-docs; 45 docs) |
+| Last source commit title | docs(I2-D): distinguish private Forge v2 empty-only overwrite from populated snapshot guard and bound signed Story/nonce acceptance |
+| Files changed relative to main | 182 (136 non-docs; 46 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_D_OPTION_A_CREATION_SOURCE_COVERAGE_2026-11-11.json`
+- `docs/I2_D_PRIVATE_V3_STORY_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
-- … 131 more
+- … 132 more
 
 ## Trust and update procedure
 
