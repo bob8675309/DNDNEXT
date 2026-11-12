@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `b5a8fc220c035347f63f30715f567146f3a82155` |
+| Exact source commit represented by this archive snapshot | `4447ce1ad03f308e99c2785f25a887c371dea8c8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-F): compare restored B sourceChoices to immediately missing canonical state, not pre-removal same JSON |
+| Last source commit title | docs(I2-F): mark 11/11 local private source/species RED→Option A GREEN verified without inflating 9/34 coverage |
 | Files changed relative to main | 197 (147 non-docs; 50 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i2f_source_species_projection_option_a_local_auth.mjs`
+- `docs/I2_F_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
