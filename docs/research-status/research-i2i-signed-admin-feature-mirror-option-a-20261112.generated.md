@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `b7670798f0d94ee9cda15844522d84e526e9b5b9` |
+| Exact source commit represented by this archive snapshot | `9ddb0817d3201a7e95f3322d49dddd0743f51dac` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(i2i): preserve I2F/I2G/I2H signed regressions before original signed Admin RED/GREEN |
-| Files changed relative to main | 218 (163 non-docs; 55 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i2i): scope real signed Admin grant original RED, scratch GREEN, and unproven API exposure risk |
+| Files changed relative to main | 219 (163 non-docs; 56 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
+- `docs/I2_I_SIGNED_ADMIN_FEATURE_OPTION_A_RESEARCH_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
-- … 168 more
+- … 169 more
 
 ## Trust and update procedure
 
