@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `9d58d496b493c74c2992df64fb1c07ca547e571e` |
+| Exact source commit represented by this archive snapshot | `9f7c80d3313d832c798239469f06135d5ff1f5bd` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): signed original level-up v1 RED then Option A scratch GREEN |
-| Files changed relative to main | 200 (150 non-docs; 50 docs) |
+| Last source commit title | ci(i2g): rerun inherited signed I2F and independently exercise original level-up v1 |
+| Files changed relative to main | 201 (151 non-docs; 50 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2g_signed_levelup_v1_option_a_local_auth.mjs`
+- `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -46,6 +46,7 @@
 - `.github/workflows/validate-i2d-private-v3-story-option-a-local-auth.yml`
 - `.github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml`
 - `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
+- `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- … 150 more
+- … 151 more
 
 ## Trust and update procedure
 
