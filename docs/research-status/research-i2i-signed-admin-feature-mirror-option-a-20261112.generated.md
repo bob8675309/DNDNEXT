@@ -5,7 +5,7 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `42a82a1f25c2e42d9dad398fbc82645a2b67d6fd` |
+| Exact source commit represented by this archive snapshot | `f919925e337b1dc80d44356ebc7e7cb375898681` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
 | Last source commit title | docs(i2i): append accurate original Admin research, safe merges and single pending signed test |
 | Files changed relative to main | 219 (163 non-docs; 56 docs) |
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
