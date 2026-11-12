@@ -6,6 +6,8 @@
 
 > **Retained failed research receipt:** [first run #43149979952](https://github.com/bob8675309/DNDNEXT/actions/runs/43149979952) passed all old suites, I2F-01–05 (including BOTH original source REDs and the scratch source/MD5 proof), then failed on a **new test comparison mistake**: the canonical B sheet was compared to its pre-removal JSON after `sourceChoices` was deliberately removed and then restored to the same `{}` value. Fixed only the I2F test to compare the restored sheet against the snapshot taken **immediately after removal**, while additionally asserting B initially had a valid object. That preserves the genuine missing-to-valid transition and does not weaken any source hash, account preservation, permissions, or original RED assertion. No original SQL, prior tests or production data modified.
 
+> **Additional final-head static CI receipt:** [run #43151123583](https://github.com/bob8675309/DNDNEXT/actions/runs/43151123583) failed before disposable Supabase startup because the verified source ledger abbreviated the private-helper boundary as “NOT direct signed helper RPC”, while the existing strict static validator required the more explicit “NOT signed public/private helper RPC”. Updated both ledger descriptions to the stronger wording; preserved the validator, original REDs, local CI evidence, source candidate, and all private `EXECUTE` denials unchanged. The subsequent documentation-inclusive head still needs independent exact-head verification.
+
 ## Narrow source-original audit
 
 Read-only live PG17 introspection verified these exact original private functions:
