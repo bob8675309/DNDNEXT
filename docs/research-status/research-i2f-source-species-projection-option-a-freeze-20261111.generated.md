@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `27d1b57a44ece8db02b4fa0f0e9f9deb5effbdea` |
+| Exact source commit represented by this archive snapshot | `7a2f1b60e544420959c13ea2ca341c5cad496869` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-F): signed Forge-created characters + privileged private projection original RED then source-exact no-mirror GREEN |
-| Files changed relative to main | 193 (145 non-docs; 48 docs) |
+| Last source commit title | ci(I2-F): preserve original I1-B..O and I2C/D/E auth tests before private source/species projection RED/GREEN |
+| Files changed relative to main | 194 (146 non-docs; 48 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2f_source_species_projection_option_a_local_auth.mjs`
+- `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -45,6 +45,7 @@
 - `.github/workflows/validate-i2c-creation-signup-option-a-local-auth.yml`
 - `.github/workflows/validate-i2d-private-v3-story-option-a-local-auth.yml`
 - `.github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml`
+- `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- `docs/HANDOFF_LOG.md`
-- … 143 more
+- … 144 more
 
 ## Trust and update procedure
 
