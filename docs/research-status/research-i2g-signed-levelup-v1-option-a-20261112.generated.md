@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `9f7c80d3313d832c798239469f06135d5ff1f5bd` |
+| Exact source commit represented by this archive snapshot | `240bd0f968309681a152aed4c6d4a757729b5c76` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(i2g): rerun inherited signed I2F and independently exercise original level-up v1 |
-| Files changed relative to main | 201 (151 non-docs; 50 docs) |
+| Last source commit title | test(i2g): statically guard original source, inherited ledger and pending coverage |
+| Files changed relative to main | 202 (152 non-docs; 50 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
+- `scripts/validate_i2g_levelup_v1_scope.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- … 151 more
+- … 152 more
 
 ## Trust and update procedure
 
