@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `b360f7e246b95e5b6aa59c3d3316e52cca2c0dd3` |
+| Exact source commit represented by this archive snapshot | `1a4fc7086c101052a1b30e8f55502890ff8cca2d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): isolate original v1 against independent signed P1.3 Fighter fixture |
-| Files changed relative to main | 198 (148 non-docs; 50 docs) |
+| Last source commit title | test(i2g): add guarded reversible no-mirror scratch candidate for original level-up v1 |
+| Files changed relative to main | 199 (149 non-docs; 50 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2g_original_levelup_v1_shared_forge_pg17.sql`
+- `scripts/fixtures/i2g_option_a_levelup_v1_scratch_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- … 148 more
+- … 149 more
 
 ## Trust and update procedure
 
