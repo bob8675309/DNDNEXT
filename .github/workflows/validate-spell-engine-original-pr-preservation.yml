@@ -1,0 +1,37 @@
+name: Audit full original PR Spell Engine preservation (read-only)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-spell-engine-original-pr-preservation.yml'
+      - 'docs/audits/SPELL_ENGINE_AND_ORIGINAL_PR_NO_LOST_WORK_AUDIT_2026-11-12.md'
+      - 'docs/audits/SPELL_ENGINE_PR309_PR312_EXACT_SOURCE_MANIFEST_2026-11-12.json'
+      - 'docs/audits/ORIGINAL_20_PR_DOSSIER_MAIN_BLOB_PARITY_2026-11-12.json'
+      - 'docs/audits/SPELL_EFFECTS_ARCHIVED_RESEARCH_MAIN_BLOB_PARITY_2026-11-12.json'
+      - 'scripts/audits/validate_spell_engine_full_pr_preservation.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  spell-engine-full-pr-preservation:
+    name: Full 20-original/8-archive source-blobs and P1 + deployed-19 acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify audit ledger and static test syntax
+        run: |
+          node --check scripts/audits/validate_spell_engine_full_pr_preservation.mjs
+          node scripts/audits/validate_spell_engine_full_pr_preservation.mjs
+      - name: Preserve original P1 source-only recipe schema/preflight
+        run: |
+          node scripts/validate_spell_recipe_schema_p1.mjs
+          node scripts/validate_spell_recipe_preflight_p1.mjs
+      - name: Preserve 19 deployed XPHB tactical adapters and historical failure semantics
+        run: |
+          node scripts/validate_tactical_spell_preservation.mjs
+          node scripts/test_tactical_spell_preservation.mjs

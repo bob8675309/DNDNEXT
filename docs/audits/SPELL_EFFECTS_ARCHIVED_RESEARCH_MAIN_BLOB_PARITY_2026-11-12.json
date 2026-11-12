@@ -1,0 +1,559 @@
+{
+  "date": "2026-11-12",
+  "mainCommit": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+  "purpose": "Supplement 20 open PR dossiers with 8 older closed/unmerged spell/effects/combat source heads; #307 merged only into #304 research base, not main.",
+  "verification": "Changed-file scope from GitHub PRs and per-file source SHA from Git tree at exact historical heads. Exact-path absence is not semantic absence; no release or merge authorized.",
+  "cases": [
+    {
+      "pr": 250,
+      "sourceHead": "132b0484ccc45bbcc87827db0eb483896ae446e1",
+      "immediateChangedFileCount": 17,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-physical-specimen-read-model.yml",
+          "originalHeadBlob": "7eea8880347d0ae8c98e8b8ebeb3431b2055ec10",
+          "sourceBytes": 4466,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Physical_Specimen_Encounter_Integration_Gate.md",
+          "originalHeadBlob": "debf70b0f3822533ffa1a54808e6341f88f1cd42",
+          "sourceBytes": 9124,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/physical_specimen_behavior.sql",
+          "originalHeadBlob": "cf202837de2ea366785e8871f35fd8c71190969e",
+          "sourceBytes": 13108,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/physical_specimen_tactical_behavior.sql",
+          "originalHeadBlob": "737eda4ff6c8a64c41790cd7830bfbedb100f2a6",
+          "sourceBytes": 22045,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/physical_specimen_test_schema.sql",
+          "originalHeadBlob": "f7fe179d554ae853323aa65cd4db00afbc10d944",
+          "sourceBytes": 10099,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_physical_specimen_encounter_snapshots.mjs",
+          "originalHeadBlob": "88f61dfa5056759e1621bb10bd26ef3414059bcc",
+          "sourceBytes": 1656,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_physical_specimen_encounter_start.mjs",
+          "originalHeadBlob": "b8d60afd74f33e4300ba14db5199d6755a819180",
+          "sourceBytes": 1818,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_physical_specimen_guarded_actions.mjs",
+          "originalHeadBlob": "b0ad43f34d2e6d96030ebfa55a0990a0b091f0dc",
+          "sourceBytes": 2060,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_physical_specimen_read_model.mjs",
+          "originalHeadBlob": "cb97c828a55c3e732647fefc6de9eab774364183",
+          "sourceBytes": 2290,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_physical_specimen_stat_projection.mjs",
+          "originalHeadBlob": "51552aa53791fba5cdd2ee14b29573ed5d9721e3",
+          "sourceBytes": 1199,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_physical_specimen_tactical.mjs",
+          "originalHeadBlob": "4206b8a690e5f613edce08c01ef4becf0546ed8c",
+          "sourceBytes": 2062,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261023_02_physical_specimen_read_model.sql",
+          "originalHeadBlob": "5b449fe7d68b37ae2bb4e40b1b0ac1c7ba756cdc",
+          "sourceBytes": 10524,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261023_03_physical_specimen_guarded_actions.sql",
+          "originalHeadBlob": "a4070f789c90cb2a968a1dba324b91469badc4c7",
+          "sourceBytes": 13616,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261023_04_physical_specimen_stat_projection.sql",
+          "originalHeadBlob": "bfee356550b6c805964016e7a6091f81404e6cfa",
+          "sourceBytes": 5131,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261023_05_physical_specimen_tactical_action.sql",
+          "originalHeadBlob": "ad17dfb5a324c0a2745d1029b2e67d4e0f4389d4",
+          "sourceBytes": 11503,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261023_06_physical_specimen_encounter_snapshots.sql",
+          "originalHeadBlob": "105f9c044fe46e60b5d4a130b01f3f993c453e98",
+          "sourceBytes": 5493,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261023_07_physical_specimen_encounter_start_reconcile.sql",
+          "originalHeadBlob": "7e35ad40ea595f1da8d8e050978502d012b8336d",
+          "sourceBytes": 6882,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 0,
+        "absent": 17
+      }
+    },
+    {
+      "pr": 251,
+      "sourceHead": "68526d451722b1f35ccdf30b42ed42171ee86d90",
+      "immediateChangedFileCount": 8,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-common-effect-resolver.yml",
+          "originalHeadBlob": "5c8947e673e18253cc0f91281807c8a075709d15",
+          "sourceBytes": 2809,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Common_Character_Effects_Engine_Design_2026-10-23.md",
+          "originalHeadBlob": "307d9cbc7aa028e08cfa8f90c68d25d8b89b0317",
+          "sourceBytes": 6340,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/common_effect_resolver_behavior.sql",
+          "originalHeadBlob": "b6956451460facb13e315a5928a97890b63585d6",
+          "sourceBytes": 10517,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/common_equipment_bonus_shadow_parity.sql",
+          "originalHeadBlob": "8b3379cf731a66e8f4babaa109f3099f674d44be",
+          "sourceBytes": 5324,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_common_effect_resolver.mjs",
+          "originalHeadBlob": "2d7fc0885361bdc02141801e5da8dba2d47468d3",
+          "sourceBytes": 1291,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_common_equipment_bonus_adapter.mjs",
+          "originalHeadBlob": "2aba1455bb6cca3159c60dcb3496fa9f66071ca6",
+          "sourceBytes": 1217,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261023_08_common_effect_resolver_v1.sql",
+          "originalHeadBlob": "d5506a5283d5a3ce6dee04675702fa300f6ff3e5",
+          "sourceBytes": 6862,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261024_01_common_equipment_bonus_adapter_v1.sql",
+          "originalHeadBlob": "c0bf3dda81102fd09d81903e3f3f989237ad7f2c",
+          "sourceBytes": 5316,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 0,
+        "absent": 8
+      }
+    },
+    {
+      "pr": 253,
+      "sourceHead": "5cfeef36541d6a882144ec00aed56d30bdc5a92a",
+      "immediateChangedFileCount": 3,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-common-effect-resolver.yml",
+          "originalHeadBlob": "eca23b4f96db0e8871190000ae87808647057fb5",
+          "sourceBytes": 3270,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Common_Equipment_Actual_Resolver_Parity_Gate_2026-10-24.md",
+          "originalHeadBlob": "5e9dd1165946812995088d962cb8894e049477d4",
+          "sourceBytes": 1491,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/common_equipment_real_resolver_parity.sql",
+          "originalHeadBlob": "e5121bb1356c8978ac90b43cbb573c25267039dc",
+          "sourceBytes": 5839,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 0,
+        "absent": 3
+      }
+    },
+    {
+      "pr": 255,
+      "sourceHead": "dda0f432d963a5b6a87b65e5f6f4bbd27a860602",
+      "immediateChangedFileCount": 5,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-common-effect-resolver.yml",
+          "originalHeadBlob": "5f2feafca511ddab4c8750c40f17cbb169146437",
+          "sourceBytes": 4113,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Common_Equipment_Live_Catalog_Parity_Gate_2026-10-24.md",
+          "originalHeadBlob": "de97e3c3c9b2ae1584f0639630b9a2b35b0cb871",
+          "sourceBytes": 4367,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/common_equipment_catalog_source_snapshot_20261024.json",
+          "originalHeadBlob": "e3be24f36b064ae4f939f065c6e007b0e5ad7f6c",
+          "sourceBytes": 9163,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/common_equipment_live_catalog_parity.sql",
+          "originalHeadBlob": "ad7acdde9fd7a6ac4d4d4109aa3b46fd0ea5efbe",
+          "sourceBytes": 8680,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/seed_common_equipment_live_catalog.mjs",
+          "originalHeadBlob": "e8de87cb380bcf4a6a010a5099f78b66724636d8",
+          "sourceBytes": 2563,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 0,
+        "absent": 5
+      }
+    },
+    {
+      "pr": 294,
+      "sourceHead": "8d37dc76e9561f63df73eba647353ff3a6cbaaa0",
+      "immediateChangedFileCount": 11,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-canonical-roll-damage-parity.yml",
+          "originalHeadBlob": "0347c60ad2fa91deb788bae60eb7f6e00e6fca86",
+          "sourceBytes": 1653,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Attunement_Effects_Integration_Current_Handoff_2026-10-26.md",
+          "originalHeadBlob": "a2b32c746cafd28e84fa68e2dd9d0421fe7acb3e",
+          "sourceBytes": 26911,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Canonical_Roll_Damage_Parity_2026-10-27.md",
+          "originalHeadBlob": "81a83edb0be7b6256b1a138a267944ecd2f7c83d",
+          "sourceBytes": 6264,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Current_Development_Status_and_Roadmap.md",
+          "originalHeadBlob": "95f3450f29dafe26971281c45558766e43f3f600",
+          "sourceBytes": 35621,
+          "mainBlob": "77078fd6b8bcd2ce3b01ed94a2ad2d5d3268269b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Current_Handoff_Prompt.md",
+          "originalHeadBlob": "e5d4036e1c6a03ae1b12e4c451e412321496aa14",
+          "sourceBytes": 59805,
+          "mainBlob": "2efca67b7aa4c57fe07b72ad7590d4c11a382f08",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Documentation_Refresh_Manifest.md",
+          "originalHeadBlob": "87311103c6a611b8680d38371bbe4a2fe259752f",
+          "sourceBytes": 27732,
+          "mainBlob": "492ef0c495e9318b14850db91e78e5e731c230ea",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "originalHeadBlob": "7fce78a7b39e75730fa1035c3644f91ac0e63da4",
+          "sourceBytes": 20378,
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/canonical_live_roll_damage_helpers_pg16.sql",
+          "originalHeadBlob": "c2d9494d60d14a317b56a019d6f27092f4faf0c4",
+          "sourceBytes": 13058,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/canonical_roll_damage_parity_candidate.sql",
+          "originalHeadBlob": "307f085658a8c72771bdbf1e6013b1309b60abce",
+          "sourceBytes": 13971,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_canonical_roll_damage_parity.mjs",
+          "originalHeadBlob": "af28ba3c70e1a2bce9dbd4504a6a3a6d559b7482",
+          "sourceBytes": 2159,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261027_03_attack_action_atomic_weapon_candidate.sql",
+          "originalHeadBlob": "8cf6d1a51bc74e9dec73fa2ccdeecf2842dec529",
+          "sourceBytes": 17768,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 4,
+        "absent": 7
+      }
+    },
+    {
+      "pr": 299,
+      "sourceHead": "c73075d92ca9361dc05bc901d2d6652a33ef857a",
+      "immediateChangedFileCount": 5,
+      "rows": [
+        {
+          "path": "docs/Attack_Action_Identity_Boundary_2026-10-27.md",
+          "originalHeadBlob": "31a8d4bfaff0d5771024b3ad01576ece25bf33aa",
+          "sourceBytes": 5681,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Current_Handoff_Prompt.md",
+          "originalHeadBlob": "504f46c299f274c0d8a88b8a259cc2ecb387d152",
+          "sourceBytes": 61608,
+          "mainBlob": "2efca67b7aa4c57fe07b72ad7590d4c11a382f08",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "originalHeadBlob": "210bfe8167629b277f803ff9544b6b5b8296f4c8",
+          "sourceBytes": 21998,
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_attack_identity_boundary.mjs",
+          "originalHeadBlob": "e56da600781fc8c048775ceca254c58338ecfef3",
+          "sourceBytes": 1842,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/20261027_03_attack_action_atomic_weapon_candidate.sql",
+          "originalHeadBlob": "a5eef4e652ad7efbcceb4e3d5b4c7359ecb983a7",
+          "sourceBytes": 18909,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 2,
+        "absent": 3
+      }
+    },
+    {
+      "pr": 304,
+      "sourceHead": "7736e0249c41e0e297cfbee35e26c03e25093375",
+      "immediateChangedFileCount": 12,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "originalHeadBlob": "8d507d969b6055c84324834f5b0e07013b8a456a",
+          "sourceBytes": 2040,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Combat_Next_Milestone_2026-10-29.md",
+          "originalHeadBlob": "7cf625a0bfbf4027d060a546e14a4be50e7dfee4",
+          "sourceBytes": 13141,
+          "mainBlob": "21fc8706fa3625ed516841bf94ff8a5d88897ea6",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql",
+          "originalHeadBlob": "2da2d583243b662f9ea6d6f01a71a94cab66925c",
+          "sourceBytes": 5069,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_pg16.sql",
+          "originalHeadBlob": "5a5579f4b781d390aed332c5619246b2279bfbe6",
+          "sourceBytes": 21454,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_race.sh",
+          "originalHeadBlob": "cbdca229d49602c0f3b1e5fd6f020a266aa477bb",
+          "sourceBytes": 1665,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_real_auth.mjs",
+          "originalHeadBlob": "84b886a900372fcdc753338cbab9378eef4a686a",
+          "sourceBytes": 6598,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_auth_harness.mjs",
+          "originalHeadBlob": "71eba2f48185337de71c6897a6e6271a7ff2e2be",
+          "sourceBytes": 1179,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_candidate.mjs",
+          "originalHeadBlob": "a6b0dd36cf46cba315b3eef3298bb69c0f62dbc9",
+          "sourceBytes": 4228,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261029_eldritch_blast_atomic_candidate.sql",
+          "originalHeadBlob": "7caefb49004b5609e15cd82c783c77323804ef2f",
+          "sourceBytes": 12527,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql",
+          "originalHeadBlob": "26f26401b7e2e0522f85b25e1293e00a252a0c7a",
+          "sourceBytes": 1417,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql",
+          "originalHeadBlob": "6530385a146685bfd58bc1d2bf4659729d600dce",
+          "sourceBytes": 3429,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastRules.mjs",
+          "originalHeadBlob": "794a0206ff18ceda3a6724d5f3e970c68a89cfe2",
+          "sourceBytes": 1009,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 1,
+        "absent": 11
+      }
+    },
+    {
+      "pr": 307,
+      "sourceHead": "b6b39b6ef64949ef035160bc0b86c6849222fe7d",
+      "immediateChangedFileCount": 4,
+      "rows": [
+        {
+          "path": "docs/Combat_Next_Milestone_2026-10-29.md",
+          "originalHeadBlob": "c7b08460b440872a1f0bc4c8f5162f935140dbb6",
+          "sourceBytes": 10418,
+          "mainBlob": "21fc8706fa3625ed516841bf94ff8a5d88897ea6",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_pg16.sql",
+          "originalHeadBlob": "5a5579f4b781d390aed332c5619246b2279bfbe6",
+          "sourceBytes": 21454,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_candidate.mjs",
+          "originalHeadBlob": "a6b0dd36cf46cba315b3eef3298bb69c0f62dbc9",
+          "sourceBytes": 4228,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261029_eldritch_blast_atomic_candidate.sql",
+          "originalHeadBlob": "7caefb49004b5609e15cd82c783c77323804ef2f",
+          "sourceBytes": 12527,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "diverged": 1,
+        "absent": 3
+      }
+    }
+  ]
+}
