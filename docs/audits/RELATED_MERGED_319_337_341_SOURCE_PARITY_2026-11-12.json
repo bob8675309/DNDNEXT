@@ -1,0 +1,523 @@
+{
+  "date": "2026-11-12",
+  "mainSha": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+  "cases": [
+    {
+      "pr": 319,
+      "head": "28f014637bd6bd7bb80cca1ccf8d8218cdeedbe5",
+      "merged": true,
+      "merge_commit_sha": "537b570083b3f18faad6d3038c131bee61af273c",
+      "base": "main",
+      "count": 6,
+      "files": [
+        {
+          "path": ".github/workflows/validate-player-forge-multichar-legacy-snapshot.yml",
+          "blob": "d2b5b8f4b678bbae983d51c3d08b502398edde0e",
+          "mainBlob": "d2b5b8f4b678bbae983d51c3d08b502398edde0e",
+          "parity": "identical"
+        },
+        {
+          "path": "docs/Player_Forge_Multi_Character_Legacy_Snapshot_2026-11-04.md",
+          "blob": "4865b033953ed98a375846648f0d972db29f40fc",
+          "mainBlob": "f51871a614bd5b3ec54641826a5eada31b4ba59e",
+          "parity": "modified_since_merge_or_distinct"
+        },
+        {
+          "path": "scripts/fixtures/player_character_multi_legacy_sheet_pg17.sql",
+          "blob": "572ca3941cb828abac83de80774475422c7112a0",
+          "mainBlob": "572ca3941cb828abac83de80774475422c7112a0",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/player_character_v2_live_source_pg17.sql",
+          "blob": "7116b0fd6d8e128c550226c50b448249558fb954",
+          "mainBlob": "7116b0fd6d8e128c550226c50b448249558fb954",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_player_forge_multi_legacy_sheet_candidate.mjs",
+          "blob": "c1e2be5818c72b413c6ea662f2dcf6e928b9bc7d",
+          "mainBlob": "c1e2be5818c72b413c6ea662f2dcf6e928b9bc7d",
+          "parity": "identical"
+        },
+        {
+          "path": "sql/candidates/20261104_player_forge_preserve_legacy_sheet.sql",
+          "blob": "54c0734b0448a1db45e35fe3621a319f28819dbe",
+          "mainBlob": "54c0734b0448a1db45e35fe3621a319f28819dbe",
+          "parity": "identical"
+        }
+      ]
+    },
+    {
+      "pr": 337,
+      "head": "93c56518dbd5cbf3f7d25428e6cb3c64caba7824",
+      "merged": true,
+      "merge_commit_sha": "dbc7006919f35c8f7b12921bf468c4f949ca77ad",
+      "base": "main",
+      "count": 7,
+      "files": [
+        {
+          "path": ".github/workflows/validate-tactical-spell-preservation.yml",
+          "blob": "02ba5185b7e2050c7f5df54a8e18872beb915b5f",
+          "mainBlob": "02ba5185b7e2050c7f5df54a8e18872beb915b5f",
+          "parity": "identical"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "blob": "dd8b7647256adb6665d2f69cf86163f3c4e572b5",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "modified_since_merge_or_distinct"
+        },
+        {
+          "path": "docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md",
+          "blob": "e2b9e4803d609b3a582126cb4b283980bb85258d",
+          "mainBlob": "e2b9e4803d609b3a582126cb4b283980bb85258d",
+          "parity": "identical"
+        },
+        {
+          "path": "docs/archive/historical_handoffs/2026-11-07__PR337_BRANCH_ONLY_HANDOFF_RECEIPTS.md",
+          "blob": "f90337caad9b167ad33219720fe85d486e0d5bdb",
+          "mainBlob": "f90337caad9b167ad33219720fe85d486e0d5bdb",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/data/tactical_spell_preservation_20261107.json",
+          "blob": "f843976924897aff8aa75f4f53245269bcc1f745",
+          "mainBlob": "f843976924897aff8aa75f4f53245269bcc1f745",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/test_tactical_spell_preservation.mjs",
+          "blob": "a844bd104cad5fa86596bbac65aa1e42685291f1",
+          "mainBlob": "a844bd104cad5fa86596bbac65aa1e42685291f1",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_tactical_spell_preservation.mjs",
+          "blob": "70166a5a7952cb2134d18e5acce854ce855daf1d",
+          "mainBlob": "70166a5a7952cb2134d18e5acce854ce855daf1d",
+          "parity": "identical"
+        }
+      ]
+    },
+    {
+      "pr": 341,
+      "head": "3a1536754359af0bdab23c0764f49e85ea7d0d2d",
+      "merged": true,
+      "merge_commit_sha": "70b96cfb86a65c93c525239c623103f8df242844",
+      "base": "main",
+      "count": 68,
+      "files": [
+        {
+          "path": ".github/workflows/validate-forge-browser-warlock-choice.yml",
+          "blob": "f2c19df4eaf5955f02735c1326723fa80695ed12",
+          "mainBlob": "f2c19df4eaf5955f02735c1326723fa80695ed12",
+          "parity": "identical"
+        },
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "blob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "parity": "identical"
+        },
+        {
+          "path": "docs/C3_1_FORGE_EXTRACTED_BLOBS_2026-11-07.json",
+          "blob": "6f3c914fbef807162d96175da76d7fd153e221e2",
+          "mainBlob": "6f3c914fbef807162d96175da76d7fd153e221e2",
+          "parity": "identical"
+        },
+        {
+          "path": "docs/C3_1_FORGE_ISOLATED_SOURCE_ACCEPTANCE_2026-11-07.md",
+          "blob": "f648c3e1e102ebebbac7fa6a3cc27a05c84d3e41",
+          "mainBlob": "a3b16a1ef1aab2c795299e8e48c1a6f4812c456d",
+          "parity": "modified_since_merge_or_distinct"
+        },
+        {
+          "path": "scripts/agents/forge_ci_diagnostics.mjs",
+          "blob": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+          "mainBlob": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/agents/forge_seeded_scenarios.mjs",
+          "blob": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+          "mainBlob": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/agents/forge_warlock_client_wire.mjs",
+          "blob": "a90013d3dbb590af4dfae76e87863453daa04d9b",
+          "mainBlob": "a90013d3dbb590af4dfae76e87863453daa04d9b",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/browser/forge_warlock_choice_dom.jsx",
+          "blob": "83a3b9653bd50aada19252358146b9904b9344fd",
+          "mainBlob": "83a3b9653bd50aada19252358146b9904b9344fd",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/browser/verify_forge_warlock_choice_dom.mjs",
+          "blob": "14e81cc8495f1d3a537e39e76f7427830dce9d88",
+          "mainBlob": "14e81cc8495f1d3a537e39e76f7427830dce9d88",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql",
+          "blob": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+          "mainBlob": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql",
+          "blob": "849ba03462e28c5d05b6bffd24a3384654af0393",
+          "mainBlob": "849ba03462e28c5d05b6bffd24a3384654af0393",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql",
+          "blob": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+          "mainBlob": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_tag_guard_original_pg17.sql",
+          "blob": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+          "mainBlob": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_creation_original_functions_pg17.sql",
+          "blob": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+          "mainBlob": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_creation_replay_candidate_pg17.sql",
+          "blob": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+          "mainBlob": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_creation_replay_local_auth_pg17.sql",
+          "blob": "3da82b85babbb37d4aee1744e22ec24716082997",
+          "mainBlob": "3da82b85babbb37d4aee1744e22ec24716082997",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql",
+          "blob": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+          "mainBlob": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql",
+          "blob": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+          "mainBlob": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_equipment_validator_original_pg17.sql",
+          "blob": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+          "mainBlob": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql",
+          "blob": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+          "mainBlob": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
+          "blob": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+          "mainBlob": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_feat_materializer_original_pg17.sql",
+          "blob": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+          "mainBlob": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql",
+          "blob": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+          "mainBlob": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql",
+          "blob": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+          "mainBlob": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql",
+          "blob": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+          "mainBlob": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_inventory_access_original_pg17.sql",
+          "blob": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+          "mainBlob": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql",
+          "blob": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+          "mainBlob": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_market_cash_original_functions_pg17.sql",
+          "blob": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+          "mainBlob": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql",
+          "blob": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+          "mainBlob": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_materializer_original_functions_pg17.sql",
+          "blob": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+          "mainBlob": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql",
+          "blob": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+          "mainBlob": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_nested_choices_local_auth_pg17.sql",
+          "blob": "44e0fdf6257c5a3a982540fece96296af0046f9a",
+          "mainBlob": "44e0fdf6257c5a3a982540fece96296af0046f9a",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_nested_choices_original_pg17.sql",
+          "blob": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a",
+          "mainBlob": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql",
+          "blob": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+          "mainBlob": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql",
+          "blob": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+          "mainBlob": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql",
+          "blob": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+          "mainBlob": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql",
+          "blob": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+          "mainBlob": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_progression_authority_original_pg17.sql",
+          "blob": "3a0b6caeb6712f67af7895433df15f1439b19581",
+          "mainBlob": "3a0b6caeb6712f67af7895433df15f1439b19581",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_nested_choices_v1.json",
+          "blob": "1b913ceb8005880acfef31437227136e949cb1bd",
+          "mainBlob": "1b913ceb8005880acfef31437227136e949cb1bd",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_scenarios_v1.json",
+          "blob": "550f00899330fd7bec8d166047a4f70d1612cbe8",
+          "mainBlob": "550f00899330fd7bec8d166047a4f70d1612cbe8",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_starting_spells_v1.json",
+          "blob": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1",
+          "mainBlob": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+          "blob": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+          "mainBlob": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_seeded_wizard_spells_v1.json",
+          "blob": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08",
+          "mainBlob": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql",
+          "blob": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+          "mainBlob": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql",
+          "blob": "b02285f75d446f5874341cf3bc694ac256e1f732",
+          "mainBlob": "b02285f75d446f5874341cf3bc694ac256e1f732",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_species_light_original_helpers_pg17.sql",
+          "blob": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+          "mainBlob": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql",
+          "blob": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+          "mainBlob": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
+          "blob": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897",
+          "mainBlob": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_starting_spells_original_pg17.sql",
+          "blob": "d56ed5ea44289bbb20720c1323f9b22f362b31c5",
+          "mainBlob": "d56ed5ea44289bbb20720c1323f9b22f362b31c5",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql",
+          "blob": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+          "mainBlob": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_subclass_choice_original_pg17.sql",
+          "blob": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+          "mainBlob": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql",
+          "blob": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+          "mainBlob": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql",
+          "blob": "94fa076d8e3e075aab551a5610bcff79393f3460",
+          "mainBlob": "94fa076d8e3e075aab551a5610bcff79393f3460",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql",
+          "blob": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+          "mainBlob": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql",
+          "blob": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+          "mainBlob": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql",
+          "blob": "f9bf748582986a452110f9b5c326cead61e76374",
+          "mainBlob": "f9bf748582986a452110f9b5c326cead61e76374",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql",
+          "blob": "bbf8cece98f46b1008d8e2ff79650647f89a5e20",
+          "mainBlob": "bbf8cece98f46b1008d8e2ff79650647f89a5e20",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "blob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_forge_immutable_creation_replay.mjs",
+          "blob": "00d85baf34bac0813036724dfe57d29c32b712ad",
+          "mainBlob": "00d85baf34bac0813036724dfe57d29c32b712ad",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_forge_inventory_ui_release_contract.mjs",
+          "blob": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+          "mainBlob": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_nested_choices.mjs",
+          "blob": "0143ddff591831260723b435ac15b7525334f165",
+          "mainBlob": "0143ddff591831260723b435ac15b7525334f165",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_scenarios.mjs",
+          "blob": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7",
+          "mainBlob": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_starting_spells.mjs",
+          "blob": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4",
+          "mainBlob": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_warlock_child_completion.mjs",
+          "blob": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+          "mainBlob": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+          "parity": "identical"
+        },
+        {
+          "path": "scripts/validate_forge_seeded_wizard_spells.mjs",
+          "blob": "c1f18766081d10d391682cb77bfd7ebe635f1d14",
+          "mainBlob": "c1f18766081d10d391682cb77bfd7ebe635f1d14",
+          "parity": "identical"
+        },
+        {
+          "path": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+          "blob": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+          "mainBlob": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+          "parity": "identical"
+        },
+        {
+          "path": "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+          "blob": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+          "mainBlob": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+          "parity": "identical"
+        },
+        {
+          "path": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+          "blob": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+          "mainBlob": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+          "parity": "identical"
+        }
+      ]
+    }
+  ],
+  "note": "Additional relevant already-merged source-only PRs #319 alternate character legacy snapshot, #337 deployed 19-spell drift gate, #341 68-file Forge source-fixture destack. This is literal source-path provenance, not proof that candidate SQL was installed."
+}
