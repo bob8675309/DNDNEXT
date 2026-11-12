@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-12T03:05:29Z | research/i2e-hp-admin-rage-action-option-a-freeze-20261111 (0f0fe9b47222588885dad09309b2917fb7a83dfe) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-12T03:06:04Z | research/i2e-hp-admin-rage-action-option-a-freeze-20261111 (2fe64698f61b7e133a9dc23831030a01958467e7) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

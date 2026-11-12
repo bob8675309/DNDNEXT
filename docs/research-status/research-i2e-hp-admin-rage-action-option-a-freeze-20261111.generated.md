@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `0f0fe9b47222588885dad09309b2917fb7a83dfe` |
+| Exact source commit represented by this archive snapshot | `2fe64698f61b7e133a9dc23831030a01958467e7` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-E): signed original HP/Admin/Rage cross-editor legacy RED and same/other-character Option A no-write GREEN |
-| Files changed relative to main | 186 (140 non-docs; 46 docs) |
+| Last source commit title | ci(I2-E): run unchanged historical Forge/I2C/I2D tests before three signed HP/Admin/Rage original RED and Option A scratch GREEN |
+| Files changed relative to main | 187 (141 non-docs; 46 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2e_signed_hp_admin_rage_option_a_local_auth.mjs`
+- `.github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -44,6 +44,7 @@
 - `.github/workflows/validate-i2b-option-a-first-signed-slice.yml`
 - `.github/workflows/validate-i2c-creation-signup-option-a-local-auth.yml`
 - `.github/workflows/validate-i2d-private-v3-story-option-a-local-auth.yml`
+- `.github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md`
-- … 136 more
+- … 137 more
 
 ## Trust and update procedure
 
