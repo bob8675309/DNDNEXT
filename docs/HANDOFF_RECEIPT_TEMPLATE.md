@@ -1,5 +1,7 @@
 # DNDNext — End-of-chat handoff receipt (copy once per session)
 
+> **Current November 9 integration pointer — I1-G:** [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) preserve ALL original outstanding PR value, #325 last/paid OFF. [#354 signed original Battle Master materializer+validator](https://github.com/bob8675309/DNDNEXT/pull/354) PASS 10/10 I1-F and all I1C–E source-subset regressions ([CI 42762833077](https://github.com/bob8675309/DNDNEXT/actions/runs/42762833077)). Next I1-G paired original XPHB Warlock legacy invocation guard and normalized validator with canonical option/child/grant sources, signed COMMIT/rollback/nonce. Keep full 31-trigger, production-shape RLS/catalog/browser/recovery gates OPEN; no main merge or hosted SQL.
+
 > **MANDATORY:** At the end of *every substantial development session*, update the active branch's `docs/ACTIVE_WORK.md` and **append** a dated factual receipt to `docs/HANDOFF_LOG.md` using this template. Include both *what* changed and *why*, exact source/check evidence, limitations, and the single next task. Generated health snapshots are not a substitute; if write access or CI fails, explicitly declare the handoff incomplete instead of inventing a receipt. No merge, deployment, database write or paid API activation is implied by this requirement.
 
 ## Identity and authority

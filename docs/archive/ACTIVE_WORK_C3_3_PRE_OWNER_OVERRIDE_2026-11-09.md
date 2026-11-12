@@ -1,0 +1,17 @@
+# Archived former active C3.3 work order — superseded November 9, 2026
+
+This is a verbatim copy of main's prior ACTIVE_WORK before the owner's integration-first override. It remains evidence only; current task is in [ACTIVE_WORK](../ACTIVE_WORK.md).
+
+# DNDNext — Active Work Contract (one executable task)
+
+**Active phase / subphase:** `P1 / P1.3` — C3.3 combined NPC privacy + centered Profile source candidate, **exact-head CI verified but production release blocked**. Start from [NEXT_CHAT_START_HERE](NEXT_CHAT_START_HERE.md), [C3.3 evidence/release gates](C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md), [C3 PR map](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md), [phase order](PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md), and the latest [HANDOFF_LOG](HANDOFF_LOG.md).
+
+**Current result 2026-11-07:** [draft #345](https://github.com/bob8675309/DNDNEXT/pull/345) on clean main `997902aafe2facd8a492b005f8da4acb8342aeb2`, exact head `8ddbdbc6e3164be3857b1e738684b336a848a2a2`. Revised #322 stage1–3 guarded/unapplied SQL and #323 centered secure Profile migrated together into **35-file** independent draft. It includes a new unified player-character Profile fallback compatibility patch for stage2 role-wide private-column revoke and a source validator. **12/12 exact-head workflows PASS**, including genuine local GoTrue V00–V24 and independent Forge original source PG17/GoTrue. Creation V19–V23 use a **reduced** wrapper. No production SQL, RLS, grants, existing user data, runtime deployment, world map or paid AI modifications.
+
+**Next single action:** audit the full original character/sheet SELECT and SECURITY DEFINER consumer inventory under stage1 full-sheet policy and stage2 five-column authenticated SELECT revocation, across Admin NPC, unified Player Profile, original Forge creation and post-create reads, map/town/inventory/merchant and printable-sheet consumers. Record exact field selectors, genuine GM/creator/co-editor/inventory-only/outsider/anonymous expected behavior, original-source coverage, patch missing paths only on the draft and retest. Then full Forge v2/v3 with immutable creator trigger + signed browser, coordinated migration and rollback with separate explicit owner authorization. **Do NOT merge #345 into main yet.**
+
+**Live DB read-only observation:** PostgreSQL17.4 current sheet SELECT exposure and narrative columns still exist, while direct legacy `characters.secret` SELECT/UPDATE is already denied. Privacy stage APIs and new tables absent. Old function MD5s match fixture preflight. No live data/DDL actions.
+
+**Other standing blockers:** inventory old NOT VALID owner CHECK + four RLS policies must be changed together if separately approved; P1 global request replay/locks not deployed; only 17/31 Forge creation trigger definitions staged in research; future composable spell interpreter not deployed. Original 19 XPHB adapters/48 validators, and merged research-only #341/#319/#343, are preserved. Do not alter map movement/sprites/roster, approved Profile-first merchant behavior or paid agents. Older #320–#323 drafts stay open until all unique evidence is preserved and owner approves retirement.
+
+**Handoff:** append exact results to [HANDOFF_LOG](HANDOFF_LOG.md) and follow [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) S0–S7.

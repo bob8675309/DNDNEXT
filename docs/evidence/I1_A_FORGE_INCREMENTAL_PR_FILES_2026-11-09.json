@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "purpose": "I1-A exact original Forge PR #324/#328-335 incremental changed paths for source blob reconciliation; NOT deployed",
+  "sourcePRFiles": [
+    {
+      "pr": 324,
+      "head": "f1a2c564046ab93a0bfa0732e3acc2179da9c064",
+      "paths": [
+        ".github/workflows/forge-trigger-acceptance-audit.yml",
+        ".github/workflows/research-docs-maintenance.yml",
+        ".github/workflows/validate-forge-immutable-creation-replay.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Aasimar_Light_Bearer_Positive_Source_2026-11-05.md",
+        "docs/Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md",
+        "docs/Forge_Characters_Portrait_Source_Acceptance_2026-11-05.md",
+        "docs/Forge_Characters_Tag_Guard_Original_Acceptance_2026-11-05.md",
+        "docs/Forge_Feat_Grant_Provenance_Gap_2026-11-05.md",
+        "docs/Forge_GI_JWT_Source_Concurrency_2026-11-05.md",
+        "docs/Forge_High_Risk_Progression_Trigger_Parity_2026-11-05.md",
+        "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+        "docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md",
+        "docs/Forge_Original_Merchant_Inventory_Concurrent_Writes_2026-11-05.md",
+        "docs/Forge_Subclass_Original_Acceptance_2026-11-06.md",
+        "docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md",
+        "docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md",
+        "docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md",
+        "docs/Forge_Zero_Cost_Acceptance_Automation_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md",
+        "docs/Player_Forge_Immutable_Creation_Intent_Candidate_2026-11-05.md",
+        "docs/README.md",
+        "docs/Research_Docs_Maintenance_2026-11-06.md",
+        "docs/START_HERE_ACTIVE_HANDOFF.md",
+        "docs/SYSTEM_REGISTRY.json",
+        "scripts/agents/forge_automation_selftest.mjs",
+        "scripts/agents/forge_ci_diagnostics.mjs",
+        "scripts/agents/forge_trigger_acceptance_ledger.mjs",
+        "scripts/agents/forge_trigger_acceptance_receipts.json",
+        "scripts/agents/forge_trigger_audit.mjs",
+        "scripts/agents/project_health.mjs",
+        "scripts/agents/research_docs_maintainer.mjs",
+        "scripts/agents/validate_project_health.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs",
+        "scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql",
+        "scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql",
+        "scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql",
+        "scripts/fixtures/forge_characters_tag_guard_original_pg17.sql",
+        "scripts/fixtures/forge_creation_original_functions_pg17.sql",
+        "scripts/fixtures/forge_creation_replay_candidate_pg17.sql",
+        "scripts/fixtures/forge_creation_replay_local_auth_pg17.sql",
+        "scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql",
+        "scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql",
+        "scripts/fixtures/forge_equipment_validator_original_pg17.sql",
+        "scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql",
+        "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
+        "scripts/fixtures/forge_feat_materializer_original_pg17.sql",
+        "scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql",
+        "scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql",
+        "scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql",
+        "scripts/fixtures/forge_inventory_access_original_pg17.sql",
+        "scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql",
+        "scripts/fixtures/forge_market_cash_original_functions_pg17.sql",
+        "scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql",
+        "scripts/fixtures/forge_materializer_original_functions_pg17.sql",
+        "scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql",
+        "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql",
+        "scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql",
+        "scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql",
+        "scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql",
+        "scripts/fixtures/forge_progression_authority_original_pg17.sql",
+        "scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql",
+        "scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql",
+        "scripts/fixtures/forge_species_light_original_helpers_pg17.sql",
+        "scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql",
+        "scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql",
+        "scripts/fixtures/forge_subclass_choice_original_pg17.sql",
+        "scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql",
+        "scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql",
+        "scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_immutable_creation_replay.mjs",
+        "scripts/validate_forge_inventory_ui_release_contract.mjs",
+        "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+        "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+        "sql/candidates/20261105_player_creation_immutable_intent_v1.sql"
+      ]
+    },
+    {
+      "pr": 328,
+      "head": "16ebd9ba1b952d8f21505c91782d0d18aa0c8263",
+      "paths": [
+        ".github/workflows/validate-forge-immutable-creation-replay.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Seeded_Scenario_Runner_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/agents/forge_seeded_scenarios.mjs",
+        "scripts/fixtures/forge_seeded_scenarios_v1.json",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_seeded_scenarios.mjs"
+      ]
+    },
+    {
+      "pr": 329,
+      "head": "dbf701d87db738ccaefe4f179f006319b132a3e9",
+      "paths": [
+        ".github/workflows/validate-forge-immutable-creation-replay.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+        "docs/Forge_Seeded_Starting_Spells_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/fixtures/forge_seeded_starting_spells_v1.json",
+        "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
+        "scripts/fixtures/forge_starting_spells_original_pg17.sql",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_seeded_starting_spells.mjs"
+      ]
+    },
+    {
+      "pr": 330,
+      "head": "8bdc77a8eecacaf15c9e94c2828d64f03dbee34a",
+      "paths": [
+        ".github/workflows/validate-forge-immutable-creation-replay.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+        "docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/agents/forge_seeded_scenarios.mjs",
+        "scripts/fixtures/forge_seeded_wizard_spells_v1.json",
+        "scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_seeded_wizard_spells.mjs"
+      ]
+    },
+    {
+      "pr": 331,
+      "head": "7f092ab329653e02dd5436dc7caf4a547d91ce73",
+      "paths": [
+        ".github/workflows/validate-forge-immutable-creation-replay.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Nested_Choice_Dependencies_2026-11-06.md",
+        "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/fixtures/forge_nested_choices_local_auth_pg17.sql",
+        "scripts/fixtures/forge_nested_choices_original_pg17.sql",
+        "scripts/fixtures/forge_seeded_nested_choices_v1.json",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_seeded_nested_choices.mjs"
+      ]
+    },
+    {
+      "pr": 332,
+      "head": "8f7647535b8e7b900d5884b9256f3465d0933a5e",
+      "paths": [
+        ".github/workflows/validate-forge-immutable-creation-replay.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+        "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+        "scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql",
+        "scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_seeded_warlock_child_completion.mjs"
+      ]
+    },
+    {
+      "pr": 333,
+      "head": "a34e1f23579b2a669004deed022fa6b41287bd97",
+      "paths": [
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_seeded_warlock_child_completion.mjs"
+      ]
+    },
+    {
+      "pr": 334,
+      "head": "0527f945269b6df32ad1f5c32fbe0434082d52f8",
+      "paths": [
+        ".github/workflows/validate-forge-immutable-creation-replay.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/agents/forge_warlock_client_wire.mjs",
+        "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+        "scripts/validate_forge_seeded_warlock_child_completion.mjs"
+      ]
+    },
+    {
+      "pr": 335,
+      "head": "19d7275d24d26f9641c9e6d98ea24cf9431f4d81",
+      "paths": [
+        ".github/workflows/validate-forge-browser-warlock-choice.yml",
+        "docs/ACTIVE_WORK.md",
+        "docs/Forge_Warlock_Child_Completion_2026-11-06.md",
+        "docs/HANDOFF_LOG.md",
+        "scripts/browser/forge_warlock_choice_dom.jsx",
+        "scripts/browser/verify_forge_warlock_choice_dom.mjs",
+        "scripts/test_forge_immutable_creation_replay_local_auth.mjs"
+      ]
+    }
+  ]
+}
