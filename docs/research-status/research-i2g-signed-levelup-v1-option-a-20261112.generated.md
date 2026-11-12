@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `1a4fc7086c101052a1b30e8f55502890ff8cca2d` |
+| Exact source commit represented by this archive snapshot | `9d58d496b493c74c2992df64fb1c07ca547e571e` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2g): add guarded reversible no-mirror scratch candidate for original level-up v1 |
-| Files changed relative to main | 199 (149 non-docs; 50 docs) |
+| Last source commit title | test(i2g): signed original level-up v1 RED then Option A scratch GREEN |
+| Files changed relative to main | 200 (150 non-docs; 50 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2g_option_a_levelup_v1_scratch_pg17.sql`
+- `scripts/test_i2g_signed_levelup_v1_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- … 149 more
+- … 150 more
 
 ## Trust and update procedure
 
