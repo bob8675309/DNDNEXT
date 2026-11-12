@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2h-tough-levelup-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `d8667ce2ce1d80b92b414ce81a6991ec9532d74d` |
+| Exact source commit represented by this archive snapshot | `8dd3ad309044f8e12ba91cd0692804cff93f0e49` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2h): signed original v5 Tough RED then isolated single-writer Option A GREEN |
-| Files changed relative to main | 208 (156 non-docs; 52 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i2h): record pending Tough original-source writer and preserve verified 10/34 |
+| Files changed relative to main | 210 (157 non-docs; 53 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i2h_tough_option_a_signed_v5_local_auth.mjs`
+- `docs/I2_H_TOUGH_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
@@ -47,6 +47,7 @@
 - `.github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml`
 - `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
 - `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
+- `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
-- … 158 more
+- … 160 more
 
 ## Trust and update procedure
 

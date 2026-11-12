@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-12T21:27:07Z | research/i2h-tough-levelup-option-a-20261112 (d8667ce2ce1d80b92b414ce81a6991ec9532d74d) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-12T21:27:45Z | research/i2h-tough-levelup-option-a-20261112 (8dd3ad309044f8e12ba91cd0692804cff93f0e49) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
