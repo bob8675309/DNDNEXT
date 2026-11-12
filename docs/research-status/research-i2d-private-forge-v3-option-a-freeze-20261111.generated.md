@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `cb4fe302de847c225482235e1e3cbb3824ce56df` |
+| Exact source commit represented by this archive snapshot | `0e5920ef0bff44bd8149e0f709a00281e3086aef` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-D): explicitly assert no automatic legacy writes in source-scope static safety gate |
+| Last source commit title | fix(I2-D): source-pin signed original private/v3/Story hashes and correct psql backslash-echo delimiter |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I2_D_PRIVATE_V3_STORY_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
+- `scripts/fixtures/i2d_option_a_private_forge_source_scratch_pg17.sql`
 
 ## Research-branch change inventory versus main
 
