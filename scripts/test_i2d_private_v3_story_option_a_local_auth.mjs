@@ -89,6 +89,11 @@ const intentSig="private.create_player_character_v3_with_story_intent_i1c(jsonb,
 const outerBefore=md5(outerSig),privV3Before=md5(privV3Sig),
  storyBefore=md5(storySig),intentBefore=md5(intentSig),
  privateBefore=md5(privateSig);
+assert.equal(privateBefore,"1d06d00eb4b4aa4c125796d761f5e259","exact original private #324 signed source");
+assert.equal(outerBefore,"ab48d46376075a79b3f5a5de21fdada6","exact public v3 wrapper");
+assert.equal(privV3Before,"798090559c434fbb21c4b27cab21865b","exact private v3 source");
+assert.equal(storyBefore,"6e39477f971c9d40c6726c9f4dbc456e","exact public private-Story RPC");
+assert.equal(intentBefore,"5fac54802474043d8233cc17a75f4c0f","exact private Story/nonce intent wrapper");
 const originalSource=sql("SELECT lower(pg_get_functiondef("+q(privateSig)+"::regprocedure))");
 assert.ok(originalSource.includes("on conflict (user_id) do update set sheet = excluded.sheet, updated_at = now() where public.players.sheet = '{}'::jsonb;"),
  "The exact held #324 original private copied v2 must still be installed");
