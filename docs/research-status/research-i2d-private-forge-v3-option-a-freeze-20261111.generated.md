@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `101a40a7817b537b2a2a9dacc96ae3e352beb070` |
+| Exact source commit represented by this archive snapshot | `95e8e6c1823521c2f8a08029ffbc9de57b313495` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-D): require exact signed original private copied v2 and v3/Story/intent source MD5s before RED |
+| Last source commit title | docs(I2-D): mark 11/11 signed private v3/Story RED-GREEN source coverage with original/candidate MD5 receipts |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_i2d_private_v3_story_option_a_local_auth.mjs`
+- `docs/I2_D_OPTION_A_CREATION_SOURCE_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
