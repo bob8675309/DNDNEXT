@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `6004e9b5f96d8292434b5ed76b383e8a6f41f0a6` |
+| Exact source commit represented by this archive snapshot | `53ac1ffd8fa3afa2947e9a9a93f044e35cafe973` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2i): promote only source-exact signed Admin writer to 12/34 after 11 original RED/scratch GREEN cases PASS |
+| Last source commit title | docs(i2i): add original signed Admin 11/11 RED/GREEN and SQL-role-only exact evidence receipt |
 | Files changed relative to main | 219 (163 non-docs; 56 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_I_ADMIN_FEATURE_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
+- `docs/I2_I_SIGNED_ADMIN_FEATURE_OPTION_A_RESEARCH_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
