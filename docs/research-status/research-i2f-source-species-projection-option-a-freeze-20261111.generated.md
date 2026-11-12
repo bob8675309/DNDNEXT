@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `82ea3499a43760b3bdfee300900f32be32c0c4f8` |
+| Exact source commit represented by this archive snapshot | `da3c4ec7902faaf326792f566f567647ad7960d4` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(I2-F): 9/34 original account writers with two privileged-local source/species helper tests, 25 untested |
-| Files changed relative to main | 195 (146 non-docs; 49 docs) |
+| Last source commit title | docs(I2-F): source-locked original private projection RED and no-mirror scratch acceptance with explicit privileged-helper limitation |
+| Files changed relative to main | 196 (146 non-docs; 50 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_F_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
+- `docs/I2_F_SOURCE_SPECIES_PROJECTION_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- … 145 more
+- … 146 more
 
 ## Trust and update procedure
 
