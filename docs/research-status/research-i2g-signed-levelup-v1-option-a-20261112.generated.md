@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `6abb8d9957834a2fd8198b274e24a7d5bb0aea64` |
+| Exact source commit represented by this archive snapshot | `6db27e720d0c2788774cc37d2f85d14244e61b95` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Merge I2-H signed original Tough research into I2-G research branch |
-| Files changed relative to main | 212 (158 non-docs; 54 docs) |
+| Last source commit title | Merge original signed Admin feat/boon Option A RED/GREEN research to I2-G parent |
+| Files changed relative to main | 219 (163 non-docs; 56 docs) |
 | Last source commit | 0 files (0 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -48,6 +48,7 @@ The latest commit did not change non-docs source files. Do not infer a technical
 - `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
 - `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
 - `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
+- `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +71,7 @@ The latest commit did not change non-docs source files. Do not infer a technical
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
-- `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- … 162 more
+- … 169 more
 
 ## Trust and update procedure
 
