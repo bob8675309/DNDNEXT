@@ -1,10 +1,10 @@
 {
-  "schema_version": "i2g-original-levelup-v1-pending-source-writer-coverage-v1",
+  "schema_version": "i2g-original-levelup-v1-verified-source-writer-coverage-v1",
   "owner_decision": "Option A — freeze all historical players.sheet contents including same-character/empty sheets, canonical character_sheets per-character authority",
   "source_baseline": "Unmodified #324 private source copied from original v2, in sql/candidates/20261105_player_creation_immutable_intent_v1.sql; full signed I1-B..O and I2-C first",
   "original_update_writer_total": 34,
-  "original_update_writer_scratch_tested": 9,
-  "original_update_writer_untested": 25,
+  "original_update_writer_scratch_tested": 10,
+  "original_update_writer_untested": 24,
   "original_update_writers": [
     {
       "signature": "private.apply_additional_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
@@ -171,8 +171,8 @@
     {
       "signature": "public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)",
       "source_md5": "1500703592c3cb8e1738126eac508e6a",
-      "status": "not_option_a_tested",
-      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+      "status": "i2g_genuine_signed_original_RED_then_scratch_GREEN_verified",
+      "note": "Original exact public v1 source signed via local GoTrue/PostgREST after reduced featureless P1.3 Fighter 1->2 SQL-seeded review; expected RED overwrote both unrelated editor account sheets, source reversible single UPDATE no-op after RED preserved canonical HP/level-up/event/session and same/unrelated legacy bytes/timestamps. I2G-01..09 ALL PASS, Actions #43296779345 job #131458834795. NOT modern v3 Forge/Story or complete 31-trigger release."
     },
     {
       "signature": "public.complete_character_level_up_v2(p_character_id uuid, p_selections jsonb)",
@@ -355,14 +355,25 @@
   },
   "pending_source_signature": "public.complete_character_level_up_v1(p_character_id uuid, p_selections jsonb)",
   "pending_source_md5": "1500703592c3cb8e1738126eac508e6a",
-  "i2g_pending_test_count": 1,
+  "i2g_pending_test_count": 0,
   "i2g_scope": "Exact original signed public.complete_character_level_up_v1 via local signed GoTrue/PostgREST with reduced featureless Fighter 1->2 helper; inherited I2F signed suite runs separately first; not original full 31-trigger modern Forge v3 or class-source/GM parity.",
-  "i2g_status": "PENDING exact-head Actions; do not count as writer coverage until source RED and scratch GREEN are verified",
+  "i2g_status": "VERIFIED exact-head executable source/test CI 43296779345, I2G-01..09 all pass; final documentation-inclusive CI must be separately rechecked",
   "i2g_release_boundaries": [
     "No production migrations/grants/writes",
     "No merges or deployments",
     "Inherited original Forge/Story suite is independently executed on disposable local PG17",
     "Modern original v5 source retained; v1 standalone uses reduced original P1.3 Fighter helper",
     "25 original UPDATE writers remain untested until I2G accepted"
-  ]
+  ],
+  "i2g_result": {
+    "run_id": 43296779345,
+    "job_id": 131458834795,
+    "head_at_test": "e57713e12ffea7835998ad78ea51df13a24cc365",
+    "conclusion": "success",
+    "cases": "I2G-01..09",
+    "original_red": "I2G-03 signed public v1 account overwrites two unrelated editors",
+    "scratch_green": "I2G-06 real signed coeditor canonical success, all historical account sheet/timestamp snapshots frozen",
+    "inherited_i2f_job": "SUCCESS",
+    "limitation": "Only reduced featureless SQL-seeded Fighter level1->2 under authentic signed original public v1; no modern Forge/browser/full triggers"
+  }
 }
