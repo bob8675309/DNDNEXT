@@ -110,7 +110,7 @@ for(const x of ["headOnlyFileCount","mainOnlyNotInHeadCount","inheritedNonImmedi
  assert.ok(script.includes(x)||proto.includes(x),"Original future PR source/intent guard missing "+x);
 }
 assert.ok(proto.includes("45 open")&&proto.includes("20 original")&&proto.includes("25 additional"));
-assert.ok(report.includes("PR #373")&&report.includes("11/34")&&report.includes("12/34"));
+assert.ok(report.includes("F1 — #373")&&report.includes("11/34")&&report.includes("12/34"),"Recent review must include I2-I historical failure and verified 12/34 source limit");
 assert.ok(report.includes("17")&&report.includes("31")&&report.includes("negative"));
 const stale=fs.readFileSync("docs/ACTIVE_WORK.md","utf8").slice(0,2600);
 assert.ok(stale.includes("#375")&&stale.includes("45 open")&&stale.includes("2026-11-12"),"Current branch must supersede stale P1 handoff");
