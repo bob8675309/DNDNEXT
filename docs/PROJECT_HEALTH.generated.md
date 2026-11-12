@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-12T22:18:23Z | research/c4-spell-p1-source-only-extraction-main-20261112 (621de3cbd09c71f82d3ac4f02a858035cac9e207) | 621de3cbd09c71f82d3ac4f02a858035cac9e207 |
+| 2026-11-12T22:18:46Z | research/c4-spell-p1-source-only-extraction-main-20261112 (51fb085d348b654d8cb7755f3f29d2f81d8c30fa) | 621de3cbd09c71f82d3ac4f02a858035cac9e207 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

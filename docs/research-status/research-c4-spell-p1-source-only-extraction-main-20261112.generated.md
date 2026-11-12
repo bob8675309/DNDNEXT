@@ -5,22 +5,25 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c4-spell-p1-source-only-extraction-main-20261112` |
-| Exact source commit represented by this archive snapshot | `621de3cbd09c71f82d3ac4f02a858035cac9e207` |
+| Exact source commit represented by this archive snapshot | `51fb085d348b654d8cb7755f3f29d2f81d8c30fa` |
 | Compared with | `621de3cbd09c71f82d3ac4f02a858035cac9e207` (main comparison base) |
-| Last source commit title | Merge owner-approved original PR preservation dossiers and scoped integration plan |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 0 files (0 non-docs; 0 authored docs) |
+| Last source commit title | preserve(c4): copy original PR #347 source-only schema/preflight test blob scripts/validate_spell_recipe_preflight_p1.mjs |
+| Files changed relative to main | 3 (3 non-docs; 0 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest commit did not change non-docs source files. Do not infer a technical behavior change.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- No changed paths found
+- `scripts/validate_spell_recipe_preflight_p1.mjs`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-spell-recipe-p1-extraction.yml`
+- `scripts/fixtures/spell_recipe_p1_examples.mjs`
+- `scripts/validate_spell_recipe_preflight_p1.mjs`
 
 ## Trust and update procedure
 
