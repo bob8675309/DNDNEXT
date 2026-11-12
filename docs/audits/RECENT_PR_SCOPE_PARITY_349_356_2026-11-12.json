@@ -1,0 +1,468 @@
+{
+  "auditDate": "2026-11-12",
+  "mainSHA": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+  "batch": "349-356",
+  "method": "GitHub PR GET metadata, full paginated-under-100 PR Files endpoint with immutable source Git blob SHA, and non-truncated main Git tree",
+  "warning": "A matching blob is not runtime acceptance; absent blob is not proof feature is lost; base branch and inherited code matter.",
+  "prs": [
+    {
+      "pr": 349,
+      "title": "I1 research: preserve original Forge 31-trigger static evidence ledger and no-cost CI",
+      "head": "c9a60f9d1a10d1e2459df18f0afe217f35d84a5a",
+      "baseBranch": "main",
+      "baseSHA": "9437b9d0a2bedc3ba78110c612543f6033674a72",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 9,
+      "records": [
+        {
+          "path": ".github/workflows/forge-trigger-acceptance-audit.yml",
+          "change": "added",
+          "sourceBlob": "e752a5cc2626346726db3a86c56ffda0c9ae8ddd",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "2baace6aba38b09b9712844492f70b8c74f79cc6",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+          "change": "added",
+          "sourceBlob": "5d3a32c5b6661e47b36794bfe7723296c4b0631b",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "fbfb5ada81764284d638f2a57764cffcc6655797",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_A_FORGE_TRIGGER_LEDGER_SOURCE_EXTRACTION.md",
+          "change": "added",
+          "sourceBlob": "a510c47de4162956eddbaf34c3644502c88d8219",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_automation_selftest.mjs",
+          "change": "added",
+          "sourceBlob": "6d4dc315449958a3862130de739ed691773b00cf",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_trigger_acceptance_ledger.mjs",
+          "change": "added",
+          "sourceBlob": "3a12039f69d25eb968b37eda39c09839a13cb8ae",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_trigger_acceptance_receipts.json",
+          "change": "added",
+          "sourceBlob": "ddcd17bc15aaf4f75e8c0aa07c7faed69f86fe5e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_trigger_audit.mjs",
+          "change": "added",
+          "sourceBlob": "d5fbf344c5e92f8dc3e620806baded0fbb31f7ae",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 7
+      }
+    },
+    {
+      "pr": 350,
+      "title": "I1-B research: source-locked GoTrue/PG17 Forge nonce + private Story negative fixture",
+      "head": "503e95a1cc1ee7151b5f16f8de60a45645bb818c",
+      "baseBranch": "feature/c3-3-npc-secure-profile-candidate-20261107",
+      "baseSHA": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 3,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1b-forge-story-nonce-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "0a22318ce681e96c4835986b14eb3ba8082907ca",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "8edda44cd2ee5a2a0b017080e46641b8d14ebe37",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1b_forge_private_story_nonce_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "08f44d19f132a92659de01e9c62a0d141bb93349",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 0,
+        "absent": 3
+      }
+    },
+    {
+      "pr": 351,
+      "title": "I1-C research: Story-inclusive immutable Forge nonce with real signed PG17 concurrency regression",
+      "head": "5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7",
+      "baseBranch": "research/i1b-forge-story-nonce-joint-auth-20261109",
+      "baseSHA": "503e95a1cc1ee7151b5f16f8de60a45645bb818c",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 4,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1c-forge-story-nonce-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "d2287a9bc689018bb54c1f484b65d68b1ebbbe6e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "627ef4000ef4c339d46df2a80f237e017bdc6ed4",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1c_forge_private_story_nonce_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "90fb3058bc1c93ef72a331bad0747920c3c1202e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261109_player_story_complete_intent_i1c_research.sql",
+          "change": "added",
+          "sourceBlob": "91f5fb918bf205f2d4462e2ff0089f656601328e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 0,
+        "absent": 4
+      }
+    },
+    {
+      "pr": 352,
+      "title": "I1-D research: original Forge trigger gap census plus signed Story nonce × Stage4 inventory integration",
+      "head": "79c9607d12c6bc186f8208d9a3e715242060d806",
+      "baseBranch": "research/i1c-forge-story-complete-intent-20261109",
+      "baseSHA": "5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 6,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "e10b1d1cb36fe0ead005e762d045a483fc36ad1b",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+          "change": "added",
+          "sourceBlob": "5d3a32c5b6661e47b36794bfe7723296c4b0631b",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "31c453c18a6f188ab6994239305780ff8f949b76",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql",
+          "change": "added",
+          "sourceBlob": "fff1f4e507ec7446ff760d3cde3eba80eace0153",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1d_forge_story_inventory_joint_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "8532550f995515743aa66315d750a4c7002d4dd7",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_i1d_trigger_gap_manifest.mjs",
+          "change": "added",
+          "sourceBlob": "05ec44bb34f8729f5df41f623e00f26cdc9160fc",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 0,
+        "absent": 6
+      }
+    },
+    {
+      "pr": 353,
+      "title": "I1-E research: source-original Wizard Savant + Signature finalizer with signed PG17 Stage4 tests",
+      "head": "2b10b86f1237de484974d686acbd16d47c29a1d6",
+      "baseBranch": "research/i1d-forge-trigger-inventory-joint-20261109",
+      "baseSHA": "79c9607d12c6bc186f8208d9a3e715242060d806",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 5,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "aa4e7baf89283c0e2544ff41d26d4cdeeb8a2ef6",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "200138540bdf6856b22fa076844f2c16752c4191",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1e_wizard_joint_setup_pg17.sql",
+          "change": "added",
+          "sourceBlob": "0b833150367ce01297acf82d750de3f01be66044",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1e_wizard_original_functions_pg17.sql",
+          "change": "added",
+          "sourceBlob": "c0322578db9e848b20a476b32681c07e316f0870",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1e_wizard_original_finalizer_joint_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "c0c29c7511fd7bc8a9fc090069817dfa0d1f4b85",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 0,
+        "absent": 5
+      }
+    },
+    {
+      "pr": 354,
+      "title": "I1-F research: source-original Battle Master maneuver grants and deferred validator signed regression",
+      "head": "83aa403c725b3a05e6f32b1623801b8ffccf64b8",
+      "baseBranch": "research/i1e-wizard-original-finalizer-signed-20261109",
+      "baseSHA": "2b10b86f1237de484974d686acbd16d47c29a1d6",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 5,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1f-battle-master-original-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "79862cd9567f03be0026712604d620fd30a92730",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "cd932cdb969dc045980180ebf5377e5e328c2660",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1f_battle_master_joint_setup_pg17.sql",
+          "change": "added",
+          "sourceBlob": "c5ae0b31605d9374b295eee01eefdda0718afb80",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1f_battle_master_original_functions_pg17.sql",
+          "change": "added",
+          "sourceBlob": "fbda236e3c1b96ef9a93c44f0a2f99a6cd77adf9",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1f_battle_master_original_joint_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "85ad0863723994c2efcd2f4bc316a8e97b2e85fa",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 0,
+        "absent": 5
+      }
+    },
+    {
+      "pr": 355,
+      "title": "I1-G research: source-original Warlock legacy Invocation guard plus deferred normalized validator",
+      "head": "71840f27c68f5e34937b91f95ed88d3859ba06c4",
+      "baseBranch": "research/i1f-battle-master-original-maneuver-grants-20261109",
+      "baseSHA": "83aa403c725b3a05e6f32b1623801b8ffccf64b8",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 7,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1g-warlock-original-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "4790ed14c9e6e61d0fceef726057423548bca4f1",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md",
+          "change": "added",
+          "sourceBlob": "7c9424b01e7582222ab60f561e9fd903a6d96b16",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql",
+          "change": "added",
+          "sourceBlob": "fe3a95f0562ddf804b10ef1938af383d09e74ea1",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1g_warlock_original_acquisition_pg17.sql",
+          "change": "added",
+          "sourceBlob": "7ec34da724bb22ed5d299ff27a5e07e0f0373180",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1g_warlock_original_functions_pg17.sql",
+          "change": "added",
+          "sourceBlob": "7a1cb66a17552b11e52c391563d0cf5aba52829a",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql",
+          "change": "added",
+          "sourceBlob": "90fd7a3f7dc81fd146605de131747755312b4aa9",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "added",
+          "sourceBlob": "64c71ac1736eee2907ecefd593961dac491ff933",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 0,
+        "absent": 7
+      }
+    },
+    {
+      "pr": 356,
+      "title": "I1-H research: original Warlock acquisition with both deferred safeguards at first creation",
+      "head": "f6fe276a305e292ed343b1bae122924983fedc2d",
+      "baseBranch": "research/i1g-warlock-original-invocation-guards-20261109",
+      "baseSHA": "71840f27c68f5e34937b91f95ed88d3859ba06c4",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changedFiles": 6,
+      "records": [
+        {
+          "path": ".github/workflows/validate-i1h-warlock-original-local-auth.yml",
+          "change": "added",
+          "sourceBlob": "8cd980a453df61573f6a5c9faee3b364c28c223c",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "change": "modified",
+          "sourceBlob": "37ed9abdaa51f7000325eadeec644d3a2c670e74",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "change": "modified",
+          "sourceBlob": "51d52351a92991736bedf23d4897e2921db33fbf",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "parity": "different_blob_on_main"
+        },
+        {
+          "path": "docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md",
+          "change": "added",
+          "sourceBlob": "7e61ee7449a496b78a307c7006a2737eb545d455",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/i1h_warlock_acquisition_with_guards_pg17.sql",
+          "change": "added",
+          "sourceBlob": "c8c22cafa567f986d8049060d02e687fd040601e",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+          "change": "modified",
+          "sourceBlob": "046b1bcdc96425d434c9ccc89b41a2794bd6c819",
+          "mainBlob": null,
+          "parity": "absent_on_main"
+        }
+      ],
+      "counts": {
+        "exact": 0,
+        "different": 2,
+        "absent": 4
+      }
+    }
+  ]
+}
