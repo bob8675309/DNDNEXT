@@ -1,5 +1,7 @@
 # I2-D — Modern Forge private v2/v3 + Story/nonce, Option A frozen legacy-sheet source research
 
+**No automatic legacy-sheet writes of any kind are authorized under Option A, including empty account-wide snapshots and same-character actions.**
+
 **Owner-approved architecture:** Option A, per-character `public.character_sheets` authoritative; every pre-existing `public.players.sheet` snapshot preserved byte-for-byte, including empty `{}` rows. This remains research only, stacked after [I2-C #367](https://github.com/bob8675309/DNDNEXT/pull/367) and preserving source-original I1-B–O and I2C-01–10 acceptance unchanged. **No production SQL or application runtime edits. No merges or deployment.**
 
 ## Source audit: why this is distinct from public v2
