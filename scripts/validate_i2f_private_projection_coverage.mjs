@@ -56,7 +56,7 @@ for(let i=1;i<=11;i++){
  const key="PASS I2F-"+String(i).padStart(2,"0");
  assert.ok(test.includes(key),"Missing original RED/scratch acceptance "+key);
 }
-for(const word of ["Option A","signed local GoTrue","privileged","not signed user RPCs","sourceChoices","species runtime","25 original UPDATE","31-trigger","No production SQL","not yet GREEN"]){
+for(const word of ["Option A","signed local GoTrue","privileged","not signed user RPCs","sourceChoices","species runtime","25 original UPDATE","31-trigger","No production SQL","I2F-01–11 ALL PASS"]){
  assert.ok(report.toLowerCase().includes(word.toLowerCase()),"Documentation scope missing "+word);
 }
 console.log("PASS I2F-STATIC: 2 exact live private projection source MD5s, reversible account-update-only test candidate and authenticated EXECUTE denial source guarded");
