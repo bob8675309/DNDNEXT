@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2g-signed-levelup-v1-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `22607e79844cc7d0466d7e2a8dc7255b7148a5cd` |
+| Exact source commit represented by this archive snapshot | `8318b4456eb982d24c1fd3171b893c6131944c9f` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2g): append exact signed source RED and scratch GREEN acceptance receipt |
+| Last source commit title | test(i2g): align static acceptance wording with verified signed CI, not pending state |
 | Files changed relative to main | 204 (152 non-docs; 52 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/validate_i2g_levelup_v1_scope.mjs`
 
 ## Research-branch change inventory versus main
 
