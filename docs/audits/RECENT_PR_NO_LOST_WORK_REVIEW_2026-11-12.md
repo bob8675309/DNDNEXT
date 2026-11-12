@@ -1,6 +1,6 @@
 # DNDNext — Recent PR omissions and future full-source review: 45-open/32-reviewed-source-scope follow-up
 
-**Source timestamp: November 12, 2026.** Current main pin `00c5c4416b99ac256913b48ef96387f3eabfde44`. This report is a source-exact GitHub review of **45 open draft PRs** (20 original user-priority drafts + **25 additional** I1/I2/audit drafts), the recently merged docs/P1/Tough PRs, and three previously merged adjacent source-preservation PRs. **No SQL/role/app/map/data was changed by the audit.** The detailed [Spell Engine/20-PR forensic report](SPELL_ENGINE_AND_ORIGINAL_PR_NO_LOST_WORK_AUDIT_2026-11-12.md) remains in held #375; its 19 deployed spell adapters, full #309/#312, archived effects and 584 original PR-scoped rows are not replaced by this follow-up.
+**Source snapshot: November 12, 2026 before #375's audit-only main merge.** Main source pin `00c5c4416b99ac256913b48ef96387f3eabfde44`. This report is a source-exact GitHub review of **45 open draft PRs** (20 original user-priority drafts + **25 additional** I1/I2/audit drafts), the recently merged docs/P1/Tough PRs, and three previously merged adjacent source-preservation PRs. **No SQL/role/app/map/data was changed by the audit.** The detailed [Spell Engine/20-PR forensic report](SPELL_ENGINE_AND_ORIGINAL_PR_NO_LOST_WORK_AUDIT_2026-11-12.md) remains in held #375; its 19 deployed spell adapters, full #309/#312, archived effects and 584 original PR-scoped rows are not replaced by this follow-up.
 
 ## Findings that require correction or explicit protection
 
@@ -22,7 +22,7 @@ At head `53ac1ffd8fa3afa2947e9a9a93f044e35cafe973`, [run #43321108060](https://g
 
 [#374](https://github.com/bob8675309/DNDNEXT/pull/374) **merged to main** with 4/4 exact-head CI and Vercel READY: 8 files all exactly on current main. This is a SAFE pure, **non-executing P1 validator/preflight** extraction from #347/#309, NOT the complete Spell Engine. It did not include source-original #309 Eldritch Blast planner/UI/private SQL/LOS/GoTrue fixtures nor inherited #312 P2 Fire Bolt behavior/transaction research, NPC shared delegation/known-ready v1/v2 visibility or command replay/locking. These remain open and intact in original branches, as fully indexed in #375. Future PRs must explicitly list **all inherited/deferred original source features**, not present a successfully extracted part as feature completion.
 
-[#375](https://github.com/bob8675309/DNDNEXT/pull/375) remains a HELD audit-only draft. Its 6 paths are absent from main, and 3/3 exact-head workflows succeeded on `2bb3e4d5a545da89b6b796885eecf43eadbc23bf`. It is a valid *file-level* original/source scope index, not final semantic line-by-line acceptance or a deployable gameplay engine.
+[#375](https://github.com/bob8675309/DNDNEXT/pull/375) was **safely merged into main on November 12** as docs/audit script/workflow only, merge SHA `cd87af6a95a94196f0db68e5d5a44a3ece489745` after 3/3 exact-head workflows succeeded at `2bb3e4d5a545da89b6b796885eecf43eadbc23bf`. Its six paths were absent **in the old main snapshot** but are now preserved on main. It remains a file-level original/source scope index, not semantic line-by-line acceptance or a deployable gameplay engine.
 
 ### F4 — Additional already-merged adjacent work was easy to overlook
 
@@ -61,7 +61,7 @@ The following are source-pinned and **still held**; their immediate changed path
 
 | Scope | Verified | Interpretation |
 | --- | ---: | --- |
-| Current open drafts | **45** | 20 original owner-priority + 25 additional I1/I2/audit |
+| Current open drafts | **45 at snapshot; 44 after #375's merger** | 20 original owner-priority + 25 additional I1/I2/audit initially; #375 then closed by safe audit-only main merge |
 | Earlier original changed-file occurrences | **584** | 20 PR dossiers, repeats across stacked diffs, original #375 report |
 | NEW recent/merged immediate-diff rows indexed | **245** | 29 PR entries including #347/#348/#372/#374/#375; not 245 unique files |
 | Additional merged #319/#337/#341 immediate changed-file rows | **81** | Three already-on-main source-workstream bundles, separate from runtime release |
@@ -83,6 +83,6 @@ A new mandatory [PR_FULL_SCOPE_REVIEW_PROTOCOL.md](../PR_FULL_SCOPE_REVIEW_PROTO
 
 **This workflow does not claim to prove semantics**, correct source class/edition, source ownership/RLS, full browser, hidden data, SQL lock consistency, backup restore, or whether a replacement genuinely preserves every feature. Those require qualified source review, full positive/negative tests and explicit approval. A passing CI step is NOT enough. GitHub branch protection must be separately configured by a maintainer to make the review check required; merely adding CI does not guarantee an unreviewed PR cannot merge.
 
-**No source was silently removed.** Existing PRs were not closed, research branches not rebased, and no live Supabase rows, migrations, grants, app maps or paid agents were modified. A main merge of this **docs/audit/CI-only** process would run standard hosting auto-CI; it cannot be treated as a gameplay release.
+**No source was silently removed.** Only audited #375 was closed through a verified docs/script/workflow-only main merge; original source research PRs remain open, and no live Supabase rows, migrations, grants, app maps or paid agents were modified. A main merge of this **docs/audit/CI-only** process would run standard hosting auto-CI; it cannot be treated as a gameplay release.
 
 **ONE NEXT TASK:** perform a source-by-source final review of #373's original Admin grant callgraph/source hash and inherited I2-F/G/H signed evidence; keep 22 writers untested and the 31-trigger/full Author/Auth/restore gates open. If scoped research integration remains approved and exact HEAD checks are green, merge only into research parent, not main. Continue P2 spell and safe NPC/Forge source integration per I0–I6 without retiring any original PR until all behavior is classified and tested.
