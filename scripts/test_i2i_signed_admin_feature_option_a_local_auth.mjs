@@ -199,18 +199,33 @@ console.log("PASS I2I-10 unchanged public Grant and v5 sources; one feat and one
 // can invoke the helper without an Admin JWT or grant row. This is NOT proof
 // that a production REST API exposes the private schema.
 const beforeACL=sheets(E);
-const aclProbe=sql(
+const aclBaseline=sql(
+ "SELECT has_schema_privilege('authenticated','private','USAGE')::text||','||"+
+ "has_function_privilege('authenticated','private.sync_admin_feature_array_v1(uuid,text,text,boolean)','EXECUTE')::text"
+);
+// psql -c with multiple commands only returns the last libpq result;
+// the SELECT before ROLLBACK is not exposed to stdout. We must assert
+// the effect INSIDE the same transaction before rollback, fail closed.
+sql(
  "BEGIN;"+
  "GRANT USAGE ON SCHEMA private TO authenticated;"+
  "GRANT EXECUTE ON FUNCTION private.sync_admin_feature_array_v1(uuid,text,text,boolean) TO authenticated;"+
  "SET LOCAL ROLE authenticated;"+
  "SELECT private.sync_admin_feature_array_v1("+quote(E)+",'boon','SQL Role Test Only',true);"+
  "RESET ROLE;"+
- "SELECT coalesce((sheet->'adminGrantedBoons') ? 'SQL Role Test Only',false)::text FROM public.character_sheets WHERE character_id="+quote(E)+";"+
+ "DO $i2i_acl$ BEGIN "+
+ "IF NOT EXISTS (SELECT 1 FROM public.character_sheets WHERE character_id="+quote(E)+
+ " AND coalesce((sheet->'adminGrantedBoons') ? 'SQL Role Test Only',false))"+
+ " THEN RAISE EXCEPTION 'I2I local authenticated SQL role did not project canonical boon'; END IF;"+
+ " IF EXISTS (SELECT 1 FROM public.character_option_grants WHERE character_id="+quote(E)+
+ ") THEN RAISE EXCEPTION 'I2I direct private helper unexpectedly added a grant row'; END IF;"+
+ " END $i2i_acl$;"+
  "ROLLBACK;"
 );
-assert.ok(aclProbe.split(/\r?\n/).some(v=>v.trim()==="t"),
- "Local SQL-role ACL parity probe did not show source helper call effects");
+assert.equal(sql(
+ "SELECT has_schema_privilege('authenticated','private','USAGE')::text||','||"+
+ "has_function_privilege('authenticated','private.sync_admin_feature_array_v1(uuid,text,text,boolean)','EXECUTE')::text"
+),aclBaseline,"Local SQL-role parity probe MUST restore initial schema and helper grants");
 assert.equal(sheets(E),beforeACL,"transaction rollback must restore ACL-probe canonical bytes");
 assert.equal(countGrant(E,adminOpt),0);
 frozen(after,"rolled back direct SQL role call");
