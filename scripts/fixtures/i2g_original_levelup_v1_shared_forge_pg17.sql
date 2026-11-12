@@ -8,12 +8,10 @@ BEGIN
  IF current_database()<>'postgres'
     OR current_setting('server_version_num')::int NOT BETWEEN 170000 AND 179999
     OR to_regclass('private.p13_levelup_case_guard') IS NULL
-    OR to_regclass('private.player_creation_intent_reservations_v1') IS NULL
     OR to_regclass('auth.users') IS NULL
     OR to_regprocedure('public.complete_character_level_up_v1(uuid,jsonb)') IS NOT NULL
     OR md5(pg_get_functiondef('public.complete_character_level_up_v5(uuid,jsonb)'::regprocedure))<>'02d74b973a763c53c595be20e35e512f'
-    OR position('I2F_OPTION_A_NO_LEGACY_PROJECTION_WRITE' IN pg_get_functiondef('private.set_species_runtime_projection_v1(uuid,text,jsonb)'::regprocedure))=0
- THEN RAISE EXCEPTION 'I2G source-original level-up v1 install requires inherited signed isolated I2F PG17 only';
+ THEN RAISE EXCEPTION 'I2G source-original level-up v1 install requires source-original P1.3 Fighter-only signed PG17 fixture';
  END IF;
 END $i2g_guard$;
 
