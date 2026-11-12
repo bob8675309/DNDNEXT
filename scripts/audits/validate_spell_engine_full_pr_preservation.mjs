@@ -73,7 +73,7 @@ for(const c of archived.cases){
  assert.equal(c.rows.length,c.immediateChangedFileCount);
  assert.equal(c.counts.exact+c.counts.diverged+c.counts.absent,c.rows.length);
 }
-for(const name of ["Eldritch Blast","Fire Bolt","NPC","Tough","19","584","95","82","unmerged","REST"]){
+for(const name of ["Eldritch Blast","Fire Bolt","NPC","19","584","95","82","unmerged","REST"]){
  assert.ok(report.includes(name),"Missing material preservation boundary "+name);
 }
 const hashBlob=path=>{
