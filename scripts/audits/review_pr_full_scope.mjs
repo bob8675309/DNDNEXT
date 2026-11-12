@@ -81,7 +81,7 @@ function inventory({p,files,head,base,main}){
  const body=reviewBody(p);
  // Only an OWN scope claim is binding. Other PRs may be referenced as
  // "docs-only #348" or "source-only #374" without describing this PR.
- const scopeClaim=(kind)=>new RegExp("\\b"+kind+"[- ]only\\b","i").test(p.title||"") ||
+ const scopeClaim=(kind)=>new RegExp("^(?:\\["+kind+"[- ]only\\]|"+kind+"[- ]only\\s*[:—-])","i").test((p.title||"").trim()) ||
   new RegExp("^\\s*(?:>\\s*)?(?:\\*\\*)?(?:scope|this\\s+(?:pr|pull request))(?:\\*\\*)?\\s*:\\s*(?:\\*\\*)?"+kind+"[- ]only\\b","im").test(p.body||"");
  const claimedDocsOnly=scopeClaim("docs");
  const claimedSourceOnly=scopeClaim("source");
@@ -159,6 +159,10 @@ function selfTest(){
  const mentionsOther={...p,title:"Forge source audit",body:"The preserved docs-only PR #348 covers a different source scope."};
  const inherited=inventory({p:mentionsOther,files:[{filename:"pages/a.js",status:"modified",sha:"b".repeat(40)}],head:a,base:m,main:m});
  assert.equal(inherited.riskSummary.docsOnlyClaimConflict,false,"Other PR docs-only mention is not our scope claim");
+ const titleMention={...p,title:"Fix misleading docs-only reference",body:"Independent inherited research notes."};
+ const titleResult=inventory({p:titleMention,files:[{filename:"pages/a.js",status:"modified",sha:"b".repeat(40)}],head:a,base:m,main:m});
+ assert.equal(titleResult.riskSummary.docsOnlyClaimConflict,false,"Mention in issue title is not own scope");
+
  const ownScope={...p,title:"Docs-only current source audit",body:"This PR deliberately edits only documentation"};
  const incorrect=inventory({p:ownScope,files:[{filename:"pages/a.js",status:"modified",sha:"b".repeat(40)}],head:a,base:m,main:m});
  assert.equal(incorrect.riskSummary.docsOnlyClaimConflict,true,"Real docs-only claim with runtime file must fail closed");
