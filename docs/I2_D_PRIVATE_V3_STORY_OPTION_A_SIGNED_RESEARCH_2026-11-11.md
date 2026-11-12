@@ -4,6 +4,22 @@
 
 **Owner-approved architecture:** Option A, per-character `public.character_sheets` authoritative; every pre-existing `public.players.sheet` snapshot preserved byte-for-byte, including empty `{}` rows. This remains research only, stacked after [I2-C #367](https://github.com/bob8675309/DNDNEXT/pull/367) and preserving source-original I1-B–O and I2C-01–10 acceptance unchanged. **No production SQL or application runtime edits. No merges or deployment.**
 
+> **2026-11-11 America/Chicago / Nov 12 UTC SIGNED SOURCE-ORIGINAL RED + DISPOSABLE OPTION A GREEN VERIFIED:** [GitHub Actions #43143457573](https://github.com/bob8675309/DNDNEXT/actions/runs/43143457573), job `130935703511`, **SUCCESS** at code/test SHA `101a40a7817b537b2a2a9dacc96ae3e352beb070`. The unchanged I1-B–O and I2C-01–10 source/Story tests ran first, then **I2D-01 through I2D-11 PASS**. The source-original **RED** proves private #324 v2 → modern v3 with signed Story and nonce overwrites an *existing EMPTY* `players.sheet` snapshot, while the source-original nonempty control proves its WHERE-empty guard already protects populated snapshots. After both original controls, the exact-one-statement private source/identity-only candidate passes signed public v3 with and without Story, two independent character creations, original equipment, immutable nonce/Story replay and permissions, missing-profile fallback, invalid Story rollback, direct-write denial, and *zero legacy account sheet/name/updated_at changes*. Only the private v2 copied source changes; original public v3, private v3, public Story and private Story/intent wrappers remain byte-identical. **Final documentation-inclusive exact-head CI still requires verification.**
+
+**Verified held source fingerprints (from I2-D original-source signed run; these are research-stage sources, not claims of a production deployment):**
+
+| Signed original function | MD5 of `pg_get_functiondef` |
+|---|---|
+| `private.create_player_character_v2_source_20261105(jsonb,jsonb)` | `1d06d00eb4b4aa4c125796d761f5e259` |
+| `public.create_player_character_v3(jsonb,jsonb,jsonb)` | `ab48d46376075a79b3f5a5de21fdada6` |
+| `private.create_player_character_v3_source_20261105(jsonb,jsonb,jsonb)` | `798090559c434fbb21c4b27cab21865b` |
+| `public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)` | `6e39477f971c9d40c6726c9f4dbc456e` |
+| `private.create_player_character_v3_with_story_intent_i1c(jsonb,jsonb,jsonb,text)` | `5fac54802474043d8233cc17a75f4c0f` |
+
+The exact scratch candidate private source MD5 is `00b2167041b9c2e4e1a98d3873839f37`. The candidate verifies reversal of only its identity-only block to the unchanged private source MD5. All five original hashes are also pinned in the guarded research fixture/test.
+
+**Retained failed research receipts:** [#43142926681](https://github.com/bob8675309/DNDNEXT/actions/runs/43142926681) failed only the first **static** requirement that the document explicitly say “no automatic legacy-sheet writes,” before Supabase services started. [#43143057359](https://github.com/bob8675309/DNDNEXT/actions/runs/43143057359) passed all historical tests and I2D-01–03 source original RED/control, then the candidate's single source-statement replacement and MD5 reversibility check succeeded but the fixture had `echo` instead of `\\echo` in psql. Corrected the terminator and **tightened**, rather than weakened, the private/v3/Story source fingerprints before successful #43143457573. Original source, RED assertions and previous PRs remained untouched.
+
 ## Source audit: why this is distinct from public v2
 
 The source checked in as `sql/candidates/20261105_player_creation_immutable_intent_v1.sql` under the held original #324 Forge research defines `private.create_player_character_v2_source_20261105(jsonb,jsonb)`. Both modern `public.create_player_character_v3` and the private-Story/immutable nonce pathway ultimately use this **private source copy**, *not* the public `create_player_character_v2` already studied in I2-C.
@@ -50,4 +66,4 @@ The [source coverage ledger](I2_D_OPTION_A_CREATION_SOURCE_COVERAGE_2026-11-11.j
 
 **Cannot claim from this fixture:** all 31 original Forge triggers co-resident; unrestricted live class, species and item catalogs; full 34+ indirect writer retirement; all Admin/RLS/service-role profiles; browser-level character switching; cross-family concurrency under real load; rollback after a coordinated cutover; second encrypted backup and verified isolated restore of full database plus Storage. Prior I1-M/O/P conditional same-character snapshot updates remain valid historical evidence only, **not** Option A release behavior.
 
-**Acceptance initially pending exact signed CI; do not mark GREEN until test logs show I2D-01–11.** The next bounded engineering task is to expand the remaining source-exact writer-family audit and actual signed Option A no-mirror acceptance tests, preserving the original audit/Story and public-v3 call graph. Production release still requires separate explicit owner approval.
+**I2D-01–11 code/test signed acceptance PASSED in #43143457573; final documentation-inclusive exact-head CI still pending.** The next bounded engineering task is to expand the remaining source-exact writer-family audit and actual signed Option A no-mirror acceptance tests, preserving the original audit/Story and public-v3 call graph. Production release still requires separate explicit owner approval.
