@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `cce0e9add2c8471c85dfda1ffd64ec3105e579ba` |
+| Exact source commit represented by this archive snapshot | `6e5a226895da249161ce3164f89316904afbe058` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(I2-E): track 7/34 bounded original Option A writer families, 27 untested and Rage synthetic specimen limitation |
-| Files changed relative to main | 188 (141 non-docs; 47 docs) |
+| Last source commit title | docs(I2-E): original HP/Admin/Rage signed RED and source-exact Option A no-write acceptance with explicit synthetic Rage limitation |
+| Files changed relative to main | 189 (141 non-docs; 48 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_E_OPTION_A_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
+- `docs/I2_E_HP_ADMIN_RAGE_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
-- … 138 more
+- … 139 more
 
 ## Trust and update procedure
 
