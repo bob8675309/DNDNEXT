@@ -1,6 +1,8 @@
 # I2-I — Source-original signed Admin feat/boon projection legacy-sheet overwrite and Option A scratch
 
-**Status: PENDING exact signed CI. Research only — NOT production.** Prepared November 12, 2026 America/Chicago. The owner explicitly approved *safe, scoped merges and continued testing*, not a production SQL/roles or feature release. [#372](https://github.com/bob8675309/DNDNEXT/pull/372) was safely merged into parent held research [#371](https://github.com/bob8675309/DNDNEXT/pull/371), preserving I2H-01–10 and the **11/34 tested, 23 untested** historical source-writer ledger. Docs-only #348 merged to main, but no gameplay/security/RLS candidate was deployed.
+**Status: signed original RED / scratch Option A GREEN VERIFIED at source/test head; documentation-inclusive exact-head CI PENDING. Research only — NOT production.** Prepared November 12, 2026 America/Chicago. The owner explicitly approved *safe, scoped merges and continued testing*, not a production SQL/roles or feature release. [#372](https://github.com/bob8675309/DNDNEXT/pull/372) was safely merged into parent held research [#371](https://github.com/bob8675309/DNDNEXT/pull/371), preserving I2H-01–10 and the **11/34 tested, 23 untested** historical source-writer ledger. Docs-only #348 merged to main, but no gameplay/security/RLS candidate was deployed.
+
+> **2026-11-12 signed-source receipt — 11/11 CASES PASS.** [Actions #43319584048](https://github.com/bob8675309/DNDNEXT/actions/runs/43319584048), source/test head `6f1aeeee6dd48408456220bf12f9758125c4208d`, independent new Admin job `131539899439` SUCCESS; unchanged three prior I2-F/I2-G/I2-H signed jobs also SUCCESS. Original public Admin grant + private helper MD5 unchanged for I2I-03 RED, canonical Lucky/G correct but two unrelated historical accounts overwritten. One MD5-reversible **local only** private statement suppressed after RED, signed Admin I2I-05 GREEN preserved G and canonical CS while all legacy sheets/timestamps remained frozen. All I2I-01..11 present as PASS in actual job log. I2I-11 restored production-like database-role privileges **only inside local rolled-back transaction**: authenticated SQL role could invoke privileged helper without Admin context. This is **not verified remote REST exposure**. Exactly one legacy-sheet writer is now counted: **12/34 bounded tested, 22 untested**. This is NOT full original 31-trigger Forge, production Auth/RLS/browser, all indirect writers or independently restored backup. Final docs-inclusive head must be rechecked before merge.
 
 ## Original signed source and why it matters
 
@@ -16,7 +18,7 @@ The I2-I job installs unchanged original `p1_3_levelup_v5_local_auth_pg17.sql` a
 
 Local source gate checks original Admin public/private hash, role checks and original source guards. Only **after** the signed original grant RED is asserted, one exact `UPDATE public.players` statement in the private Admin feature helper is replaced with a source-MD5 reversible no-op in scratch. The original public grant RPC, G upsert, Admin authorization, authority triggers, feat/boon array projection, and other source functions stay unchanged.
 
-### New I2-I expected cases (PENDING, no PASS claims yet)
+### Executed I2-I cases (all PASS on recorded signed source/test head)
 
 | Case | Acceptance |
 |---|---|
@@ -32,10 +34,10 @@ Local source gate checks original Admin public/private hash, role checks and ori
 | I2I-10 | Original public grant and v5 source intact, one feat+one boon, all historical snapshots frozen |
 | I2I-11 | Separate rolled-back SQL ROLE privilege risk characterization under scratch live-like `private` ACL; exact canonical rollback and no REST-reachability claim |
 
-All 11 cases are **assertion targets until GitHub exact source/test CI logs pass**. Only then promote the specific original `private.sync_admin_feature_array_v1` to **12/34 locally bounded-tested** (22 untested). Do not count duplicate role/SQL tests as additional source writers.
+All 11 cases are **verified PASS** in the source/test-head signed workflow. The original `private.sync_admin_feature_array_v1` now counts **one** new bounded local source writer: **12/34 tested, 22 untested**. Do not count duplicate role/SQL tests as additional source writers.
 
 ## Release restrictions and next one action
 
 No hosted SQL/DML/DDL, no role grants, production database rows, game/map, Next.js Pages Router code, Vercel deployment, paid agent #325 or new feature rollout. Original 31-trigger modern Forge creation and full Admin/GM/creator roles, original feat acquisition, exact production Auth/RLS/schema exposure, PostgREST and browser access, global locks/multiwriter race, all writer/consumer coverage and **encrypted independently restored database + Storage backup** remain unverified. The local server-generated Admin grant proves a narrow source slice only.
 
-**ONE NEXT TASK:** inspect draft I2-I exact head GitHub Actions; fix only reproduced fixture/test defects without weakening source hashes or original RED; explicitly label SQL ROLE risk vs unproven REST exposure. Append actual tested-head CI receipt and update the 34-writer ledger only after signed RED and scratch GREEN pass. No production migration or merge of gameplay/security code without separate release approval.
+**ONE NEXT TASK:** verify final documentation-inclusive head GitHub Actions, and if all signed inherited and original Admin tests pass at that exact SHA, safely merge **research into its parent research branch only**. Preserve original source hashes and RED assertions. Then choose one of **22 remaining** original UPDATE writers. No production migration or gameplay/security merge without separate release approval.
