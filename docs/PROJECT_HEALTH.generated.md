@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-12T02:44:20Z | research/i2d-private-forge-v3-option-a-freeze-20261111 (0e5920ef0bff44bd8149e0f709a00281e3086aef) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-12T02:44:42Z | research/i2d-private-forge-v3-option-a-freeze-20261111 (101a40a7817b537b2a2a9dacc96ae3e352beb070) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

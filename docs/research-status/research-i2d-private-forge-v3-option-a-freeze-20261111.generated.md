@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `0e5920ef0bff44bd8149e0f709a00281e3086aef` |
+| Exact source commit represented by this archive snapshot | `101a40a7817b537b2a2a9dacc96ae3e352beb070` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | fix(I2-D): source-pin signed original private/v3/Story hashes and correct psql backslash-echo delimiter |
+| Last source commit title | test(I2-D): require exact signed original private copied v2 and v3/Story/intent source MD5s before RED |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2d_option_a_private_forge_source_scratch_pg17.sql`
+- `scripts/test_i2d_private_v3_story_option_a_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
