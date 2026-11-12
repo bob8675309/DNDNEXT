@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `2fe64698f61b7e133a9dc23831030a01958467e7` |
+| Exact source commit represented by this archive snapshot | `cce0e9add2c8471c85dfda1ffd64ec3105e579ba` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I2-E): run unchanged historical Forge/I2C/I2D tests before three signed HP/Admin/Rage original RED and Option A scratch GREEN |
-| Files changed relative to main | 187 (141 non-docs; 46 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(I2-E): track 7/34 bounded original Option A writer families, 27 untested and Rage synthetic specimen limitation |
+| Files changed relative to main | 188 (141 non-docs; 47 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2e-hp-admin-rage-option-a-local-auth.yml`
+- `docs/I2_E_OPTION_A_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
-- … 137 more
+- … 138 more
 
 ## Trust and update procedure
 
