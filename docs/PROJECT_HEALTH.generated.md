@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-12T22:05:36Z | research/i2i-signed-admin-feature-mirror-option-a-20261112 (6df166cffe4b9d990687409869bdd99854d2e27e) | 621de3cbd09c71f82d3ac4f02a858035cac9e207 |
+| 2026-11-12T22:06:18Z | research/i2i-signed-admin-feature-mirror-option-a-20261112 (d375ac97af5ddccd8bdc032e89e1c26447ccca6a) | 621de3cbd09c71f82d3ac4f02a858035cac9e207 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
