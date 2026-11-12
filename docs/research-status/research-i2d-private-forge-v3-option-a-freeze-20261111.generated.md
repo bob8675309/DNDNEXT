@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `f612edd44a0a9ddfa4e62b5de0fa7c4bcc43782e` |
+| Exact source commit represented by this archive snapshot | `e9e8c3c010ee2ad9259e1419e113a880e796c164` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-D): capture signed 11/11 private-v3 source RED/Option A scratch GREEN and all five fingerprints |
+| Last source commit title | test(I2-D): pin verified 11/11 signed CI source hashes while preserving 30-writer release limitations |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/I2_D_PRIVATE_V3_STORY_OPTION_A_SIGNED_RESEARCH_2026-11-11.md`
+- `scripts/validate_i2d_source_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
