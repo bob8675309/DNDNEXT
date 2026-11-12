@@ -1,3 +1,15 @@
+# DNDNext — Active Work (owner-approved bounded integration)
+
+> **November 12, 2026 — current priority, superseding the historical November 9 next-task recommendations below.** The owner now expressly directs **merge what is safe and continue testing**. [PR #372](https://github.com/bob8675309/DNDNEXT/pull/372) has **merged into research parent #371 only**, merge commit `6abb8d9957834a2fd8198b274e24a7d5bb0aea64`; this preserved the original Tough signed RED and scratch GREEN. The last pre-merge exact source/test head passed **I2H-01–10** plus inherited I2-F/I2-G and five workflows. The original player-sheet writer ledger is **11/34 bounded tested, 23 untested** (not full original 31-trigger Forge or production integration). This documentation-only #348 is being corrected for clean-main merge; previous original PRs remain preserved.
+
+**Active phase / subphase:** `P1 / P1.3` — I2 original source writer compatibility research within the owner [I0–I6 integration-first plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md), not deployed application functionality.
+
+**Next single action:** Verify docs-only PR #348 exact-head CI and safely integrate its unique original-PR dossier/phase-plan documentation to `main` if all checks pass, without changing runtime; then continue one source-original `private.sync_admin_feature_array_v1` / signed `public.grant_character_option_v1` research writer with genuine signed original overwrite RED and source-locked reversible scratch Option A GREEN. Keep the latest accepted **11/34** coverage unchanged until another original RED/GREEN passes. Avoid merging #345's client before coordinated privacy SQL, do not release P1.3 global lock/authorization SQL, alter world map/town/tactical maps, enable paid #325, or claim production role/browser/backups are verified. **A documentation-only Git merge does not authorize any hosted Supabase SQL, production gameplay code cutover or Vercel operations.** Read [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) and [HANDOFF_LOG.md](HANDOFF_LOG.md) before changing subsystems.
+
+---
+
+## Historical November 9 branch snapshot (source evidence retained; its next task is superseded)
+
 # DNDNext — Active Work (one executable task; owner integration-first)
 
 **Current owner direction (2026-11-09, reaffirmed): integrate ALL outstanding PRs' unique functionality, original tests and source evidence into `main` in staged dependency order before unrelated new development. This includes #325 LAST as a disabled-by-default agent integration, with paid use separately gated.** Full decisions, 20 individual exact source-head file inventories and important cross-links: [PR catalog](pr-integration/README.md). Ordered acceptance and release program: [I0–I6 phased plan](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md). Previous C3.3-only task and evidence preserved verbatim in [historical archive](archive/ACTIVE_WORK_C3_3_PRE_OWNER_OVERRIDE_2026-11-09.md); never follow it as current priority.
