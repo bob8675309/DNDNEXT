@@ -1,0 +1,3382 @@
+{
+  "date": "2026-11-12",
+  "mainHead": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+  "note": "Part 1/2: original Nov 9 PR dossiers with exact-head file SHA compared against Nov 12 main. A modified path is NOT proof of lost behavior, and an identical blob is NOT runtime acceptance. Part2 will append remaining 10.",
+  "reviewed_original_pr_count": 10,
+  "prs": [
+    {
+      "pr": 309,
+      "originalDossier": "docs/pr-integration/PR-309.md",
+      "expectedPRScopedChanges": 47,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "originalDiffStatus": "modified",
+          "delta": "31/0",
+          "sourceBlob": "8877cadd5d13a56ecc6ab280130802b020c29ce6",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-eldritch-blast-local-auth.yml",
+          "originalDiffStatus": "added",
+          "delta": "72/0",
+          "sourceBlob": "359965e21606c42c988504fb1a7c690336fb65e1",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "AGENTS.md",
+          "originalDiffStatus": "added",
+          "delta": "23/0",
+          "sourceBlob": "e331fe6b455a552a7006cb0b688dd425e9bb92f7",
+          "mainBlob": "52fa9375a825de8a01cfe002df1945a9b89b0a00",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/encounter/EldritchBlastPlanner.js",
+          "originalDiffStatus": "added",
+          "delta": "92/0",
+          "sourceBlob": "602b952365625f283418a674448917f8be67c5ba",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Combat_Next_Milestone_2026-10-29.md",
+          "originalDiffStatus": "modified",
+          "delta": "70/0",
+          "sourceBlob": "9a2038370563aa5eb6521e543836a729ff10f545",
+          "mainBlob": "21fc8706fa3625ed516841bf94ff8a5d88897ea6",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Composable_Spell_Engine_AI_Readiness_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "77/0",
+          "sourceBlob": "4de66db95fff2fe3918962f88fa8b583a1cf9e45",
+          "mainBlob": "4de66db95fff2fe3918962f88fa8b583a1cf9e45",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/Current_Development_Status_and_Roadmap.md",
+          "originalDiffStatus": "modified",
+          "delta": "2/0",
+          "sourceBlob": "0c10b38b4cf1425d2a2f58f90ff8547294ad31d7",
+          "mainBlob": "77078fd6b8bcd2ce3b01ed94a2ad2d5d3268269b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md",
+          "originalDiffStatus": "modified",
+          "delta": "4/0",
+          "sourceBlob": "ad892dc3aaedb643ce6fa229d5884d177aad9e4c",
+          "mainBlob": "6447db2ee8afda054dc35a09805b2309d1f8fccc",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Current_Handoff_Prompt.md",
+          "originalDiffStatus": "modified",
+          "delta": "7/1",
+          "sourceBlob": "fd587c8289a10ffd3cc79f69dca770be79dd829f",
+          "mainBlob": "2efca67b7aa4c57fe07b72ad7590d4c11a382f08",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "originalDiffStatus": "modified",
+          "delta": "12/1",
+          "sourceBlob": "a664a8c8a7c0ea9bedf4c06ffe000270a91b85f2",
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/SPELL_ENGINE_DECISIONS.md",
+          "originalDiffStatus": "added",
+          "delta": "67/0",
+          "sourceBlob": "07a14a3fc7362f1f4bf89982e2b52ce67b7c4be4",
+          "mainBlob": "07a14a3fc7362f1f4bf89982e2b52ce67b7c4be4",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "originalDiffStatus": "added",
+          "delta": "99/0",
+          "sourceBlob": "743a8d242b579478479ae270cb367176e4cbe537",
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Engine_PrePivot_Audit_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "80/0",
+          "sourceBlob": "28ae403964d7295f2b18571c7701cc4f6344cfb5",
+          "mainBlob": "28ae403964d7295f2b18571c7701cc4f6344cfb5",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P1_Schema_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "105/0",
+          "sourceBlob": "a1bfa8fe6c990ad2e6ea6840851f9471926519b0",
+          "mainBlob": "6bc4014508bcd8f69f074dbd4407ccf82a374203",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Tactical_Spell_Mechanics_Review_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "56/0",
+          "sourceBlob": "71389850f37a7db1701d22f3b47d6d74eb2ec706",
+          "mainBlob": "f23c840aded6f5230c2d8bb5afa810d925dac947",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/encounters/combat.js",
+          "originalDiffStatus": "modified",
+          "delta": "65/4",
+          "sourceBlob": "477ac308ef2753188686b849f4b5a09518a5bd96",
+          "mainBlob": "117cab624f837d2f4205b17424ee916dedad6342",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_profile_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "100/0",
+          "sourceBlob": "e9a17e5a053ef90337160495f08b4e00404022d2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_targeting_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "6/0",
+          "sourceBlob": "a6f4376c92eeb5945c545eef6896a4b1c51f2c77",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_pg16.sql",
+          "originalDiffStatus": "modified",
+          "delta": "28/2",
+          "sourceBlob": "847bceefaf32c7160a9bb8f56b693c390bda2214",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_lock_contention.sh",
+          "originalDiffStatus": "added",
+          "delta": "74/0",
+          "sourceBlob": "94e1c0eb4aab4e59e0875c0d30dda2c9050344cf",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_pending_lock_timeout.sh",
+          "originalDiffStatus": "added",
+          "delta": "70/0",
+          "sourceBlob": "0bf7b5c619c8ceed487bfcfc59eeb7923d3c8cca",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_damage_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "236/0",
+          "sourceBlob": "46651a2fc13b0b5471d58b57ef9ce654611da7c2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_profile_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "177/0",
+          "sourceBlob": "bfb719792e36729d4693de33f77011f9eaec8773",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_targeting_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "230/0",
+          "sourceBlob": "3d862dd2d13207dcc953698fc9b32bff2889655e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/generate_eldritch_blast_local_auth_fixture.mjs",
+          "originalDiffStatus": "added",
+          "delta": "86/0",
+          "sourceBlob": "068915cbb42ec53a238b7b8782171d4cea70fbd6",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_recipe_p1_examples.mjs",
+          "originalDiffStatus": "added",
+          "delta": "108/0",
+          "sourceBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "mainBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/lib/eldritchBlastSignedInAssertions.mjs",
+          "originalDiffStatus": "added",
+          "delta": "84/0",
+          "sourceBlob": "ac8243452d2d880f4274744316d81ee7beaa4034",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_local_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "385/0",
+          "sourceBlob": "18a1add79e10876332ecb7febd39085dabce42ea",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_real_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "24/4",
+          "sourceBlob": "f731d1043caab416ab675e09781ce1b2cfc7e68e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_auth_harness.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "10/2",
+          "sourceBlob": "62e5a7897b8a1e29cbe882caaca1ebd64ce53c71",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_candidate.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "26/1",
+          "sourceBlob": "422d5e4a7fb8688811c4e849bf3d29a5294563ce",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_planner.mjs",
+          "originalDiffStatus": "added",
+          "delta": "56/0",
+          "sourceBlob": "c76d00d0f5739049d04e862c85cfbbf8d74f21af",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_signed_in_assertions.mjs",
+          "originalDiffStatus": "added",
+          "delta": "42/0",
+          "sourceBlob": "e107a6dbfb53bb32923b0bc84255e2683d95b380",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_staging_cast.mjs",
+          "originalDiffStatus": "added",
+          "delta": "54/0",
+          "sourceBlob": "974b776c33672d7e42e89b0e91129aa847ba9838",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_team_spell_visibility.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "6/1",
+          "sourceBlob": "cd2e3501c0fee88c5d4acbc73fbcd37e8feb71e3",
+          "mainBlob": "e30888ffdc579a52e2d178afbea7940fc3ce7f54",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_preflight_p1.mjs",
+          "originalDiffStatus": "added",
+          "delta": "130/0",
+          "sourceBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "mainBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_schema_p1.mjs",
+          "originalDiffStatus": "added",
+          "delta": "116/0",
+          "sourceBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "mainBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_known_spell_metadata.mjs",
+          "originalDiffStatus": "added",
+          "delta": "30/0",
+          "sourceBlob": "001778213ed2a101e56f43fb3e9a95dcd0d3e957",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_spell_mechanics_review.mjs",
+          "originalDiffStatus": "added",
+          "delta": "102/0",
+          "sourceBlob": "cbc3fef651fb4581ab4cd107693a0bc34602ceee",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261029_eldritch_blast_atomic_candidate.sql",
+          "originalDiffStatus": "modified",
+          "delta": "15/6",
+          "sourceBlob": "a41e34c545e7c84c607b383061847b048fa1a764",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_tactical_spell_profile_known_metadata_candidate.sql",
+          "originalDiffStatus": "added",
+          "delta": "130/0",
+          "sourceBlob": "c5eb49b26b1bc1b84f3a23f177d01e8998ef58e5",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastPlanner.mjs",
+          "originalDiffStatus": "added",
+          "delta": "49/0",
+          "sourceBlob": "7e4d7f2f56319eb548357c1845b1e07d540425d3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastStagingCast.mjs",
+          "originalDiffStatus": "added",
+          "delta": "42/0",
+          "sourceBlob": "3bd57db29a373d947f21abaf81016cf84b158eec",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/preflightSpellRecipe.mjs",
+          "originalDiffStatus": "added",
+          "delta": "150/0",
+          "sourceBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "mainBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/validateSpellRecipe.mjs",
+          "originalDiffStatus": "added",
+          "delta": "217/0",
+          "sourceBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "mainBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "utils/tacticalKnownSpellAssignments.mjs",
+          "originalDiffStatus": "added",
+          "delta": "11/0",
+          "sourceBlob": "9399fae16507541cc1e3a4b3ff16744b1611a2cf",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/tacticalSpellMechanicsReview.mjs",
+          "originalDiffStatus": "added",
+          "delta": "102/0",
+          "sourceBlob": "dd4bf8c2b67fab7fcfbd19c0e8ea4bd733a8f2a9",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 312,
+      "originalDossier": "docs/pr-integration/PR-312.md",
+      "expectedPRScopedChanges": 65,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "originalDiffStatus": "modified",
+          "delta": "86/0",
+          "sourceBlob": "e8b4469a4ce3a9b0b1cf37e30588eb1e7f6d08e1",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-encounter-rest-release-candidate.yml",
+          "originalDiffStatus": "modified",
+          "delta": "4/0",
+          "sourceBlob": "1d26b683887eec4e8db05a777f545571e9f84efa",
+          "mainBlob": "0e6c28227de15dfc1d6203cf1eaec2d902a28546",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-npc-delegated-local-auth.yml",
+          "originalDiffStatus": "added",
+          "delta": "86/0",
+          "sourceBlob": "e13dd6945531c526a8991b3d19d469deece78ebb",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/NpcControlPermissionsPanel.js",
+          "originalDiffStatus": "added",
+          "delta": "161/0",
+          "sourceBlob": "67572c7b04ef0be49790c1320c6bf6ff4ca4d8cf",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "originalDiffStatus": "modified",
+          "delta": "163/4",
+          "sourceBlob": "dd959ebe39fe458283f3448ac5f1b5b7a3b21465",
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Command_Replay_Baseline_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "65/0",
+          "sourceBlob": "66080c401bebfa048272cffb7e4692a05fea0e5e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Core_Action_Candidate_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "38/0",
+          "sourceBlob": "394a4c643b82f69700d6f0f4bf0261e549a8cfd3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "75/0",
+          "sourceBlob": "e4e1bf957588ac2913ee377a2f281c72fdbc7c59",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Delegated_Control_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "83/0",
+          "sourceBlob": "8cca1a7ee4633816725710292b5935a8db212573",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Indirect_Read_Audit_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "55/0",
+          "sourceBlob": "cc28fdf8de51323100fecd9ebc5aa8a27f9d349a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_RPC_Visibility_Rollout_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "82/0",
+          "sourceBlob": "91c402fc58001c86e554f39cc8a5953fd978e2b5",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Source_Visibility_Audit_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "46/0",
+          "sourceBlob": "ce88f2bd70153000c34b78c64f2a674f24c2be21",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Tactical_Spell_Profile_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "51/0",
+          "sourceBlob": "e7ad14a0231918d14a9a4e39686d17f4c0d61994",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NonLedger_Resource_Audit_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "78/0",
+          "sourceBlob": "1185a7e7d628967bcee7d1d08a3284fc30aceaf8",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "86/0",
+          "sourceBlob": "0b6e72b0cfdf006d481eef03b927c3b642969a40",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "69/0",
+          "sourceBlob": "65eebea3cd77f5dc0ac4b3e5f5d18979bea7fa0e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shared_Encounter_Lock_Graph_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "72/0",
+          "sourceBlob": "4884a8d0bc0ebeef5ee241a9ce37041ddfd3caa0",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Transaction_Candidate_2026-10-31.md",
+          "originalDiffStatus": "added",
+          "delta": "47/0",
+          "sourceBlob": "3d8254e9ab2b9f713adfda7f6316cf93d7c89a19",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "pages/encounters/combat.js",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "f7679b3d9e351dd046839d5326ab242241bcdaaf",
+          "mainBlob": "117cab624f837d2f4205b17424ee916dedad6342",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/npcs.js",
+          "originalDiffStatus": "modified",
+          "delta": "5/0",
+          "sourceBlob": "cb06a140359b17d60090be9cc7519823d94ea956",
+          "mainBlob": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/audits/encounter_command_replay_lock_readonly_p2.sql",
+          "originalDiffStatus": "added",
+          "delta": "55/0",
+          "sourceBlob": "26b5a0a064d4f64794b7e5a97799f7637fed210c",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/encounter_nonledger_resource_readonly_p2.sql",
+          "originalDiffStatus": "added",
+          "delta": "64/0",
+          "sourceBlob": "11cf466ed47a3cadaa214a0b2a3b9510b870a944",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/npc_delegated_visibility_readonly_p2.sql",
+          "originalDiffStatus": "added",
+          "delta": "50/0",
+          "sourceBlob": "e1d9f4c381c34b745968c3f060c508fea83e48e9",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/npc_sensitive_rpc_readonly_p2.sql",
+          "originalDiffStatus": "added",
+          "delta": "69/0",
+          "sourceBlob": "d2894fd41532fc28a7470574627771d871d6dad2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/spell_cast_rpc_order_readonly.sql",
+          "originalDiffStatus": "added",
+          "delta": "45/0",
+          "sourceBlob": "d4bd7ce080d3e4f81f3fad1288ad521136d7825e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql",
+          "originalDiffStatus": "added",
+          "delta": "84/0",
+          "sourceBlob": "66d6d086682412cfccf3cf2ec10e99c8aa858ad4",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "32/0",
+          "sourceBlob": "4f97578c0a3b16dbb1108ec506590505dc424eeb",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_live_replay_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "45/0",
+          "sourceBlob": "f57ff5e0db3f2547c666b712aaea389d909854a1",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_global_lock_order_p2_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "56/0",
+          "sourceBlob": "b7054b3cbd05c3b4dd6402e7ee28b8aba3864766",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonledger_resource_snapshot_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "25/0",
+          "sourceBlob": "59a9474841e5bd68faee3df1bccf7bf37485152a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonspell_ledger_live_snapshot_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "22/0",
+          "sourceBlob": "d5ed1676bbee325ab9270a33683997bc913396c7",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_shared_character_slot_p2_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "91/0",
+          "sourceBlob": "8b2ed3c4ec7ad88a5ba6fb00243fdb91bfe49627",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "226/0",
+          "sourceBlob": "441f85d9b333f03a673e0766a4b940ef14e353f3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql",
+          "originalDiffStatus": "added",
+          "delta": "121/0",
+          "sourceBlob": "a202e715a1e302ece658b5302cc68f2b0ca2bce3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql",
+          "originalDiffStatus": "added",
+          "delta": "161/0",
+          "sourceBlob": "2afdc25efc27d65f6eff5ecceb224c3a5f9cbfd3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_shadow_cases.mjs",
+          "originalDiffStatus": "added",
+          "delta": "52/0",
+          "sourceBlob": "001ade5cab8248c5c63aac58371d17ada1096116",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql",
+          "originalDiffStatus": "added",
+          "delta": "208/0",
+          "sourceBlob": "199d565642eadcb5c9dc7796c9675a6b6476cf0b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh",
+          "originalDiffStatus": "added",
+          "delta": "80/0",
+          "sourceBlob": "dbdd94d42dad60d447aa2b341ace8d6663c1259e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs",
+          "originalDiffStatus": "added",
+          "delta": "122/0",
+          "sourceBlob": "61bc735a790cef13ca40c786a3ba1c310d708815",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_control_source_visibility_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "82/0",
+          "sourceBlob": "18fa277b98c62a91f0a75b012112edce844717a1",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "116/0",
+          "sourceBlob": "5554f4b26e27ca753111122fe35026eaa9d4ec96",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql",
+          "originalDiffStatus": "added",
+          "delta": "203/0",
+          "sourceBlob": "160755cd4c80a4520336eff434efd8b2d86d3087",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "181/0",
+          "sourceBlob": "73626ea3b5a228a6be1babeefc00e4fd258a68df",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_source_read_rpc_parity_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "106/0",
+          "sourceBlob": "f6df66b1c6ca921ab37abba0beb0300d4b78e58e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_source_shape_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "75/0",
+          "sourceBlob": "b2b3699cab33bae6e46050029540ba08c585644d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "29/0",
+          "sourceBlob": "619e042ce0485ad8865ec8e618bd235433544ce5",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_cast_rpc_live_snapshot_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "29/0",
+          "sourceBlob": "a7e3f84aa712ccaeed23d97ce8f2f9a9cf3bf4a3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_local_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "465/0",
+          "sourceBlob": "f01e440479492faaeb67580eaf347843168b6c12",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_real_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "152/0",
+          "sourceBlob": "f9345d41096737069923fb08a0cbcefe4ea81367",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_command_replay_baseline_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "35/0",
+          "sourceBlob": "253609fc0ed78fdf56118b6ebe8ebc64e984cd3f",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_core_action_candidate_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "46/0",
+          "sourceBlob": "c0a713b96681fd779ed37233de45a89c5b58cff7",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_nonledger_resource_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "46/0",
+          "sourceBlob": "cddb991c6aebd63dc64e8d08852d9cc1bbfadde7",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_shared_lock_audit_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "51/0",
+          "sourceBlob": "8e12eb46874080b05d736b64ba8c9b2460d13cd8",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_delegated_control_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "60/0",
+          "sourceBlob": "5b3b6946802b4cfa2f14f535bb94b2b64a5123ff",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_real_auth_harness_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "43/0",
+          "sourceBlob": "91d19643308dc2df6a782589b577230c890b992c",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_tactical_spell_profile_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "67/0",
+          "sourceBlob": "0a53952fcc56fbf0e04a0ceaa1305b26a7828041",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_cast_rpc_inventory_p2.mjs",
+          "originalDiffStatus": "added",
+          "delta": "74/0",
+          "sourceBlob": "dc4e6dc5f06bc255488682b890b3482e5d508c0a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs",
+          "originalDiffStatus": "added",
+          "delta": "106/0",
+          "sourceBlob": "16e1c9344f61823dadf73164f4aca67a07f670f9",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_shadow_contracts.mjs",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "118b80aa27e1d1fb8a94f99a8a0bfdddda5d93b3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql",
+          "originalDiffStatus": "added",
+          "delta": "103/0",
+          "sourceBlob": "a6967455c624a27a169bb20bda5668ce217ae2e6",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql",
+          "originalDiffStatus": "added",
+          "delta": "351/0",
+          "sourceBlob": "51294cae75e8fe6a80cd886ecb307398561b04a6",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_core_action_encounter_first_private_candidate.sql",
+          "originalDiffStatus": "added",
+          "delta": "154/0",
+          "sourceBlob": "e15c237fbfa379ef790e703c65f405e943874702",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_delegated_control_candidate.sql",
+          "originalDiffStatus": "added",
+          "delta": "127/0",
+          "sourceBlob": "29e700c8bf2008c1b46abc5dc74a266547473cf7",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_v2_visibility_candidate.sql",
+          "originalDiffStatus": "added",
+          "delta": "80/0",
+          "sourceBlob": "ea7067fe22b6997cd9f600d2ecd6d7e2d682b73f",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql",
+          "originalDiffStatus": "added",
+          "delta": "243/0",
+          "sourceBlob": "d63c75adc6682963d1f8900ca21afd626c53e95e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 317,
+      "originalDossier": "docs/pr-integration/PR-317.md",
+      "expectedPRScopedChanges": 138,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-p1-3-forge-materializer-locks.yml",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "8f1ff34e6ce7c12c4ec0f1a7f6421abf02b9ebd9",
+          "mainBlob": "8f1ff34e6ce7c12c4ec0f1a7f6421abf02b9ebd9",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-p1-3-legacy-real-auth.yml",
+          "originalDiffStatus": "added",
+          "delta": "122/0",
+          "sourceBlob": "ccecd4cc41aca9675f5cc98130a1f6181c5cdfd2",
+          "mainBlob": "ccecd4cc41aca9675f5cc98130a1f6181c5cdfd2",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-p1-3-legacy-v9-v8.yml",
+          "originalDiffStatus": "added",
+          "delta": "49/0",
+          "sourceBlob": "95d10f833ece4dded56d0272a5c5ed29f8d2dab3",
+          "mainBlob": "95d10f833ece4dded56d0272a5c5ed29f8d2dab3",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-p1-3-levelup-v5-auth-locks.yml",
+          "originalDiffStatus": "added",
+          "delta": "80/0",
+          "sourceBlob": "6cd229b90ec07f050a9b0e68550d7af01bbfa72b",
+          "mainBlob": "6cd229b90ec07f050a9b0e68550d7af01bbfa72b",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-p1-3-lock-graph.yml",
+          "originalDiffStatus": "added",
+          "delta": "30/0",
+          "sourceBlob": "e439eaa1a07289b874e73ba73ae02a3b1087d96f",
+          "mainBlob": "a2bcb80bd24860db8e7bd515987522100baaebeb",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-p1-3-pg16.yml",
+          "originalDiffStatus": "added",
+          "delta": "55/0",
+          "sourceBlob": "9bbeb447f4f6cdffa0c3bffc9cc58ca4edfc84e3",
+          "mainBlob": "9bbeb447f4f6cdffa0c3bffc9cc58ca4edfc84e3",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-p1-3-real-admin-paths.yml",
+          "originalDiffStatus": "added",
+          "delta": "211/0",
+          "sourceBlob": "a25777b647cc09e6ae6380189681e56e7041d6bf",
+          "mainBlob": "a25777b647cc09e6ae6380189681e56e7041d6bf",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "95/10",
+          "sourceBlob": "75d85916bc61a26a936110182600c566e4f8abb0",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/CHARACTER_CREATION_ADMIN_NOTICE_AND_DELEGATED_RIGHTS_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "69/0",
+          "sourceBlob": "f7db575987a6afe36511950ea92c9562c1d0f66f",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "427/0",
+          "sourceBlob": "fe608c02b900aab846b2417b87e26f031b037adc",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/P1_2_Command_Replay_Contract_2026-11-01.md",
+          "originalDiffStatus": "modified",
+          "delta": "7/7",
+          "sourceBlob": "eebaf455fe63bc973af171cdda770069ff176576",
+          "mainBlob": "5690b451ded7984a673c22e98bfdd494771c2d51",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/P1_3_Admin_Progression_Sheet_CP_CS_Race_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "43/0",
+          "sourceBlob": "c8aeae24c2d8ee9ea2bb5c17c8cf397e90296164",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_EndTurn_Move_Reaction_Guarded_2026-11-03.md",
+          "originalDiffStatus": "added",
+          "delta": "55/0",
+          "sourceBlob": "91462936b1d0ab206ddce40b9a5677404af7a0af",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Forge_Deferred_Progression_Sheet_Locks_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "63/0",
+          "sourceBlob": "3e3260ef2fd97347d61e3a2c25913e24bf425d58",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Global_Lock_Order_Research_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "120/0",
+          "sourceBlob": "e9cce8ecac056f3e10326c56cb7a4da419bf565c",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Grant_Revoke_Controller_and_RLS_2026-11-03.md",
+          "originalDiffStatus": "added",
+          "delta": "54/0",
+          "sourceBlob": "442e5ab0e7df8ad2f61633953ad4d47adff06270",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Guarded_Replay_Two_Family_Candidate_2026-11-03.md",
+          "originalDiffStatus": "added",
+          "delta": "44/0",
+          "sourceBlob": "4957cc38ceda9b7ed946747d2d54ab7246a5945b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Hidden_Result_Privacy_and_Unarmed_Opportunity_2026-11-03.md",
+          "originalDiffStatus": "added",
+          "delta": "79/0",
+          "sourceBlob": "e9cd1ca3f5f592a78c59e98f41257c12dbf5375d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Historical_Recovery_Inventory_Grant_Delegation_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "71/0",
+          "sourceBlob": "34e89767102413a88553d25e629482fb8bd8654a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Inventory_Race_and_Combat_Only_Equipment_2026-11-03.md",
+          "originalDiffStatus": "added",
+          "delta": "53/0",
+          "sourceBlob": "3c4d805f4195e47ab498b226b73a760108cf3106",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Legacy_v11_Guiding_Bolt_v10_Mind_Sliver_2026-11-02.md",
+          "originalDiffStatus": "added",
+          "delta": "42/0",
+          "sourceBlob": "91ee5fcb8bdfa985bb6f57362ae8060fe3fdd551",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Legacy_v9_to_v1_Real_JWT_2026-11-03.md",
+          "originalDiffStatus": "added",
+          "delta": "35/0",
+          "sourceBlob": "928763ee0969080e250478f93cce46328c127147",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Legacy_v9_to_v1_Replay_2026-11-02.md",
+          "originalDiffStatus": "added",
+          "delta": "41/0",
+          "sourceBlob": "688fa3c6b5bab5d51534ca98242e6a7e2b17854c",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Opportunity_Attack_Delegated_Spell_Replay_2026-11-02.md",
+          "originalDiffStatus": "added",
+          "delta": "50/0",
+          "sourceBlob": "3c50c6c8ba9e2b007b61ca48fe662d426093c65a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Option_A_Concurrency_Model_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "20/0",
+          "sourceBlob": "49f8e58747d179828b896a64f5f8d531a255cf43",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Original_Admin_Grant_G_vs_Levelup_CP_CS_Research_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "38/0",
+          "sourceBlob": "fe569bb73bdfc275566eba38ba62304f15efb3db",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Original_Attack_Roll_and_Weapon_Authority_2026-11-03.md",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "b9b1ba8914a4571cb5e82d2c13f522058b33e86d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Original_Equipment_Grant_Revocation_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "28/0",
+          "sourceBlob": "633e1750bf09c35c6a90387c9170d2195030b509",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Original_Forge_Creation_Replay_Source_Audit_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "46/0",
+          "sourceBlob": "6d65d166c7bf94929383a7a5cd19095fefc40d83",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Original_Merchant_I_vs_Earned_G_and_Owner_Constraint_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "59/0",
+          "sourceBlob": "d2415be271189dc58c891f1db4f37fe00de32e84",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Player_Levelup_V5_Signed_Editor_CP_CS_Race_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "45/0",
+          "sourceBlob": "4e7ce3c5ccb02478f59f0875063c4aee69192c56",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Public_Activation_Cast_Reachability_2026-11-02.md",
+          "originalDiffStatus": "added",
+          "delta": "46/0",
+          "sourceBlob": "59c37bb640ea24989b057758212c8cda462399d3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Public_Turnflow_Weapon_Replay_PG16_2026-11-02.md",
+          "originalDiffStatus": "added",
+          "delta": "53/0",
+          "sourceBlob": "c03158f1e0d839158fe64026d1b8caa97c9222ff",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Public_v9_v8_Routing_2026-11-02.md",
+          "originalDiffStatus": "added",
+          "delta": "25/0",
+          "sourceBlob": "842eafa8ee0007410126094d80823cefe0a7a739",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "23/0",
+          "sourceBlob": "82999ae038e00914b13ab0ead3f27df0bedf8d29",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Refresh_vs_Spend_Source_Lock_2026-11-02.md",
+          "originalDiffStatus": "added",
+          "delta": "36/0",
+          "sourceBlob": "6f877746a4f47f98212b51039d2b32de640ed111",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Source_Original_Player_Level4_Grant_vs_Admin_G_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "e3982d6aed2933e6f2806a4b8f78f262528867b2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Spell_Slot_and_Revocation_PG16_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "40/0",
+          "sourceBlob": "6e413ecee8bfde73f89f9adc6df582d611bb4f96",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Staging_Start_Lock_Race_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "22/0",
+          "sourceBlob": "8f9405b7ac4a737735fcef9fb5793d5c8652e1cd",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md",
+          "originalDiffStatus": "added",
+          "delta": "30/0",
+          "sourceBlob": "4db41f89f2668b4b1e6f3a1742748fbfdb39e39a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/PHASED_DEVELOPMENT_CHECKLIST.md",
+          "originalDiffStatus": "modified",
+          "delta": "3/3",
+          "sourceBlob": "adc6cb428e289212ddc05b1df25e098e0a52efd2",
+          "mainBlob": "660eb66e5360eab38478355b77f74cfcd4689544",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "originalDiffStatus": "modified",
+          "delta": "13/0",
+          "sourceBlob": "5f649a1cd48dc6fb9ea26bf1a048080890b26fa4",
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/SYSTEM_REGISTRY.json",
+          "originalDiffStatus": "modified",
+          "delta": "143/13",
+          "sourceBlob": "838077e6653dbaa1808a36704dd522b4977eca82",
+          "mainBlob": "811e89ca3f37eb93f2dfb8c9af52473fc0dc6e19",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/TACTICAL_ENCOUNTER_OWNER_DECISIONS.md",
+          "originalDiffStatus": "added",
+          "delta": "128/0",
+          "sourceBlob": "da37c61cd641b46ecbf5630586deebcc94f0adef",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/p1_3_inventory_grant_visibility_readonly.sql",
+          "originalDiffStatus": "added",
+          "delta": "62/0",
+          "sourceBlob": "5496671cbf610546891367ba28d53616f90bbb0a",
+          "mainBlob": "5496671cbf610546891367ba28d53616f90bbb0a",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/audits/p1_3_live_lock_order_readonly.sql",
+          "originalDiffStatus": "added",
+          "delta": "18/0",
+          "sourceBlob": "7f78709150e1c86726720fafd8efc993a44245c7",
+          "mainBlob": "7f78709150e1c86726720fafd8efc993a44245c7",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "117/0",
+          "sourceBlob": "d83cbc89d3b8c3a084f590a1876c2a5dff8ec99d",
+          "mainBlob": "d83cbc89d3b8c3a084f590a1876c2a5dff8ec99d",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "130/0",
+          "sourceBlob": "8269b57301a92751937c0a6a0c9529e8e7eb6848",
+          "mainBlob": "8269b57301a92751937c0a6a0c9529e8e7eb6848",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_admin_progression_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "92/0",
+          "sourceBlob": "160c9844c4aa661b41f3fc353ad3652318f33c27",
+          "mainBlob": "160c9844c4aa661b41f3fc353ad3652318f33c27",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "63/0",
+          "sourceBlob": "f570bba18c4bad268478aa10ef673dbc58c33936",
+          "mainBlob": "f570bba18c4bad268478aa10ef673dbc58c33936",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_admin_staging_source_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "31/0",
+          "sourceBlob": "079a91dc88291779f717ed11640d93992a10855e",
+          "mainBlob": "079a91dc88291779f717ed11640d93992a10855e",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_delegation_acceptance_matrix.json",
+          "originalDiffStatus": "added",
+          "delta": "168/0",
+          "sourceBlob": "f51ea3525a3ed1e2d35c869bf5ab7be7e71193cd",
+          "mainBlob": "f51ea3525a3ed1e2d35c869bf5ab7be7e71193cd",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_equipment_mutation_live_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "194/0",
+          "sourceBlob": "e1c0838d5d062d72b49f869e84a31d8735bd17c0",
+          "mainBlob": "e1c0838d5d062d72b49f869e84a31d8735bd17c0",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "173/0",
+          "sourceBlob": "7f7a30d23e456924bcf8d34917abbc885c2938ff",
+          "mainBlob": "7f7a30d23e456924bcf8d34917abbc885c2938ff",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_forge_materializer_original_functions_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "468/0",
+          "sourceBlob": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+          "mainBlob": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "202/0",
+          "sourceBlob": "8c4fc561b79910de0c9335e9f09bda999a7fee3c",
+          "mainBlob": "8c4fc561b79910de0c9335e9f09bda999a7fee3c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_hidden_activity_projection_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "121/0",
+          "sourceBlob": "bb82d5b785482d56585af46a3f6e8325db7ee389",
+          "mainBlob": "bb82d5b785482d56585af46a3f6e8325db7ee389",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "36/0",
+          "sourceBlob": "1d47c3e57506e0c1a548cd310ecc74b0e5c827db",
+          "mainBlob": "1d47c3e57506e0c1a548cd310ecc74b0e5c827db",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "202/0",
+          "sourceBlob": "6a5a840a7231b55c2ba6b1b23dda779c70c5842c",
+          "mainBlob": "6a5a840a7231b55c2ba6b1b23dda779c70c5842c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_legacy_core_action_live_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "34/0",
+          "sourceBlob": "8e0a4f602d683cd899aa802e9b0545529f160605",
+          "mainBlob": "8e0a4f602d683cd899aa802e9b0545529f160605",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "202/0",
+          "sourceBlob": "a67f3c44c757dde5b18222bdb2d2087172634b05",
+          "mainBlob": "a67f3c44c757dde5b18222bdb2d2087172634b05",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_legacy_v9_to_v1_cases_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "134/0",
+          "sourceBlob": "bf9204aefbfe9b501b40cf713e9744a0b585382c",
+          "mainBlob": "bf9204aefbfe9b501b40cf713e9744a0b585382c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "1163/0",
+          "sourceBlob": "47f7053a16a756d054feb6772027e311963001ff",
+          "mainBlob": "47f7053a16a756d054feb6772027e311963001ff",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_legacy_v9_v8_routing_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "74/0",
+          "sourceBlob": "c41820a3bc334d0460813fc6922fb21317a4b8d5",
+          "mainBlob": "c41820a3bc334d0460813fc6922fb21317a4b8d5",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "163/0",
+          "sourceBlob": "a1d11bfabb3a4816bb2829b76a893d2bc466ab74",
+          "mainBlob": "a1d11bfabb3a4816bb2829b76a893d2bc466ab74",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_level4_advancement_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "339/0",
+          "sourceBlob": "4aa6961ea1521a0fa9901c6207ffeb9c1b44fd81",
+          "mainBlob": "4aa6961ea1521a0fa9901c6207ffeb9c1b44fd81",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "311/0",
+          "sourceBlob": "6619cc35a9e927696868bf13d3c8942116c9c8c3",
+          "mainBlob": "6619cc35a9e927696868bf13d3c8942116c9c8c3",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_levelup_v5_original_source_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "658/0",
+          "sourceBlob": "b3168d0c9ec92ae1c0c389ccf55655209f2841f8",
+          "mainBlob": "b3168d0c9ec92ae1c0c389ccf55655209f2841f8",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_live_admin_source_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "60/0",
+          "sourceBlob": "3cab71fc6aec1db7c70bc9db0f02eabceccc9d6c",
+          "mainBlob": "3cab71fc6aec1db7c70bc9db0f02eabceccc9d6c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_live_admin_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "177/0",
+          "sourceBlob": "ba91eae0467cea47b7bbcb221f0691d386ba5c6d",
+          "mainBlob": "ba91eae0467cea47b7bbcb221f0691d386ba5c6d",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "51/0",
+          "sourceBlob": "0f1107dd8dfe5eb68353a0c87b2ae57af73728ee",
+          "mainBlob": "0f1107dd8dfe5eb68353a0c87b2ae57af73728ee",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_lock_order_graph.json",
+          "originalDiffStatus": "added",
+          "delta": "246/0",
+          "sourceBlob": "f48bf48cef94c845cc8be5497f0ad9364926c829",
+          "mainBlob": "f48bf48cef94c845cc8be5497f0ad9364926c829",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "33/0",
+          "sourceBlob": "62c76b301aa8cffa0a01dff71124f24fc78cea72",
+          "mainBlob": "62c76b301aa8cffa0a01dff71124f24fc78cea72",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "69/0",
+          "sourceBlob": "437553317cfcb4e7a2d3476c0bbcab90359b1557",
+          "mainBlob": "437553317cfcb4e7a2d3476c0bbcab90359b1557",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "18/0",
+          "sourceBlob": "8c6a15a769782ba5e9ba57d5221c64e60bc14551",
+          "mainBlob": "8c6a15a769782ba5e9ba57d5221c64e60bc14551",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_option_a_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "74/0",
+          "sourceBlob": "1d50ceff048086c84730f60e1b4a15157050e418",
+          "mainBlob": "1d50ceff048086c84730f60e1b4a15157050e418",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_option_a_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "41/0",
+          "sourceBlob": "0a9380e94891590a7543d5185b185aedb3a247e4",
+          "mainBlob": "0a9380e94891590a7543d5185b185aedb3a247e4",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_original_attack_roll_live_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "116/0",
+          "sourceBlob": "b2c5a074068257bcc879c9156aa199d81a97c593",
+          "mainBlob": "b2c5a074068257bcc879c9156aa199d81a97c593",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_original_equipped_weapon_research_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "126/0",
+          "sourceBlob": "75e502f09a3e955bbdd93fa0aeaf0b3e27243e77",
+          "mainBlob": "75e502f09a3e955bbdd93fa0aeaf0b3e27243e77",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "129/0",
+          "sourceBlob": "cd2db6a6197fa706c14c42c20ea523daadfb0e73",
+          "mainBlob": "cd2db6a6197fa706c14c42c20ea523daadfb0e73",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_original_merchant_inventory_source_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "719/0",
+          "sourceBlob": "422119d45b34457a0be697c5cef9b58dc9b80068",
+          "mainBlob": "422119d45b34457a0be697c5cef9b58dc9b80068",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_original_roll_timed_effect_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "74/0",
+          "sourceBlob": "756c7802f5aad73372fee29ed985cb2b5d1ab52f",
+          "mainBlob": "756c7802f5aad73372fee29ed985cb2b5d1ab52f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_original_weapon_profile_live_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "94/0",
+          "sourceBlob": "3ecea17f0ed8cad43554a1c416f2adb48a048888",
+          "mainBlob": "3ecea17f0ed8cad43554a1c416f2adb48a048888",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_permission_controller_rls_parity_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "161/0",
+          "sourceBlob": "7b896bc81e7764e80489d96032dca387970aea26",
+          "mainBlob": "7b896bc81e7764e80489d96032dca387970aea26",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_permission_live_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "24/0",
+          "sourceBlob": "425f987ef80b9ce7fdda2936369465272bda1db1",
+          "mainBlob": "425f987ef80b9ce7fdda2936369465272bda1db1",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_permission_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "54/0",
+          "sourceBlob": "7408b092c10b00a911a88e5b8d8d9fcee260a016",
+          "mainBlob": "7408b092c10b00a911a88e5b8d8d9fcee260a016",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_permission_row_lock_candidate_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "29/0",
+          "sourceBlob": "89b755ef7acf5e293590a1d94bebe4d735b6adc1",
+          "mainBlob": "89b755ef7acf5e293590a1d94bebe4d735b6adc1",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_permission_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "13/0",
+          "sourceBlob": "f32977bbd84bde0be59d84de633e89ce909c740c",
+          "mainBlob": "f32977bbd84bde0be59d84de633e89ce909c740c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_public_cast_start_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "75/0",
+          "sourceBlob": "714a8cb0bd1fe806016cfcfb6e175869bb45c92c",
+          "mainBlob": "714a8cb0bd1fe806016cfcfb6e175869bb45c92c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_public_cast_start_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "70/0",
+          "sourceBlob": "67d006fe18b3675e587500378956663c02f36f52",
+          "mainBlob": "67d006fe18b3675e587500378956663c02f36f52",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "82/0",
+          "sourceBlob": "81fe579c2053725cc6526538a7c46d81c2c98a7f",
+          "mainBlob": "81fe579c2053725cc6526538a7c46d81c2c98a7f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_reaction_attack_damage_live_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "148/0",
+          "sourceBlob": "f70585c121d55211945e42034d60d623f610a699",
+          "mainBlob": "f70585c121d55211945e42034d60d623f610a699",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_real_refresh_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "56/0",
+          "sourceBlob": "5e616943dc34ff17e16ca79ad9c156c24af67627",
+          "mainBlob": "5e616943dc34ff17e16ca79ad9c156c24af67627",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_real_refresh_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "28/0",
+          "sourceBlob": "7dfaebafc95fe3db965dd438c7441dd9378a7a78",
+          "mainBlob": "7dfaebafc95fe3db965dd438c7441dd9378a7a78",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_real_refresh_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "68/0",
+          "sourceBlob": "15e8a25bb029545052d236bb37f6c7585ecfbbbf",
+          "mainBlob": "15e8a25bb029545052d236bb37f6c7585ecfbbbf",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "123/0",
+          "sourceBlob": "b22a8ee32c81f9c0b16c8d478f538ab744a93079",
+          "mainBlob": "b22a8ee32c81f9c0b16c8d478f538ab744a93079",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_slot_bridge_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "d02f23d372e9312823b92e9bff9180975964e774",
+          "mainBlob": "d02f23d372e9312823b92e9bff9180975964e774",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "64/0",
+          "sourceBlob": "fb907f9295ec6529548889dda59326809b884f60",
+          "mainBlob": "fb907f9295ec6529548889dda59326809b884f60",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "45/0",
+          "sourceBlob": "ea2f5becc2803157e0bc4dc9924f7eeddd49241e",
+          "mainBlob": "ea2f5becc2803157e0bc4dc9924f7eeddd49241e",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "22/0",
+          "sourceBlob": "1aab9d223c0da74e521c60f4cb3ef5554c57f979",
+          "mainBlob": "1aab9d223c0da74e521c60f4cb3ef5554c57f979",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "168/0",
+          "sourceBlob": "5e1e08251f4605c79e115824214bcf3e50d31b08",
+          "mainBlob": "5e1e08251f4605c79e115824214bcf3e50d31b08",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "58/0",
+          "sourceBlob": "40211cd3b13295f04689bbc44097b26463775461",
+          "mainBlob": "40211cd3b13295f04689bbc44097b26463775461",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v11_guiding_bolt_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "40/0",
+          "sourceBlob": "3471dd1f465e53a1594ab54f9cc9a48f0d58be19",
+          "mainBlob": "3471dd1f465e53a1594ab54f9cc9a48f0d58be19",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "318/0",
+          "sourceBlob": "987671230ed760eeb01a336c4499eb237fb41006",
+          "mainBlob": "987671230ed760eeb01a336c4499eb237fb41006",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "48/0",
+          "sourceBlob": "0a42b8e8ca49b14298912cdc6435dfaad016c21f",
+          "mainBlob": "0a42b8e8ca49b14298912cdc6435dfaad016c21f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "36/0",
+          "sourceBlob": "ad095619c5e0c64b61f39ee5637c40260b57a5ec",
+          "mainBlob": "ad095619c5e0c64b61f39ee5637c40260b57a5ec",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "213/0",
+          "sourceBlob": "9483b304ac81d60c97ef193c34b5ffbfd4c173dc",
+          "mainBlob": "9483b304ac81d60c97ef193c34b5ffbfd4c173dc",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_staging_lock_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "83/0",
+          "sourceBlob": "33fe16a74ee33c55ffe482714ef4501227edb2bd",
+          "mainBlob": "33fe16a74ee33c55ffe482714ef4501227edb2bd",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql",
+          "originalDiffStatus": "added",
+          "delta": "30/0",
+          "sourceBlob": "72cefd5bd4193968e6af7e30a07ce7eadffb8bf8",
+          "mainBlob": "72cefd5bd4193968e6af7e30a07ce7eadffb8bf8",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_staging_lock_race_pg16_setup.sql",
+          "originalDiffStatus": "added",
+          "delta": "12/0",
+          "sourceBlob": "d76401dddb736beb62546ab6a236cc15529cb1b4",
+          "mainBlob": "d76401dddb736beb62546ab6a236cc15529cb1b4",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_tc1_test_trigger_only.sql",
+          "originalDiffStatus": "added",
+          "delta": "22/0",
+          "sourceBlob": "97ace83e47d8ffedc68a6ca8906431a31b1cc0b5",
+          "mainBlob": "97ace83e47d8ffedc68a6ca8906431a31b1cc0b5",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "41/0",
+          "sourceBlob": "0ba767d67b2ff08e1e0046cdd7b803471ba2a419",
+          "mainBlob": "0ba767d67b2ff08e1e0046cdd7b803471ba2a419",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turn_expiry_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "59/0",
+          "sourceBlob": "374f59ebcdb186aa1bb2b6591557013a62127c69",
+          "mainBlob": "374f59ebcdb186aa1bb2b6591557013a62127c69",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "23/0",
+          "sourceBlob": "35dc4f75954974d8536f26a50285f93fe050c2b8",
+          "mainBlob": "35dc4f75954974d8536f26a50285f93fe050c2b8",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turn_move_reaction_guarded_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "287/0",
+          "sourceBlob": "cf7914e95a1b9b36243689426c86cfb4fc12e7bd",
+          "mainBlob": "cf7914e95a1b9b36243689426c86cfb4fc12e7bd",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turn_move_reaction_live_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "197/0",
+          "sourceBlob": "a68db51080e97da134b1985fb2a14b03323ad94d",
+          "mainBlob": "a68db51080e97da134b1985fb2a14b03323ad94d",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turnflow_public_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "239/0",
+          "sourceBlob": "766d44881adf217add542c6429c2ea728c8a7d3d",
+          "mainBlob": "766d44881adf217add542c6429c2ea728c8a7d3d",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turnflow_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "83/0",
+          "sourceBlob": "e0b9887e0de31b6d3d89545741b2efbf21196cb1",
+          "mainBlob": "e0b9887e0de31b6d3d89545741b2efbf21196cb1",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_turnflow_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "55/0",
+          "sourceBlob": "6b8087ca3f10c1f18e0a498bf91acfaa60e9d8b5",
+          "mainBlob": "6b8087ca3f10c1f18e0a498bf91acfaa60e9d8b5",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_unarmed_reaction_attack_research_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "149/0",
+          "sourceBlob": "bef16ebbf3328119280573b42deecc5f86fa3415",
+          "mainBlob": "bef16ebbf3328119280573b42deecc5f86fa3415",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "36/0",
+          "sourceBlob": "184387647eb2cd0391fac90afe1d119b946aa25c",
+          "mainBlob": "184387647eb2cd0391fac90afe1d119b946aa25c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_weapon_attack_race_pg16.sh",
+          "originalDiffStatus": "added",
+          "delta": "63/0",
+          "sourceBlob": "6bd0755b7a4de8460488a9d2acdb1f04ac723c7a",
+          "mainBlob": "6bd0755b7a4de8460488a9d2acdb1f04ac723c7a",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_weapon_attack_setup_pg16.sql",
+          "originalDiffStatus": "added",
+          "delta": "41/0",
+          "sourceBlob": "fddf3b362b9c2c62228f0cd9a10acad29c2b1cf6",
+          "mainBlob": "fddf3b362b9c2c62228f0cd9a10acad29c2b1cf6",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_forge_materializer_lock_pg17.mjs",
+          "originalDiffStatus": "added",
+          "delta": "185/0",
+          "sourceBlob": "eaaf6631df6e85c838d01a056e5fe11ba5135d0a",
+          "mainBlob": "eaaf6631df6e85c838d01a056e5fe11ba5135d0a",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_guarded_candidate_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "220/0",
+          "sourceBlob": "71219baf286a9fd12cb403dcb93d76defae55432",
+          "mainBlob": "71219baf286a9fd12cb403dcb93d76defae55432",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_hidden_activity_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "176/0",
+          "sourceBlob": "66c70a62e6173aa1d2bb48165c0ab48b8d36eb4e",
+          "mainBlob": "66c70a62e6173aa1d2bb48165c0ab48b8d36eb4e",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_inventory_race_combat_only_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "198/0",
+          "sourceBlob": "2804a4df89386539b67030ed7299b3a624c77f48",
+          "mainBlob": "2804a4df89386539b67030ed7299b3a624c77f48",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_legacy_real_jwt_local.mjs",
+          "originalDiffStatus": "added",
+          "delta": "161/0",
+          "sourceBlob": "70c42b593ff0d248be2debbeec149a11c27ba5a3",
+          "mainBlob": "70c42b593ff0d248be2debbeec149a11c27ba5a3",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_levelup_v5_real_jwt_local.mjs",
+          "originalDiffStatus": "added",
+          "delta": "441/0",
+          "sourceBlob": "e0eeb12ac6a7282f3cb5684645725340dd426f91",
+          "mainBlob": "e0eeb12ac6a7282f3cb5684645725340dd426f91",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_original_equipped_weapon_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "148/0",
+          "sourceBlob": "847317348d26baecb9c615c4bcd2367781b63f0c",
+          "mainBlob": "847317348d26baecb9c615c4bcd2367781b63f0c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_original_roll_timed_effect_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "105/0",
+          "sourceBlob": "ae9551a67adc98004cfee594ffe0d86e28202651",
+          "mainBlob": "ae9551a67adc98004cfee594ffe0d86e28202651",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_permission_controller_rls_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "309/0",
+          "sourceBlob": "cbf75063127dc4578a7172c8b10cc7d546bc29ab",
+          "mainBlob": "cbf75063127dc4578a7172c8b10cc7d546bc29ab",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_turn_move_reaction_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "201/0",
+          "sourceBlob": "a3cef4efadf826c765c8032497e7953e50dfebe5",
+          "mainBlob": "a3cef4efadf826c765c8032497e7953e50dfebe5",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs",
+          "originalDiffStatus": "added",
+          "delta": "181/0",
+          "sourceBlob": "563ab0bf9dc9bd82e3ceed316b2544035326ebcc",
+          "mainBlob": "563ab0bf9dc9bd82e3ceed316b2544035326ebcc",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_p1_2_request_contract.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "22/1",
+          "sourceBlob": "0a39457803876032894e94dff0f03b32d77afadf",
+          "mainBlob": "7043d13fc3e423c7c0bae4ab42e9f06af5aa0020",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_p1_3_forge_materializer_source.mjs",
+          "originalDiffStatus": "added",
+          "delta": "78/0",
+          "sourceBlob": "bb83037c80960f18fecc02028a26d6bb67c103e1",
+          "mainBlob": "bb83037c80960f18fecc02028a26d6bb67c103e1",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_p1_3_levelup_v5_source.mjs",
+          "originalDiffStatus": "added",
+          "delta": "152/0",
+          "sourceBlob": "e6fd9c8ffe44b9a862f36c5d9a9e88ff2ca1e6b5",
+          "mainBlob": "e6fd9c8ffe44b9a862f36c5d9a9e88ff2ca1e6b5",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_p1_3_lock_graph.mjs",
+          "originalDiffStatus": "added",
+          "delta": "33/0",
+          "sourceBlob": "3475a503fded31979c450b0be7ba8a65271231b3",
+          "mainBlob": "5ed0f3209bb7767747909d4a42906bf17901f1f6",
+          "pathStatus": "different_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 318,
+      "originalDossier": "docs/pr-integration/PR-318.md",
+      "expectedPRScopedChanges": 11,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-admin-character-creation-notices.yml",
+          "originalDiffStatus": "added",
+          "delta": "124/0",
+          "sourceBlob": "f13629bf8c5ed65f5868d98a4c3e55e78833295a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/character/AdminCharacterPermissionsPanel.js",
+          "originalDiffStatus": "added",
+          "delta": "276/0",
+          "sourceBlob": "c49bea9def0bd8c62ebdc1afaeccb582dcdd111a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Admin_Character_Creation_Notice_Candidate_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "52/0",
+          "sourceBlob": "2764e397319ae0c44b3af3645b458ccc4aef13c2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "pages/admin/activity.js",
+          "originalDiffStatus": "modified",
+          "delta": "100/3",
+          "sourceBlob": "ef4381a4fe00d8f8c66abd461b2ae1e9d68d6477",
+          "mainBlob": "47fe5943e6e0f7f0759016125c6100f671a0c732",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/npcs.js",
+          "originalDiffStatus": "modified",
+          "delta": "12/0",
+          "sourceBlob": "b3febb8b0619980fa7875808115d2b30c8720d3e",
+          "mainBlob": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/admin_character_creation_notice_candidate_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "156/0",
+          "sourceBlob": "12a343b3bec7e39593a34c222573a48f5e0dff7d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/admin_character_creation_notice_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "67/0",
+          "sourceBlob": "a3fc58ab5839960ae916259e80077aa08237dca0",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_admin_character_creation_notice_local_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "168/0",
+          "sourceBlob": "3f5919732b13ca78c6139998cf2961547fd50ec9",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_admin_character_creation_notices_candidate.mjs",
+          "originalDiffStatus": "added",
+          "delta": "60/0",
+          "sourceBlob": "a4d4f45fe6883dca9e14c4b37b94ce6c1b1bf0c1",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_character_permission_editor.mjs",
+          "originalDiffStatus": "added",
+          "delta": "47/0",
+          "sourceBlob": "4bb933f325d340964f61a6a6f738bc0bb18be0a5",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_admin_character_creation_notices_v1.sql",
+          "originalDiffStatus": "added",
+          "delta": "111/0",
+          "sourceBlob": "2818018280617335047e6a8fb7f09f87f49949ec",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 320,
+      "originalDossier": "docs/pr-integration/PR-320.md",
+      "expectedPRScopedChanges": 13,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-centered-npc-profile.yml",
+          "originalDiffStatus": "added",
+          "delta": "48/0",
+          "sourceBlob": "17eeee2938ac0994760c778632bc630b70d6bb7e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/GlobalNpcProfileOverlay.js",
+          "originalDiffStatus": "added",
+          "delta": "166/0",
+          "sourceBlob": "b2f05c458eb294bba2cc3d2a2befc9473f7b8b3b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/MapPageClient.js",
+          "originalDiffStatus": "modified",
+          "delta": "2/2",
+          "sourceBlob": "3e6bf39d48de6f28aac90f6bac1400fa9a00bf1f",
+          "mainBlob": "61f8738da2ca3d8635b5a413bfdc18c094228a0a",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/NpcPanel.js",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "d35811e1bc060a52bca9ab9c04900c8ad164b96b",
+          "mainBlob": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/town/TownCrafterInteractionPanel.js",
+          "originalDiffStatus": "modified",
+          "delta": "2/1",
+          "sourceBlob": "6be8eb9e041d74f784d136e672c0df9d2d27774d",
+          "mainBlob": "345629409b45cd5da5bf305a8124fbbe46ec0d15",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/NPC_Profile_First_Centered_Overlay_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "33/0",
+          "sourceBlob": "994cdbe09230cd71c652fe6d676d50b82e63f2de",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "pages/_app.js",
+          "originalDiffStatus": "modified",
+          "delta": "3/0",
+          "sourceBlob": "5a1981d58af0f0b99519538093157d27a0d60d35",
+          "mainBlob": "e5f68c0abb293089d6ad09d4e3e4035612eac598",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/inventory.js",
+          "originalDiffStatus": "modified",
+          "delta": "23/6",
+          "sourceBlob": "b3d71b65f38b37cae8eeb44c6882e493ae6c33b3",
+          "mainBlob": "02d52821d0f22aa82ad92263c5014712906ee385",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/town/[id].js",
+          "originalDiffStatus": "modified",
+          "delta": "36/3",
+          "sourceBlob": "3c84f8f538844bc179317e58673362f0d28b7059",
+          "mainBlob": "a4e790e5941afb16660a112ee9189e4a84d4afb7",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_centered_npc_profile_entrypoints.mjs",
+          "originalDiffStatus": "added",
+          "delta": "108/0",
+          "sourceBlob": "b814ff42ff4cfb349b42d2072cffe2f574bcae60",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_town_crafter_interaction_component.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "25d6d25e4b088d5f0f55be8e328343a163b4d401",
+          "mainBlob": "df5e99047c1d2b483e2c52085eb1e82cc500efb4",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "styles/npc-profile-centered.css",
+          "originalDiffStatus": "added",
+          "delta": "214/0",
+          "sourceBlob": "150eb9ad78aeba268be955e63c8451e3c0ed0e14",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/npcProfileOverlay.js",
+          "originalDiffStatus": "added",
+          "delta": "15/0",
+          "sourceBlob": "3d809c47a9aaae18d0e7e5ec6500199a9266baac",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 321,
+      "originalDossier": "docs/pr-integration/PR-321.md",
+      "expectedPRScopedChanges": 10,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-p1-3-npc-profile-rls.yml",
+          "originalDiffStatus": "added",
+          "delta": "79/0",
+          "sourceBlob": "93f94bbb4d5debc59a682b2fa46bab8bf2fd2e20",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "153/0",
+          "sourceBlob": "4c6fe3ea0918b15afc53a4707f5c2cfcc27cf748",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_npc_creator_replay_fixture_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "35/0",
+          "sourceBlob": "7fc70929c7b7b21f836a8347139e356ed7e906dd",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "85/0",
+          "sourceBlob": "2355ceaf306d6dde1ec90c634f71e919894d3859",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "121/0",
+          "sourceBlob": "9c479d3f044268f73da3a5515d229096ce03f94a",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "540/0",
+          "sourceBlob": "5dbe1bf33429a107ed787c25333edca85dc17f08",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_p1_3_npc_profile_rls_source.mjs",
+          "originalDiffStatus": "added",
+          "delta": "116/0",
+          "sourceBlob": "4f590a855fbb851617e20f54a0702f0eacff1789",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+          "originalDiffStatus": "added",
+          "delta": "335/0",
+          "sourceBlob": "1454dee7bd513fab4c959f2321609b4c69e9c3d6",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql",
+          "originalDiffStatus": "added",
+          "delta": "57/0",
+          "sourceBlob": "542d87dcbd426fcd2191823514f8b4ff95d330aa",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
+          "originalDiffStatus": "added",
+          "delta": "155/0",
+          "sourceBlob": "9dfe44eee49df6ead8c8ccfc7a0454a996b8bee3",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 322,
+      "originalDossier": "docs/pr-integration/PR-322.md",
+      "expectedPRScopedChanges": 10,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-npc-private-profile-cutover.yml",
+          "originalDiffStatus": "added",
+          "delta": "42/0",
+          "sourceBlob": "2be8b3352802fd677693c59b14fcd6d8075f3020",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/CreatorBackstoryPanel.js",
+          "originalDiffStatus": "added",
+          "delta": "95/0",
+          "sourceBlob": "23b0e86aab7a80b7243365ba107c1d37a5ec5812",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/NpcPanel.js",
+          "originalDiffStatus": "modified",
+          "delta": "42/54",
+          "sourceBlob": "001d0d67ae328d42bbcf2a0e14dfc486a1b30a3b",
+          "mainBlob": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/NPC_Private_Reader_Client_Cutover_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "26/0",
+          "sourceBlob": "f13fe5ae3c26230fe7f0ed6adff9c9c6df4b69d4",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "pages/npcs.js",
+          "originalDiffStatus": "modified",
+          "delta": "50/43",
+          "sourceBlob": "ed7c825e38f54138e55b0e3c71f8529a107fc4dd",
+          "mainBlob": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "20/1",
+          "sourceBlob": "ed6c44f55360626e8dd65a8d2f1a2210c986a96f",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_private_profile_cutover.mjs",
+          "originalDiffStatus": "added",
+          "delta": "73/0",
+          "sourceBlob": "b1920ce1a68e43e848f959e3aefff57200d524fb",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_p1_3_npc_profile_rls_source.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "4/1",
+          "sourceBlob": "24d6d8b0653175a454bef6679637cd04cb36c446",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_printable_character_sheet.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "8/1",
+          "sourceBlob": "1d3825a0a540eb6fb42482376b018c05d7d79917",
+          "mainBlob": "5f2580d6c3b559d9b3c1459f28c3625d2b6138de",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+          "originalDiffStatus": "modified",
+          "delta": "15/0",
+          "sourceBlob": "fa69665c7e89a15369a9e44e5db343e9ed981a7b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 323,
+      "originalDossier": "docs/pr-integration/PR-323.md",
+      "expectedPRScopedChanges": 15,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-centered-npc-profile.yml",
+          "originalDiffStatus": "added",
+          "delta": "51/0",
+          "sourceBlob": "565419d081144869754de43856a9ab8483f4be03",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/GlobalNpcProfileOverlay.js",
+          "originalDiffStatus": "added",
+          "delta": "166/0",
+          "sourceBlob": "b2f05c458eb294bba2cc3d2a2befc9473f7b8b3b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "components/MapPageClient.js",
+          "originalDiffStatus": "modified",
+          "delta": "2/2",
+          "sourceBlob": "3e6bf39d48de6f28aac90f6bac1400fa9a00bf1f",
+          "mainBlob": "61f8738da2ca3d8635b5a413bfdc18c094228a0a",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/NpcPanel.js",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "5ddfc5b031d5728f45639bdefc4ea14e51ed3a05",
+          "mainBlob": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "components/town/TownCrafterInteractionPanel.js",
+          "originalDiffStatus": "modified",
+          "delta": "2/1",
+          "sourceBlob": "6be8eb9e041d74f784d136e672c0df9d2d27774d",
+          "mainBlob": "345629409b45cd5da5bf305a8124fbbe46ec0d15",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Centered_Secure_NPC_Profile_Integration_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "28/0",
+          "sourceBlob": "fd1f2282ca721c4eca26a932cfe44fb6a2d026c6",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/NPC_Profile_First_Centered_Overlay_2026-11-04.md",
+          "originalDiffStatus": "added",
+          "delta": "33/0",
+          "sourceBlob": "994cdbe09230cd71c652fe6d676d50b82e63f2de",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "pages/_app.js",
+          "originalDiffStatus": "modified",
+          "delta": "3/0",
+          "sourceBlob": "5a1981d58af0f0b99519538093157d27a0d60d35",
+          "mainBlob": "e5f68c0abb293089d6ad09d4e3e4035612eac598",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/inventory.js",
+          "originalDiffStatus": "modified",
+          "delta": "23/6",
+          "sourceBlob": "b3d71b65f38b37cae8eeb44c6882e493ae6c33b3",
+          "mainBlob": "02d52821d0f22aa82ad92263c5014712906ee385",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "pages/town/[id].js",
+          "originalDiffStatus": "modified",
+          "delta": "36/3",
+          "sourceBlob": "3c84f8f538844bc179317e58673362f0d28b7059",
+          "mainBlob": "a4e790e5941afb16660a112ee9189e4a84d4afb7",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_centered_npc_profile_entrypoints.mjs",
+          "originalDiffStatus": "added",
+          "delta": "108/0",
+          "sourceBlob": "b814ff42ff4cfb349b42d2072cffe2f574bcae60",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_secure_centered_integration.mjs",
+          "originalDiffStatus": "added",
+          "delta": "63/0",
+          "sourceBlob": "5d841ac6efa7914f0b7e5b33defc8c55f03e8d46",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_town_crafter_interaction_component.mjs",
+          "originalDiffStatus": "modified",
+          "delta": "1/1",
+          "sourceBlob": "25d6d25e4b088d5f0f55be8e328343a163b4d401",
+          "mainBlob": "df5e99047c1d2b483e2c52085eb1e82cc500efb4",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "styles/npc-profile-centered.css",
+          "originalDiffStatus": "added",
+          "delta": "214/0",
+          "sourceBlob": "150eb9ad78aeba268be955e63c8451e3c0ed0e14",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "utils/npcProfileOverlay.js",
+          "originalDiffStatus": "added",
+          "delta": "15/0",
+          "sourceBlob": "3d809c47a9aaae18d0e7e5ec6500199a9266baac",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 324,
+      "originalDossier": "docs/pr-integration/PR-324.md",
+      "expectedPRScopedChanges": 77,
+      "rows": [
+        {
+          "path": ".github/workflows/forge-trigger-acceptance-audit.yml",
+          "originalDiffStatus": "added",
+          "delta": "45/0",
+          "sourceBlob": "e752a5cc2626346726db3a86c56ffda0c9ae8ddd",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/research-docs-maintenance.yml",
+          "originalDiffStatus": "added",
+          "delta": "125/0",
+          "sourceBlob": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9",
+          "mainBlob": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+          "originalDiffStatus": "added",
+          "delta": "180/0",
+          "sourceBlob": "4fc4a603c10a5bc098c4196eb2a217aa9506b07a",
+          "mainBlob": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "41/0",
+          "sourceBlob": "c5aa5d78dee590e4e36019f803a71434924902cf",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Forge_Aasimar_Light_Bearer_Positive_Source_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "51/0",
+          "sourceBlob": "93f17b6eca0a3b4be548babc02ee586464cd15c8",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "81/0",
+          "sourceBlob": "e46ccccc1addd9de371e20d00faad7c769cac41d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Characters_Portrait_Source_Acceptance_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "24/0",
+          "sourceBlob": "5f5ded44ffbc28b423fc2ad4b38bb45050015e29",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Characters_Tag_Guard_Original_Acceptance_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "23/0",
+          "sourceBlob": "0b0455d73d1f0c974cac96faab03961ac0c44578",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Feat_Grant_Provenance_Gap_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "31/0",
+          "sourceBlob": "67f371a1297fc59ac7d01a5fb4f3d3bd7e043880",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_GI_JWT_Source_Concurrency_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "39/0",
+          "sourceBlob": "627c1f042962afb274fc7d6cd7814d61481eb431",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_High_Risk_Progression_Trigger_Parity_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "42/0",
+          "sourceBlob": "ea09588425828fd0ebc8b1f759793a9c358e109b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "102/0",
+          "sourceBlob": "296e178fc951e261f48b6b9d63e48ee3012ee232",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "64/0",
+          "sourceBlob": "2de06843e330deb8279670c9f6034d3595cfc061",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Original_Merchant_Inventory_Concurrent_Writes_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "28/0",
+          "sourceBlob": "1000eddc1a2c112a760abbde38ea296891c1f541",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Subclass_Original_Acceptance_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "44/0",
+          "sourceBlob": "57193773ce662d731786943661b9627210c5024b",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "9eebb1755df8eb4bfaa69b2105efcfd5e25c7eaa",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "62/0",
+          "sourceBlob": "2978b5aad8418d91450bac0824665248ef6be0bd",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "42/0",
+          "sourceBlob": "e7ab7739e1d218f87e5c9ed13dfc7db6d5947324",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Forge_Zero_Cost_Acceptance_Automation_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "20/0",
+          "sourceBlob": "a6b24a8409a8a29d00e6db25afd13e2df5bd77d7",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "229/0",
+          "sourceBlob": "692aca81e3ac3bcfb8c5e29c0ff0295ab4204638",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "23/0",
+          "sourceBlob": "115d5ad7061a788140dc45466bb3e20e0c351773",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Player_Forge_Immutable_Creation_Intent_Candidate_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "140/0",
+          "sourceBlob": "2f95078b0ed37cca5773f23d6e5fe687b48f90ec",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "originalDiffStatus": "modified",
+          "delta": "20/0",
+          "sourceBlob": "f78e8a06ec1c496e0d367ccddd6863a7a4cf0e49",
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Research_Docs_Maintenance_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "40/0",
+          "sourceBlob": "946df7e71fc0511004f397df4ebfa13ac5802297",
+          "mainBlob": "bbf3e745902a80c8809d9e9ffe6ce06139a9eb7e",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "originalDiffStatus": "modified",
+          "delta": "35/0",
+          "sourceBlob": "4d97a272be6f79812b07a914e9fa331d7a94ffc4",
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/SYSTEM_REGISTRY.json",
+          "originalDiffStatus": "modified",
+          "delta": "90/3",
+          "sourceBlob": "e0109f2f0175f137e56110dc6f92a340b8cf82c5",
+          "mainBlob": "811e89ca3f37eb93f2dfb8c9af52473fc0dc6e19",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_automation_selftest.mjs",
+          "originalDiffStatus": "added",
+          "delta": "37/0",
+          "sourceBlob": "6d4dc315449958a3862130de739ed691773b00cf",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_ci_diagnostics.mjs",
+          "originalDiffStatus": "added",
+          "delta": "43/0",
+          "sourceBlob": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+          "mainBlob": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_trigger_acceptance_ledger.mjs",
+          "originalDiffStatus": "added",
+          "delta": "75/0",
+          "sourceBlob": "3a12039f69d25eb968b37eda39c09839a13cb8ae",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_trigger_acceptance_receipts.json",
+          "originalDiffStatus": "added",
+          "delta": "30/0",
+          "sourceBlob": "ddcd17bc15aaf4f75e8c0aa07c7faed69f86fe5e",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_trigger_audit.mjs",
+          "originalDiffStatus": "added",
+          "delta": "93/0",
+          "sourceBlob": "d5fbf344c5e92f8dc3e620806baded0fbb31f7ae",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/project_health.mjs",
+          "originalDiffStatus": "added",
+          "delta": "124/0",
+          "sourceBlob": "5bcb19c5f49ad9d5591b363f995f059bec46846f",
+          "mainBlob": "3ad86c916e7495529d1df1b7d939cbb007d96b43",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/research_docs_maintainer.mjs",
+          "originalDiffStatus": "added",
+          "delta": "105/0",
+          "sourceBlob": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705",
+          "mainBlob": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/validate_project_health.mjs",
+          "originalDiffStatus": "added",
+          "delta": "32/0",
+          "sourceBlob": "25ce56e389fe3611faae2e7209e08f368f7f7771",
+          "mainBlob": "b8ca9a645a9103bc5fa9144eb9b5b735af1acfaf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/validate_research_docs_maintainer.mjs",
+          "originalDiffStatus": "added",
+          "delta": "49/0",
+          "sourceBlob": "bceaee41d7536a288d33c5fe501c7d3576a9373f",
+          "mainBlob": "bceaee41d7536a288d33c5fe501c7d3576a9373f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "66/0",
+          "sourceBlob": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+          "mainBlob": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "32/0",
+          "sourceBlob": "849ba03462e28c5d05b6bffd24a3384654af0393",
+          "mainBlob": "849ba03462e28c5d05b6bffd24a3384654af0393",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "67/0",
+          "sourceBlob": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+          "mainBlob": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_characters_tag_guard_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "20/0",
+          "sourceBlob": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+          "mainBlob": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_creation_original_functions_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "416/0",
+          "sourceBlob": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+          "mainBlob": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_creation_replay_candidate_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "335/0",
+          "sourceBlob": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+          "mainBlob": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_creation_replay_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "145/0",
+          "sourceBlob": "3da82b85babbb37d4aee1744e22ec24716082997",
+          "mainBlob": "3da82b85babbb37d4aee1744e22ec24716082997",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "77/0",
+          "sourceBlob": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+          "mainBlob": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "26/0",
+          "sourceBlob": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+          "mainBlob": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_equipment_validator_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "97/0",
+          "sourceBlob": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+          "mainBlob": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "27/0",
+          "sourceBlob": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+          "mainBlob": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "152/0",
+          "sourceBlob": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+          "mainBlob": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_feat_materializer_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "234/0",
+          "sourceBlob": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+          "mainBlob": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "107/0",
+          "sourceBlob": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+          "mainBlob": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "393/0",
+          "sourceBlob": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+          "mainBlob": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "99/0",
+          "sourceBlob": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+          "mainBlob": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_inventory_access_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "24/0",
+          "sourceBlob": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+          "mainBlob": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "67/0",
+          "sourceBlob": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+          "mainBlob": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_market_cash_original_functions_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "71/0",
+          "sourceBlob": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+          "mainBlob": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "99/0",
+          "sourceBlob": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+          "mainBlob": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_materializer_original_functions_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "468/0",
+          "sourceBlob": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+          "mainBlob": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "61/0",
+          "sourceBlob": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+          "mainBlob": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "142/0",
+          "sourceBlob": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+          "mainBlob": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "90/0",
+          "sourceBlob": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+          "mainBlob": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "566/0",
+          "sourceBlob": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+          "mainBlob": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "165/0",
+          "sourceBlob": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+          "mainBlob": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_progression_authority_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "320/0",
+          "sourceBlob": "3a0b6caeb6712f67af7895433df15f1439b19581",
+          "mainBlob": "3a0b6caeb6712f67af7895433df15f1439b19581",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "98/0",
+          "sourceBlob": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+          "mainBlob": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "124/0",
+          "sourceBlob": "b02285f75d446f5874341cf3bc694ac256e1f732",
+          "mainBlob": "b02285f75d446f5874341cf3bc694ac256e1f732",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_species_light_original_helpers_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "163/0",
+          "sourceBlob": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+          "mainBlob": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "84/0",
+          "sourceBlob": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+          "mainBlob": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "62/0",
+          "sourceBlob": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+          "mainBlob": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_subclass_choice_original_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "116/0",
+          "sourceBlob": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+          "mainBlob": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "43/0",
+          "sourceBlob": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+          "mainBlob": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "32/0",
+          "sourceBlob": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+          "mainBlob": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql",
+          "originalDiffStatus": "added",
+          "delta": "88/0",
+          "sourceBlob": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+          "mainBlob": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+          "originalDiffStatus": "added",
+          "delta": "2263/0",
+          "sourceBlob": "4849c8490775711c9b09228d5cbfaac2b02d7e76",
+          "mainBlob": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_immutable_creation_replay.mjs",
+          "originalDiffStatus": "added",
+          "delta": "726/0",
+          "sourceBlob": "00d85baf34bac0813036724dfe57d29c32b712ad",
+          "mainBlob": "00d85baf34bac0813036724dfe57d29c32b712ad",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_forge_inventory_ui_release_contract.mjs",
+          "originalDiffStatus": "added",
+          "delta": "44/0",
+          "sourceBlob": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+          "mainBlob": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+          "originalDiffStatus": "added",
+          "delta": "96/0",
+          "sourceBlob": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+          "mainBlob": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+          "originalDiffStatus": "added",
+          "delta": "143/0",
+          "sourceBlob": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+          "mainBlob": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+          "originalDiffStatus": "added",
+          "delta": "399/0",
+          "sourceBlob": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+          "mainBlob": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+          "pathStatus": "exact_blob_on_main"
+        }
+      ]
+    },
+    {
+      "pr": 325,
+      "originalDossier": "docs/pr-integration/PR-325.md",
+      "expectedPRScopedChanges": 27,
+      "rows": [
+        {
+          "path": ".github/codex/prompts/dndnext-research-agent.md",
+          "originalDiffStatus": "added",
+          "delta": "34/0",
+          "sourceBlob": "2386a6e93b5ef5c8f8476b1d942ef4fbd5cc64bc",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/dndnext-research-agent.yml",
+          "originalDiffStatus": "added",
+          "delta": "132/0",
+          "sourceBlob": "020377073338cb64138372fa5e642d31bc5e575d",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/research-docs-maintenance.yml",
+          "originalDiffStatus": "added",
+          "delta": "125/0",
+          "sourceBlob": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9",
+          "mainBlob": "ccd79fe4a3b3f26edf6d71c964cbaf27278112b9",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-dndnext-research-agent.yml",
+          "originalDiffStatus": "added",
+          "delta": "77/0",
+          "sourceBlob": "43d7e171cb18899f16dee5a52c2442e3b4685ec2",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "AGENTS.md",
+          "originalDiffStatus": "modified",
+          "delta": "11/0",
+          "sourceBlob": "b4fa4748ba0b097b93d38acdb6bdcd1039e8ebff",
+          "mainBlob": "52fa9375a825de8a01cfe002df1945a9b89b0a00",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/ACTIVE_WORK.md",
+          "originalDiffStatus": "modified",
+          "delta": "19/0",
+          "sourceBlob": "b72c202503100c376ef42d2e44388dbfbacb89b4",
+          "mainBlob": "c3d2fddc524d7ead3905d94958ed6da8e5b8c354",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/AGENT_TOUCHSTONE.md",
+          "originalDiffStatus": "added",
+          "delta": "87/0",
+          "sourceBlob": "8e9ea585936aa2d8b8bb7a42a4cab5aa39240277",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Agent_Opportunities_Audit_2026-11-05.md",
+          "originalDiffStatus": "added",
+          "delta": "44/0",
+          "sourceBlob": "1a61501024b384ffaaaf38df46299cf0572d18bb",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Research_Agent_Setup.md",
+          "originalDiffStatus": "added",
+          "delta": "90/0",
+          "sourceBlob": "42272ef23deda3d1ab3cd5350437c319accc5b26",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "45/0",
+          "sourceBlob": "fefd58812673164784527d5a8a05fbde13fa2103",
+          "mainBlob": "fefd58812673164784527d5a8a05fbde13fa2103",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_LOG.md",
+          "originalDiffStatus": "modified",
+          "delta": "57/0",
+          "sourceBlob": "8c09d1c7e461939923810a52b831af0f88c08b2a",
+          "mainBlob": "f2ef652cafe7b8177db64a47f00971cc2b2262ab",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/HANDOFF_RECEIPT_TEMPLATE.md",
+          "originalDiffStatus": "modified",
+          "delta": "2/0",
+          "sourceBlob": "e7681592e1b43cedb8810f2b7d376ed451e2c823",
+          "mainBlob": "72a5151fb9b2482e24f0bca34d8528bc5a44ddc5",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "23/0",
+          "sourceBlob": "115d5ad7061a788140dc45466bb3e20e0c351773",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/PROJECT_STATE.md",
+          "originalDiffStatus": "modified",
+          "delta": "3/0",
+          "sourceBlob": "fc63e8d98e628eee56477cab4be6079656b2e07e",
+          "mainBlob": "d3d8c09c3ce13c07ac8ac9cf59eabc0400f35750",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "originalDiffStatus": "modified",
+          "delta": "6/0",
+          "sourceBlob": "b377fd5224226d388df9943367653fc5edc4db50",
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/RESEARCH_BRANCH_STATUS.generated.md",
+          "originalDiffStatus": "added",
+          "delta": "52/0",
+          "sourceBlob": "29c47e12d0e14becf280cf16cd5a937857ddf159",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "docs/Research_Docs_Maintenance_2026-11-06.md",
+          "originalDiffStatus": "added",
+          "delta": "40/0",
+          "sourceBlob": "946df7e71fc0511004f397df4ebfa13ac5802297",
+          "mainBlob": "bbf3e745902a80c8809d9e9ffe6ce06139a9eb7e",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "originalDiffStatus": "modified",
+          "delta": "5/0",
+          "sourceBlob": "c6441811a07e360fdf0b074dc1c474c84e718bfb",
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "docs/SYSTEM_REGISTRY.json",
+          "originalDiffStatus": "modified",
+          "delta": "42/0",
+          "sourceBlob": "1a0679ce22036ec1ff42cb06e03cc5b6525645db",
+          "mainBlob": "811e89ca3f37eb93f2dfb8c9af52473fc0dc6e19",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/forge_trigger_audit.mjs",
+          "originalDiffStatus": "added",
+          "delta": "93/0",
+          "sourceBlob": "d5fbf344c5e92f8dc3e620806baded0fbb31f7ae",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/project_health.mjs",
+          "originalDiffStatus": "added",
+          "delta": "124/0",
+          "sourceBlob": "5bcb19c5f49ad9d5591b363f995f059bec46846f",
+          "mainBlob": "3ad86c916e7495529d1df1b7d939cbb007d96b43",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/research_agent.mjs",
+          "originalDiffStatus": "added",
+          "delta": "228/0",
+          "sourceBlob": "b58a40b578a752130cb8b9bfc6f912172c2d9025",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/research_docs_maintainer.mjs",
+          "originalDiffStatus": "added",
+          "delta": "105/0",
+          "sourceBlob": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705",
+          "mainBlob": "9b0de9a058a925fa94938eb7d5ab4db1e2bd2705",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/validate_project_health.mjs",
+          "originalDiffStatus": "added",
+          "delta": "32/0",
+          "sourceBlob": "25ce56e389fe3611faae2e7209e08f368f7f7771",
+          "mainBlob": "b8ca9a645a9103bc5fa9144eb9b5b735af1acfaf",
+          "pathStatus": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/agents/validate_research_agent.mjs",
+          "originalDiffStatus": "added",
+          "delta": "138/0",
+          "sourceBlob": "b370526eaf3ae3dc05e5e8acb448a3987b957529",
+          "mainBlob": null,
+          "pathStatus": "absent_on_main"
+        },
+        {
+          "path": "scripts/agents/validate_research_docs_maintainer.mjs",
+          "originalDiffStatus": "added",
+          "delta": "49/0",
+          "sourceBlob": "bceaee41d7536a288d33c5fe501c7d3576a9373f",
+          "mainBlob": "bceaee41d7536a288d33c5fe501c7d3576a9373f",
+          "pathStatus": "exact_blob_on_main"
+        },
+        {
+          "path": "vercel.json",
+          "originalDiffStatus": "modified",
+          "delta": "8/1",
+          "sourceBlob": "9c9adc06aed80a90e72624e78712016d3f090fcd",
+          "mainBlob": "d6272c869bcba126f655b9e8555101b1c4de5b0e",
+          "pathStatus": "different_blob_on_main"
+        }
+      ]
+    }
+  ]
+}
