@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `a58547f6ee7f11b4fd9bdfcfe7a1f771e8dc6c84` |
+| Exact source commit represented by this archive snapshot | `311a6da79ea5cf0a4538ecbe9dcb2a360210e42c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2i): gate real original Admin grant, sheet sync and current role source hashes |
-| Files changed relative to main | 213 (159 non-docs; 54 docs) |
+| Last source commit title | test(i2i): source-locked reversible single Admin mirror no-op for disposable signed tests |
+| Files changed relative to main | 214 (160 non-docs; 54 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2i_original_admin_feature_source_gate_pg17.sql`
+- `scripts/fixtures/i2i_option_a_admin_feature_scratch_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- … 163 more
+- … 164 more
 
 ## Trust and update procedure
 
