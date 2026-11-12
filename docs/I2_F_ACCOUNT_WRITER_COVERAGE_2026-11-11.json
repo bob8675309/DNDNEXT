@@ -111,8 +111,8 @@
     {
       "signature": "private.ensure_character_source_choices_v1(p_character_id uuid)",
       "source_md5": "69bedf66148d2ce3dab97baa5de606cc",
-      "status": "i2f_original_privileged_helper_RED_and_scratch_no_write_pending_CI",
-      "note": "Exact live private helper was invoked by privileged SQL only against genuine signed v3+Story-created characters. Original writes canonical and unrelated editor account legacy sheets; scratch Option A no-op should preserve canonicals and freeze old accounts. This is NOT signed public/private helper RPC or original full materializer caller test."
+      "status": "i2f_privileged_original_RED_then_scratch_GREEN_verified",
+      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT direct signed helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
     },
     {
       "signature": "private.remove_source_owned_origin_feat_v1(p_character_id uuid, p_instance_key text, p_owner_type text, p_owner_key text)",
@@ -129,8 +129,8 @@
     {
       "signature": "private.set_species_runtime_projection_v1(p_character_id uuid, p_projection_key text, p_state jsonb)",
       "source_md5": "7f6e7d7d99ff79db1372462b4320c21b",
-      "status": "i2f_original_privileged_helper_RED_and_scratch_no_write_pending_CI",
-      "note": "Exact live private helper was invoked by privileged SQL only against genuine signed v3+Story-created characters. Original writes canonical and unrelated editor account legacy sheets; scratch Option A no-op should preserve canonicals and freeze old accounts. This is NOT signed public/private helper RPC or original full materializer caller test."
+      "status": "i2f_privileged_original_RED_then_scratch_GREEN_verified",
+      "note": "Original exact private source tested via privileged local PostgreSQL against genuine GoTrue-signed v3/Story-created Fighters (NOT direct signed helper RPC): original helper updated canonical and clobbered two unrelated populated editor account sheets. Source-reversible scratch no-op preserved canonical state, same/unrelated snapshots, original Story/ACL; I2F-01..11 PASS in 43150417164. Synthetic projection inputs, not source-authentic species progression."
     },
     {
       "signature": "private.sync_admin_feature_array_v1(p_character_id uuid, p_option_type text, p_name text, p_add boolean)",
@@ -327,7 +327,7 @@
     "private.set_species_runtime_projection_v1": "7f6e7d7d99ff79db1372462b4320c21b"
   },
   "i2f_execution_boundary": "SIGNED GoTrue/Forge creates characters; BOTH private helper invocations are guarded PRIVILEGED local PostgreSQL17 SQL because authenticated EXECUTE is denied. Do not claim signed helper RPC or browser/full creation trigger acceptance.",
-  "i2f_result": "pending first signed historical-suite+privileged-local-helper acceptance",
+  "i2f_result": "Original REDs and source-reversible scratch GREEN verified in CI #43150417164; 11/11 PASS, no production changes; private helpers called with privileged local SQL, not signed user RPCs.",
   "release_gates": [
     "25 original source UPDATE functions still not Option A covered",
     "Original 31-trigger Forge graph not reproduced",
@@ -337,5 +337,20 @@
     "Cross-writer and cross-character concurrency/locks and rollback not independently proven",
     "Encrypted backup DB + Storage and independent isolated restore unverified",
     "Separate explicit owner production cutover/merge approval"
-  ]
+  ],
+  "i2f_evidence": {
+    "github_actions_run": 43150417164,
+    "job_id": 130957990966,
+    "code_test_commit": "b5a8fc220c035347f63f30715f567146f3a82155",
+    "conclusion": "success",
+    "acceptance": "I2F-01 through I2F-11 PASS",
+    "original_red": [
+      "I2F-03 original sourceChoices account overwrite",
+      "I2F-04 original species runtime account overwrite"
+    ],
+    "repaired_test_seed_runs": [
+      43149979952
+    ],
+    "final_documentation_inclusive_ci": "pending"
+  }
 }
