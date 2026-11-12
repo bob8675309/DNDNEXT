@@ -39,6 +39,14 @@ BEGIN
   v_priv_v3_md5:=md5(pg_get_functiondef('private.create_player_character_v3_source_20261105(jsonb,jsonb,jsonb)'::regprocedure));
   v_story_public_md5:=md5(pg_get_functiondef('public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)'::regprocedure));
   v_story_intent_md5:=md5(pg_get_functiondef('private.create_player_character_v3_with_story_intent_i1c(jsonb,jsonb,jsonb,text)'::regprocedure));
+  -- Pin exact original held private #324 and all four v3/Story wrapper MD5s
+  -- obtained from signed source-original RED run #43143057359.
+  IF v_original_md5<>'1d06d00eb4b4aa4c125796d761f5e259'
+     OR v_v3_md5<>'ab48d46376075a79b3f5a5de21fdada6'
+     OR v_priv_v3_md5<>'798090559c434fbb21c4b27cab21865b'
+     OR v_story_public_md5<>'6e39477f971c9d40c6726c9f4dbc456e'
+     OR v_story_intent_md5<>'5fac54802474043d8233cc17a75f4c0f'
+  THEN RAISE EXCEPTION 'I2D source-wrapper fingerprints drifted from signed RED witness'; END IF;
   IF length(v_source)-length(replace(v_source,v_old,''))<>length(v_old)
      OR position('update public.players' IN lower(v_source))>0
      OR position('on conflict (user_id) do update set sheet = excluded.sheet' IN lower(v_source))=0
@@ -64,4 +72,4 @@ BEGIN
   THEN RAISE EXCEPTION 'I2-D public/private v3 Story or nonce call graph drift'; END IF;
   RAISE NOTICE 'I2-D original private source MD5=%; new candidate MD5=%; public v3 MD5=%',v_original_md5,md5(v_after),v_v3_md5;
 END $i2d$;
-echo 'PASS I2D-SOURCE: source-reversible private v2 account UPSERT retired in signed scratch; original public v3, private v3, Story/nonce wrappers unchanged'
+\echo 'PASS I2D-SOURCE: source-reversible private v2 account UPSERT retired in signed scratch; original public v3, private v3, Story/nonce wrappers unchanged'
