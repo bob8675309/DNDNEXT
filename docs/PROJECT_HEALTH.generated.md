@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-12T20:11:26Z | research/i2g-signed-levelup-v1-option-a-20261112 (15f4cc2e332e4e9bb04558fd5e5a1b91b3241129) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
+| 2026-11-12T20:11:54Z | research/i2g-signed-levelup-v1-option-a-20261112 (34e1afa50552a744c809d0b88a33bc848d6d0da7) | 9437b9d0a2bedc3ba78110c612543f6033674a72 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
