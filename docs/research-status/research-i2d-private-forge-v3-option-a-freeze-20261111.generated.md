@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `6d0949487f243cd918ad8a93529106a3bd51e495` |
+| Exact source commit represented by this archive snapshot | `0e0b76d77ddf11b3a5e4a5a3d3a79ed6b496391b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(I2-D): advance active work to signed 11/11 private Forge empty legacy snapshot RED/scratch GREEN and next gate |
+| Last source commit title | docs(I2-D): append signed original empty-sheet RED, nonempty control, 11/11 scratch GREEN and retained failed CI receipts |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
