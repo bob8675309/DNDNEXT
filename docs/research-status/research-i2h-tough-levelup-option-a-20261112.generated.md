@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2h-tough-levelup-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `8533bab97bb7e36e2390999b1a0e1b73c5eaaa3c` |
+| Exact source commit represented by this archive snapshot | `e85fc1735ba99346d99d7ad90b8092dba4519ebf` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2h): promote only signed-original Tough to 11/34 after 10/10 RED/GREEN evidence |
+| Last source commit title | docs(i2h): record all ten signed original Tough RED and reversible Option A GREEN receipts |
 | Files changed relative to main | 212 (158 non-docs; 54 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/I2_H_TOUGH_OPTION_A_WRITER_COVERAGE_2026-11-12.json`
+- `docs/I2_H_TOUGH_OPTION_A_SIGNED_RESEARCH_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
