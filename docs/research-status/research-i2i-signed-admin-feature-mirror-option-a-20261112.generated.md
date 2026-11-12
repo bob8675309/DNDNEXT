@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `0512a3609af6083b56ce822dfb0b54042cad662a` |
+| Exact source commit represented by this archive snapshot | `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2i): validate structured signed evidence fields instead of stale report phrase |
+| Last source commit title | ci(i2i): do not fail ephemeral teardown when validation aborts before local startup |
 | Files changed relative to main | 219 (163 non-docs; 56 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_i2i_admin_feature_scope.mjs`
+- `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
