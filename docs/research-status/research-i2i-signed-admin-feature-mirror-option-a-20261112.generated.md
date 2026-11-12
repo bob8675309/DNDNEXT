@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2i-signed-admin-feature-mirror-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `6abb8d9957834a2fd8198b274e24a7d5bb0aea64` |
+| Exact source commit represented by this archive snapshot | `a58547f6ee7f11b4fd9bdfcfe7a1f771e8dc6c84` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Merge I2-H signed original Tough research into I2-G research branch |
-| Files changed relative to main | 212 (158 non-docs; 54 docs) |
-| Last source commit | 0 files (0 non-docs; 0 authored docs) |
+| Last source commit title | test(i2i): gate real original Admin grant, sheet sync and current role source hashes |
+| Files changed relative to main | 213 (159 non-docs; 54 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest commit did not change non-docs source files. Do not infer a technical behavior change.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- No changed paths found
+- `scripts/fixtures/i2i_original_admin_feature_source_gate_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest commit did not change non-docs source files. Do not infer a technical
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- … 162 more
+- … 163 more
 
 ## Trust and update procedure
 
