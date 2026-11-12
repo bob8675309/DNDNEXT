@@ -1,10 +1,10 @@
 {
-  "schema_version": "i2h-tough-source-progression-option-a-provisional-v1",
+  "schema_version": "i2h-tough-source-progression-option-a-verified-v1",
   "owner_decision": "Option A — freeze all historical players.sheet contents including same-character/empty sheets, canonical character_sheets per-character authority",
   "source_baseline": "Unmodified #324 private source copied from original v2, in sql/candidates/20261105_player_creation_immutable_intent_v1.sql; full signed I1-B..O and I2-C first",
   "original_update_writer_total": 34,
-  "original_update_writer_scratch_tested": 10,
-  "original_update_writer_untested": 24,
+  "original_update_writer_scratch_tested": 11,
+  "original_update_writer_untested": 23,
   "original_update_writers": [
     {
       "signature": "private.apply_additional_level_class_choices_v1(p_character_id uuid, p_to_level integer, p_selections jsonb)",
@@ -87,8 +87,8 @@
     {
       "signature": "private.apply_tough_progression_bonus_v1(p_character_id uuid, p_to_level integer)",
       "source_md5": "2b8bca48b7067e2e67b66defcb7f2c10",
-      "status": "not_option_a_tested",
-      "note": "Requires signed source-faithful Option A freeze, with a new independent test"
+      "status": "i2h_signed_v5_original_RED_then_scratch_GREEN_verified",
+      "note": "Exact original private Tough HP source (MD5 2b8bca...) invoked by unchanged genuine signed public v5 (not direct private RPC), original RED I2H-04 overwrote two unrelated editor account sheets after canonical +2 Tough HP. Prior I2-B base-v3 and class-summary mirrors isolated with MD5-reversible local scratch before new source-original RED. Only after RED, local exact source reversible Tough UPDATE removal; signed coeditor I2H-06 canonical +2/HP/progression/session/event and all old sheets/timestamps preserved. I2H-01..10 PASS Actions #43310669290, job #131508381880. Reduced P1.3 SQL-seeded Fighter and synthetic Tough grant, NOT full modern Forge/31-trigger or production."
     },
     {
       "signature": "private.apply_wizard_signature_spell_ids_v1(p_character_id uuid, p_selected jsonb, p_cadence text, p_creator text)",
@@ -379,8 +379,8 @@
   "i2h_writer_signature": "private.apply_tough_progression_bonus_v1(p_character_id uuid, p_to_level integer)",
   "i2h_source_md5": "2b8bca48b7067e2e67b66defcb7f2c10",
   "i2h_normalizer_md5": "dd8cdd5b47efe99b1cfff9c2bf7635dd",
-  "i2h_status": "PENDING exact signed CI; no coverage promotion before original Tough RED and isolated scratch GREEN",
-  "i2h_counted_writers": 0,
+  "i2h_status": "Verified executable signed original Tough RED and local scratch GREEN; final documentation-inclusive exact-head CI recheck required.",
+  "i2h_counted_writers": 1,
   "i2h_isolation": "Prior 2 already covered I2-B sources private.complete_character_level_up_base_v3 and private.sync_player_forge_class_spell_summary_v1 are source-locked, MD5-reversible scratch no-mirrors before ORIGINAL Tough writer RED. Live original public.complete_character_level_up_v5/v4/v3 remains unchanged.",
   "i2h_specimen_limits": "Signed GoTrue/PostgREST public v5 call but SQL-seeded featureless Fighter 1->2, synthetic Tough option acquisition rows, reduced class-choice helpers; not actual signed full Forge/feat acquisition or original 31-trigger graph.",
   "i2h_release_boundaries": [
@@ -388,5 +388,23 @@
     "No production map/gameplay/SSR/app modifications, merge or deployment",
     "No authorization for full original 31-trigger Forge/roles/browser/concurrency/independent backup restore"
   ],
-  "i2h_next_one_action": "Run exact head CI; repair only isolated harness/test defects preserving original source MD5 and original Tough RED; then update coverage 10->11/34 only after all signed tests pass."
+  "i2h_next_one_action": "Verify I2-H draft documentation-inclusive final head CI and append closeout receipt; only then select one additional original class-feature/level-up writer of 23 remaining; no production release.",
+  "i2h_result": {
+    "run_id": 43310669290,
+    "job_id": 131508381880,
+    "head_at_source_test": "daf7a3f5da74e69f634880ce1376c444943a11e6",
+    "conclusion": "success",
+    "cases": "I2H-01 through I2H-10 PASS",
+    "original_red": "I2H-04 signed v5 original Tough +2 HP canonical but clobbered TWO unrelated editor players.sheet rows",
+    "scratch_green": "I2H-06 signed coeditor v5 Tough +2 HP canonical with full account snapshot/timestamp freeze",
+    "inherited_i2f_job": {
+      "id": 131505612572,
+      "conclusion": "success"
+    },
+    "inherited_i2g_job": {
+      "id": 131507223514,
+      "conclusion": "success"
+    },
+    "scope": "SQL-seeded reduced Fighter P1.3 original v5 with synthetic Tough grants, not original full 31-trigger Forge, real feat acquisition or browser"
+  }
 }
