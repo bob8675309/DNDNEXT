@@ -295,8 +295,7 @@ begin
     )
   );
 end;
-$function$
-
+$function$;
 
 REVOKE ALL ON FUNCTION public.complete_character_level_up_v1(uuid,jsonb)
   FROM PUBLIC,anon,authenticated;
