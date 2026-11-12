@@ -81,7 +81,7 @@ function inventory({p,files,head,base,main}){
  const body=reviewBody(p);
  // Only an OWN scope claim is binding. Other PRs may be referenced as
  // "docs-only #348" or "source-only #374" without describing this PR.
- const scopeClaim=(kind)=>new RegExp("^(?:\\["+kind+"[- ]only\\]|"+kind+"[- ]only\\s*[:—-])","i").test((p.title||"").trim()) ||
+ const scopeClaim=(kind)=>new RegExp("^(?:\\[\\s*"+kind+"[- ]only\\s*\\]|"+kind+"[- ]only(?:\\b|\\s*[:—-]))","i").test((p.title||"").trim()) ||
   new RegExp("^\\s*(?:>\\s*)?(?:\\*\\*)?(?:scope|this\\s+(?:pr|pull request))(?:\\*\\*)?\\s*:\\s*(?:\\*\\*)?"+kind+"[- ]only\\b","im").test(p.body||"");
  const claimedDocsOnly=scopeClaim("docs");
  const claimedSourceOnly=scopeClaim("source");
