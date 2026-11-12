@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2h-tough-levelup-option-a-20261112` |
-| Exact source commit represented by this archive snapshot | `2e70578b4132188601841642202df1c44bacf571` |
+| Exact source commit represented by this archive snapshot | `fab72b872750d2dc701403af119bf4f98dce175b` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2h): enforce single writer coverage, exact original source and inherited CI gates |
-| Files changed relative to main | 211 (158 non-docs; 53 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i2h): bound source-exact Tough v5 signed RED/scratch GREEN and inherited writer isolation |
+| Files changed relative to main | 212 (158 non-docs; 54 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/validate_i2h_tough_option_a_scope.mjs`
+- `docs/I2_H_TOUGH_OPTION_A_SIGNED_RESEARCH_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
 - `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
-- … 161 more
+- … 162 more
 
 ## Trust and update procedure
 
