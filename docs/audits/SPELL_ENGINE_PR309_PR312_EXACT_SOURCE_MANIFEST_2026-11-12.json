@@ -1,0 +1,2349 @@
+{
+  "title": "DNDNext exact-file PR309/312 spell-engine preservation ledger",
+  "date": "2026-11-12",
+  "sourceRefs": {
+    "main": "00c5c4416b99ac256913b48ef96387f3eabfde44",
+    "pr309": "a24006624380570bd693a768e97a0c689f1d42b5",
+    "pr312": "26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254"
+  },
+  "statement": "An absent exact filename or nonidentical blob on main does not prove the behavior is missing; an identical blob proves byte parity only, not runtime authorization or deployment. All source heads immutable. No migration or runtime changes.",
+  "components": {
+    "pr309": {
+      "description": "P1 and Eldritch Blast against original archived parent; 47 PR-scoped changed paths",
+      "immediateDiffCount": 47,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "sourceBlob": "8877cadd5d13a56ecc6ab280130802b020c29ce6",
+          "sourceBytes": 3893,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-eldritch-blast-local-auth.yml",
+          "sourceBlob": "359965e21606c42c988504fb1a7c690336fb65e1",
+          "sourceBytes": 3246,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "AGENTS.md",
+          "sourceBlob": "e331fe6b455a552a7006cb0b688dd425e9bb92f7",
+          "sourceBytes": 3445,
+          "mainBlob": "52fa9375a825de8a01cfe002df1945a9b89b0a00",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "components/encounter/EldritchBlastPlanner.js",
+          "sourceBlob": "602b952365625f283418a674448917f8be67c5ba",
+          "sourceBytes": 5095,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Combat_Next_Milestone_2026-10-29.md",
+          "sourceBlob": "9a2038370563aa5eb6521e543836a729ff10f545",
+          "sourceBytes": 29785,
+          "mainBlob": "21fc8706fa3625ed516841bf94ff8a5d88897ea6",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Composable_Spell_Engine_AI_Readiness_2026-10-31.md",
+          "sourceBlob": "4de66db95fff2fe3918962f88fa8b583a1cf9e45",
+          "sourceBytes": 11476,
+          "mainBlob": "4de66db95fff2fe3918962f88fa8b583a1cf9e45",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/Current_Development_Status_and_Roadmap.md",
+          "sourceBlob": "0c10b38b4cf1425d2a2f58f90ff8547294ad31d7",
+          "sourceBytes": 25675,
+          "mainBlob": "77078fd6b8bcd2ce3b01ed94a2ad2d5d3268269b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md",
+          "sourceBlob": "ad892dc3aaedb643ce6fa229d5884d177aad9e4c",
+          "sourceBytes": 14195,
+          "mainBlob": "6447db2ee8afda054dc35a09805b2309d1f8fccc",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Current_Handoff_Prompt.md",
+          "sourceBlob": "fd587c8289a10ffd3cc79f69dca770be79dd829f",
+          "sourceBytes": 50945,
+          "mainBlob": "2efca67b7aa4c57fe07b72ad7590d4c11a382f08",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "sourceBlob": "a664a8c8a7c0ea9bedf4c06ffe000270a91b85f2",
+          "sourceBytes": 14219,
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/SPELL_ENGINE_DECISIONS.md",
+          "sourceBlob": "07a14a3fc7362f1f4bf89982e2b52ce67b7c4be4",
+          "sourceBytes": 10709,
+          "mainBlob": "07a14a3fc7362f1f4bf89982e2b52ce67b7c4be4",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "sourceBlob": "743a8d242b579478479ae270cb367176e4cbe537",
+          "sourceBytes": 15736,
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Engine_PrePivot_Audit_2026-10-31.md",
+          "sourceBlob": "28ae403964d7295f2b18571c7701cc4f6344cfb5",
+          "sourceBytes": 15837,
+          "mainBlob": "28ae403964d7295f2b18571c7701cc4f6344cfb5",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P1_Schema_2026-10-31.md",
+          "sourceBlob": "a1bfa8fe6c990ad2e6ea6840851f9471926519b0",
+          "sourceBytes": 12161,
+          "mainBlob": "6bc4014508bcd8f69f074dbd4407ccf82a374203",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Tactical_Spell_Mechanics_Review_2026-10-31.md",
+          "sourceBlob": "71389850f37a7db1701d22f3b47d6d74eb2ec706",
+          "sourceBytes": 7552,
+          "mainBlob": "f23c840aded6f5230c2d8bb5afa810d925dac947",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "pages/encounters/combat.js",
+          "sourceBlob": "477ac308ef2753188686b849f4b5a09518a5bd96",
+          "sourceBytes": 111362,
+          "mainBlob": "117cab624f837d2f4205b17424ee916dedad6342",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_profile_pg17.sql",
+          "sourceBlob": "e9a17e5a053ef90337160495f08b4e00404022d2",
+          "sourceBytes": 4698,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_targeting_pg17.sql",
+          "sourceBlob": "a6f4376c92eeb5945c545eef6896a4b1c51f2c77",
+          "sourceBytes": 378,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_pg16.sql",
+          "sourceBlob": "847bceefaf32c7160a9bb8f56b693c390bda2214",
+          "sourceBytes": 23265,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_lock_contention.sh",
+          "sourceBlob": "94e1c0eb4aab4e59e0875c0d30dda2c9050344cf",
+          "sourceBytes": 3986,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_pending_lock_timeout.sh",
+          "sourceBlob": "0bf7b5c619c8ceed487bfcfc59eeb7923d3c8cca",
+          "sourceBytes": 3945,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_damage_pg17.sql",
+          "sourceBlob": "46651a2fc13b0b5471d58b57ef9ce654611da7c2",
+          "sourceBytes": 6983,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_profile_pg17.sql",
+          "sourceBlob": "bfb719792e36729d4693de33f77011f9eaec8773",
+          "sourceBytes": 7010,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_targeting_pg17.sql",
+          "sourceBlob": "3d862dd2d13207dcc953698fc9b32bff2889655e",
+          "sourceBytes": 10282,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/generate_eldritch_blast_local_auth_fixture.mjs",
+          "sourceBlob": "068915cbb42ec53a238b7b8782171d4cea70fbd6",
+          "sourceBytes": 5261,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_recipe_p1_examples.mjs",
+          "sourceBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "sourceBytes": 7196,
+          "mainBlob": "7f17794e64ed4e7fad868dbfdc6f22598d93cf2c",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/lib/eldritchBlastSignedInAssertions.mjs",
+          "sourceBlob": "ac8243452d2d880f4274744316d81ee7beaa4034",
+          "sourceBytes": 4698,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_local_auth.mjs",
+          "sourceBlob": "18a1add79e10876332ecb7febd39085dabce42ea",
+          "sourceBytes": 25797,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_real_auth.mjs",
+          "sourceBlob": "f731d1043caab416ab675e09781ce1b2cfc7e68e",
+          "sourceBytes": 8059,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_auth_harness.mjs",
+          "sourceBlob": "62e5a7897b8a1e29cbe882caaca1ebd64ce53c71",
+          "sourceBytes": 1755,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_candidate.mjs",
+          "sourceBlob": "422d5e4a7fb8688811c4e849bf3d29a5294563ce",
+          "sourceBytes": 5839,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_planner.mjs",
+          "sourceBlob": "c76d00d0f5739049d04e862c85cfbbf8d74f21af",
+          "sourceBytes": 3663,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_signed_in_assertions.mjs",
+          "sourceBlob": "e107a6dbfb53bb32923b0bc84255e2683d95b380",
+          "sourceBytes": 2129,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_staging_cast.mjs",
+          "sourceBlob": "974b776c33672d7e42e89b0e91129aa847ba9838",
+          "sourceBytes": 3702,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_team_spell_visibility.mjs",
+          "sourceBlob": "cd2e3501c0fee88c5d4acbc73fbcd37e8feb71e3",
+          "sourceBytes": 1896,
+          "mainBlob": "e30888ffdc579a52e2d178afbea7940fc3ce7f54",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_preflight_p1.mjs",
+          "sourceBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "sourceBytes": 7028,
+          "mainBlob": "096b5a9b8f21209fa5f5dc24b81290f5f2f3435f",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_schema_p1.mjs",
+          "sourceBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "sourceBytes": 7037,
+          "mainBlob": "9f9a906e77cb87497e81a894c1a62f523b6966a6",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_known_spell_metadata.mjs",
+          "sourceBlob": "001778213ed2a101e56f43fb3e9a95dcd0d3e957",
+          "sourceBytes": 1988,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_spell_mechanics_review.mjs",
+          "sourceBlob": "cbc3fef651fb4581ab4cd107693a0bc34602ceee",
+          "sourceBytes": 6171,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261029_eldritch_blast_atomic_candidate.sql",
+          "sourceBlob": "a41e34c545e7c84c607b383061847b048fa1a764",
+          "sourceBytes": 13183,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_tactical_spell_profile_known_metadata_candidate.sql",
+          "sourceBlob": "c5eb49b26b1bc1b84f3a23f177d01e8998ef58e5",
+          "sourceBytes": 5209,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastPlanner.mjs",
+          "sourceBlob": "7e4d7f2f56319eb548357c1845b1e07d540425d3",
+          "sourceBytes": 2287,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastStagingCast.mjs",
+          "sourceBlob": "3bd57db29a373d947f21abaf81016cf84b158eec",
+          "sourceBytes": 2578,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/preflightSpellRecipe.mjs",
+          "sourceBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "sourceBytes": 6219,
+          "mainBlob": "67293267ea85196642e81b0e0e7bba2760620c0c",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "utils/spellRecipes/validateSpellRecipe.mjs",
+          "sourceBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "sourceBytes": 12706,
+          "mainBlob": "7946af0e8aafca8ea15f5a0c08c8ae715b91ea39",
+          "status": "exact_blob_on_main"
+        },
+        {
+          "path": "utils/tacticalKnownSpellAssignments.mjs",
+          "sourceBlob": "9399fae16507541cc1e3a4b3ff16744b1611a2cf",
+          "sourceBytes": 516,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/tacticalSpellMechanicsReview.mjs",
+          "sourceBlob": "dd4bf8c2b67fab7fcfbd19c0e8ea4bd733a8f2a9",
+          "sourceBytes": 6354,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ]
+    },
+    "pr312": {
+      "description": "P2, Fire Bolt and delegated NPC control against PR309 branch; 65 incremental changed paths",
+      "immediateDiffCount": 65,
+      "rows": [
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "sourceBlob": "e8b4469a4ce3a9b0b1cf37e30588eb1e7f6d08e1",
+          "sourceBytes": 10108,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-encounter-rest-release-candidate.yml",
+          "sourceBlob": "1d26b683887eec4e8db05a777f545571e9f84efa",
+          "sourceBytes": 2065,
+          "mainBlob": "0e6c28227de15dfc1d6203cf1eaec2d902a28546",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-npc-delegated-local-auth.yml",
+          "sourceBlob": "e13dd6945531c526a8991b3d19d469deece78ebb",
+          "sourceBytes": 4182,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "components/NpcControlPermissionsPanel.js",
+          "sourceBlob": "67572c7b04ef0be49790c1320c6bf6ff4ca4d8cf",
+          "sourceBytes": 7111,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "sourceBlob": "dd959ebe39fe458283f3448ac5f1b5b7a3b21465",
+          "sourceBytes": 66191,
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Command_Replay_Baseline_2026-11-01.md",
+          "sourceBlob": "66080c401bebfa048272cffb7e4692a05fea0e5e",
+          "sourceBytes": 9893,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Core_Action_Candidate_2026-11-01.md",
+          "sourceBlob": "394a4c643b82f69700d6f0f4bf0261e549a8cfd3",
+          "sourceBytes": 7357,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md",
+          "sourceBlob": "e4e1bf957588ac2913ee377a2f281c72fdbc7c59",
+          "sourceBytes": 12267,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Delegated_Control_2026-11-01.md",
+          "sourceBlob": "8cca1a7ee4633816725710292b5935a8db212573",
+          "sourceBytes": 14967,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Indirect_Read_Audit_2026-11-01.md",
+          "sourceBlob": "cc28fdf8de51323100fecd9ebc5aa8a27f9d349a",
+          "sourceBytes": 7914,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_RPC_Visibility_Rollout_2026-11-01.md",
+          "sourceBlob": "91c402fc58001c86e554f39cc8a5953fd978e2b5",
+          "sourceBytes": 12256,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Source_Visibility_Audit_2026-11-01.md",
+          "sourceBlob": "ce88f2bd70153000c34b78c64f2a674f24c2be21",
+          "sourceBytes": 6517,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Tactical_Spell_Profile_2026-11-01.md",
+          "sourceBlob": "e7ad14a0231918d14a9a4e39686d17f4c0d61994",
+          "sourceBytes": 6996,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NonLedger_Resource_Audit_2026-11-01.md",
+          "sourceBlob": "1185a7e7d628967bcee7d1d08a3284fc30aceaf8",
+          "sourceBytes": 11142,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md",
+          "sourceBlob": "0b6e72b0cfdf006d481eef03b927c3b642969a40",
+          "sourceBytes": 15757,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md",
+          "sourceBlob": "65eebea3cd77f5dc0ac4b3e5f5d18979bea7fa0e",
+          "sourceBytes": 16128,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shared_Encounter_Lock_Graph_2026-10-31.md",
+          "sourceBlob": "4884a8d0bc0ebeef5ee241a9ce37041ddfd3caa0",
+          "sourceBytes": 13781,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Transaction_Candidate_2026-10-31.md",
+          "sourceBlob": "3d8254e9ab2b9f713adfda7f6316cf93d7c89a19",
+          "sourceBytes": 8085,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "pages/encounters/combat.js",
+          "sourceBlob": "f7679b3d9e351dd046839d5326ab242241bcdaaf",
+          "sourceBytes": 111603,
+          "mainBlob": "117cab624f837d2f4205b17424ee916dedad6342",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "pages/npcs.js",
+          "sourceBlob": "cb06a140359b17d60090be9cc7519823d94ea956",
+          "sourceBytes": 99929,
+          "mainBlob": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/audits/encounter_command_replay_lock_readonly_p2.sql",
+          "sourceBlob": "26b5a0a064d4f64794b7e5a97799f7637fed210c",
+          "sourceBytes": 3153,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/encounter_nonledger_resource_readonly_p2.sql",
+          "sourceBlob": "11cf466ed47a3cadaa214a0b2a3b9510b870a944",
+          "sourceBytes": 3417,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/npc_delegated_visibility_readonly_p2.sql",
+          "sourceBlob": "e1d9f4c381c34b745968c3f060c508fea83e48e9",
+          "sourceBytes": 2881,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/npc_sensitive_rpc_readonly_p2.sql",
+          "sourceBlob": "d2894fd41532fc28a7470574627771d871d6dad2",
+          "sourceBytes": 3734,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/spell_cast_rpc_order_readonly.sql",
+          "sourceBlob": "d4bd7ce080d3e4f81f3fad1288ad521136d7825e",
+          "sourceBytes": 2671,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql",
+          "sourceBlob": "66d6d086682412cfccf3cf2ec10e99c8aa858ad4",
+          "sourceBytes": 5907,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg17.sql",
+          "sourceBlob": "4f97578c0a3b16dbb1108ec506590505dc424eeb",
+          "sourceBytes": 1537,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_live_replay_pg17.sql",
+          "sourceBlob": "f57ff5e0db3f2547c666b712aaea389d909854a1",
+          "sourceBytes": 4117,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_global_lock_order_p2_pg16.sh",
+          "sourceBlob": "b7054b3cbd05c3b4dd6402e7ee28b8aba3864766",
+          "sourceBytes": 2745,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonledger_resource_snapshot_p2.mjs",
+          "sourceBlob": "59a9474841e5bd68faee3df1bccf7bf37485152a",
+          "sourceBytes": 2420,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonspell_ledger_live_snapshot_p2.mjs",
+          "sourceBlob": "d5ed1676bbee325ab9270a33683997bc913396c7",
+          "sourceBytes": 3965,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_shared_character_slot_p2_pg16.sh",
+          "sourceBlob": "8b2ed3c4ec7ad88a5ba6fb00243fdb91bfe49627",
+          "sourceBytes": 3499,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16.sql",
+          "sourceBlob": "441f85d9b333f03a673e0766a4b940ef14e353f3",
+          "sourceBytes": 11324,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql",
+          "sourceBlob": "a202e715a1e302ece658b5302cc68f2b0ca2bce3",
+          "sourceBytes": 5602,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql",
+          "sourceBlob": "2afdc25efc27d65f6eff5ecceb224c3a5f9cbfd3",
+          "sourceBytes": 7245,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_shadow_cases.mjs",
+          "sourceBlob": "001ade5cab8248c5c63aac58371d17ada1096116",
+          "sourceBytes": 5000,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql",
+          "sourceBlob": "199d565642eadcb5c9dc7796c9675a6b6476cf0b",
+          "sourceBytes": 10326,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh",
+          "sourceBlob": "dbdd94d42dad60d447aa2b341ace8d6663c1259e",
+          "sourceBytes": 3958,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs",
+          "sourceBlob": "61bc735a790cef13ca40c786a3ba1c310d708815",
+          "sourceBytes": 7235,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_control_source_visibility_pg17.sql",
+          "sourceBlob": "18fa277b98c62a91f0a75b012112edce844717a1",
+          "sourceBytes": 4177,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh",
+          "sourceBlob": "5554f4b26e27ca753111122fe35026eaa9d4ec96",
+          "sourceBytes": 4892,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql",
+          "sourceBlob": "160755cd4c80a4520336eff434efd8b2d86d3087",
+          "sourceBytes": 9777,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql",
+          "sourceBlob": "73626ea3b5a228a6be1babeefc00e4fd258a68df",
+          "sourceBytes": 7358,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_source_read_rpc_parity_pg17.sql",
+          "sourceBlob": "f6df66b1c6ca921ab37abba0beb0300d4b78e58e",
+          "sourceBytes": 4151,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_source_shape_pg17.sql",
+          "sourceBlob": "b2b3699cab33bae6e46050029540ba08c585644d",
+          "sourceBytes": 3430,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql",
+          "sourceBlob": "619e042ce0485ad8865ec8e618bd235433544ce5",
+          "sourceBytes": 1490,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_cast_rpc_live_snapshot_p2.mjs",
+          "sourceBlob": "a7e3f84aa712ccaeed23d97ce8f2f9a9cf3bf4a3",
+          "sourceBytes": 2622,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_local_auth.mjs",
+          "sourceBlob": "f01e440479492faaeb67580eaf347843168b6c12",
+          "sourceBytes": 24018,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_real_auth.mjs",
+          "sourceBlob": "f9345d41096737069923fb08a0cbcefe4ea81367",
+          "sourceBytes": 8087,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_command_replay_baseline_p2.mjs",
+          "sourceBlob": "253609fc0ed78fdf56118b6ebe8ebc64e984cd3f",
+          "sourceBytes": 2180,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_core_action_candidate_p2.mjs",
+          "sourceBlob": "c0a713b96681fd779ed37233de45a89c5b58cff7",
+          "sourceBytes": 3237,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_nonledger_resource_p2.mjs",
+          "sourceBlob": "cddb991c6aebd63dc64e8d08852d9cc1bbfadde7",
+          "sourceBytes": 2541,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_shared_lock_audit_p2.mjs",
+          "sourceBlob": "8e12eb46874080b05d736b64ba8c9b2460d13cd8",
+          "sourceBytes": 3344,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_delegated_control_p2.mjs",
+          "sourceBlob": "5b3b6946802b4cfa2f14f535bb94b2b64a5123ff",
+          "sourceBytes": 3797,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_real_auth_harness_p2.mjs",
+          "sourceBlob": "91d19643308dc2df6a782589b577230c890b992c",
+          "sourceBytes": 2086,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_tactical_spell_profile_p2.mjs",
+          "sourceBlob": "0a53952fcc56fbf0e04a0ceaa1305b26a7828041",
+          "sourceBytes": 5477,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_cast_rpc_inventory_p2.mjs",
+          "sourceBlob": "dc4e6dc5f06bc255488682b890b3482e5d508c0a",
+          "sourceBytes": 5021,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs",
+          "sourceBlob": "16e1c9344f61823dadf73164f4aca67a07f670f9",
+          "sourceBytes": 6490,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_shadow_contracts.mjs",
+          "sourceBlob": "118b80aa27e1d1fb8a94f99a8a0bfdddda5d93b3",
+          "sourceBytes": 4366,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql",
+          "sourceBlob": "a6967455c624a27a169bb20bda5668ce217ae2e6",
+          "sourceBytes": 5354,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql",
+          "sourceBlob": "51294cae75e8fe6a80cd886ecb307398561b04a6",
+          "sourceBytes": 20324,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_core_action_encounter_first_private_candidate.sql",
+          "sourceBlob": "e15c237fbfa379ef790e703c65f405e943874702",
+          "sourceBytes": 6566,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_delegated_control_candidate.sql",
+          "sourceBlob": "29e700c8bf2008c1b46abc5dc74a266547473cf7",
+          "sourceBytes": 5546,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_v2_visibility_candidate.sql",
+          "sourceBlob": "ea7067fe22b6997cd9f600d2ecd6d7e2d682b73f",
+          "sourceBytes": 3479,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql",
+          "sourceBlob": "d63c75adc6682963d1f8900ca21afd626c53e95e",
+          "sourceBytes": 9864,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ]
+    }
+  },
+  "wholeTreeCrosswalk": {
+    "pr309": {
+      "absentOnMain": [
+        {
+          "path": ".github/workflows/retire-archived-preview-branches.yml",
+          "sourceBlob": "3529156ac0a0a69be43949e162d13972e6d8520a",
+          "sourceBytes": 771,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "sourceBlob": "8877cadd5d13a56ecc6ab280130802b020c29ce6",
+          "sourceBytes": 3893,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-eldritch-blast-local-auth.yml",
+          "sourceBlob": "359965e21606c42c988504fb1a7c690336fb65e1",
+          "sourceBytes": 3246,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "components/encounter/EldritchBlastPlanner.js",
+          "sourceBlob": "602b952365625f283418a674448917f8be67c5ba",
+          "sourceBytes": 5095,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_profile_pg17.sql",
+          "sourceBlob": "e9a17e5a053ef90337160495f08b4e00404022d2",
+          "sourceBytes": 4698,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_targeting_pg17.sql",
+          "sourceBlob": "a6f4376c92eeb5945c545eef6896a4b1c51f2c77",
+          "sourceBytes": 378,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql",
+          "sourceBlob": "2da2d583243b662f9ea6d6f01a71a94cab66925c",
+          "sourceBytes": 5069,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_pg16.sql",
+          "sourceBlob": "847bceefaf32c7160a9bb8f56b693c390bda2214",
+          "sourceBytes": 23265,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_race.sh",
+          "sourceBlob": "cbdca229d49602c0f3b1e5fd6f020a266aa477bb",
+          "sourceBytes": 1665,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_lock_contention.sh",
+          "sourceBlob": "94e1c0eb4aab4e59e0875c0d30dda2c9050344cf",
+          "sourceBytes": 3986,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_pending_lock_timeout.sh",
+          "sourceBlob": "0bf7b5c619c8ceed487bfcfc59eeb7923d3c8cca",
+          "sourceBytes": 3945,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_damage_pg17.sql",
+          "sourceBlob": "46651a2fc13b0b5471d58b57ef9ce654611da7c2",
+          "sourceBytes": 6983,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_profile_pg17.sql",
+          "sourceBlob": "bfb719792e36729d4693de33f77011f9eaec8773",
+          "sourceBytes": 7010,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_targeting_pg17.sql",
+          "sourceBlob": "3d862dd2d13207dcc953698fc9b32bff2889655e",
+          "sourceBytes": 10282,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/generate_eldritch_blast_local_auth_fixture.mjs",
+          "sourceBlob": "068915cbb42ec53a238b7b8782171d4cea70fbd6",
+          "sourceBytes": 5261,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/lib/eldritchBlastSignedInAssertions.mjs",
+          "sourceBlob": "ac8243452d2d880f4274744316d81ee7beaa4034",
+          "sourceBytes": 4698,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/retire_archived_preview_branches.mjs",
+          "sourceBlob": "d07baeae13f839428db8c157d1e4bf6abedbf0c5",
+          "sourceBytes": 5399,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_local_auth.mjs",
+          "sourceBlob": "18a1add79e10876332ecb7febd39085dabce42ea",
+          "sourceBytes": 25797,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_real_auth.mjs",
+          "sourceBlob": "f731d1043caab416ab675e09781ce1b2cfc7e68e",
+          "sourceBytes": 8059,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_auth_harness.mjs",
+          "sourceBlob": "62e5a7897b8a1e29cbe882caaca1ebd64ce53c71",
+          "sourceBytes": 1755,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_candidate.mjs",
+          "sourceBlob": "422d5e4a7fb8688811c4e849bf3d29a5294563ce",
+          "sourceBytes": 5839,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_planner.mjs",
+          "sourceBlob": "c76d00d0f5739049d04e862c85cfbbf8d74f21af",
+          "sourceBytes": 3663,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_signed_in_assertions.mjs",
+          "sourceBlob": "e107a6dbfb53bb32923b0bc84255e2683d95b380",
+          "sourceBytes": 2129,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_staging_cast.mjs",
+          "sourceBlob": "974b776c33672d7e42e89b0e91129aa847ba9838",
+          "sourceBytes": 3702,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_known_spell_metadata.mjs",
+          "sourceBlob": "001778213ed2a101e56f43fb3e9a95dcd0d3e957",
+          "sourceBytes": 1988,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_spell_mechanics_review.mjs",
+          "sourceBlob": "cbc3fef651fb4581ab4cd107693a0bc34602ceee",
+          "sourceBytes": 6171,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261029_eldritch_blast_atomic_candidate.sql",
+          "sourceBlob": "a41e34c545e7c84c607b383061847b048fa1a764",
+          "sourceBytes": 13183,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql",
+          "sourceBlob": "26f26401b7e2e0522f85b25e1293e00a252a0c7a",
+          "sourceBytes": 1417,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql",
+          "sourceBlob": "6530385a146685bfd58bc1d2bf4659729d600dce",
+          "sourceBytes": 3429,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_tactical_spell_profile_known_metadata_candidate.sql",
+          "sourceBlob": "c5eb49b26b1bc1b84f3a23f177d01e8998ef58e5",
+          "sourceBytes": 5209,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastPlanner.mjs",
+          "sourceBlob": "7e4d7f2f56319eb548357c1845b1e07d540425d3",
+          "sourceBytes": 2287,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastRules.mjs",
+          "sourceBlob": "794a0206ff18ceda3a6724d5f3e970c68a89cfe2",
+          "sourceBytes": 1009,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastStagingCast.mjs",
+          "sourceBlob": "3bd57db29a373d947f21abaf81016cf84b158eec",
+          "sourceBytes": 2578,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/tacticalKnownSpellAssignments.mjs",
+          "sourceBlob": "9399fae16507541cc1e3a4b3ff16744b1611a2cf",
+          "sourceBytes": 516,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/tacticalSpellMechanicsReview.mjs",
+          "sourceBlob": "dd4bf8c2b67fab7fcfbd19c0e8ea4bd733a8f2a9",
+          "sourceBytes": 6354,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "differentOnMain": [
+        {
+          "path": "AGENTS.md",
+          "sourceBlob": "e331fe6b455a552a7006cb0b688dd425e9bb92f7",
+          "sourceBytes": 3445,
+          "mainBlob": "52fa9375a825de8a01cfe002df1945a9b89b0a00",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Archived_Branch_Cleanup_Safety_2026-10-30.md",
+          "sourceBlob": "71c2753cb6ff8373ee06ccce011701a14eed9128",
+          "sourceBytes": 1718,
+          "mainBlob": "1f856b756295b838706d5a2ad07369c393cf84c5",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Combat_Next_Milestone_2026-10-29.md",
+          "sourceBlob": "9a2038370563aa5eb6521e543836a729ff10f545",
+          "sourceBytes": 29785,
+          "mainBlob": "21fc8706fa3625ed516841bf94ff8a5d88897ea6",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Consolidated_Development_Archive_2026-10-30.md",
+          "sourceBlob": "af85c2090f51a349a6bfec4bef7702de6931d2c3",
+          "sourceBytes": 5106,
+          "mainBlob": "26c66a81a7259e1f8c87c7a4b5b483a0106ddc87",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Current_Development_Status_and_Roadmap.md",
+          "sourceBlob": "0c10b38b4cf1425d2a2f58f90ff8547294ad31d7",
+          "sourceBytes": 25675,
+          "mainBlob": "77078fd6b8bcd2ce3b01ed94a2ad2d5d3268269b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md",
+          "sourceBlob": "ad892dc3aaedb643ce6fa229d5884d177aad9e4c",
+          "sourceBytes": 14195,
+          "mainBlob": "6447db2ee8afda054dc35a09805b2309d1f8fccc",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Current_Handoff_Prompt.md",
+          "sourceBlob": "fd587c8289a10ffd3cc79f69dca770be79dd829f",
+          "sourceBytes": 50945,
+          "mainBlob": "2efca67b7aa4c57fe07b72ad7590d4c11a382f08",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Documentation_Refresh_Manifest.md",
+          "sourceBlob": "ef6c1c8cdb44a848dfa4ac7e0137b55f50b2159c",
+          "sourceBytes": 20029,
+          "mainBlob": "492ef0c495e9318b14850db91e78e5e731c230ea",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Next_Chat_Handoff_2026-09-21.md",
+          "sourceBlob": "05bdcfe34d40a269e189e2e5bbe366a8b3ba7a78",
+          "sourceBytes": 5920,
+          "mainBlob": "02e9583a8cc8eab7b7865c9934a5b8cf2b5b0cfe",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Next_Chat_Handoff_2026-10-01.md",
+          "sourceBlob": "656e8bd21ac0f55ef60d312bfd63343dae67787c",
+          "sourceBytes": 5342,
+          "mainBlob": "0af06a9370be92e65cd43da060852ea1fee78630",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md",
+          "sourceBlob": "ee265a7896a20b17a2eb4c778698ef2716f20c2c",
+          "sourceBytes": 4590,
+          "mainBlob": "de5c2fc1a06b4dd62b18e8e29be2236a7c7d76c2",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/NPC_Printable_Character_Sheet_Status.md",
+          "sourceBlob": "6cf30d4d4c0b4baf8717a50c638cdf38646a3a9b",
+          "sourceBytes": 6060,
+          "mainBlob": "8f20252d3d0da21c1c03941744da4f9076dd0047",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "sourceBlob": "a664a8c8a7c0ea9bedf4c06ffe000270a91b85f2",
+          "sourceBytes": 14219,
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Realistic_Dice_Roller_Architecture_Roadmap.md",
+          "sourceBlob": "49cfdca7e2ae902972d1d516e53d1886f2e97852",
+          "sourceBytes": 28026,
+          "mainBlob": "ef8e2ad8cf17d3b9dc5dc1024c41da3f741f9a29",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P1_Schema_2026-10-31.md",
+          "sourceBlob": "a1bfa8fe6c990ad2e6ea6840851f9471926519b0",
+          "sourceBytes": 12161,
+          "mainBlob": "6bc4014508bcd8f69f074dbd4407ccf82a374203",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "sourceBlob": "743a8d242b579478479ae270cb367176e4cbe537",
+          "sourceBytes": 15736,
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Tactical_Spell_Mechanics_Review_2026-10-31.md",
+          "sourceBlob": "71389850f37a7db1701d22f3b47d6d74eb2ec706",
+          "sourceBytes": 7552,
+          "mainBlob": "f23c840aded6f5230c2d8bb5afa810d925dac947",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "pages/encounters/combat.js",
+          "sourceBlob": "477ac308ef2753188686b849f4b5a09518a5bd96",
+          "sourceBytes": 111362,
+          "mainBlob": "117cab624f837d2f4205b17424ee916dedad6342",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_team_spell_visibility.mjs",
+          "sourceBlob": "cd2e3501c0fee88c5d4acbc73fbcd37e8feb71e3",
+          "sourceBytes": 1896,
+          "mainBlob": "e30888ffdc579a52e2d178afbea7940fc3ce7f54",
+          "status": "different_blob_on_main"
+        }
+      ],
+      "sourceTreeTotalBlobs": 1818
+    },
+    "pr312": {
+      "absentOnMain": [
+        {
+          "path": ".github/workflows/retire-archived-preview-branches.yml",
+          "sourceBlob": "3529156ac0a0a69be43949e162d13972e6d8520a",
+          "sourceBytes": 771,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "sourceBlob": "e8b4469a4ce3a9b0b1cf37e30588eb1e7f6d08e1",
+          "sourceBytes": 10108,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-eldritch-blast-local-auth.yml",
+          "sourceBlob": "359965e21606c42c988504fb1a7c690336fb65e1",
+          "sourceBytes": 3246,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": ".github/workflows/validate-npc-delegated-local-auth.yml",
+          "sourceBlob": "e13dd6945531c526a8991b3d19d469deece78ebb",
+          "sourceBytes": 4182,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "components/encounter/EldritchBlastPlanner.js",
+          "sourceBlob": "602b952365625f283418a674448917f8be67c5ba",
+          "sourceBytes": 5095,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "components/NpcControlPermissionsPanel.js",
+          "sourceBlob": "67572c7b04ef0be49790c1320c6bf6ff4ca4d8cf",
+          "sourceBytes": 7111,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Command_Replay_Baseline_2026-11-01.md",
+          "sourceBlob": "66080c401bebfa048272cffb7e4692a05fea0e5e",
+          "sourceBytes": 9893,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Core_Action_Candidate_2026-11-01.md",
+          "sourceBlob": "394a4c643b82f69700d6f0f4bf0261e549a8cfd3",
+          "sourceBytes": 7357,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md",
+          "sourceBlob": "e4e1bf957588ac2913ee377a2f281c72fdbc7c59",
+          "sourceBytes": 12267,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NonLedger_Resource_Audit_2026-11-01.md",
+          "sourceBlob": "1185a7e7d628967bcee7d1d08a3284fc30aceaf8",
+          "sourceBytes": 11142,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Delegated_Control_2026-11-01.md",
+          "sourceBlob": "8cca1a7ee4633816725710292b5935a8db212573",
+          "sourceBytes": 14967,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Indirect_Read_Audit_2026-11-01.md",
+          "sourceBlob": "cc28fdf8de51323100fecd9ebc5aa8a27f9d349a",
+          "sourceBytes": 7914,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_RPC_Visibility_Rollout_2026-11-01.md",
+          "sourceBlob": "91c402fc58001c86e554f39cc8a5953fd978e2b5",
+          "sourceBytes": 12256,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Source_Visibility_Audit_2026-11-01.md",
+          "sourceBlob": "ce88f2bd70153000c34b78c64f2a674f24c2be21",
+          "sourceBytes": 6517,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Tactical_Spell_Profile_2026-11-01.md",
+          "sourceBlob": "e7ad14a0231918d14a9a4e39686d17f4c0d61994",
+          "sourceBytes": 6996,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md",
+          "sourceBlob": "0b6e72b0cfdf006d481eef03b927c3b642969a40",
+          "sourceBytes": 15757,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md",
+          "sourceBlob": "65eebea3cd77f5dc0ac4b3e5f5d18979bea7fa0e",
+          "sourceBytes": 16128,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shared_Encounter_Lock_Graph_2026-10-31.md",
+          "sourceBlob": "4884a8d0bc0ebeef5ee241a9ce37041ddfd3caa0",
+          "sourceBytes": 13781,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Transaction_Candidate_2026-10-31.md",
+          "sourceBlob": "3d8254e9ab2b9f713adfda7f6316cf93d7c89a19",
+          "sourceBytes": 8085,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/encounter_command_replay_lock_readonly_p2.sql",
+          "sourceBlob": "26b5a0a064d4f64794b7e5a97799f7637fed210c",
+          "sourceBytes": 3153,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/encounter_nonledger_resource_readonly_p2.sql",
+          "sourceBlob": "11cf466ed47a3cadaa214a0b2a3b9510b870a944",
+          "sourceBytes": 3417,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/npc_delegated_visibility_readonly_p2.sql",
+          "sourceBlob": "e1d9f4c381c34b745968c3f060c508fea83e48e9",
+          "sourceBytes": 2881,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/npc_sensitive_rpc_readonly_p2.sql",
+          "sourceBlob": "d2894fd41532fc28a7470574627771d871d6dad2",
+          "sourceBytes": 3734,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/audits/spell_cast_rpc_order_readonly.sql",
+          "sourceBlob": "d4bd7ce080d3e4f81f3fad1288ad521136d7825e",
+          "sourceBytes": 2671,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_profile_pg17.sql",
+          "sourceBlob": "e9a17e5a053ef90337160495f08b4e00404022d2",
+          "sourceBytes": 4698,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_activate_targeting_pg17.sql",
+          "sourceBlob": "a6f4376c92eeb5945c545eef6896a4b1c51f2c77",
+          "sourceBytes": 378,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql",
+          "sourceBlob": "2da2d583243b662f9ea6d6f01a71a94cab66925c",
+          "sourceBytes": 5069,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_pg16.sql",
+          "sourceBlob": "847bceefaf32c7160a9bb8f56b693c390bda2214",
+          "sourceBytes": 23265,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_candidate_race.sh",
+          "sourceBlob": "cbdca229d49602c0f3b1e5fd6f020a266aa477bb",
+          "sourceBytes": 1665,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_lock_contention.sh",
+          "sourceBlob": "94e1c0eb4aab4e59e0875c0d30dda2c9050344cf",
+          "sourceBytes": 3986,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_pending_lock_timeout.sh",
+          "sourceBlob": "0bf7b5c619c8ceed487bfcfc59eeb7923d3c8cca",
+          "sourceBytes": 3945,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_damage_pg17.sql",
+          "sourceBlob": "46651a2fc13b0b5471d58b57ef9ce654611da7c2",
+          "sourceBytes": 6983,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_profile_pg17.sql",
+          "sourceBlob": "bfb719792e36729d4693de33f77011f9eaec8773",
+          "sourceBytes": 7010,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/eldritch_blast_production_targeting_pg17.sql",
+          "sourceBlob": "3d862dd2d13207dcc953698fc9b32bff2889655e",
+          "sourceBytes": 10282,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql",
+          "sourceBlob": "66d6d086682412cfccf3cf2ec10e99c8aa858ad4",
+          "sourceBytes": 5907,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg17.sql",
+          "sourceBlob": "4f97578c0a3b16dbb1108ec506590505dc424eeb",
+          "sourceBytes": 1537,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_live_replay_pg17.sql",
+          "sourceBlob": "f57ff5e0db3f2547c666b712aaea389d909854a1",
+          "sourceBytes": 4117,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_global_lock_order_p2_pg16.sh",
+          "sourceBlob": "b7054b3cbd05c3b4dd6402e7ee28b8aba3864766",
+          "sourceBytes": 2745,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonledger_resource_snapshot_p2.mjs",
+          "sourceBlob": "59a9474841e5bd68faee3df1bccf7bf37485152a",
+          "sourceBytes": 2420,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonspell_ledger_live_snapshot_p2.mjs",
+          "sourceBlob": "d5ed1676bbee325ab9270a33683997bc913396c7",
+          "sourceBytes": 3965,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/encounter_shared_character_slot_p2_pg16.sh",
+          "sourceBlob": "8b2ed3c4ec7ad88a5ba6fb00243fdb91bfe49627",
+          "sourceBytes": 3499,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql",
+          "sourceBlob": "a202e715a1e302ece658b5302cc68f2b0ca2bce3",
+          "sourceBytes": 5602,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16.sql",
+          "sourceBlob": "441f85d9b333f03a673e0766a4b940ef14e353f3",
+          "sourceBytes": 11324,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql",
+          "sourceBlob": "2afdc25efc27d65f6eff5ecceb224c3a5f9cbfd3",
+          "sourceBytes": 7245,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_shadow_cases.mjs",
+          "sourceBlob": "001ade5cab8248c5c63aac58371d17ada1096116",
+          "sourceBytes": 5000,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql",
+          "sourceBlob": "199d565642eadcb5c9dc7796c9675a6b6476cf0b",
+          "sourceBytes": 10326,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh",
+          "sourceBlob": "dbdd94d42dad60d447aa2b341ace8d6663c1259e",
+          "sourceBytes": 3958,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/generate_eldritch_blast_local_auth_fixture.mjs",
+          "sourceBlob": "068915cbb42ec53a238b7b8782171d4cea70fbd6",
+          "sourceBytes": 5261,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs",
+          "sourceBlob": "61bc735a790cef13ca40c786a3ba1c310d708815",
+          "sourceBytes": 7235,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_control_source_visibility_pg17.sql",
+          "sourceBlob": "18fa277b98c62a91f0a75b012112edce844717a1",
+          "sourceBytes": 4177,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh",
+          "sourceBlob": "5554f4b26e27ca753111122fe35026eaa9d4ec96",
+          "sourceBytes": 4892,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql",
+          "sourceBlob": "160755cd4c80a4520336eff434efd8b2d86d3087",
+          "sourceBytes": 9777,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql",
+          "sourceBlob": "73626ea3b5a228a6be1babeefc00e4fd258a68df",
+          "sourceBytes": 7358,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_source_read_rpc_parity_pg17.sql",
+          "sourceBlob": "f6df66b1c6ca921ab37abba0beb0300d4b78e58e",
+          "sourceBytes": 4151,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_source_shape_pg17.sql",
+          "sourceBlob": "b2b3699cab33bae6e46050029540ba08c585644d",
+          "sourceBytes": 3430,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql",
+          "sourceBlob": "619e042ce0485ad8865ec8e618bd235433544ce5",
+          "sourceBytes": 1490,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/fixtures/spell_cast_rpc_live_snapshot_p2.mjs",
+          "sourceBlob": "a7e3f84aa712ccaeed23d97ce8f2f9a9cf3bf4a3",
+          "sourceBytes": 2622,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/lib/eldritchBlastSignedInAssertions.mjs",
+          "sourceBlob": "ac8243452d2d880f4274744316d81ee7beaa4034",
+          "sourceBytes": 4698,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/retire_archived_preview_branches.mjs",
+          "sourceBlob": "d07baeae13f839428db8c157d1e4bf6abedbf0c5",
+          "sourceBytes": 5399,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_local_auth.mjs",
+          "sourceBlob": "18a1add79e10876332ecb7febd39085dabce42ea",
+          "sourceBytes": 25797,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_eldritch_blast_real_auth.mjs",
+          "sourceBlob": "f731d1043caab416ab675e09781ce1b2cfc7e68e",
+          "sourceBytes": 8059,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_local_auth.mjs",
+          "sourceBlob": "f01e440479492faaeb67580eaf347843168b6c12",
+          "sourceBytes": 24018,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_real_auth.mjs",
+          "sourceBlob": "f9345d41096737069923fb08a0cbcefe4ea81367",
+          "sourceBytes": 8087,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_auth_harness.mjs",
+          "sourceBlob": "62e5a7897b8a1e29cbe882caaca1ebd64ce53c71",
+          "sourceBytes": 1755,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_candidate.mjs",
+          "sourceBlob": "422d5e4a7fb8688811c4e849bf3d29a5294563ce",
+          "sourceBytes": 5839,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_planner.mjs",
+          "sourceBlob": "c76d00d0f5739049d04e862c85cfbbf8d74f21af",
+          "sourceBytes": 3663,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_signed_in_assertions.mjs",
+          "sourceBlob": "e107a6dbfb53bb32923b0bc84255e2683d95b380",
+          "sourceBytes": 2129,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_eldritch_blast_staging_cast.mjs",
+          "sourceBlob": "974b776c33672d7e42e89b0e91129aa847ba9838",
+          "sourceBytes": 3702,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_command_replay_baseline_p2.mjs",
+          "sourceBlob": "253609fc0ed78fdf56118b6ebe8ebc64e984cd3f",
+          "sourceBytes": 2180,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_core_action_candidate_p2.mjs",
+          "sourceBlob": "c0a713b96681fd779ed37233de45a89c5b58cff7",
+          "sourceBytes": 3237,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_nonledger_resource_p2.mjs",
+          "sourceBlob": "cddb991c6aebd63dc64e8d08852d9cc1bbfadde7",
+          "sourceBytes": 2541,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_shared_lock_audit_p2.mjs",
+          "sourceBlob": "8e12eb46874080b05d736b64ba8c9b2460d13cd8",
+          "sourceBytes": 3344,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_delegated_control_p2.mjs",
+          "sourceBlob": "5b3b6946802b4cfa2f14f535bb94b2b64a5123ff",
+          "sourceBytes": 3797,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_real_auth_harness_p2.mjs",
+          "sourceBlob": "91d19643308dc2df6a782589b577230c890b992c",
+          "sourceBytes": 2086,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_npc_tactical_spell_profile_p2.mjs",
+          "sourceBlob": "0a53952fcc56fbf0e04a0ceaa1305b26a7828041",
+          "sourceBytes": 5477,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_cast_rpc_inventory_p2.mjs",
+          "sourceBlob": "dc4e6dc5f06bc255488682b890b3482e5d508c0a",
+          "sourceBytes": 5021,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs",
+          "sourceBlob": "16e1c9344f61823dadf73164f4aca67a07f670f9",
+          "sourceBytes": 6490,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_shadow_contracts.mjs",
+          "sourceBlob": "118b80aa27e1d1fb8a94f99a8a0bfdddda5d93b3",
+          "sourceBytes": 4366,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_known_spell_metadata.mjs",
+          "sourceBlob": "001778213ed2a101e56f43fb3e9a95dcd0d3e957",
+          "sourceBytes": 1988,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "scripts/validate_tactical_spell_mechanics_review.mjs",
+          "sourceBlob": "cbc3fef651fb4581ab4cd107693a0bc34602ceee",
+          "sourceBytes": 6171,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261029_eldritch_blast_atomic_candidate.sql",
+          "sourceBlob": "a41e34c545e7c84c607b383061847b048fa1a764",
+          "sourceBytes": 13183,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql",
+          "sourceBlob": "26f26401b7e2e0522f85b25e1293e00a252a0c7a",
+          "sourceBytes": 1417,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql",
+          "sourceBlob": "6530385a146685bfd58bc1d2bf4659729d600dce",
+          "sourceBytes": 3429,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql",
+          "sourceBlob": "a6967455c624a27a169bb20bda5668ce217ae2e6",
+          "sourceBytes": 5354,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql",
+          "sourceBlob": "51294cae75e8fe6a80cd886ecb307398561b04a6",
+          "sourceBytes": 20324,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261031_tactical_spell_profile_known_metadata_candidate.sql",
+          "sourceBlob": "c5eb49b26b1bc1b84f3a23f177d01e8998ef58e5",
+          "sourceBytes": 5209,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_core_action_encounter_first_private_candidate.sql",
+          "sourceBlob": "e15c237fbfa379ef790e703c65f405e943874702",
+          "sourceBytes": 6566,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_delegated_control_candidate.sql",
+          "sourceBlob": "29e700c8bf2008c1b46abc5dc74a266547473cf7",
+          "sourceBytes": 5546,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_v2_visibility_candidate.sql",
+          "sourceBlob": "ea7067fe22b6997cd9f600d2ecd6d7e2d682b73f",
+          "sourceBytes": 3479,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql",
+          "sourceBlob": "d63c75adc6682963d1f8900ca21afd626c53e95e",
+          "sourceBytes": 9864,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastPlanner.mjs",
+          "sourceBlob": "7e4d7f2f56319eb548357c1845b1e07d540425d3",
+          "sourceBytes": 2287,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastRules.mjs",
+          "sourceBlob": "794a0206ff18ceda3a6724d5f3e970c68a89cfe2",
+          "sourceBytes": 1009,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/eldritchBlastStagingCast.mjs",
+          "sourceBlob": "3bd57db29a373d947f21abaf81016cf84b158eec",
+          "sourceBytes": 2578,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/tacticalKnownSpellAssignments.mjs",
+          "sourceBlob": "9399fae16507541cc1e3a4b3ff16744b1611a2cf",
+          "sourceBytes": 516,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        },
+        {
+          "path": "utils/tacticalSpellMechanicsReview.mjs",
+          "sourceBlob": "dd4bf8c2b67fab7fcfbd19c0e8ea4bd733a8f2a9",
+          "sourceBytes": 6354,
+          "mainBlob": null,
+          "status": "absent_on_main"
+        }
+      ],
+      "differentOnMain": [
+        {
+          "path": ".github/workflows/validate-encounter-rest-release-candidate.yml",
+          "sourceBlob": "1d26b683887eec4e8db05a777f545571e9f84efa",
+          "sourceBytes": 2065,
+          "mainBlob": "0e6c28227de15dfc1d6203cf1eaec2d902a28546",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "AGENTS.md",
+          "sourceBlob": "e331fe6b455a552a7006cb0b688dd425e9bb92f7",
+          "sourceBytes": 3445,
+          "mainBlob": "52fa9375a825de8a01cfe002df1945a9b89b0a00",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Archived_Branch_Cleanup_Safety_2026-10-30.md",
+          "sourceBlob": "71c2753cb6ff8373ee06ccce011701a14eed9128",
+          "sourceBytes": 1718,
+          "mainBlob": "1f856b756295b838706d5a2ad07369c393cf84c5",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Combat_Next_Milestone_2026-10-29.md",
+          "sourceBlob": "9a2038370563aa5eb6521e543836a729ff10f545",
+          "sourceBytes": 29785,
+          "mainBlob": "21fc8706fa3625ed516841bf94ff8a5d88897ea6",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Consolidated_Development_Archive_2026-10-30.md",
+          "sourceBlob": "af85c2090f51a349a6bfec4bef7702de6931d2c3",
+          "sourceBytes": 5106,
+          "mainBlob": "26c66a81a7259e1f8c87c7a4b5b483a0106ddc87",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Current_Development_Status_and_Roadmap.md",
+          "sourceBlob": "0c10b38b4cf1425d2a2f58f90ff8547294ad31d7",
+          "sourceBytes": 25675,
+          "mainBlob": "77078fd6b8bcd2ce3b01ed94a2ad2d5d3268269b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md",
+          "sourceBlob": "ad892dc3aaedb643ce6fa229d5884d177aad9e4c",
+          "sourceBytes": 14195,
+          "mainBlob": "6447db2ee8afda054dc35a09805b2309d1f8fccc",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/DNDNext_Current_Handoff_Prompt.md",
+          "sourceBlob": "fd587c8289a10ffd3cc79f69dca770be79dd829f",
+          "sourceBytes": 50945,
+          "mainBlob": "2efca67b7aa4c57fe07b72ad7590d4c11a382f08",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Documentation_Refresh_Manifest.md",
+          "sourceBlob": "ef6c1c8cdb44a848dfa4ac7e0137b55f50b2159c",
+          "sourceBytes": 20029,
+          "mainBlob": "492ef0c495e9318b14850db91e78e5e731c230ea",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Next_Chat_Handoff_2026-09-21.md",
+          "sourceBlob": "05bdcfe34d40a269e189e2e5bbe366a8b3ba7a78",
+          "sourceBytes": 5920,
+          "mainBlob": "02e9583a8cc8eab7b7865c9934a5b8cf2b5b0cfe",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Next_Chat_Handoff_2026-10-01.md",
+          "sourceBlob": "656e8bd21ac0f55ef60d312bfd63343dae67787c",
+          "sourceBytes": 5342,
+          "mainBlob": "0af06a9370be92e65cd43da060852ea1fee78630",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md",
+          "sourceBlob": "ee265a7896a20b17a2eb4c778698ef2716f20c2c",
+          "sourceBytes": 4590,
+          "mainBlob": "de5c2fc1a06b4dd62b18e8e29be2236a7c7d76c2",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/NPC_Printable_Character_Sheet_Status.md",
+          "sourceBlob": "6cf30d4d4c0b4baf8717a50c638cdf38646a3a9b",
+          "sourceBytes": 6060,
+          "mainBlob": "8f20252d3d0da21c1c03941744da4f9076dd0047",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/README.md",
+          "sourceBlob": "a664a8c8a7c0ea9bedf4c06ffe000270a91b85f2",
+          "sourceBytes": 14219,
+          "mainBlob": "f59b32808855d84030a8cc2f33b0ae85c6ada3a3",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Realistic_Dice_Roller_Architecture_Roadmap.md",
+          "sourceBlob": "49cfdca7e2ae902972d1d516e53d1886f2e97852",
+          "sourceBytes": 28026,
+          "mainBlob": "ef8e2ad8cf17d3b9dc5dc1024c41da3f741f9a29",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Spell_Recipe_P1_Schema_2026-10-31.md",
+          "sourceBlob": "a1bfa8fe6c990ad2e6ea6840851f9471926519b0",
+          "sourceBytes": 12161,
+          "mainBlob": "6bc4014508bcd8f69f074dbd4407ccf82a374203",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "sourceBlob": "dd959ebe39fe458283f3448ac5f1b5b7a3b21465",
+          "sourceBytes": 66191,
+          "mainBlob": "b58fe97fc807c03a357d3c51cb0627391b93431b",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "docs/Tactical_Spell_Mechanics_Review_2026-10-31.md",
+          "sourceBlob": "71389850f37a7db1701d22f3b47d6d74eb2ec706",
+          "sourceBytes": 7552,
+          "mainBlob": "f23c840aded6f5230c2d8bb5afa810d925dac947",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "pages/encounters/combat.js",
+          "sourceBlob": "f7679b3d9e351dd046839d5326ab242241bcdaaf",
+          "sourceBytes": 111603,
+          "mainBlob": "117cab624f837d2f4205b17424ee916dedad6342",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "pages/npcs.js",
+          "sourceBlob": "cb06a140359b17d60090be9cc7519823d94ea956",
+          "sourceBytes": 99929,
+          "mainBlob": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+          "status": "different_blob_on_main"
+        },
+        {
+          "path": "scripts/validate_encounter_team_spell_visibility.mjs",
+          "sourceBlob": "cd2e3501c0fee88c5d4acbc73fbcd37e8feb71e3",
+          "sourceBytes": 1896,
+          "mainBlob": "e30888ffdc579a52e2d178afbea7940fc3ce7f54",
+          "status": "different_blob_on_main"
+        }
+      ],
+      "sourceTreeTotalBlobs": 1878
+    }
+  },
+  "inheritance": {
+    "p309_to_p312": {
+      "added": [
+        {
+          "path": ".github/workflows/validate-npc-delegated-local-auth.yml",
+          "blob": "e13dd6945531c526a8991b3d19d469deece78ebb",
+          "size": 4182
+        },
+        {
+          "path": "components/NpcControlPermissionsPanel.js",
+          "blob": "67572c7b04ef0be49790c1320c6bf6ff4ca4d8cf",
+          "size": 7111
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Command_Replay_Baseline_2026-11-01.md",
+          "blob": "66080c401bebfa048272cffb7e4692a05fea0e5e",
+          "size": 9893
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Core_Action_Candidate_2026-11-01.md",
+          "blob": "394a4c643b82f69700d6f0f4bf0261e549a8cfd3",
+          "size": 7357
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md",
+          "blob": "e4e1bf957588ac2913ee377a2f281c72fdbc7c59",
+          "size": 12267
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NonLedger_Resource_Audit_2026-11-01.md",
+          "blob": "1185a7e7d628967bcee7d1d08a3284fc30aceaf8",
+          "size": 11142
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Delegated_Control_2026-11-01.md",
+          "blob": "8cca1a7ee4633816725710292b5935a8db212573",
+          "size": 14967
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Indirect_Read_Audit_2026-11-01.md",
+          "blob": "cc28fdf8de51323100fecd9ebc5aa8a27f9d349a",
+          "size": 7914
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_RPC_Visibility_Rollout_2026-11-01.md",
+          "blob": "91c402fc58001c86e554f39cc8a5953fd978e2b5",
+          "size": 12256
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Source_Visibility_Audit_2026-11-01.md",
+          "blob": "ce88f2bd70153000c34b78c64f2a674f24c2be21",
+          "size": 6517
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_NPC_Tactical_Spell_Profile_2026-11-01.md",
+          "blob": "e7ad14a0231918d14a9a4e39686d17f4c0d61994",
+          "size": 6996
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md",
+          "blob": "0b6e72b0cfdf006d481eef03b927c3b642969a40",
+          "size": 15757
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md",
+          "blob": "65eebea3cd77f5dc0ac4b3e5f5d18979bea7fa0e",
+          "size": 16128
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Shared_Encounter_Lock_Graph_2026-10-31.md",
+          "blob": "4884a8d0bc0ebeef5ee241a9ce37041ddfd3caa0",
+          "size": 13781
+        },
+        {
+          "path": "docs/Spell_Recipe_P2_Transaction_Candidate_2026-10-31.md",
+          "blob": "3d8254e9ab2b9f713adfda7f6316cf93d7c89a19",
+          "size": 8085
+        },
+        {
+          "path": "scripts/audits/encounter_command_replay_lock_readonly_p2.sql",
+          "blob": "26b5a0a064d4f64794b7e5a97799f7637fed210c",
+          "size": 3153
+        },
+        {
+          "path": "scripts/audits/encounter_nonledger_resource_readonly_p2.sql",
+          "blob": "11cf466ed47a3cadaa214a0b2a3b9510b870a944",
+          "size": 3417
+        },
+        {
+          "path": "scripts/audits/npc_delegated_visibility_readonly_p2.sql",
+          "blob": "e1d9f4c381c34b745968c3f060c508fea83e48e9",
+          "size": 2881
+        },
+        {
+          "path": "scripts/audits/npc_sensitive_rpc_readonly_p2.sql",
+          "blob": "d2894fd41532fc28a7470574627771d871d6dad2",
+          "size": 3734
+        },
+        {
+          "path": "scripts/audits/spell_cast_rpc_order_readonly.sql",
+          "blob": "d4bd7ce080d3e4f81f3fad1288ad521136d7825e",
+          "size": 2671
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql",
+          "blob": "66d6d086682412cfccf3cf2ec10e99c8aa858ad4",
+          "size": 5907
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_candidate_pg17.sql",
+          "blob": "4f97578c0a3b16dbb1108ec506590505dc424eeb",
+          "size": 1537
+        },
+        {
+          "path": "scripts/fixtures/encounter_core_action_live_replay_pg17.sql",
+          "blob": "f57ff5e0db3f2547c666b712aaea389d909854a1",
+          "size": 4117
+        },
+        {
+          "path": "scripts/fixtures/encounter_global_lock_order_p2_pg16.sh",
+          "blob": "b7054b3cbd05c3b4dd6402e7ee28b8aba3864766",
+          "size": 2745
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonledger_resource_snapshot_p2.mjs",
+          "blob": "59a9474841e5bd68faee3df1bccf7bf37485152a",
+          "size": 2420
+        },
+        {
+          "path": "scripts/fixtures/encounter_nonspell_ledger_live_snapshot_p2.mjs",
+          "blob": "d5ed1676bbee325ab9270a33683997bc913396c7",
+          "size": 3965
+        },
+        {
+          "path": "scripts/fixtures/encounter_shared_character_slot_p2_pg16.sh",
+          "blob": "8b2ed3c4ec7ad88a5ba6fb00243fdb91bfe49627",
+          "size": 3499
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql",
+          "blob": "a202e715a1e302ece658b5302cc68f2b0ca2bce3",
+          "size": 5602
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_disposable_pg16.sql",
+          "blob": "441f85d9b333f03a673e0766a4b940ef14e353f3",
+          "size": 11324
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql",
+          "blob": "2afdc25efc27d65f6eff5ecceb224c3a5f9cbfd3",
+          "size": 7245
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_shadow_cases.mjs",
+          "blob": "001ade5cab8248c5c63aac58371d17ada1096116",
+          "size": 5000
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql",
+          "blob": "199d565642eadcb5c9dc7796c9675a6b6476cf0b",
+          "size": 10326
+        },
+        {
+          "path": "scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh",
+          "blob": "dbdd94d42dad60d447aa2b341ace8d6663c1259e",
+          "size": 3958
+        },
+        {
+          "path": "scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs",
+          "blob": "61bc735a790cef13ca40c786a3ba1c310d708815",
+          "size": 7235
+        },
+        {
+          "path": "scripts/fixtures/npc_control_source_visibility_pg17.sql",
+          "blob": "18fa277b98c62a91f0a75b012112edce844717a1",
+          "size": 4177
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh",
+          "blob": "5554f4b26e27ca753111122fe35026eaa9d4ec96",
+          "size": 4892
+        },
+        {
+          "path": "scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql",
+          "blob": "160755cd4c80a4520336eff434efd8b2d86d3087",
+          "size": 9777
+        },
+        {
+          "path": "scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql",
+          "blob": "73626ea3b5a228a6be1babeefc00e4fd258a68df",
+          "size": 7358
+        },
+        {
+          "path": "scripts/fixtures/npc_source_read_rpc_parity_pg17.sql",
+          "blob": "f6df66b1c6ca921ab37abba0beb0300d4b78e58e",
+          "size": 4151
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_source_shape_pg17.sql",
+          "blob": "b2b3699cab33bae6e46050029540ba08c585644d",
+          "size": 3430
+        },
+        {
+          "path": "scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql",
+          "blob": "619e042ce0485ad8865ec8e618bd235433544ce5",
+          "size": 1490
+        },
+        {
+          "path": "scripts/fixtures/spell_cast_rpc_live_snapshot_p2.mjs",
+          "blob": "a7e3f84aa712ccaeed23d97ce8f2f9a9cf3bf4a3",
+          "size": 2622
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_local_auth.mjs",
+          "blob": "f01e440479492faaeb67580eaf347843168b6c12",
+          "size": 24018
+        },
+        {
+          "path": "scripts/test_npc_delegated_control_real_auth.mjs",
+          "blob": "f9345d41096737069923fb08a0cbcefe4ea81367",
+          "size": 8087
+        },
+        {
+          "path": "scripts/validate_encounter_command_replay_baseline_p2.mjs",
+          "blob": "253609fc0ed78fdf56118b6ebe8ebc64e984cd3f",
+          "size": 2180
+        },
+        {
+          "path": "scripts/validate_encounter_core_action_candidate_p2.mjs",
+          "blob": "c0a713b96681fd779ed37233de45a89c5b58cff7",
+          "size": 3237
+        },
+        {
+          "path": "scripts/validate_encounter_nonledger_resource_p2.mjs",
+          "blob": "cddb991c6aebd63dc64e8d08852d9cc1bbfadde7",
+          "size": 2541
+        },
+        {
+          "path": "scripts/validate_encounter_shared_lock_audit_p2.mjs",
+          "blob": "8e12eb46874080b05d736b64ba8c9b2460d13cd8",
+          "size": 3344
+        },
+        {
+          "path": "scripts/validate_npc_delegated_control_p2.mjs",
+          "blob": "5b3b6946802b4cfa2f14f535bb94b2b64a5123ff",
+          "size": 3797
+        },
+        {
+          "path": "scripts/validate_npc_real_auth_harness_p2.mjs",
+          "blob": "91d19643308dc2df6a782589b577230c890b992c",
+          "size": 2086
+        },
+        {
+          "path": "scripts/validate_npc_tactical_spell_profile_p2.mjs",
+          "blob": "0a53952fcc56fbf0e04a0ceaa1305b26a7828041",
+          "size": 5477
+        },
+        {
+          "path": "scripts/validate_spell_cast_rpc_inventory_p2.mjs",
+          "blob": "dc4e6dc5f06bc255488682b890b3482e5d508c0a",
+          "size": 5021
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs",
+          "blob": "16e1c9344f61823dadf73164f4aca67a07f670f9",
+          "size": 6490
+        },
+        {
+          "path": "scripts/validate_spell_recipe_p2_shadow_contracts.mjs",
+          "blob": "118b80aa27e1d1fb8a94f99a8a0bfdddda5d93b3",
+          "size": 4366
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql",
+          "blob": "a6967455c624a27a169bb20bda5668ce217ae2e6",
+          "size": 5354
+        },
+        {
+          "path": "sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql",
+          "blob": "51294cae75e8fe6a80cd886ecb307398561b04a6",
+          "size": 20324
+        },
+        {
+          "path": "sql/candidates/20261101_core_action_encounter_first_private_candidate.sql",
+          "blob": "e15c237fbfa379ef790e703c65f405e943874702",
+          "size": 6566
+        },
+        {
+          "path": "sql/candidates/20261101_npc_delegated_control_candidate.sql",
+          "blob": "29e700c8bf2008c1b46abc5dc74a266547473cf7",
+          "size": 5546
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_v2_visibility_candidate.sql",
+          "blob": "ea7067fe22b6997cd9f600d2ecd6d7e2d682b73f",
+          "size": 3479
+        },
+        {
+          "path": "sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql",
+          "blob": "d63c75adc6682963d1f8900ca21afd626c53e95e",
+          "size": 9864
+        }
+      ],
+      "changed": [
+        {
+          "path": ".github/workflows/validate-eldritch-blast-candidate.yml",
+          "oldSha": "8877cadd5d13a56ecc6ab280130802b020c29ce6",
+          "newSha": "e8b4469a4ce3a9b0b1cf37e30588eb1e7f6d08e1"
+        },
+        {
+          "path": ".github/workflows/validate-encounter-rest-release-candidate.yml",
+          "oldSha": "0e6c28227de15dfc1d6203cf1eaec2d902a28546",
+          "newSha": "1d26b683887eec4e8db05a777f545571e9f84efa"
+        },
+        {
+          "path": "docs/START_HERE_ACTIVE_HANDOFF.md",
+          "oldSha": "743a8d242b579478479ae270cb367176e4cbe537",
+          "newSha": "dd959ebe39fe458283f3448ac5f1b5b7a3b21465"
+        },
+        {
+          "path": "pages/encounters/combat.js",
+          "oldSha": "477ac308ef2753188686b849f4b5a09518a5bd96",
+          "newSha": "f7679b3d9e351dd046839d5326ab242241bcdaaf"
+        },
+        {
+          "path": "pages/npcs.js",
+          "oldSha": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+          "newSha": "cb06a140359b17d60090be9cc7519823d94ea956"
+        }
+      ],
+      "removed": []
+    }
+  },
+  "protected": "19 currently deployed source-qualified XPHB spell adapters; source/GM/hidden visibility; 2024 rules and GM-assisted unsupported; true signed rights, lock/replay, production browser and backup recovery gates."
+}
