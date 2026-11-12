@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2f-source-species-projection-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `7a2f1b60e544420959c13ea2ca341c5cad496869` |
+| Exact source commit represented by this archive snapshot | `82ea3499a43760b3bdfee300900f32be32c0c4f8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | ci(I2-F): preserve original I1-B..O and I2C/D/E auth tests before private source/species projection RED/GREEN |
-| Files changed relative to main | 194 (146 non-docs; 48 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(I2-F): 9/34 original account writers with two privileged-local source/species helper tests, 25 untested |
+| Files changed relative to main | 195 (146 non-docs; 49 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2f-source-species-option-a-local-auth.yml`
+- `docs/I2_F_ACCOUNT_WRITER_COVERAGE_2026-11-11.json`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/C3_3_OWNER_RELEASE_DECISION_PACKET_2026-11-08.md`
 - `docs/C3_3_PROTOTYPE_SPELL_ITEM_PRESERVATION_2026-11-08.md`
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- … 144 more
+- … 145 more
 
 ## Trust and update procedure
 
