@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c4-spell-p1-source-only-extraction-main-20261112` |
-| Exact source commit represented by this archive snapshot | `51fb085d348b654d8cb7755f3f29d2f81d8c30fa` |
+| Exact source commit represented by this archive snapshot | `5591d4ec2f10261fb76aa88a43ce7c3ee873e5fe` |
 | Compared with | `621de3cbd09c71f82d3ac4f02a858035cac9e207` (main comparison base) |
-| Last source commit title | preserve(c4): copy original PR #347 source-only schema/preflight test blob scripts/validate_spell_recipe_preflight_p1.mjs |
-| Files changed relative to main | 3 (3 non-docs; 0 docs) |
+| Last source commit title | preserve(c4): copy original PR #347 source-only schema/preflight test blob utils/spellRecipes/validateSpellRecipe.mjs |
+| Files changed relative to main | 6 (6 non-docs; 0 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,13 +17,16 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_spell_recipe_preflight_p1.mjs`
+- `utils/spellRecipes/validateSpellRecipe.mjs`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-spell-recipe-p1-extraction.yml`
 - `scripts/fixtures/spell_recipe_p1_examples.mjs`
 - `scripts/validate_spell_recipe_preflight_p1.mjs`
+- `scripts/validate_spell_recipe_schema_p1.mjs`
+- `utils/spellRecipes/preflightSpellRecipe.mjs`
+- `utils/spellRecipes/validateSpellRecipe.mjs`
 
 ## Trust and update procedure
 
