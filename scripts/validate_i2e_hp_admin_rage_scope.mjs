@@ -31,7 +31,7 @@ for(const w of ledger.original_update_writers){
  const name=w.signature.split("(")[0];
  if(target.has(name)){
   assert.equal(w.source_md5,target.get(name));
-  assert.match(w.status,/i2e_original_RED_and_scratch_no_write_pending_signed_CI/);
+  assert.equal(w.status,"i2e_signed_original_RED_then_scratch_no_write_GREEN_verified");
   newly++;
  }else{
   const previous=old.original_update_writers.find(x=>x.signature===w.signature);
@@ -40,6 +40,10 @@ for(const w of ledger.original_update_writers){
 }
 assert.equal(tested,7);
 assert.equal(newly,3);
+assert.equal(ledger.i2e_evidence.github_actions_run,43146151864);
+assert.equal(ledger.i2e_evidence.job_id,130944312890);
+assert.equal(ledger.i2e_evidence.conclusion,"success");
+assert.equal(ledger.i2e_evidence.acceptance,"I2E-01 through I2E-11 PASS");
 assert.deepEqual(Object.entries(ledger.i2e_source_fingerprints).sort(),
  [...target.entries()].sort());
 assert.equal(ledger.i2e_admin_v1_no_legacy_writer_fingerprint,"eb467b7c7a8d548581a36cfcb0d8f77b");
@@ -60,4 +64,4 @@ for(const word of ["Owner-approved Option A","same-character","synthetic","Barba
  assert.ok(report.toLowerCase().includes(word.toLowerCase()),"Missing documented scope/gate: "+word);
 }
 console.log("PASS I2E-STATIC: three exact HP/Admin/Rage original source hashes, source-reversible account UPDATE-only candidate, 7/34 covered and 27 original writers untested");
-console.log("I2E-STATIC LIMIT: signed RED/GREEN behavior not asserted by this static check; no production approval, no full 31-trigger equivalence");
+console.log("I2E-STATIC LIMIT: signed I2E-01..11 locally verified in #43146151864; static check only preserves receipt, no production approval or full 31-trigger equivalence");
