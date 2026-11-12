@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2d-private-forge-v3-option-a-freeze-20261111` |
-| Exact source commit represented by this archive snapshot | `e9e8c3c010ee2ad9259e1419e113a880e796c164` |
+| Exact source commit represented by this archive snapshot | `6d0949487f243cd918ad8a93529106a3bd51e495` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(I2-D): pin verified 11/11 signed CI source hashes while preserving 30-writer release limitations |
+| Last source commit title | docs(I2-D): advance active work to signed 11/11 private Forge empty legacy snapshot RED/scratch GREEN and next gate |
 | Files changed relative to main | 183 (137 non-docs; 46 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/validate_i2d_source_coverage.mjs`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
