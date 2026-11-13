@@ -1111,14 +1111,15 @@ assert.ifError(t8Good.error);
 assert.equal(one("public.character_spells","character_id="+quote(t8Good.data)+
  " AND spell_id="+quote(t8Fire)+" AND source_key='wizard' "+
  " AND prepared AND coalesce((raw_payload->>'startingMagic')::boolean,false)"),1);
-assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data)),1);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data)),0,
+ "reduced original fixture has no Wizard starting gear package; must not invent equipment");
 const t8GoodHashes={
  progression:t8RowHash("public.character_progression","character_id="+quote(t8Good.data)),
  sheet:t8RowHash("public.character_sheets","character_id="+quote(t8Good.data)),
  spells:t8RowHash("public.character_spells","character_id="+quote(t8Good.data)),
  gear:t8RowHash("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data))
 };
-console.log("PASS T8-02: real JWT Wizard v3 creates canonical source-qualified Fire Bolt and equipment");
+console.log("PASS T8-02: real JWT Wizard v3 creates source-qualified Fire Bolt; reduced catalog correctly has no Wizard gear package");
 const t8Replay=await t8Rpc(t8GoodPayload);
 assert.ifError(t8Replay.error);
 assert.equal(t8Replay.data,t8Good.data);
