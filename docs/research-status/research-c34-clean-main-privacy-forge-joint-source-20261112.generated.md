@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7443cced681b011d0dccfb8365dc1dab78bedfe7` |
+| Exact source commit represented by this archive snapshot | `9cdf11bdd63a5e214b90939b574ce74216494565` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin exact held source blob of verified progression creator seed (26 original dependencies) |
+| Last source commit title | test(c34): test original 15+2 privacy+1 creator seed, 26 source blobs, reject timing and transaction identity regressions |
 | Files changed relative to main | 36 (32 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
