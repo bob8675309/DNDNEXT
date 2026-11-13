@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `cb4511b8b8eb691e46fec58a71c4dbeba1773c8b` |
+| Exact source commit represented by this archive snapshot | `2bcbeb6c66d8fe6281117be567ea99419874d5a9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed NPC public-clue/dossier/anon privacy plus explicit six-trigger coverage |
-| Files changed relative to main | 24 (21 non-docs; 3 docs) |
+| Last source commit title | test(c34): pin all operational original SQL/fixture blobs of signed joint suite |
+| Files changed relative to main | 25 (22 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -40,6 +40,7 @@
 - `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
 - `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 - `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
 - `scripts/integration/c34/validate_source_contract.mjs`
 - `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
 - `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
