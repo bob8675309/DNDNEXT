@@ -25,22 +25,12 @@
     "p312": "26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254",
     "p317": "69e741d7c7d8874c22467e2d30791e30c009ff6e"
   },
-  "source_order_hypothesis": [
-    "npc_stage1",
-    "npc_stage2",
-    "npc_stage3",
-    "immutable_324",
-    "story_nonce_351",
-    "option_a_creation_371",
-    "option_a_private_v2_371",
-    "option_a_acl_371",
-    "inventory_stage4"
-  ],
   "notes": [
     "Ordering is a research hypothesis only; do not concatenate original SQL candidate BEGIN/COMMIT wrappers or apply to any hosted database.",
     "Stage3 redefines Stage1 player profile; Stage3 original Story wrapper must then be replaced by #351. Preserve Stage3 GM/creator guards.",
     "Neither source blob identity nor green workflow is real signed multi-role full 31-trigger application acceptance.",
-    "The 34-writer freeze, full source consumers, grants, rollback and 19 current spell adapters must remain separately gated."
+    "The 34-writer freeze, full source consumers, grants, rollback and 19 current spell adapters must remain separately gated.",
+    "2026-11-12 I2J discovered impossible source order: original #371 I2C and #324 public v2 MD5 expectations conflict. Prior ordering was superseded. The stored source originals remain untouched."
   ],
   "sources": [
     {
@@ -214,5 +204,32 @@
       "disposition": "deferred_preserved_pinned",
       "purpose": "Deferred cross-family actor/encounter/ledger/grants/inventory lock graph"
     }
-  ]
+  ],
+  "source_order_status": "BLOCKED_I2C_PUBLIC_V2_FINGERPRINT_CONTRADICTION",
+  "original_source_order_hypothesis_superseded": [
+    "npc_stage1",
+    "npc_stage2",
+    "npc_stage3",
+    "immutable_324",
+    "story_nonce_351",
+    "option_a_creation_371",
+    "option_a_private_v2_371",
+    "option_a_acl_371",
+    "inventory_stage4"
+  ],
+  "partial_rollback_probe_order": [
+    "npc_stage1",
+    "npc_stage2",
+    "npc_stage3",
+    "immutable_324",
+    "story_nonce_351",
+    "option_a_private_v2_371",
+    "inventory_stage4"
+  ],
+  "unresolved_order_conflict": {
+    "affected": "Original I2C Option A creator patch and immutable #324",
+    "source_evidence": "#324 requires original public.create_player_character_v2 MD5 0351f0a00acae023278e1b8b065b00c9 before installing its private reservation table, then overwrites public v2 with a wrapper; I2C simultaneously requires the table present and original public v2 body MD5. Both cannot hold after running #324 without changing one source-tested flow.",
+    "safe_disposition": "Do not concatenate I2C original into the joint SQL, do not replace public Forge v2 with legacy body, do not claim v1 or 34/34 account freeze; port v1 separately under exact source guards and rely on verified private copied v2 I2D after immutable, with signed original RED then scratch GREEN.",
+    "rehearsal_scope": "Rollback-only partial preview excludes I2C completely; no release or production compatibility implied."
+  }
 }
