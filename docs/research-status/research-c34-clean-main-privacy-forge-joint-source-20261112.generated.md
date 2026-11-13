@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a3db7e06ac5d9357a67f2beaca0ccccd6e03d232` |
+| Exact source commit represented by this archive snapshot | `d61f4b080952fff02bce2ef5a3d2e8aba1f49be9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): precise 31-trigger production census vs original/held local DDL count |
+| Last source commit title | test(c34): assert live 31 census versus 9 staged originals and two held privacy triggers |
 | Files changed relative to main | 28 (24 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
