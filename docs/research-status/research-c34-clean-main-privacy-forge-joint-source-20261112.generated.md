@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `de55547bd2028d22946ee21fae3cc567be91cb64` |
+| Exact source commit represented by this archive snapshot | `959ddfb48dcd7ed09f466d1dfc69a80b1ffd2ae2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): assert original 15/31+2 privacy, five grant hooks, 25 source blobs and grant-hook tamper negatives |
+| Last source commit title | docs(c34): record signed original feat grants T6, 15/31 census and proven NULL actor-provenance blocker |
 | Files changed relative to main | 35 (31 non-docs; 4 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
