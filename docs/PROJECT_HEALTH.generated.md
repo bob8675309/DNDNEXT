@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-13T06:16:28Z | research/c34-clean-main-privacy-forge-joint-source-20261112 (0ed0a01f9a79d7be88a6872bedff19b5404dcd86) | 6637b14f807ebec79542deb7eef4b2bc3abfb5fd |
+| 2026-11-13T06:17:22Z | research/c34-clean-main-privacy-forge-joint-source-20261112 (b85a29046f57c8d0214d0a8eb7ad9871c840aacf) | 6637b14f807ebec79542deb7eef4b2bc3abfb5fd |
 
 ## Exact PR heads and latest captured GitHub Actions
 
