@@ -1,0 +1,3 @@
+# I2J exact original source snapshots — RESEARCH ONLY
+
+These files are unchanged exact Git blob copies of source candidates from draft PR #345, #351, and research PR #371. They are **not** migrations and must not be applied to DnDWeb or imported into the runtime. The original public immutable Forge SQL and Stage4 inventory SQL already exist under main `sql/candidates`; see `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json` for their pinned SHA. Never execute these six source files blindly as a series: original I2C and #324 have mutually incompatible public v2 fingerprint preconditions. All combined SQL tests require isolated PG17 and an explicitly reviewed stage-order reconciliation, original RED and signed GREEN tests.
