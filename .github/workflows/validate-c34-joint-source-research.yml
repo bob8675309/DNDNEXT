@@ -25,6 +25,7 @@ jobs:
           node-version: '22'
       - name: Assert exact original source blobs and block release
         run: node scripts/integration/c34/validate_source_contract.mjs --json
+          node scripts/integration/c34/validate_joint_fixture_blobs.mjs
       - name: Run static and negative regression tests
         run: node --test scripts/integration/c34/test_source_contract.mjs
       - name: Assert this research cannot pass as a release candidate
