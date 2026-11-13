@@ -476,3 +476,113 @@ console.log("PASS C34-T3-05: protected Mog cannot be deleted; unrelated syntheti
 console.log("C34 T3 PASS: original 12/31 + 2 proposed privacy, original Story/inventory/Forge RED-GREEN retained; 19 originals not yet covered");
 
 
+
+
+ 
+// T4: ONE remaining progression original: source-exact Fighter subclass
+// BEFORE INSERT trigger, tested through genuine signed Forge v3 with real
+// immutable nonce. This is a three-entry source-qualified reduced catalog,
+// not a complete 2024 Fighter or Battle Master feature release.
+sqlFile("scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql");
+assert.equal(one("pg_trigger",
+  "tgname='character_progression_apply_forge_subclass_v1' AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql(
+  "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+  "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND "+
+  "c.relname IN ('character_progression','character_sheets','characters','inventory_items')")),15);
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.apply_character_forge_subclass_choice_v1()'::regprocedure))"),
+  "273be29420a7274d997642e302604cb7","original live subclass handler fingerprint");
+console.log("PASS C34-T4-01: original Fighter subclass source, BEFORE INSERT trigger and 13/31+2 privacy coexist");
+
+const makeSubclass=(id,subclassName,source,level=3)=>({
+  creation_request_id:id,
+  name:"C34 T4 fighter "+id.slice(0,8),
+  sheet:{
+    ...validSheet,
+    level,
+    ...(subclassName===null?{}:{subclassName}),
+    ...(source===null?{}:{subclassSource:source}),
+    startingEquipmentSelections:{...validSheet.startingEquipmentSelections}
+  }
+});
+const createSubclass=async(p)=>rpc(holder,"create_player_character_v3",{
+  p_payload:p,p_spell_choices:[],p_magic_selections:[]
+});
+async function rejectSubclass(payload,message) {
+ const beforeStock=sql("SELECT count(*) FROM public.character_stock");
+ const result=await createSubclass(payload);
+ assert.ok(result.error,"T4 original subclass negative should be rejected");
+ assert.match(result.error.message,message,"Reject must originate from the original subclass handler");
+ assert.equal(one("public.characters","creation_request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(sql("SELECT count(*) FROM public.character_stock"),beforeStock);
+ return result.error;
+}
+const firstLevelOne=randomUUID();
+const baseAccepted=await createSubclass(makeSubclass(firstLevelOne,null,null,1));
+assert.ifError(baseAccepted.error);
+assert.equal(sql("SELECT coalesce(subclass_name,'<NULL>') FROM public.character_progression WHERE character_id="+quote(baseAccepted.data)),
+ "<NULL>","Fighter level 1 must not be assigned or required a subclass");
+console.log("PASS C34-T4-02: genuine signed level-1 Fighter retains no premature subclass");
+
+await rejectSubclass(makeSubclass(randomUUID(),null,null,3),
+ /Choose a subclass for fighter level 3 before creating this character/i);
+await rejectSubclass(makeSubclass(randomUUID(),"Champion","XPHB",2),
+ /Champion becomes available at class level 3, but this character starts at level 2/i);
+console.log("PASS C34-T4-03: original source rejects missing level-3 and premature level-2 subclass with nonce/character rollback");
+
+const championNonce=randomUUID();
+const championPayload=makeSubclass(championNonce,"Champion","XPHB");
+const champion=await createSubclass(championPayload);
+assert.ifError(champion.error);
+assert.match(champion.data,/^[a-f0-9-]{36}$/i);
+assert.equal(sql("SELECT subclass_name FROM public.character_progression WHERE character_id="+quote(champion.data)),"Champion");
+assert.equal(sql("SELECT subclass_source FROM public.character_progression WHERE character_id="+quote(champion.data)),"XPHB");
+assert.equal(sql("SELECT level_choices#>>'{startingSubclass,entryLevel}' FROM public.character_progression WHERE character_id="+quote(champion.data)),"3");
+assert.equal(sql("SELECT level_choices#>>'{startingSubclass,creator}' FROM public.character_progression WHERE character_id="+quote(champion.data)),
+ "shared_character_forge_player_v2");
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(champion.data)),1);
+assert.equal(one("public.character_sheets","character_id="+quote(champion.data)),1);
+console.log("PASS C34-T4-04: signed source-qualified XPHB Champion persists class level, original subclass and starting equipment");
+
+const originalState={
+ cp:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_progression x WHERE character_id="+quote(champion.data)),
+ sheet:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_sheets x WHERE character_id="+quote(champion.data)),
+ equipment:sql("SELECT md5(coalesce(string_agg(md5(to_jsonb(x)::text),'|' ORDER BY x.id::text),'')) FROM public.inventory_items x WHERE owner_type='character' AND owner_id="+quote(champion.data))
+};
+const championRetry=await createSubclass(championPayload);
+assert.ifError(championRetry.error);
+assert.equal(championRetry.data,champion.data);
+const tamperedSource=JSON.parse(JSON.stringify(championPayload));
+tamperedSource.sheet.subclassSource="PHB";
+const changedNonce=await createSubclass(tamperedSource);
+rejected(changedNonce,"same nonce changed to legacy PHB subclass","22023");
+assert.deepEqual({
+ cp:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_progression x WHERE character_id="+quote(champion.data)),
+ sheet:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_sheets x WHERE character_id="+quote(champion.data)),
+ equipment:sql("SELECT md5(coalesce(string_agg(md5(to_jsonb(x)::text),'|' ORDER BY x.id::text),'')) FROM public.inventory_items x WHERE owner_type='character' AND owner_id="+quote(champion.data))
+},originalState,"unchanged nonce must not re-run original trigger or alter CP/CS/gear");
+console.log("PASS C34-T4-05: signed immutable-nonce replay inert; changed subclass source rejected without CP/CS/gear drift");
+
+await rejectSubclass(makeSubclass(randomUUID(),"Purple Dragon","XPHB"),
+ /The selected subclass Purple Dragon is not available for the fighter class/i);
+await rejectSubclass(makeSubclass(randomUUID(),"Champion","TCE"),
+ /The selected subclass Champion is not available for the fighter class/i);
+console.log("PASS C34-T4-06: original source rejects unknown/incorrect-source subclasses atomically");
+
+const legacy=await createSubclass(makeSubclass(randomUUID(),"Champion","PHB"));
+assert.ifError(legacy.error);
+assert.equal(sql("SELECT subclass_source FROM public.character_progression WHERE character_id="+quote(legacy.data)),"PHB");
+const battleMaster=await createSubclass(makeSubclass(randomUUID(),"Battle Master","XPHB"));
+assert.ifError(battleMaster.error);
+assert.equal(sql("SELECT subclass_name FROM public.character_progression WHERE character_id="+quote(battleMaster.data)),
+ "Battle Master");
+assert.equal(sql("SELECT subclass_source FROM public.character_progression WHERE character_id="+quote(battleMaster.data)),
+ "XPHB");
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(battleMaster.data)),1);
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
+ "ORIGINAL_NONEMPTY","legacy account sheet must remain untouched by subclass source");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),
+ "C34_GM_SECRET_STAYS_PRIVATE");
+console.log("PASS C34-T4-07: explicit source-qualified PHB Champion and XPHB Battle Master recognized by original handler; maneuvers NOT included");
+console.log("C34 T4 PASS: 13/31 original triggers plus 2 held privacy; 16 progression and 2 world-map originals unstaged, runtime/browser parity NOT claimed");
