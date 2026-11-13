@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9c11a342008433dd951edafc354c9bf0f996e4a3` |
+| Exact source commit represented by this archive snapshot | `ba0fabee0be36d42ea8d6049614dd0ce1027c634` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): prioritize source-original grant provenance RED-to-GREEN after signed T6 persistence |
+| Last source commit title | docs(c34): append T6 exact-head signed grant persistence and reproduced NULL actor gap, next provenance test |
 | Files changed relative to main | 35 (31 non-docs; 4 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
