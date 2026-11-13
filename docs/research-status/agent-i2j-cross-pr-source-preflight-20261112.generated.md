@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `3bef2ac81e56de5697d620d88f951f996a60a39c` |
+| Exact source commit represented by this archive snapshot | `7a3825c89b1075c64e792c4686f69503b4423e79` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(i2j): source-pinned rollback-only PG17 privacy composition harness |
+| Last source commit title | fix(i2j): mark I2C/#324 exact source-order incompatibility as blocked |
 | Files changed relative to main | 15 (9 non-docs; 6 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/release/i2j_disposable_privacy_composition.mjs`
+- `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
