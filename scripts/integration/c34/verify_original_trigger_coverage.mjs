@@ -22,7 +22,8 @@ export const sourceFixturePaths=Object.freeze([
   "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
   "scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql",
   "scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql",
-  "scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql"
+  "scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql",
+  "scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -89,9 +90,9 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,12,"C34 T3 expected 12/31 original DDL, not full parity");
- assert.equal(r.originalMissingCount,19);
- assert.equal(r.totalStaged,14);
+ assert.equal(r.stagedOriginalCount,13,"C34 T4 expected 13/31 original DDL, not full parity");
+ assert.equal(r.originalMissingCount,18);
+ assert.equal(r.totalStaged,15);
  console.log("PASS C34-31CENSUS: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
