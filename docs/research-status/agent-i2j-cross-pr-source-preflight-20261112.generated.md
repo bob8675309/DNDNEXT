@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `d3624f23339b2ba38f647abafdc50007265db2ba` |
+| Exact source commit represented by this archive snapshot | `1a6cecbf581e52e56c09f664db3b56f819cd417e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): set current 11/11 signed v1 Option A result and next 31-trigger gate |
+| Last source commit title | docs(i2j): append verified signed v1 RED/GREEN and exact remaining release gates |
 | Files changed relative to main | 28 (20 non-docs; 8 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
