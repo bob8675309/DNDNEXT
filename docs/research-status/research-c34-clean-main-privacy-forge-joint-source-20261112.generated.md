@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `37e8000451d123f5513af69596997329293bf327` |
+| Exact source commit represented by this archive snapshot | `a4c67bb23d204da84e0ed441128ff03b6076c65c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): advance active task to signed six-trigger integration and remaining 31-trigger coverage |
+| Last source commit title | docs(c34): append exact-head signed joint CI and six-trigger evidence without release claims |
 | Files changed relative to main | 25 (22 non-docs; 3 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
