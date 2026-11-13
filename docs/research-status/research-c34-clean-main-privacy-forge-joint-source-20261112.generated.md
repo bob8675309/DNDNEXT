@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `216247b2bfdb6becdab989e7732fb07660770187` |
+| Exact source commit represented by this archive snapshot | `0d6b42e87749a23483445bf7e01d889e0375ebd2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append source-only handoff receipt and next bounded task |
+| Last source commit title | docs(c34): retain first exact-head six-test CI receipt |
 | Files changed relative to main | 12 (9 non-docs; 3 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
