@@ -1,0 +1,234 @@
+{
+  "schema": "dndnext-i2j-live-trigger-fingerprint-census-v1",
+  "observed_date": "2026-11-12",
+  "project": "DnDWeb",
+  "postgres": "17.4",
+  "mode": "read_only_live_pg_catalog",
+  "note": "Evidence only, NOT permission to copy/apply functions or triggers; two characters triggers relate to world map, which is owner-protected. Exact PG17 renderings may vary with schema version. Full original 31/31 definitions must be joined on disposable PG17 before release.",
+  "count": 31,
+  "counts_by_table": {
+    "character_progression": 19,
+    "character_sheets": 4,
+    "characters": 6,
+    "inventory_items": 2
+  },
+  "entries": [
+    {
+      "table_name": "character_progression",
+      "trigger_name": "cancel_invalid_level_up_session_v1",
+      "function_name": "cancel_invalid_level_up_session_v1",
+      "function_md5": "f6dcf56f72091961d0e9958e86367dd1",
+      "trigger_def_md5": "03a314a7a1691ed07803737782589e2d"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_apply_forge_subclass_v1",
+      "function_name": "apply_character_forge_subclass_choice_v1",
+      "function_md5": "273be29420a7274d997642e302604cb7",
+      "trigger_def_md5": "8da8f4062001cc31d1547a7913a3a35b"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_battle_master_maneuvers_v1",
+      "function_name": "materialize_player_forge_battle_master_maneuvers_v1",
+      "function_md5": "daf3fc12e7c30165dca50ca650f9d308",
+      "trigger_def_md5": "85d8fd39693376680d757d27ab2f4f07"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_eladrin_season_v1",
+      "function_name": "materialize_player_forge_eladrin_season_v1",
+      "function_md5": "b866a8dff88bbfe6fb2c4f6d4c102fee",
+      "trigger_def_md5": "3276e20c59cfb080f23000831aaf71ec"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_player_forge_artificer_plans_",
+      "function_name": "materialize_player_forge_artificer_plans_v1",
+      "function_md5": "67766989a466b82f170b5e00f9154e24",
+      "trigger_def_md5": "9fe66723117fd9bcfc9b68da04952a26"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_player_forge_feat_instances_v",
+      "function_name": "materialize_player_forge_feat_instances_v1",
+      "function_md5": "c27c4181a51cfd018bbb8244e9931550",
+      "trigger_def_md5": "1ec0ba81e8bc01b84fe5ab1094a10f91"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_player_forge_khoravar_skill_v",
+      "function_name": "materialize_player_forge_khoravar_skill_versatility_v1",
+      "function_md5": "9d5fec42e2aefdd39d8a34adf1548460",
+      "trigger_def_md5": "078e42b0de11880ea95a71599ccae660"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_player_forge_source_magic_v1",
+      "function_name": "materialize_player_forge_source_magic_v1",
+      "function_md5": "4c35eaab8dff7d3d15b64ed71881d4a6",
+      "trigger_def_md5": "31e82b4acc5f909b41ce88cfc45958e3"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_player_forge_starting_equipme",
+      "function_name": "materialize_player_forge_starting_equipment_trigger_v1",
+      "function_md5": "23fa54dd0a6d7b42b802d613f39ea27c",
+      "trigger_def_md5": "bc4431f22b01c60aa3b9576bf04018d5"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_player_forge_wizard_final_v1",
+      "function_name": "materialize_player_forge_wizard_final_v1",
+      "function_md5": "3c71ad65cde45d74bef4ea63f25847ac",
+      "trigger_def_md5": "376c408b950616b9e00792e98cab1a75"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_materialize_species_cantrip_v1",
+      "function_name": "materialize_player_forge_species_replaceable_cantrip_v1",
+      "function_md5": "a09198d8e12df12371647fccd8479489",
+      "trigger_def_md5": "3976c308c07eec91be6664d037551b3e"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_reject_unmarked_legacy_warlock_invocation",
+      "function_name": "reject_unmarked_legacy_warlock_invocations_v1",
+      "function_md5": "631fbb585f47e71a619ca8ac8e212407",
+      "trigger_def_md5": "f0d65c04508f24748701ca9534a28f78"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_validate_battle_master_maneuvers_v1",
+      "function_name": "validate_existing_battle_master_maneuvers_v1",
+      "function_md5": "8bc8a467e95b07e93df833bcfc585e80",
+      "trigger_def_md5": "1152c4a0315cabe9ab974b1b8ab1ee84"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_validate_player_forge_authority_v1",
+      "function_name": "validate_player_forge_authority_payload_v1",
+      "function_md5": "48006f8db76e9b32c96fcd2b6a4b3080",
+      "trigger_def_md5": "f82ce69322ed39c566d6340478fabfe9"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_validate_player_forge_class_options_v1",
+      "function_name": "validate_and_materialize_player_forge_class_options_v1",
+      "function_md5": "6df5aee6f0519c9c77758d6e887ed8e4",
+      "trigger_def_md5": "e28032d26f87739470d2c2e857af32df"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_validate_player_forge_class_options_v2",
+      "function_name": "validate_existing_normalized_warlock_invocations_v2",
+      "function_md5": "4f1752db655b6ba490113f604c7583ef",
+      "trigger_def_md5": "f811fcd935535668b02b7a0ffcd0b6a5"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_validate_player_forge_nested_choices_v1",
+      "function_name": "validate_player_forge_nested_choice_payload_v1",
+      "function_md5": "df2861cc76b0b74bb7cd57fbe61c9a05",
+      "trigger_def_md5": "ac4984d6aa5a09e2e91d3b495f10d09a"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_validate_player_forge_spells_v1",
+      "function_name": "validate_player_forge_starting_spells_v1",
+      "function_md5": "6870e810de909209c44aecd02f5c72e2",
+      "trigger_def_md5": "845720c9c5f6631118ebc8c1a0af143f"
+    },
+    {
+      "table_name": "character_progression",
+      "trigger_name": "character_progression_validate_player_forge_starting_magic_exac",
+      "function_name": "validate_player_forge_starting_magic_exactness_v1",
+      "function_md5": "ba645ad0f2c17addad0b40e0602c2ac8",
+      "trigger_def_md5": "dfb3b22c3013e77ffc71cbc0a0222976"
+    },
+    {
+      "table_name": "character_sheets",
+      "trigger_name": "character_sheets_authority_fields_guard_v1",
+      "function_name": "guard_direct_character_authority_mutation_v1",
+      "function_md5": "04596b0a3fdfb71c1b357056e8c6023b",
+      "trigger_def_md5": "7544052ec894f21f935b4b2f8fd75b21"
+    },
+    {
+      "table_name": "character_sheets",
+      "trigger_name": "character_sheets_sync_player_tags_v1",
+      "function_name": "sync_player_character_tags_from_sheet_v1",
+      "function_md5": "a135ca951f81d2a9546d783afe665c52",
+      "trigger_def_md5": "4461a2082bad81b71eafc7997523534d"
+    },
+    {
+      "table_name": "character_sheets",
+      "trigger_name": "character_sheets_validate_player_forge_starting_equipment_v1",
+      "function_name": "validate_player_forge_starting_equipment_sheet_v1",
+      "function_md5": "41cb1758bd2e1eb9b3998389deabb49b",
+      "trigger_def_md5": "e2cc06024f4c9cc1cc54b88d66e69b9e"
+    },
+    {
+      "table_name": "character_sheets",
+      "trigger_name": "sync_character_progression_from_sheet_v1",
+      "function_name": "sync_character_progression_from_sheet_v1",
+      "function_md5": "bb1a3a2d1600ce33cd4fcadac5e0f3a9",
+      "trigger_def_md5": "cfdda513da2845416e8b3aa6b6b84d89"
+    },
+    {
+      "table_name": "characters",
+      "trigger_name": "characters_guard_player_tags_v1",
+      "function_name": "guard_player_character_tag_update_v1",
+      "function_md5": "b8b0008a718de1aa3e74d66b30f1a679",
+      "trigger_def_md5": "38809c8c91df59aa50f26378d9a3ddd8"
+    },
+    {
+      "table_name": "characters",
+      "trigger_name": "guard_character_visual_asset_sprite_v1",
+      "function_name": "guard_character_visual_asset_sprite_v1",
+      "function_md5": "7f9bda0599640617039a841b35e5d5a6",
+      "trigger_def_md5": "33474e046cd552a670609dc617ad61b1"
+    },
+    {
+      "table_name": "characters",
+      "trigger_name": "protect_mog_delete_v1",
+      "function_name": "protect_mog_delete_v1",
+      "function_md5": "80798b0ae487f01f1b9c3025fbfe992b",
+      "trigger_def_md5": "6e999aa53ca4e895110dc75906bec78c"
+    },
+    {
+      "table_name": "characters",
+      "trigger_name": "sync_character_portrait_library_id_v1",
+      "function_name": "sync_character_portrait_library_id_v1",
+      "function_md5": "74cb0bf9d7a614a860344f12cf787e05",
+      "trigger_def_md5": "957c99d5d247f507e81b5410944c8336"
+    },
+    {
+      "table_name": "characters",
+      "trigger_name": "trg_force_depart_on_route_assign",
+      "function_name": "_force_depart_on_route_assign",
+      "function_md5": "301f96ac864362f5e51210476fdbc37b",
+      "trigger_def_md5": "1aa4f9609ea701b2d092086cc17139fd"
+    },
+    {
+      "table_name": "characters",
+      "trigger_name": "trg_guard_locations_for_resting_and_camping",
+      "function_name": "_guard_locations_for_resting_and_camping",
+      "function_md5": "1dd2ebfe124200bceb6a3b52bbf8e1ed",
+      "trigger_def_md5": "1235da052840f2d061a67b46a878259b"
+    },
+    {
+      "table_name": "inventory_items",
+      "trigger_name": "inventory_items_apply_structured_crafting_traits_v1",
+      "function_name": "apply_structured_crafting_traits_v1",
+      "function_md5": "108bfc2599d75e7298f65ce326f16173",
+      "trigger_def_md5": "9e85f85bb9b9411cb88f40e699bdbe2b"
+    },
+    {
+      "table_name": "inventory_items",
+      "trigger_name": "zz_inventory_items_apply_smithing_affinity_polish_v4",
+      "function_name": "apply_smithing_affinity_polish_v4",
+      "function_md5": "5d51cf335ff880939ae0df4c4152bdbd",
+      "trigger_def_md5": "9083fde69f8a9f40d4e0f42e21accf15"
+    }
+  ]
+}
