@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `9ecb0649046cee27a77eea99d9b8592129298cc5` |
+| Exact source commit represented by this archive snapshot | `6c732b5efb31da0889a4dea7c01b32ed95d59383` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): preserve read-only exact PG17 source MD5 census of 31 triggers |
-| Files changed relative to main | 6 (1 non-docs; 5 docs) |
+| Last source commit title | docs(i2j): pin role-specific NPC/character-sheet consumers and blockers |
+| Files changed relative to main | 7 (1 non-docs; 6 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/integration/I2J_ORIGINAL_31_TRIGGER_SOURCE_FINGERPRINTS_2026-11-12.json`
+- `docs/integration/I2J_PR345_NPC_PRIVACY_READER_CROSSWALK_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
@@ -26,6 +26,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 - `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
 - `docs/integration/I2J_ORIGINAL_31_TRIGGER_SOURCE_FINGERPRINTS_2026-11-12.json`
+- `docs/integration/I2J_PR345_NPC_PRIVACY_READER_CROSSWALK_2026-11-12.json`
 - `scripts/validate_i2j_cross_pr_source_lock.mjs`
 
 ## Trust and update procedure
