@@ -379,3 +379,100 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 console.log("PASS C34-T2-06: original deferred canonical Background mismatch aborts Forge, nonce and gear atomically");
 console.log("C34 T2 SIGNED SOURCE SUBSET PASS: 9/31 original triggers + 2 held privacy; NOT 31/31 production graph");
 
+// T3: exact original #345 creation-adjacent sprite, Mog and progression
+// handlers. All T1/T2 signed behavior above stays unchanged.
+sqlFile("scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql");
+for(const name of [
+  "guard_character_visual_asset_sprite_v1",
+  "protect_mog_delete_v1",
+  "cancel_invalid_level_up_session_v1"
+]) {
+  assert.equal(one("pg_trigger","tgname='"+name+"' AND NOT tgisinternal AND tgenabled='O'"),1,
+    "C34 T3 must install one source-original trigger "+name);
+}
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+  "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+  "('character_progression','character_sheets','characters','inventory_items')")),14);
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t",
+  "Never import original world-map route departure helper into C34 research");
+console.log("PASS C34-T3-01: 12/31 original + 2 held privacy, sprite/Mog/levelup sources co-reside without movement triggers");
+
+const validSpriteNonce=randomUUID();
+const activeSpriteId="00000000-0000-0000-0000-000000007421";
+const badSpriteId="00000000-0000-0000-0000-000000007422";
+const spritePortraitId="00000000-0000-0000-0000-000000007420";
+const spritePayload={
+  creation_request_id:validSpriteNonce,
+  name:"C34 T3 signed original sprite "+validSpriteNonce.slice(0,8),
+  portrait_library_id:spritePortraitId,visual_asset_id:activeSpriteId,
+  sheet:validSheet
+};
+const spriteCreated=await rpc(holder,"create_player_character_v3",{
+  p_payload:spritePayload,p_spell_choices:[],p_magic_selections:[]
+});
+assert.ifError(spriteCreated.error);
+assert.match(spriteCreated.data,/^[0-9a-f-]{36}$/i);
+assert.equal(sql("SELECT sprite_path FROM public.characters WHERE id="+quote(spriteCreated.data)),
+ "c33/valid-8dir.png","original BEFORE guard must derive canonical sprite");
+assert.equal(sql("SELECT sprite_key FROM public.characters WHERE id="+quote(spriteCreated.data)),
+ activeSpriteId);
+assert.equal(Number(sql("SELECT sprite_scale FROM public.characters WHERE id="+quote(spriteCreated.data))),
+ 0.42,"source-original overworld scale chosen");
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(spriteCreated.data)),1);
+const spriteReplay=await rpc(holder,"create_player_character_v3",{
+  p_payload:spritePayload,p_spell_choices:[],p_magic_selections:[]
+});
+assert.ifError(spriteReplay.error);
+assert.equal(spriteReplay.data,spriteCreated.data);
+console.log("PASS C34-T3-02: signed original 8-direction sprite guard sets source path, key and scale; nonce/equipment replay stays inert");
+
+const badSpriteNonce=randomUUID();
+const badSpritePayload={
+  ...spritePayload,
+  name:"C34 T3 invalid sprite "+badSpriteNonce.slice(0,8),
+  creation_request_id:badSpriteNonce,
+  visual_asset_id:badSpriteId
+};
+const invalidSprite=await rpc(holder,"create_player_character_v3",{
+  p_payload:badSpritePayload,p_spell_choices:[],p_magic_selections:[]
+});
+assert.ok(invalidSprite.error,"original sprite runtime contract must reject invalid asset");
+assert.match(invalidSprite.error.message,/does not satisfy the DNDNext 8-direction runtime contract/);
+assert.equal(one("public.characters","creation_request_id="+quote(badSpriteNonce)),0);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(badSpriteNonce)),0);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(spriteCreated.data)),1);
+console.log("PASS C34-T3-03: invalid original sprite contract aborts signed Forge/nonce/gear atomically");
+
+// Original level-up cancellation trigger branches exercised through disposable
+// PostgreSQL SQL after authentic signed Forge creation; this is NOT a browser
+// progression-RPC acceptance claim.
+const levelSessionId=randomUUID();
+sql("INSERT INTO public.character_level_up_sessions(id,character_id,status) VALUES("+
+ quote(levelSessionId)+","+quote(secondId)+",'open')");
+sql("UPDATE public.character_progression SET pending_level_up=true WHERE character_id="+quote(secondId));
+assert.equal(sql("SELECT status FROM public.character_level_up_sessions WHERE id="+quote(levelSessionId)),"open");
+sql("UPDATE public.character_progression SET pending_level_up=false WHERE character_id="+quote(secondId));
+assert.equal(sql("SELECT status FROM public.character_level_up_sessions WHERE id="+quote(levelSessionId)),"cancelled");
+console.log("PASS C34-T3-04: original level-up guard preserves open session when pending; cancels on reset (disposable SQL branch)");
+
+// Mog's original deletion protection is not a Forge RPC permission policy.
+// Exercise source handler directly on synthetic database rows. No real NPCs or
+// world-map state touched.
+const syntheticMog=randomUUID();
+const normalNpc=randomUUID();
+sql("INSERT INTO public.characters(id,name,kind) VALUES("+
+ quote(syntheticMog)+",'Mog','npc'),("+quote(normalNpc)+",'C34 temporary NPC','npc')");
+const protectedMog=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-qAt","-c",
+ "DELETE FROM public.characters WHERE id="+quote(syntheticMog)],{
+ env,encoding:"utf8",timeout:30000
+});
+assert.notEqual(protectedMog.status,0,"original Mog deletion must be refused");
+assert.match(protectedMog.stderr,/Mog is protected and cannot be deleted/);
+assert.equal(one("public.characters","id="+quote(syntheticMog)),1);
+sql("DELETE FROM public.characters WHERE id="+quote(normalNpc));
+assert.equal(one("public.characters","id="+quote(normalNpc)),0,
+ "ordinary synthetic NPC deletion still works with original Mog protection");
+console.log("PASS C34-T3-05: protected Mog cannot be deleted; unrelated synthetic NPC deletion unchanged (disposable SQL branch)");
+console.log("C34 T3 PASS: original 12/31 + 2 proposed privacy, original Story/inventory/Forge RED-GREEN retained; 19 originals not yet covered");
+
+
