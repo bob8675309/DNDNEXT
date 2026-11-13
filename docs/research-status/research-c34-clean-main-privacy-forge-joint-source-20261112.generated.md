@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a67bb8434801f73d548da494c95c41bf17b8a7b9` |
+| Exact source commit represented by this archive snapshot | `6b9eca613ac177f74fe196d7f6a7fb1e6118ad77` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-exact verified creator seed after proven signed NULL grant baseline |
+| Last source commit title | test(c34): signed creator-provenance RED/GREEN, v2/no nonce, v3, multi-actor, rollback, GM NPC, historic non-backfill |
 | Files changed relative to main | 36 (32 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
