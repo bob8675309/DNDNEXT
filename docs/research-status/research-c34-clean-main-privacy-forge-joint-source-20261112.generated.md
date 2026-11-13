@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3e31e2e64e3ff39eebaa60c9990d5f7fdeebe193` |
+| Exact source commit represented by this archive snapshot | `f7c9d4a0759a8cb2d7bbde21d07b521a4b124e0c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): retain T4 signed original Fighter subclass 13/31 integration evidence and remaining release blockers |
+| Last source commit title | docs(c34): set active priority to next deferred progression validator after signed Fighter T4 |
 | Files changed relative to main | 33 (29 non-docs; 4 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
