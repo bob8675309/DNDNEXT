@@ -5,7 +5,7 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `39fde65c733aa0074017d3477cdabf1511d139b8` |
+| Exact source commit represented by this archive snapshot | `479e2f0f1eebfea6237972545b3cae73ebd90530` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
 | Last source commit title | ci(c34): fail closed on all operational original joint-source fixture drift |
 | Files changed relative to main | 25 (22 non-docs; 3 docs) |
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
