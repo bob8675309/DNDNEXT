@@ -570,9 +570,9 @@ await rejectSubclass(makeSubclass(randomUUID(),"Champion","TCE"),
  /The selected subclass Champion is not available for the fighter class/i);
 console.log("PASS C34-T4-06: original source rejects unknown/incorrect-source subclasses atomically");
 
-const legacy=await createSubclass(makeSubclass(randomUUID(),"Champion","PHB"));
-assert.ifError(legacy.error);
-assert.equal(sql("SELECT subclass_source FROM public.character_progression WHERE character_id="+quote(legacy.data)),"PHB");
+const legacyChampion=await createSubclass(makeSubclass(randomUUID(),"Champion","PHB"));
+assert.ifError(legacyChampion.error);
+assert.equal(sql("SELECT subclass_source FROM public.character_progression WHERE character_id="+quote(legacyChampion.data)),"PHB");
 const battleMaster=await createSubclass(makeSubclass(randomUUID(),"Battle Master","XPHB"));
 assert.ifError(battleMaster.error);
 assert.equal(sql("SELECT subclass_name FROM public.character_progression WHERE character_id="+quote(battleMaster.data)),
