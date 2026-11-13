@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fbd1eae790ec690e03b2291a84a95e648d69da89` |
+| Exact source commit represented by this archive snapshot | `198eb17d59e73ca9c9e790b0424b1d09ee2bc861` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed canonical Lucky grant persistence, actor provenance, direct DML, rollback and concurrency |
+| Last source commit title | test(c34): account for original 15/31 Forge triggers, separate 2 privacy and 5 downstream grant hooks |
 | Files changed relative to main | 35 (31 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
