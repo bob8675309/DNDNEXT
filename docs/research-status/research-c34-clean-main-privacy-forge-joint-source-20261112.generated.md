@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5ad077d0a78a23d09644af71d96f695d4ea08550` |
+| Exact source commit represented by this archive snapshot | `daaa60d06a6f89223f85fb1c97ef06dd4babf2a5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record exact source provenance and integration release gates |
-| Files changed relative to main | 10 (9 non-docs; 1 docs) |
+| Last source commit title | docs(c34): record current branch-local task and verified limits |
+| Files changed relative to main | 11 (9 non-docs; 2 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,11 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-c34-joint-source-research.yml`
+- `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
 - `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
