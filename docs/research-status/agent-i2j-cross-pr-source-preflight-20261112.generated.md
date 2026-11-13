@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `310d3ebb8157fb8c7cd049cc03c41877e464088d` |
+| Exact source commit represented by this archive snapshot | `7ff5ce586aa701eea4d20d51107f92a363bfd6ea` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(i2j): add signed v1 legacy-sheet RED/GREEN and immutable v2 I2D Story coexistence |
-| Files changed relative to main | 26 (19 non-docs; 7 docs) |
+| Last source commit title | ci(i2j): run original signed v1 RED and immutable v2 I2D green on isolated PG17 |
+| Files changed relative to main | 27 (20 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,11 +17,12 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2j_v1_option_a_after_immutable_local_auth.mjs`
+- `.github/workflows/i2j-v1-option-a-signed-local.yml`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/i2j-source-lock-static.yml`
+- `.github/workflows/i2j-v1-option-a-signed-local.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
