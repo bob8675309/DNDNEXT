@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6ba44318e045c5364eae10bcf56f7bb2590de164` |
+| Exact source commit represented by this archive snapshot | `6f3f30ae309c530cfd34a70185697814f6026406` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): count 27 pinned original source files after T8 |
+| Last source commit title | test(c34): isolate T8 startingMagicSelections from preserved T5 sheet.spells guard |
 | Files changed relative to main | 38 (33 non-docs; 5 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
