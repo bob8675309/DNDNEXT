@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `17aa6b318ed0f416d359d05071a4bc0526234392` |
+| Exact source commit represented by this archive snapshot | `d3624f23339b2ba38f647abafdc50007265db2ba` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): reflect signed v1/I2D compatibility and remaining 31-trigger gate |
+| Last source commit title | docs(i2j): set current 11/11 signed v1 Option A result and next 31-trigger gate |
 | Files changed relative to main | 28 (20 non-docs; 8 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
