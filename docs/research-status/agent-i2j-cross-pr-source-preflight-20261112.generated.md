@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `ef947fb04368de4677e8ce9a1625aeba207c0e79` |
+| Exact source commit represented by this archive snapshot | `6c43af14dd93c940f5e713bbaa6e9d953a1f9cae` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(i2j): place PLpgSQL SELECT INTO before FROM in rollback fingerprint checks |
-| Files changed relative to main | 15 (9 non-docs; 6 docs) |
+| Last source commit title | test(i2j): add offline negative controls and rollback-only SQL shape checks |
+| Files changed relative to main | 16 (10 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/release/i2j_disposable_privacy_composition.mjs`
+- `scripts/test_i2j_source_lock_and_pg17_probe.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -35,6 +35,7 @@
 - `scripts/fixtures/i2j/pinned/i2c_option_a_creator_identity_only_scratch_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2d_option_a_private_forge_source_scratch_pg17.sql`
 - `scripts/release/i2j_disposable_privacy_composition.mjs`
+- `scripts/test_i2j_source_lock_and_pg17_probe.mjs`
 - `scripts/validate_i2j_cross_pr_source_lock.mjs`
 
 ## Trust and update procedure
