@@ -883,3 +883,177 @@ assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+qu
 assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),
  "C34_GM_SECRET_STAYS_PRIVATE","T6 must not reveal or overwrite GM Secret");
 console.log("C34 T6 SIGNED SOURCE-ORIGINAL FEAT GRANTS PASS: 15/31 original Forge triggers + 2 HELD privacy + 5 downstream grant triggers; actor attribution potential SOURCE GAP explicitly held; 14 progression and 2 movement originals not installed");
+
+
+// T7: source-original held #324 verified progression creator seed candidate.
+// RED baseline is from the original T6 completed signed Forge and must be
+// observed on BOTH canonical grant tables BEFORE the candidate is installed.
+assert.equal(sql("SELECT granted_by IS NULL FROM public.character_option_grant_instances "+
+ "WHERE character_id="+quote(grantCharacterId)),"t","T7 requires original grant instance NULL creator RED");
+assert.equal(sql("SELECT granted_by IS NULL FROM public.character_option_grants "+
+ "WHERE character_id="+quote(grantCharacterId)),"t","T7 requires original aggregate grant NULL creator RED");
+assert.equal(sql("SELECT created_by::text FROM public.character_progression "+
+ "WHERE character_id="+quote(grantCharacterId)),holder.id);
+const redInstanceFingerprint=hashRows("public.character_option_grant_instances",grantWhere);
+const redAggregateFingerprint=hashRows("public.character_option_grants",grantWhere);
+const oldAttributionCount=one("private.character_creator_attribution",
+ "character_id="+quote(grantCharacterId));
+assert.equal(oldAttributionCount,1,"original creator attribution already exists for T6 historical test");
+console.log("PASS C34-T7-RED01: both source-original prior grant tables really hold NULL granted_by, even though finished original progression identifies signed creator");
+
+sqlFile("scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql");
+assert.equal(one("pg_trigger",
+ "tgname='character_progression_seed_verified_forge_creator_v1' "+
+ "AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql(
+ "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND "+
+ "c.relname IN ('character_progression','character_sheets','characters','inventory_items')")),18);
+assert.equal(sql("SELECT has_function_privilege('authenticated',"+
+ "'private.seed_verified_forge_progression_creator_v1()','EXECUTE')"),"f",
+ "verified creator seed must not be a callable client RPC");
+assert.equal(sql("SELECT has_function_privilege('anon',"+
+ "'private.seed_verified_forge_progression_creator_v1()','EXECUTE')"),"f");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_feat_instances_v1()'::regprocedure))"),
+ "c27c4181a51cfd018bbb8244e9931550","original immediate grant materializer stays untouched");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.sync_character_progression_from_sheet_v1()'::regprocedure))"),
+ "bb1a3a2d1600ce33cd4fcadac5e0f3a9","original sheet sync stays untouched");
+console.log("PASS C34-T7-GREEN01: exact held #324 local-only BEFORE INSERT creator seed installed after RED; original handlers and private ACL unchanged");
+
+const freshAttributionPayload=JSON.parse(JSON.stringify(grantPayload));
+freshAttributionPayload.creation_request_id=randomUUID();
+freshAttributionPayload.name="C34 T7 attributed v3 "+freshAttributionPayload.creation_request_id.slice(0,8);
+const actorGrant=await createSubclass(freshAttributionPayload);
+assert.ifError(actorGrant.error);
+const actorGrantId=actorGrant.data;
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id="+quote(actorGrantId)),holder.id);
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id="+quote(actorGrantId)),holder.id);
+for(const table of ["public.character_option_grant_instances","public.character_option_grants"]){
+ assert.equal(sql("SELECT granted_by::text FROM "+table+" WHERE character_id="+quote(actorGrantId)),holder.id,
+   "new original "+table+" grant must be attributed to signed actor before immediate AFTER INSERT");
+ assert.equal(one(table,"character_id="+quote(actorGrantId)),1);
+}
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(actorGrantId)),1);
+console.log("PASS C34-T7-GREEN02: signed original v3 character receives one source-owned instance+aggregate feat with verified creator in BOTH grants");
+
+assert.equal(hashRows("public.character_option_grant_instances",grantWhere),redInstanceFingerprint,
+ "T7 MUST NOT backfill legacy instance grant or rewrite historical row hashes");
+assert.equal(hashRows("public.character_option_grants",grantWhere),redAggregateFingerprint,
+ "T7 MUST NOT backfill legacy aggregate grant or rewrite historical row hashes");
+assert.equal(sql("SELECT granted_by IS NULL FROM public.character_option_grant_instances "+
+ "WHERE character_id="+quote(grantCharacterId)),"t");
+assert.equal(sql("SELECT granted_by IS NULL FROM public.character_option_grants "+
+ "WHERE character_id="+quote(grantCharacterId)),"t");
+console.log("PASS C34-T7-GREEN03: historical NULL grants and their complete row hashes unchanged after prospective-only seed");
+
+const attributedWhere="character_id="+quote(actorGrantId);
+const attributedBefore={
+ instance:hashRows("public.character_option_grant_instances",attributedWhere),
+ aggregate:hashRows("public.character_option_grants",attributedWhere),
+ gear:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(actorGrantId))
+};
+const sameActorGrant=await createSubclass(freshAttributionPayload);
+assert.ifError(sameActorGrant.error);
+assert.equal(sameActorGrant.data,actorGrantId);
+const spoofedSameNonce=JSON.parse(JSON.stringify(freshAttributionPayload));
+spoofedSameNonce.sheet.featGrantInstances[0].acquisitionOwnerKey="nonce-tamper";
+rejected(await createSubclass(spoofedSameNonce),"attributed grant nonce ownership tamper","22023");
+assert.deepEqual({
+ instance:hashRows("public.character_option_grant_instances",attributedWhere),
+ aggregate:hashRows("public.character_option_grants",attributedWhere),
+ gear:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(actorGrantId))
+},attributedBefore);
+console.log("PASS C34-T7-GREEN04: signed source-attributed grant and gear hashes identical on retry; changed owner nonce blocked");
+
+const v2actor=await signed("v2-no-nonce");
+const v2NoNonce=sourceAuthority(randomUUID());
+v2NoNonce.name="C34 T7 v2 fresh no nonce "+randomUUID().slice(0,8);
+delete v2NoNonce.creation_request_id;
+const v2created=await rpc(v2actor,"create_player_character_v2",{
+ p_payload:v2NoNonce,p_spell_choices:[]
+});
+assert.ifError(v2created.error);
+assert.equal(sql("SELECT creation_request_id IS NULL FROM public.characters WHERE id="+quote(v2created.data)),"t");
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id="+quote(v2created.data)),v2actor.id);
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id="+quote(v2created.data)),v2actor.id);
+for(const table of ["public.character_option_grant_instances","public.character_option_grants"])
+ assert.equal(sql("SELECT granted_by::text FROM "+table+" WHERE character_id="+quote(v2created.data)),v2actor.id);
+console.log("PASS C34-T7-GREEN05: separate signed original direct-v2 no-nonce creation binds same-transaction creator to BOTH source grants");
+
+const outsiderNonce=randomUUID();
+const outsiderPayload=sourceAuthority(outsiderNonce);
+outsiderPayload.name="C34 T7 other real actor "+outsiderNonce.slice(0,8);
+outsiderPayload.created_by=holder.id;
+outsiderPayload.sheet.meta.creator="forged_client_identity";
+const otherActor=await rpc(outsider,"create_player_character_v3",{
+ p_payload:outsiderPayload,p_spell_choices:[],p_magic_selections:[]
+});
+assert.ifError(otherActor.error);
+assert.notEqual(otherActor.data,actorGrantId);
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id="+quote(otherActor.data)),outsider.id);
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id="+quote(otherActor.data)),outsider.id);
+for(const table of ["public.character_option_grant_instances","public.character_option_grants"])
+ assert.equal(sql("SELECT granted_by::text FROM "+table+" WHERE character_id="+quote(otherActor.data)),outsider.id);
+console.log("PASS C34-T7-GREEN06: independent signed identity overrides spoofed client metadata; no cross-actor grant attribution");
+
+const attributedRace=JSON.parse(JSON.stringify(freshAttributionPayload));
+attributedRace.creation_request_id=randomUUID();
+attributedRace.name="C34 T7 same nonce race "+attributedRace.creation_request_id.slice(0,8);
+const race=await Promise.all([createSubclass(attributedRace),createSubclass(attributedRace)]);
+for(const resp of race)assert.ifError(resp.error);
+assert.equal(race[0].data,race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(attributedRace.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(attributedRace.creation_request_id)),1);
+for(const table of ["public.character_option_grant_instances","public.character_option_grants"]){
+ assert.equal(one(table,"character_id="+quote(race[0].data)),1);
+ assert.equal(sql("SELECT granted_by::text FROM "+table+" WHERE character_id="+quote(race[0].data)),holder.id);
+}
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(race[0].data)),1);
+console.log("PASS C34-T7-GREEN07: simultaneous JWT same nonce results in one correctly-attributed character, both grants and gear");
+
+const malformedAfterSeed=sourceAuthority(randomUUID());
+malformedAfterSeed.name="C34 T7 malformed after verified actor "+randomUUID().slice(0,8);
+malformedAfterSeed.sheet.featGrantInstances[0].fixedSpellTokens={invalid:true};
+const beforeFailed=grantCounts();
+const beforeAttribution=Number(sql("SELECT count(*) FROM private.character_creator_attribution"));
+const failedAfterSeed=await createSubclass(malformedAfterSeed);
+rejected(failedAfterSeed,"malformed source grant after original creator seed","23514");
+assert.deepEqual(grantCounts(),beforeFailed,"creator seed failure must rollback all original Forge data");
+assert.equal(Number(sql("SELECT count(*) FROM private.character_creator_attribution")),beforeAttribution,
+ "same-transaction creator record must rollback with rejected source grant");
+assert.equal(one("public.characters","creation_request_id="+quote(malformedAfterSeed.creation_request_id)),0);
+console.log("PASS C34-T7-GREEN08: invalid source after verified creator seed rolls back attribution/character/nonce/grants/equipment");
+
+const gmNonce=randomUUID();
+const gmOriginal=await rpc(admin,"create_character_v1",{
+ p_payload:{
+  name:"C34 T7 original GM NPC "+gmNonce.slice(0,8),kind:"npc",
+  creation_request_id:gmNonce,
+  sheet:{classKey:"fighter",level:1,notes:"admin npc, not player Forge",meta:{creator:"gm-admin"}}
+ }
+});
+assert.ifError(gmOriginal.error);
+assert.equal(one("public.characters","id="+quote(gmOriginal.data)),1);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(gmOriginal.data)),0);
+assert.equal(one("public.character_option_grants","character_id="+quote(gmOriginal.data)),0);
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id="+quote(gmOriginal.data)),admin.id);
+const gmProgression=sql("SELECT count(*) FROM public.character_progression WHERE character_id="+quote(gmOriginal.data));
+if(gmProgression==="1")assert.equal(
+ sql("SELECT coalesce(created_by::text,'<null>') FROM public.character_progression WHERE character_id="+quote(gmOriginal.data)),
+ "<null>","Admin NPC direct sheet must not gain forged player Forge creator seed");
+console.log("PASS C34-T7-GREEN09: original GM Admin NPC creation remains separate; no player feat-grant or false player-Forge provenance");
+
+const forgedDirect=await holder.client.from("character_option_grant_instances")
+ .insert({character_id:actorGrantId,option_name:"Lucky",instance_key:"t7-user-forged"})
+ .select("id");
+assert.ok(forgedDirect.error,"creator seed cannot open canonical grant INSERT to direct caller");
+const forgedAggregate=await outsider.client.from("character_option_grants")
+ .insert({character_id:actorGrantId,option_id:"00000000-0000-0000-0000-000000009154"})
+ .select("id");
+assert.ok(forgedAggregate.error,"other actor cannot grant option to someone else's character");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),
+ "C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
+ "ORIGINAL_NONEMPTY","older nonempty holder account sheet not altered by T7");
+console.log("PASS C34-T7-GREEN10: direct authenticated grants still denied, GM secrets and historical nonempty account sheet preserved");
+console.log("C34 T7 SIGNED RED->GREEN PASS: original #324 verified creator BEFORE INSERT, original 15/31+2 held privacy+1 held attribution +5 downstream grant hooks; historical NULL grants untouched; NOT merge/production acceptance");
