@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2bcbeb6c66d8fe6281117be567ea99419874d5a9` |
+| Exact source commit represented by this archive snapshot | `bc4a4905ae6a1d478dbbe9445a84662c52c57fe5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin all operational original SQL/fixture blobs of signed joint suite |
+| Last source commit title | test(c34): verify signed fixture operational-path hashes and reject modified original SQL |
 | Files changed relative to main | 25 (22 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
