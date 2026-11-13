@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4098a4a637ed7446699a7bd17c4c3733f0a82563` |
+| Exact source commit represented by this archive snapshot | `a2b7fc3a903a167c34ef4a8a4005e88c7bd4adfe` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T10 original deferred starting-spells 2024 Wizard 3+6/4 signed RED→GREEN |
+| Last source commit title | test(c34): T10 negative accepts first fail-closed original blob or DDL guard |
 | Files changed relative to main | 41 (35 non-docs; 6 docs) |
-| Last source commit | 5 files (5 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 - `scripts/integration/c34/test_source_contract.mjs`
-- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
