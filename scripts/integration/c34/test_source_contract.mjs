@@ -6,6 +6,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { auditSources, STAGES, RELEASE_BLOCKERS } from "./validate_source_contract.mjs";
+import { verifyOriginalJointDependencies, ORIGINAL_JOINT_DEPENDENCIES } from "./validate_joint_fixture_blobs.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const load = (file) => fs.readFileSync(path.join(dir, "sources", file));
@@ -66,4 +67,20 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
     "05_inventory_constraint_rls.sql",
     "06_story_complete_nonce_i1c.sql",
   ]);
+});
+
+test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
+  const e=verifyOriginalJointDependencies();
+  assert.equal(e.length,16);
+  assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
+  assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
+});
+
+test("C34-N06 a tampered signed original fixture fails the same raw Git blob test", () => {
+  const first=ORIGINAL_JOINT_DEPENDENCIES[0][0];
+  const root=path.resolve(dir,"../../..");
+  assert.throws(() => verifyOriginalJointDependencies((file)=>{
+    const original=fs.readFileSync(path.join(root,file));
+    return file===first ? Buffer.concat([original,Buffer.from("-- changed\n")]) : original;
+  }), /signed fixture\/source drift/);
 });
