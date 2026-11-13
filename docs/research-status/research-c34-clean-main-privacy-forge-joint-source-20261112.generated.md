@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `479e2f0f1eebfea6237972545b3cae73ebd90530` |
+| Exact source commit represented by this archive snapshot | `15e4be52bcaea3d35d4a19d86d716cd3242594b6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): fail closed on all operational original joint-source fixture drift |
+| Last source commit title | ci(c34): use YAML multiline run for both original-source validators |
 | Files changed relative to main | 25 (22 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
