@@ -1,6 +1,6 @@
 # C34 T7 — open PR register and original source-file preservation inventory
 
-**Timestamp:** November 13, 2026. **Read-only GitHub snapshot** at main `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` and C34 T7 signed code HEAD `9cdf11bdd63a5e214b90939b574ce74216494565`. All nine Git trees (5 heads/main and 3 original bases) were retrieved recursively and verified **not truncated**. The head of #379 and all numbers below are frozen at this snapshot; inspect anew when a PR advances.
+**Timestamp:** November 13, 2026. **Read-only GitHub snapshot** at main `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` and C34 T7 signed code HEAD `9cdf11bdd63a5e214b90939b574ce74216494565`. All eight Git trees (current main and C34, three original PR heads and their three base refs) were retrieved recursively and verified **not truncated**. The head of #379 and all numbers below are frozen at this snapshot; inspect anew when a PR advances.
 
 **Merge rule:** All **44 current open PRs are drafts**. C34 closed **zero**, merged **zero**, and crossed off **zero**. Keep the entire original branch/HEAD untouched and assign each source-file contribution a proven `exact_copy`, `behavioral_successor_verified`, `deferred_preserved`, `superseded_with_source_test`, or `unresolved_blocker` disposition before retirement. This is a raw **Git SHA inventory, NOT feature-semantic signoff**; follow [mandatory full-PR acceptance protocol](../PR_FULL_SCOPE_REVIEW_PROTOCOL.md). A green signed fixture does not permit a production release.
 
