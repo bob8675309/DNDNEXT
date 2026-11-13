@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `64e92b0e530d9537b044b787a964d8a6deaadb12` |
+| Exact source commit represented by this archive snapshot | `50db3b864f70f638b6dbd06ef96ef48e3ab4c0dd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record signed T5 deferred authority 14/31 and source-bounded feat/spell evidence |
+| Last source commit title | docs(c34): advance active-work pointer to signed T5 and original feat materializer next |
 | Files changed relative to main | 34 (30 non-docs; 4 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
