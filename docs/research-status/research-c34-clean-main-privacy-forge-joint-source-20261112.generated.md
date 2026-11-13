@@ -5,21 +5,23 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d1f85d9c2699fe2fadf4f403dd9f07647404b6f6` |
+| Exact source commit represented by this archive snapshot | `705de14de7cad825e931b5f2da36345c5a721aad` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append T8 signed source RED/GREEN handoff, original 16/31 HOLD |
-| Files changed relative to main | 38 (33 non-docs; 5 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): T9 original deferred nested-choice dependency signed RED/GREEN in disposable PG17 |
+| Files changed relative to main | 39 (34 non-docs; 5 docs) |
+| Last source commit | 5 files (5 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -41,6 +43,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
 - `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
 - `scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql`
+- `scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
