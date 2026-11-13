@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1956c4fd93c43ab4592fb89d277855290ac88067` |
+| Exact source commit represented by this archive snapshot | `fbd1eae790ec690e03b2291a84a95e648d69da89` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): install original #324 feat grants, replace only validated empty local stub |
+| Last source commit title | test(c34): signed canonical Lucky grant persistence, actor provenance, direct DML, rollback and concurrency |
 | Files changed relative to main | 35 (31 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
