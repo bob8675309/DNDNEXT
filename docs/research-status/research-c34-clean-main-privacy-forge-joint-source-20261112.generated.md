@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `28b32742f03d17e755c58235b432341ee2de47cf` |
+| Exact source commit represented by this archive snapshot | `0f60d6f934d28e8c28c4c488830539c8b931114b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): adapt exact #324 original deferred authority and preferred-option views after source-authentic T4 |
+| Last source commit title | test(c34): signed deferred Forge authority Lucky/Defense source, adversarial feat/spell, replay and rollback |
 | Files changed relative to main | 34 (30 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
