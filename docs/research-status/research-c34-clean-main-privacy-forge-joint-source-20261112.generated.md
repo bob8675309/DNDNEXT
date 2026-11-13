@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `198eb17d59e73ca9c9e790b0424b1d09ee2bc861` |
+| Exact source commit represented by this archive snapshot | `c0759d881fdf381d36887a27c3261104ce3d4617` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): account for original 15/31 Forge triggers, separate 2 privacy and 5 downstream grant hooks |
+| Last source commit title | test(c34): SHA-pin three original #324 feat materializer and discriminator files |
 | Files changed relative to main | 35 (31 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
 
 ## Research-branch change inventory versus main
 
