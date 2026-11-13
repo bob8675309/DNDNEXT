@@ -26,10 +26,12 @@ for (const f of m.sources) {
 }
 const must = ['immutable_324','inventory_stage4','npc_stage1','npc_stage2','npc_stage3','forge_ui_345','npc_panel_345','npc_admin_345','player_profile_345','story_nonce_351','story_nonce_signed_test_351','option_a_creation_371','option_a_acl_371','option_a_private_v2_371','option_a_signed_test_371','npc_privacy_signed_test_345','admin_rights_318','delegate_rights_312','global_lock_graph_317'];
 for(const id of must) assert.ok(byId.has(id),'missing original/deferred evidence '+id);
-assert.deepEqual(m.source_order_hypothesis,[
+assert.equal(m.source_order_status,'BLOCKED_I2C_PUBLIC_V2_FINGERPRINT_CONTRADICTION');
+assert.deepEqual(m.partial_rollback_probe_order,[
   'npc_stage1','npc_stage2','npc_stage3','immutable_324','story_nonce_351',
-  'option_a_creation_371','option_a_private_v2_371','option_a_acl_371','inventory_stage4'
+  'option_a_private_v2_371','inventory_stage4'
 ]);
+assert.ok(m.unresolved_order_conflict?.source_evidence?.includes('0351f0a00acae023278e1b8b065b00c9'),'must preserve I2C/immutable original negative');
 assert.equal(m.read_only_production_census.original_account_UPDATE_writers,34);
 assert.equal(m.read_only_production_census.option_a_writers_bounded_tested,12);
 assert.equal(m.read_only_production_census.option_a_writers_not_bounded_tested,22);
@@ -40,7 +42,8 @@ assert.equal(m.read_only_production_census.old_inventory_owner_check_still_enfor
 
 if(!process.argv.includes('--remote')) {
   console.log('PASS I2J manifest shape, frozen source heads and no-lost-work references ('+m.sources.length+').');
-  console.log('NOT TESTED: upstream SHA/content fetch, SQL composition, signed auth, 31-trigger co-residency, browser, restore, production.');
+  console.log('BLOCKED: original I2C public-v2 source fingerprint conflicts with installed #324 wrapper.');
+  console.log('NOT TESTED: upstream SHA/content fetch, SQL execution, signed auth, 31-trigger co-residency, browser, restore, production.');
   process.exit(0);
 }
 const token=process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
