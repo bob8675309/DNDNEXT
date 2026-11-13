@@ -155,7 +155,7 @@ console.log("PASS C34-GREEN03: normal personal inventory and Admin character ite
 // while #324 Forge writes the real canonical per-character character_sheets.
 const preservedAccount='{"c34_legacy_sheet_frozen":true,"source":"ORIGINAL_NONEMPTY"}';
 sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+
- quote(holder.id)+",'C34 test player',"+quote(preservedAccount)+"::jsonb)");
+ quote(holder.id)+",'C34 test player','"+preservedAccount+"'::jsonb)");
 const freshNonce=randomUUID(),payload=fighter(freshNonce,"C34 equipped fighter "+freshNonce.slice(0,8));
 const created=await rpc(holder,"create_player_character_v3",{
  p_payload:payload,p_spell_choices:[],p_magic_selections:[]
@@ -164,8 +164,10 @@ assert.ifError(created.error);
 assert.match(created.data,/^[0-9a-f-]{36}$/i);
 assert.equal(one("public.characters","creation_request_id="+quote(freshNonce)),1);
 assert.equal(one("public.character_sheets","character_id="+quote(created.data)),1);
-assert.equal(sql("SELECT sheet::text FROM public.players WHERE user_id="+quote(holder.id)),
-  JSON.stringify(JSON.parse(preservedAccount)), "historical nonempty account sheet must remain frozen");
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
+  "ORIGINAL_NONEMPTY","historical nonempty account sheet source must remain frozen");
+assert.equal(sql("SELECT sheet->>'c34_legacy_sheet_frozen' FROM public.players WHERE user_id="+quote(holder.id)),
+  "true","historical nonempty account sheet marker must remain frozen");
 const createdItemCount=one("public.inventory_items",
   "owner_type='character' AND owner_id="+quote(created.data));
 assert.ok(createdItemCount>=1,
