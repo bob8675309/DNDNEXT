@@ -30,7 +30,8 @@
     "Stage3 redefines Stage1 player profile; Stage3 original Story wrapper must then be replaced by #351. Preserve Stage3 GM/creator guards.",
     "Neither source blob identity nor green workflow is real signed multi-role full 31-trigger application acceptance.",
     "The 34-writer freeze, full source consumers, grants, rollback and 19 current spell adapters must remain separately gated.",
-    "2026-11-12 I2J discovered impossible source order: original #371 I2C and #324 public v2 MD5 expectations conflict. Prior ordering was superseded. The stored source originals remain untouched."
+    "2026-11-12 I2J discovered impossible source order: original #371 I2C and #324 public v2 MD5 expectations conflict. Prior ordering was superseded. The stored source originals remain untouched.",
+    "I2J V1-only split now signed RED→GREEN on exact head 7ff5ce586aa701eea4d20d51107f92a363bfd6ea; earlier unmodified I2C source-order contradiction still holds; do not unmark the full I2C block or claim all-writer freeze."
   ],
   "sources": [
     {
@@ -231,5 +232,41 @@
     "source_evidence": "#324 requires original public.create_player_character_v2 MD5 0351f0a00acae023278e1b8b065b00c9 before installing its private reservation table, then overwrites public v2 with a wrapper; I2C simultaneously requires the table present and original public v2 body MD5. Both cannot hold after running #324 without changing one source-tested flow.",
     "safe_disposition": "Do not concatenate I2C original into the joint SQL, do not replace public Forge v2 with legacy body, do not claim v1 or 34/34 account freeze; port v1 separately under exact source guards and rely on verified private copied v2 I2D after immutable, with signed original RED then scratch GREEN.",
     "rehearsal_scope": "Rollback-only partial preview excludes I2C completely; no release or production compatibility implied."
+  },
+  "bounded_v1_reconciliation": {
+    "status": "SIGNED_GREEN_V1_SPLIT__UNMODIFIED_I2C_STILL_BLOCKED",
+    "tested_head": "7ff5ce586aa701eea4d20d51107f92a363bfd6ea",
+    "github_action_run": "https://github.com/bob8675309/DNDNEXT/actions/runs/43370977822",
+    "job_id": 131706393523,
+    "signed_original_red_green_groups": 11,
+    "proof": "Original v1 populated and {} legacy account overwrite RED; source-verified v1-only identity fallback GREEN, signed GoTrue/PG17; immutable public v2/v3 and #351 Story unchanged; I2D private v2 source repair cooperates; no full 31-trigger fixture.",
+    "source_files": [
+      {
+        "path": "scripts/fixtures/i2j_v1_option_a_identity_only_after_immutable_pg17.sql",
+        "sha": "67e8114489f399b514c11fd8db5c89a637c85563"
+      },
+      {
+        "path": "scripts/release/i2j_compose_v1_original_setup.mjs",
+        "sha": "5f7d49e43b6e284bc90db0920dbff1fc878a8765"
+      },
+      {
+        "path": "scripts/test_i2j_v1_option_a_after_immutable_local_auth.mjs",
+        "sha": "dbfa1c2b10de6ee6374722d86889cd1f3b52222f"
+      },
+      {
+        "path": ".github/workflows/i2j-v1-option-a-signed-local.yml",
+        "sha": "415eb5f69dd6d5de6d70165717b89645e00d79a4"
+      }
+    ],
+    "original_v1_source_md5": "e2db5802f1f51b93f5b9d374a835e4b9",
+    "original_signup_md5": "dd7113eec05655a661309838acce6030",
+    "original_full_i2c_source_conflict": "Unmodified held I2C source still fails public-v2 MD5 after #324; do not concatenate full I2C; use narrow v1 split.",
+    "pending": [
+      "Full 31/31 production trigger co-residency",
+      "34/34 account update writer freeze and all insert paths",
+      "Independent DB+Storage restore",
+      "Original full browser role and print matrix",
+      "Release approval"
+    ]
   }
 }
