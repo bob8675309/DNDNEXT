@@ -70,7 +70,7 @@ const originalDigest=createHash('md5').update(triggerRows.join('\n')).digest('he
 const countSql=[
  'SELECT count(*)::integer, md5(string_agg(',
  "c.relname||'.'||t.tgname||':'||md5(pg_get_functiondef(p.oid))||':'||md5(pg_get_triggerdef(t.oid,true)),",
- 'chr(10) ORDER BY c.relname,t.tgname))',
+ 'chr(10) ORDER BY c.relname,t.tgname)) INTO v_n,v_digest',
  'FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid',
  'JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_proc p ON p.oid=t.tgfoid',
  "WHERE n.nspname='public' AND NOT t.tgisinternal AND t.tgenabled<>'D'",
@@ -82,7 +82,7 @@ function fingerprintBlock(label){
   'DO $i2j_'+label+'$',
   'DECLARE v_n integer;v_digest text;',
   'BEGIN',
-  countSql+' INTO v_n,v_digest;',
+  countSql+';',
   "IF v_n<>31 OR v_digest<>'"+originalDigest+"'",
   "THEN RAISE EXCEPTION 'I2J original 31 trigger fingerprint drift: count % digest %',v_n,v_digest; END IF;",
   'END $i2j_'+label+'$;'
