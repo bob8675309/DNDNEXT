@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `175124c2dd4fd352e020b29f56e26930be2895d5` |
+| Exact source commit represented by this archive snapshot | `28b32742f03d17e755c58235b432341ee2de47cf` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): use exact three-line source text for original BEFORE INSERT trigger negative gate |
-| Files changed relative to main | 33 (29 non-docs; 4 docs) |
+| Last source commit title | test(c34): adapt exact #324 original deferred authority and preferred-option views after source-authentic T4 |
+| Files changed relative to main | 34 (30 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -35,6 +35,7 @@
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
+- `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
 - `scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql`
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
