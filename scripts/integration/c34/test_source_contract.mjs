@@ -72,7 +72,7 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
 
 test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
   const e=verifyOriginalJointDependencies();
-  assert.equal(e.length,25);
+  assert.equal(e.length,26);
   assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
   assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
 });
@@ -86,7 +86,7 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T6-S01 original production census counts 15/31, not 17/31", () => {
+test("C34-T7-S01 original census counts 15/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
@@ -95,7 +95,8 @@ test("C34-T6-S01 original production census counts 15/31, not 17/31", () => {
  assert.equal(r.stagedOriginalCount,15);
  assert.equal(r.originalMissingCount,16);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,17);
+ assert.equal(r.totalStaged,18);
+ assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
 });
@@ -194,4 +195,40 @@ test("C34-T6-N07 wrong grant-table authorization guard cannot masquerade as orig
   return Buffer.from(source.replace(from,
    "EXECUTE FUNCTION private.materialize_cartomancer_instance_v1();"),"utf8");
  }),/exact grant-table handler\/table mismatch/);
+});
+
+test("C34-T7-N08 provenance seed cannot be re-timed from BEFORE to AFTER INSERT", () => {
+ const root=path.resolve(dir,"../../..");
+ const p="sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==p)return b;
+  const source=b.toString("utf8");
+  const before="BEFORE INSERT ON public.character_progression";
+  assert.ok(source.includes(before));
+  return Buffer.from(source.replace(before,"AFTER INSERT ON public.character_progression"),"utf8");
+ }),/verified creator candidate BEFORE INSERT event\/handler/);
+});
+
+test("C34-T7-N09 creator seed cannot trust attribution from another transaction", () => {
+ const root=path.resolve(dir,"../../..");
+ const p="sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==p)return b;
+  const source=b.toString("utf8");
+  const from="AND ca.recorded_at=transaction_timestamp()";
+  assert.ok(source.includes(from));
+  return Buffer.from(source.replace(from,"AND ca.recorded_at IS NOT NULL"),"utf8");
+ }),/bind the trusted creator to the same transaction/);
+});
+
+test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
+ const r=auditTriggerCoverage();
+ assert.equal(r.stagedOriginalCount,15);
+ assert.equal(r.originalMissingCount,16);
+ assert.equal(r.proposedPrivacyCount,2);
+ assert.equal(r.proposedCreatorSeedCount,1);
+ assert.equal(r.totalStaged,18);
+ assert.equal(r.downstreamGrantTriggerCount,5);
 });
