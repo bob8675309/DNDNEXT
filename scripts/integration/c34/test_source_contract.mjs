@@ -314,7 +314,7 @@ test("C34-T10-N18 original starting-spells event columns cannot drift",()=>{
   const a="AFTER INSERT OR UPDATE OF class_id, class_level ON public.character_progression";
   assert.ok(s.includes(a));
   return Buffer.from(s.replace(a,"AFTER INSERT OR UPDATE OF class_level ON public.character_progression"));
- }),/T10 original deferred starting-spells trigger event\/handler drift/);
+ }),/T10 original source-install fixture drift|T10 original deferred starting-spells trigger event\/handler drift/);
 });
 test("C34-T10-N19 original starting-spells deferred timing cannot become immediate",()=>{
  const f="scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",root=path.resolve(dir,"../../..");
