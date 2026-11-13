@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `54d8c6115eb767dc0299b2431bb7eab27f28471d` |
+| Exact source commit represented by this archive snapshot | `6a6607505a8752907cd244134b5a90de60e06978` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append T7 signed original actor RED/GREEN, 44-PR 211-path audit and guarded merge HOLD |
+| Last source commit title | docs(c34): correct exact eight-tree audit input count in no-lost-work register |
 | Files changed relative to main | 37 (32 non-docs; 5 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
