@@ -72,7 +72,7 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
 
 test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
   const e=verifyOriginalJointDependencies();
-  assert.equal(e.length,19);
+  assert.equal(e.length,20);
   assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
   assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
 });
@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T3-S01 original production census counts 12/31, not 14/31", () => {
+test("C34-T4-S01 original production census counts 13/31, not 15/31", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,12);
- assert.equal(r.originalMissingCount,19);
+ assert.equal(r.stagedOriginalCount,13);
+ assert.equal(r.originalMissingCount,18);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,14);
+ assert.equal(r.totalStaged,15);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
 });
 
@@ -123,7 +123,7 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,12);
- assert.equal(truncated.stagedOriginalCount,11);
- assert.equal(truncated.originalMissingCount,20);
+ assert.equal(original.stagedOriginalCount,13);
+ assert.equal(truncated.stagedOriginalCount,12);
+ assert.equal(truncated.originalMissingCount,19);
 });
