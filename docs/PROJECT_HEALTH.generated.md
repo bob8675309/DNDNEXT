@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-13T05:22:15Z | agent/i2j-cross-pr-source-preflight-20261112 (1a6cecbf581e52e56c09f664db3b56f819cd417e) | 6637b14f807ebec79542deb7eef4b2bc3abfb5fd |
+| 2026-11-13T05:47:59Z | research/c34-clean-main-privacy-forge-joint-source-20261112 (6637b14f807ebec79542deb7eef4b2bc3abfb5fd) | 6637b14f807ebec79542deb7eef4b2bc3abfb5fd |
 
 ## Exact PR heads and latest captured GitHub Actions
 
