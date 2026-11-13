@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `1cbf0b1acdff5c2922090207e1e05c9b384071c0` |
+| Exact source commit represented by this archive snapshot | `57ef835ee3cde24f18e233df7496bbcf0bcb5eaf` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(i2j): source-pin original signed v1 setup without overwriting immutable v2 |
-| Files changed relative to main | 24 (17 non-docs; 7 docs) |
+| Last source commit title | test(i2j): pin original I2C signed profile-only ACL fixture |
+| Files changed relative to main | 25 (18 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/release/i2j_compose_v1_original_setup.mjs`
+- `scripts/fixtures/i2j/pinned/i2c_option_a_signup_profile_acl_scratch_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -37,6 +37,7 @@
 - `scripts/fixtures/i2j/pinned/README.md`
 - `scripts/fixtures/i2j/pinned/forge_creation_replay_local_auth_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2c_option_a_creator_identity_only_scratch_pg17.sql`
+- `scripts/fixtures/i2j/pinned/i2c_option_a_signup_profile_acl_scratch_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2c_original_creation_signup_shared_forge_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2d_option_a_private_forge_source_scratch_pg17.sql`
 - `scripts/fixtures/i2j_v1_option_a_identity_only_after_immutable_pg17.sql`
