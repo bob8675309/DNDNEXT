@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `23c758d95841bd9e20361a27dd4a54f3143ea2a6` |
+| Exact source commit represented by this archive snapshot | `6e5fc252a321ce912b5d29cdf4d12942e607cc00` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(i2j): pin exact original v1 signup and isolated PG17 source fixtures |
-| Files changed relative to main | 22 (15 non-docs; 7 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit title | test(i2j): add v1-only source-reversible Option A scratch patch preserving immutable v2 |
+| Files changed relative to main | 23 (16 non-docs; 7 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
-- `scripts/fixtures/i2j/pinned/forge_creation_replay_local_auth_pg17.sql`
-- `scripts/fixtures/i2j/pinned/i2c_original_creation_signup_shared_forge_pg17.sql`
-- `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
+- `scripts/fixtures/i2j_v1_option_a_identity_only_after_immutable_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -42,6 +39,7 @@
 - `scripts/fixtures/i2j/pinned/i2c_option_a_creator_identity_only_scratch_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2c_original_creation_signup_shared_forge_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2d_option_a_private_forge_source_scratch_pg17.sql`
+- `scripts/fixtures/i2j_v1_option_a_identity_only_after_immutable_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/release/i2j_disposable_privacy_composition.mjs`
 - `scripts/test_i2j_source_lock_and_pg17_probe.mjs`
