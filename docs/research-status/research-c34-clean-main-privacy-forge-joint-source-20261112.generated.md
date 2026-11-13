@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9cdf11bdd63a5e214b90939b574ce74216494565` |
+| Exact source commit represented by this archive snapshot | `5577bc5be3443c021699f3667e38d07f071ce089` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): test original 15+2 privacy+1 creator seed, 26 source blobs, reject timing and transaction identity regressions |
-| Files changed relative to main | 36 (32 non-docs; 4 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): audit all 44 open drafts and full 211-path original blob/head-base-main-C34 parity before merging |
+| Files changed relative to main | 37 (32 non-docs; 5 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
@@ -27,6 +27,7 @@
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
+- `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
