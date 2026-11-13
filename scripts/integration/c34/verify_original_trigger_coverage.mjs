@@ -34,6 +34,7 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   for(const line of raw.toString("utf8").split(/\r?\n/)){
     if(!/^\| \u0060(?:character_progression|character_sheets|characters|inventory_items)\u0060 \|/.test(line)) continue;
     const cols=line.split("|").slice(1,-1).map(s=>s.trim());
+    if(cols.length<6)continue; // Skip summary table: 4 columns, not original trigger row.
     const q=cols.slice(0,4).map(s=>/^\u0060([^\u0060]+)\u0060$/.exec(s)?.[1]);
     const [table,name,handler,md5]=q;
     if(!table||!name||!handler||!/^[a-f0-9]{32}$/.test(md5)||!["Immediate","Deferred"].includes(cols[4]))
