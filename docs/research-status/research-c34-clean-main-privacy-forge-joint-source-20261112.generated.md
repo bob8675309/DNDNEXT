@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a78dae59cd1ce983c8fe87fba2a5990f84320f56` |
+| Exact source commit represented by this archive snapshot | `6ba44318e045c5364eae10bcf56f7bb2590de164` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-original deferred starting-magic T8 red/green on disposable PG17 |
+| Last source commit title | test(c34): count 27 pinned original source files after T8 |
 | Files changed relative to main | 38 (33 non-docs; 5 docs) |
-| Last source commit | 5 files (5 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 - `scripts/integration/c34/test_source_contract.mjs`
-- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
