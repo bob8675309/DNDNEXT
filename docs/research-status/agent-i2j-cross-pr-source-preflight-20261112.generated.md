@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `7ff5ce586aa701eea4d20d51107f92a363bfd6ea` |
+| Exact source commit represented by this archive snapshot | `1eb0ea9ec6bee5dce3370cd22d669475aa0ced31` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(i2j): run original signed v1 RED and immutable v2 I2D green on isolated PG17 |
-| Files changed relative to main | 27 (20 non-docs; 7 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i2j): record verified 11/11 signed original v1 RED and immutable v2 green acceptance |
+| Files changed relative to main | 28 (20 non-docs; 8 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/i2j-v1-option-a-signed-local.yml`
+- `docs/integration/I2J_V1_OPTION_A_SIGNED_RESEARCH_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
@@ -30,6 +30,7 @@
 - `docs/integration/I2J_NPC_PRIVACY_CONSUMER_AUDIT_2026-11-12.md`
 - `docs/integration/I2J_ORIGINAL_31_TRIGGER_SOURCE_FINGERPRINTS_2026-11-12.json`
 - `docs/integration/I2J_PR345_NPC_PRIVACY_READER_CROSSWALK_2026-11-12.json`
+- `docs/integration/I2J_V1_OPTION_A_SIGNED_RESEARCH_2026-11-12.md`
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/i2j/pinned/20261104_gm_vs_player_backstory_secrets_stage3.sql`
 - `scripts/fixtures/i2j/pinned/20261104_npc_gm_dossier_column_acl_stage2.sql`
