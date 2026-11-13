@@ -5,23 +5,24 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `82ddad432ee58dced9dfeef95aeff64618d278d0` |
+| Exact source commit represented by this archive snapshot | `5ad077d0a78a23d09644af71d96f695d4ea08550` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): run free exact-blob and fail-closed nonrelease tests |
-| Files changed relative to main | 9 (9 non-docs; 0 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record exact source provenance and integration release gates |
+| Files changed relative to main | 10 (9 non-docs; 1 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-c34-joint-source-research.yml`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
 - `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
 - `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
