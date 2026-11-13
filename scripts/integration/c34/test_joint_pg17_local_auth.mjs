@@ -1063,6 +1063,7 @@ console.log("C34 T7 SIGNED RED->GREEN PASS: original #324 verified creator BEFOR
 // sheet.startingMagicSelections (canonical spell ID/source/prepared). Keep the
 // T5 display summary correct to isolate T8 RED without bypassing T5.
 // All T1–T7 have run BEFORE this point.
+const t8SpellHash=(where)=>sql("SELECT md5(coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.spell_id,x.source_type,x.source_key)::text FROM public.character_spells x WHERE "+where+"),'[]'))");
 const t8Fire="00000000-0000-0000-0000-000000000901";
 const t8Ray="00000000-0000-0000-0000-000000000902";
 const t8Magic=[{spell_id:t8Fire,source_type:"class",access_type:"class-list",prepared:true}];
@@ -1083,7 +1084,7 @@ assert.equal(one("public.character_spells","character_id="+quote(t8Red.data)+
 assert.equal(sql("SELECT jsonb_array_length(sheet->'startingMagicSelections')::text FROM public.character_sheets WHERE character_id="+quote(t8Red.data)),"0");
 const t8RedHashes={
  sheet:hashRows("public.character_sheets","character_id="+quote(t8Red.data)),
- spells:hashRows("public.character_spells","character_id="+quote(t8Red.data))
+ spells:t8SpellHash("character_id="+quote(t8Red.data))
 };
 console.log("PASS T8 RED: genuine signed original v3 accepts a blank spell summary but materializes one cantrip without original deferred validator");
 sqlFile("scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql");
@@ -1099,7 +1100,7 @@ assert.equal(sql("SELECT has_function_privilege('anon',"+
  "'private.validate_player_forge_starting_magic_exactness_v1()','EXECUTE')"),"t");
 assert.deepEqual({
  sheet:hashRows("public.character_sheets","character_id="+quote(t8Red.data)),
- spells:hashRows("public.character_spells","character_id="+quote(t8Red.data))
+ spells:t8SpellHash("character_id="+quote(t8Red.data))
 },t8RedHashes,"original T8 must never retroactively rewrite pre-existing mismatched records");
 console.log("PASS T8-01: original deferred MD5/timing and 16/31 staged, no old records backfilled");
 const t8GoodPayload=t8Payload(randomUUID(),t8Summary());
@@ -1112,7 +1113,7 @@ assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="
 const t8GoodHashes={
  progression:hashRows("public.character_progression","character_id="+quote(t8Good.data)),
  sheet:hashRows("public.character_sheets","character_id="+quote(t8Good.data)),
- spells:hashRows("public.character_spells","character_id="+quote(t8Good.data)),
+ spells:t8SpellHash("character_id="+quote(t8Good.data)),
  gear:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data))
 };
 console.log("PASS T8-02: real JWT Wizard v3 creates canonical source-qualified Fire Bolt and equipment");
@@ -1122,7 +1123,7 @@ assert.equal(t8Replay.data,t8Good.data);
 assert.deepEqual({
  progression:hashRows("public.character_progression","character_id="+quote(t8Good.data)),
  sheet:hashRows("public.character_sheets","character_id="+quote(t8Good.data)),
- spells:hashRows("public.character_spells","character_id="+quote(t8Good.data)),
+ spells:t8SpellHash("character_id="+quote(t8Good.data)),
  gear:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data))
 },t8GoodHashes);
 console.log("PASS T8-03: signed same-nonce replay is byte-identical across character authority and gear");
