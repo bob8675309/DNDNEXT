@@ -5,22 +5,23 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` |
+| Exact source commit represented by this archive snapshot | `fac88d9bfefb67cce6e2d2435774a75511fa272c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | Merge verified future PR audit live acceptance handoff |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 0 files (0 non-docs; 0 authored docs) |
+| Last source commit title | docs(i2j): pin cross-PR source and deferred no-lost-work assets |
+| Files changed relative to main | 1 (0 non-docs; 1 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-The latest commit did not change non-docs source files. Do not infer a technical behavior change.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- No changed paths found
+- `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
+- `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 
 ## Trust and update procedure
 
