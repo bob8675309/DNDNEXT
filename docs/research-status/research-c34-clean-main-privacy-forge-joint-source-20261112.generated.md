@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f876f7a98d8b8ce14eed155113107d09bd660721` |
+| Exact source commit represented by this archive snapshot | `d16bab17ed093e99ecefc142921f2882ade6d95f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append T9 signed nested-choice source 17/31 HOLD handoff |
-| Files changed relative to main | 39 (34 non-docs; 5 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(c34): record owner-approved small verified merge strategy and data safety gates |
+| Files changed relative to main | 40 (34 non-docs; 6 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
@@ -30,6 +31,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
+- `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
