@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `d0f28a98669dfc08c849aaa4491ddf38f39e50be` |
+| Exact source commit represented by this archive snapshot | `ad45824473d9a9e24a5aa9d2b9f9fe44647fd7b7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(i2j): offline source-only tests without DB, secrets or deployment |
-| Files changed relative to main | 17 (11 non-docs; 6 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(i2j): publish source-backed 38-file NPC reader audit and blocked I2C order |
+| Files changed relative to main | 18 (11 non-docs; 7 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/i2j-source-lock-static.yml`
+- `docs/integration/I2J_NPC_PRIVACY_CONSUMER_AUDIT_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
@@ -26,6 +26,7 @@
 - `docs/HANDOFF_LOG.md`
 - `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 - `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
+- `docs/integration/I2J_NPC_PRIVACY_CONSUMER_AUDIT_2026-11-12.md`
 - `docs/integration/I2J_ORIGINAL_31_TRIGGER_SOURCE_FINGERPRINTS_2026-11-12.json`
 - `docs/integration/I2J_PR345_NPC_PRIVACY_READER_CROSSWALK_2026-11-12.json`
 - `scripts/fixtures/i2j/pinned/20261104_gm_vs_player_backstory_secrets_stage3.sql`
