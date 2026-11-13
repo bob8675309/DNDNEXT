@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `bca4d77a8d165f9e689fcf4e7cc3cef36033f1bf` |
+| Exact source commit represented by this archive snapshot | `4a022c86f9f421ba8ef3286556a081914875248d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed original sprite positive/negative and isolated Mog/levelup trigger branches |
+| Last source commit title | test(c34): update 12 original versus 2 held fixture audit and omission negatives |
 | Files changed relative to main | 32 (28 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
