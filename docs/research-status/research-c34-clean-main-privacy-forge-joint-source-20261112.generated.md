@@ -5,22 +5,33 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` |
+| Exact source commit represented by this archive snapshot | `2f02f6ce3768930f6f0b553561c1763356323706` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | Merge verified future PR audit live acceptance handoff |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 0 files (0 non-docs; 0 authored docs) |
+| Last source commit title | research(c34): pin exact source blobs for joint Forge/NPC privacy candidate |
+| Files changed relative to main | 6 (6 non-docs; 0 docs) |
+| Last source commit | 6 files (6 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest commit did not change non-docs source files. Do not infer a technical behavior change.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- No changed paths found
+- `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
+- `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
+- `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
+- `scripts/integration/c34/sources/04_private_story_stage3.sql`
+- `scripts/integration/c34/sources/05_inventory_constraint_rls.sql`
+- `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
 
 ## Research-branch change inventory versus main
 
+- `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
+- `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
+- `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
+- `scripts/integration/c34/sources/04_private_story_stage3.sql`
+- `scripts/integration/c34/sources/05_inventory_constraint_rls.sql`
+- `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
 
 ## Trust and update procedure
 
