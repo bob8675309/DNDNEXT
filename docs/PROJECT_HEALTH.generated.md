@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-13T04:36:04Z | agent/i2j-cross-pr-source-preflight-20261112 (fac88d9bfefb67cce6e2d2435774a75511fa272c) | 6637b14f807ebec79542deb7eef4b2bc3abfb5fd |
+| 2026-11-13T04:36:39Z | agent/i2j-cross-pr-source-preflight-20261112 (989f17f3a0a1493172d102f8ee51152c4efe55c8) | 6637b14f807ebec79542deb7eef4b2bc3abfb5fd |
 
 ## Exact PR heads and latest captured GitHub Actions
 

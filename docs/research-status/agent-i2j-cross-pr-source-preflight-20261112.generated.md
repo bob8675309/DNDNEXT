@@ -5,23 +5,24 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `fac88d9bfefb67cce6e2d2435774a75511fa272c` |
+| Exact source commit represented by this archive snapshot | `989f17f3a0a1493172d102f8ee51152c4efe55c8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): pin cross-PR source and deferred no-lost-work assets |
-| Files changed relative to main | 1 (0 non-docs; 1 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(i2j): add fail-closed source-lock and optional remote blob verifier |
+| Files changed relative to main | 2 (1 non-docs; 1 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
+- `scripts/validate_i2j_cross_pr_source_lock.mjs`
 
 ## Research-branch change inventory versus main
 
 - `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
+- `scripts/validate_i2j_cross_pr_source_lock.mjs`
 
 ## Trust and update procedure
 
