@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `21f5a0a5c0e5073137167017d2e6e9dd94791588` |
+| Exact source commit represented by this archive snapshot | `a3db7e06ac5d9357a67f2beaca0ccccd6e03d232` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): preserve byte-exact original 31-trigger read-only live census from held #324 |
-| Files changed relative to main | 27 (23 non-docs; 4 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): precise 31-trigger production census vs original/held local DDL count |
+| Files changed relative to main | 28 (24 non-docs; 4 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -44,6 +44,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
 - `scripts/integration/c34/validate_source_contract.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 - `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
 - `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
 - `sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql`
