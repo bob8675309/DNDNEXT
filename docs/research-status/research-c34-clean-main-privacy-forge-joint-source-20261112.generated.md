@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `19ba16ce763d3e5cc8ed110a4cf326c986c71f43` |
+| Exact source commit represented by this archive snapshot | `ee5f8188e1708a122758823759758add9ce77cc8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): hash composite-key character_spells without assuming id column |
+| Last source commit title | test(c34): deterministic composite-key-safe snapshot digests for T8 sheets, progression, spells |
 | Files changed relative to main | 38 (33 non-docs; 5 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
