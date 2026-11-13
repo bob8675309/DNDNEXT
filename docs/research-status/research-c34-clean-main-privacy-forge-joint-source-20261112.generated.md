@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ecdcb76c2d1ded8fe4fb5400882d3b6f915fdd05` |
+| Exact source commit represented by this archive snapshot | `5b17696eedec20713faa48cd8a04d5f352cd69e6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): fix historical JSONB snapshot assertion and SQL literal |
-| Files changed relative to main | 23 (20 non-docs; 3 docs) |
+| Last source commit title | ci(c34): launch disposable PG17/GoTrue signed original Story, nonce and inventory test |
+| Files changed relative to main | 24 (21 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,10 +17,11 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
