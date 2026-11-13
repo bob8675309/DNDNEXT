@@ -25,11 +25,15 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql",
   "scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql",
   "scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql",
-  "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql"
+  "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
+  "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
   "characters_guard_player_gm_secret_at_insert_v1"
+]);
+export const heldCreatorSeedNames=Object.freeze([
+  "character_progression_seed_verified_forge_creator_v1"
 ]);
 const gitBlobSha=(b)=>createHash("sha1").update("blob "+b.length+"\0").update(b).digest("hex");
 export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root,file))) {
@@ -130,23 +134,48 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   const sourceViews=originalFixture.slice(start,end).trim();
   assert.ok(authorityDdl.includes(sourceViews),
     "C34 T5 original option catalog preferred VIEW definitions drifted from held #324");
+  const creatorSeedSource=read("sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql").toString("utf8");
+  const creatorSeedEvent=[
+    "CREATE TRIGGER character_progression_seed_verified_forge_creator_v1",
+    "BEFORE INSERT ON public.character_progression",
+    "FOR EACH ROW",
+    "EXECUTE FUNCTION private.seed_verified_forge_progression_creator_v1();"
+  ].join("\n");
+  assert.ok(creatorSeedSource.includes(creatorSeedEvent),
+    "C34-T7 verified creator candidate BEFORE INSERT event/handler must remain intact");
+  assert.ok(creatorSeedSource.includes("AND ca.recorded_at=transaction_timestamp()"),
+    "C34-T7 candidate must bind the trusted creator to the same transaction");
+  assert.ok(creatorSeedSource.includes(
+    "REVOKE ALL ON FUNCTION private.seed_verified_forge_progression_creator_v1()"),
+    "C34-T7 candidate must explicitly revoke direct function execution");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
-  assert.equal(staged.length,integrated.length+newHeld.length,
-    "Unaccounted/renamed trigger in verified source fixtures");
+  const heldAttribution=heldCreatorSeedNames.filter(x=>byName.has(x));
+  assert.equal(heldAttribution.length,1,"One held verified creator-seed trigger is required");
+  for(const x of heldAttribution)
+    assert.ok(!records.some(y=>y.name===x),
+      "T7 creator-seed is a proposed held candidate, NOT one of the original 31");
+  const seed=byName.get(heldAttribution[0]);
+  assert.equal(seed.table,"character_progression");
+  assert.equal(seed.handler,"seed_verified_forge_progression_creator_v1");
+  assert.equal(seed.timing,"Immediate");
+  assert.equal(staged.length,integrated.length+newHeld.length+heldAttribution.length,
+    "Unaccounted/renamed original or held trigger in verified source fixtures");
   return {originalTotal:31,originalByTable:originals,stagedOriginalCount:integrated.length,
     originalMissingCount:absent.length,proposedPrivacyCount:newHeld.length,
-    totalStaged:staged.length,downstreamGrantTriggerCount:downstream.length,originalStaged:integrated,originalMissing:absent,
+    totalStaged:staged.length,proposedCreatorSeedCount:heldAttribution.length,
+    downstreamGrantTriggerCount:downstream.length,originalStaged:integrated,originalMissing:absent,
     proposedPrivacy:newHeld,sourceOriginalCensusSha:originalSha,
     assurance:"SOURCE_DDL_ONLY_NOT_ALL_BRANCHES_TESTED"};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,15,"C34 T6 expected 15/31 original DDL, not full parity");
+ assert.equal(r.stagedOriginalCount,15,"C34 T7 expected 15/31 original DDL plus one held creator seed, not full parity");
  assert.equal(r.originalMissingCount,16);
- assert.equal(r.totalStaged,17);
+ assert.equal(r.totalStaged,18);
+ assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  console.log("PASS C34-31CENSUS: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
-   " held NPC privacy triggers; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
+   " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
