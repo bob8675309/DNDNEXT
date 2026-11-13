@@ -1,0 +1,31 @@
+name: I2J pinned NPC privacy source and rollback probe (offline)
+on:
+  push:
+    branches:
+      - 'agent/i2j-*'
+    paths:
+      - 'docs/integration/I2J_*'
+      - 'scripts/fixtures/i2j/**'
+      - 'scripts/release/i2j_disposable_privacy_composition.mjs'
+      - 'scripts/validate_i2j_cross_pr_source_lock.mjs'
+      - 'scripts/test_i2j_source_lock_and_pg17_probe.mjs'
+      - '.github/workflows/i2j-source-lock-static.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-research-only:
+    name: Exact-source and ROLLBACK-only SQL shape
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exact 19-record source-lock manifest and explicit blocked order
+        run: node scripts/validate_i2j_cross_pr_source_lock.mjs
+      - name: Static original SQL and 31-trigger ROLLBACK probe
+        run: node scripts/test_i2j_source_lock_and_pg17_probe.mjs
