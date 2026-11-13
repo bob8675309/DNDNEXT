@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `08ac7e057d21d6137556511c36730eea84584597` |
+| Exact source commit represented by this archive snapshot | `8df744db2f08ca41670042b278d9005321c59d31` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): reconcile completed reader audit, rollback CI, and blocked I2C source-order |
+| Last source commit title | docs(i2j): make verified 38-reader audit, 31-trigger receipts, and blocked v1 next task current |
 | Files changed relative to main | 18 (11 non-docs; 7 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
