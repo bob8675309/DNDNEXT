@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `22907f149cddefde4bb677c1f9738331b55657a2` |
+| Exact source commit represented by this archive snapshot | `785e645e8673a79b78c11f051dc710e93db555ad` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): make local cleanup safe if preflight fails before startup |
+| Last source commit title | test(c34): use exact DDL offsets for missing-trigger negative to avoid regex escaping error |
 | Files changed relative to main | 28 (24 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
