@@ -716,3 +716,170 @@ assert.equal(sql("SELECT count(*) FROM public.character_stock"),"1",
  "merchant stock unchanged after all T5 authority/rollback/retry checks");
 console.log("PASS C34-T5-08: original historical sheet, GM Secret and merchant stock preserved; no world-map movement triggers installed");
 console.log("C34 T5 SOURCE-FAITHFUL SIGNED SUBSET PASS: 14/31 originals + 2 proposed NPC privacy; remaining 15 progression and 2 world-map originals held");
+
+
+// T6: unchanged #324 original immediate feat instance/grant persistence after
+// the T5 original deferred canonical authority validator. Original specialized
+// grant hooks co-reside, but only the Lucky source family is exercised here.
+sqlFile("scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql");
+assert.equal(one("pg_trigger","tgname='character_progression_materialize_player_forge_feat_instances_v' "+
+ "AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql(
+ "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND "+
+ "c.relname IN ('character_progression','character_sheets','characters','inventory_items')")),17);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT tgisinternal AND tgenabled='O' "+
+ "AND c.relname IN ('character_option_grant_instances','character_option_grants')")),5);
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_feat_instances_v1()'::regprocedure))"),
+ "c27c4181a51cfd018bbb8244e9931550");
+console.log("PASS C34-T6-01: original 15/31 plus two HELD NPC privacy; all five exact source-original grant-table triggers co-resident");
+
+const grantNonce=randomUUID(),grantPayload=sourceAuthority(grantNonce);
+grantPayload.sheet.featGrantInstances[0].acquisitionOwnerType="background";
+grantPayload.sheet.featGrantInstances[0].acquisitionOwnerKey="soldier-xphb";
+grantPayload.sheet.featGrantInstances[0].acquisitionLabel="Soldier background";
+const grantResult=await createSubclass(grantPayload);
+assert.ifError(grantResult.error);
+const grantCharacterId=grantResult.data;
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(grantCharacterId)),1);
+assert.equal(one("public.character_option_grants","character_id="+quote(grantCharacterId)),1);
+const grantRow=JSON.parse(sql("SELECT jsonb_build_object("+
+ "'option_id',option_id,'option_name',option_name,'option_type',option_type,"+
+ "'option_source',option_source,'instance_key',instance_key,"+
+ "'owner_type',acquisition_owner_type,'owner_key',acquisition_owner_key,"+
+ "'owner_label',acquisition_label,'acquisition_level',acquisition_level,"+
+ "'repeatable',repeatable,'choices',choices,'effects',effects,"+
+ "'fixed_spell_tokens',fixed_spell_tokens,'granted_by',granted_by) "+
+ "FROM public.character_option_grant_instances WHERE character_id="+quote(grantCharacterId)));
+assert.equal(grantRow.option_id,"00000000-0000-0000-0000-000000009154");
+assert.equal(grantRow.option_name,"Lucky");
+assert.equal(grantRow.option_source,"XPHB");
+assert.equal(grantRow.option_type,"feat");
+assert.equal(grantRow.instance_key,"c34-t5-origin-lucky");
+assert.equal(grantRow.owner_type,"background");
+assert.equal(grantRow.owner_key,"soldier-xphb");
+assert.equal(grantRow.owner_label,"Soldier background");
+assert.equal(grantRow.acquisition_level,1);
+assert.equal(grantRow.repeatable,false);
+assert.deepEqual(grantRow.choices,{});
+assert.deepEqual(grantRow.effects,[]);
+assert.deepEqual(grantRow.fixed_spell_tokens,[]);
+assert.equal(sql("SELECT option_id::text FROM public.character_option_grants WHERE character_id="+quote(grantCharacterId)),
+ "00000000-0000-0000-0000-000000009154");
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id="+quote(grantCharacterId)),
+ holder.id,"original source-record owner should be signed creator on completed progression");
+if(grantRow.granted_by===null){
+ console.log("SOURCE GAP C34-T6-02: original AFTER INSERT materializer inserted grant_instance.granted_by=NULL while canonical progression.created_by is signed creator; must assess original #324 grant-provenance repair before release");
+}else assert.equal(grantRow.granted_by,holder.id,
+ "source recorded creator provenance must never be another actor");
+const aggregateActor=sql("SELECT coalesce(granted_by::text,'') FROM public.character_option_grants "+
+ "WHERE character_id="+quote(grantCharacterId));
+assert.ok(aggregateActor===""||aggregateActor===holder.id,
+ "aggregate grant provenance must be NULL or the verified creator, never another actor");
+if(aggregateActor==="") console.log("SOURCE GAP C34-T6-02: original immediate aggregate grant has NULL granted_by despite signed creator");
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(grantCharacterId)),1);
+console.log("PASS C34-T6-02: signed source-qualified Lucky persists one canonical instance AND aggregate feat grant, preserving actor-provenance gap as explicit HOLD");
+
+const hashRows=(table,where)=>sql(
+ "SELECT md5(coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.id)::text FROM "+
+ table+" x WHERE "+where+"),'[]'))");
+const grantWhere="character_id="+quote(grantCharacterId);
+const grantBefore={
+ instance:hashRows("public.character_option_grant_instances",grantWhere),
+ aggregate:hashRows("public.character_option_grants",grantWhere),
+ equipment:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(grantCharacterId))
+};
+const idemGrant=await createSubclass(grantPayload);
+assert.ifError(idemGrant.error);
+assert.equal(idemGrant.data,grantCharacterId);
+assert.deepEqual({
+ instance:hashRows("public.character_option_grant_instances",grantWhere),
+ aggregate:hashRows("public.character_option_grants",grantWhere),
+ equipment:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(grantCharacterId))
+},grantBefore,"original source-owned grant, aggregate and gear immutable on identical nonce retry");
+const changedOwner=JSON.parse(JSON.stringify(grantPayload));
+changedOwner.sheet.featGrantInstances[0].acquisitionOwnerKey="forged-other-background";
+rejected(await createSubclass(changedOwner),"same nonce changed feat ownership", "22023");
+assert.equal(sql("SELECT acquisition_owner_key FROM public.character_option_grant_instances "+
+ "WHERE character_id="+quote(grantCharacterId)),"soldier-xphb");
+console.log("PASS C34-T6-03: grant instance, aggregate grant and gear immutable under identical/changed nonce replay");
+
+const grantCounts=()=>({
+ chars:Number(sql("SELECT count(*) FROM public.characters")),
+ nonce:Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1")),
+ instances:Number(sql("SELECT count(*) FROM public.character_option_grant_instances")),
+ aggregate:Number(sql("SELECT count(*) FROM public.character_option_grants")),
+ equipment:Number(sql("SELECT count(*) FROM public.inventory_items"))
+});
+async function rejectedGrant(payload,rx,code){
+ const before=grantCounts(),result=await createSubclass(payload);
+ assert.ok(result.error,"C34 T6 expected source denial");
+ if(rx)assert.match(result.error.message,rx);
+ if(code)assert.equal(result.error.code,code);
+ assert.deepEqual(grantCounts(),before,"rejected signed original grant must rollback char/nonce/GI/grant/inventory");
+ assert.equal(one("public.characters","creation_request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(payload.creation_request_id)),0);
+ return result.error;
+}
+const duplicateGrant=sourceAuthority(randomUUID());
+duplicateGrant.sheet.featGrantInstances.push({...duplicateGrant.sheet.featGrantInstances[0]});
+await rejectedGrant(duplicateGrant,/Duplicate feat or boon grant instance/i);
+const nonRepeatable=sourceAuthority(randomUUID());
+nonRepeatable.sheet.featGrantInstances.push({
+ ...nonRepeatable.sheet.featGrantInstances[0],instanceId:"c34-t6-different-instance-key"
+});
+await rejectedGrant(nonRepeatable,/not repeatable/i);
+console.log("PASS C34-T6-04: original grant duplicate instance and nonrepeatable Lucky violations roll back ALL resources");
+
+const malformedTokens=sourceAuthority(randomUUID());
+malformedTokens.sheet.featGrantInstances[0].fixedSpellTokens={forged:true};
+await rejectedGrant(malformedTokens,/check constraint|character_option_grant_instances_fixed_spell_tokens_check/i,"23514");
+console.log("PASS C34-T6-05: original grant-instance fixed_spell_tokens array CHECK rejects object and atomically rolls back");
+
+const unauthorizedGrant=await holder.client.from("character_option_grant_instances")
+ .insert({
+  character_id:grantCharacterId,
+  option_id:"00000000-0000-0000-0000-000000009154",
+  option_name:"Lucky",instance_key:"c34-t6-manual-forgery"
+ }).select("id");
+assert.ok(unauthorizedGrant.error,"signed-in creator cannot manually mint source-owned feat instance");
+const unauthorizedAggregate=await holder.client.from("character_option_grants")
+ .insert({character_id:grantCharacterId,option_id:"00000000-0000-0000-0000-000000009154"})
+ .select("id");
+assert.ok(unauthorizedAggregate.error,"signed-in creator cannot manually mint aggregate feat grant");
+const unauthorizedAnon=await makeClient().from("character_option_grant_instances")
+ .select("id").eq("character_id",grantCharacterId);
+assert.ok(unauthorizedAnon.error,"anonymous token cannot directly read private canonical grant table");
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(grantCharacterId)),1);
+console.log("PASS C34-T6-06: source-original two grant tables deny authenticated direct writes and anonymous reads without weakening creation RPC");
+
+const racingGrant=sourceAuthority(randomUUID());
+const twins=await Promise.all([createSubclass(racingGrant),createSubclass(racingGrant)]);
+for(const x of twins)assert.ifError(x.error);
+assert.equal(twins[0].data,twins[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(racingGrant.creation_request_id)),1);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(twins[0].data)),1);
+assert.equal(one("public.character_option_grants","character_id="+quote(twins[0].data)),1);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(twins[0].data)),1);
+console.log("PASS C34-T6-07: concurrent real signed identical nonce mints exactly one source instance, aggregate feat, character and equipment");
+
+const otherGrantPayload=sourceAuthority(randomUUID());
+const independentGrant=await createSubclass(otherGrantPayload);
+assert.ifError(independentGrant.error);
+assert.notEqual(independentGrant.data,grantCharacterId);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(independentGrant.data)),1);
+assert.equal(one("public.character_option_grants","character_id="+quote(independentGrant.data)),1);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(grantCharacterId)),1);
+const noFeatPayload=makeSubclass(randomUUID(),null,null,1);
+const noFeat=await createSubclass(noFeatPayload);
+assert.ifError(noFeat.error);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(noFeat.data)),0);
+assert.equal(one("public.character_option_grants","character_id="+quote(noFeat.data)),0);
+console.log("PASS C34-T6-08: original grant materializer isolates characters and creates no ghost grants without source feat intent");
+
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
+ "ORIGINAL_NONEMPTY","T6 cannot rewrite frozen historical account sheet");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),
+ "C34_GM_SECRET_STAYS_PRIVATE","T6 must not reveal or overwrite GM Secret");
+console.log("C34 T6 SIGNED SOURCE-ORIGINAL FEAT GRANTS PASS: 15/31 original Forge triggers + 2 HELD privacy + 5 downstream grant triggers; actor attribution potential SOURCE GAP explicitly held; 14 progression and 2 movement originals not installed");
