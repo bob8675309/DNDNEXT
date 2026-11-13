@@ -586,3 +586,133 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
  "C34_GM_SECRET_STAYS_PRIVATE");
 console.log("PASS C34-T4-07: explicit source-qualified PHB Champion and XPHB Battle Master recognized by original handler; maneuvers NOT included");
 console.log("C34 T4 PASS: 13/31 original triggers plus 2 held privacy; 16 progression and 2 world-map originals unstaged, runtime/browser parity NOT claimed");
+
+
+// T5 — source-exact original deferred Forge progression-authority validator,
+// after all signed T1-T4 tests. Uses a small original-source-qualified feat
+// catalog and view; not full feat acquisition/materialization or production ACL.
+sqlFile("scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql");
+assert.equal(one("pg_trigger",
+  "tgname='character_progression_validate_player_forge_authority_v1' AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql(
+ "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' "+
+ "AND c.relname IN ('character_progression','character_sheets','characters','inventory_items')")),16);
+const authorityTrigger=sql("SELECT pg_get_triggerdef(t.oid,true) FROM pg_trigger t "+
+ "WHERE t.tgrelid='public.character_progression'::regclass "+
+ "AND t.tgname='character_progression_validate_player_forge_authority_v1'");
+assert.match(authorityTrigger,/AFTER INSERT OR UPDATE OF class_id, class_level/);
+assert.match(authorityTrigger,/DEFERRABLE INITIALLY DEFERRED/);
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_authority_payload_v1()'::regprocedure))"),
+ "48006f8db76e9b32c96fcd2b6a4b3080");
+console.log("PASS C34-T5-01: 14 original/31 + 2 held NPC privacy, exact live deferred authority event and source fingerprints");
+
+const sourceAuthority=(nonce)=>{
+ const base=makeSubclass(nonce,null,null,1);
+ return {
+  ...base,name:"C34 T5 source authority "+nonce.slice(0,8),
+  sheet:{
+   ...base.sheet,meta:{backgroundSource:"XPHB",speciesKey:"Elf"},
+   featGrantInstances:[{
+    instanceId:"c34-t5-origin-lucky",optionId:"00000000-0000-0000-0000-000000009154",
+    name:"Lucky",source:"XPHB",optionType:"feat",acquisitionLevel:1,
+    choices:{},fixedEffects:[]
+   }],
+   feats:["Lucky"],
+   classFeatureChoices:{
+    fightingStyle:{
+     kind:"fighting-style",count:1,level:1,label:"Fighting Style",
+     selections:[{name:"Defense",key:"defense",source:"XPHB"}]
+    }
+   },
+   classFeatureChoiceSummary:[{
+    groupId:"fightingStyle",key:"defense",name:"Defense",source:"XPHB"
+   }]
+  }
+ };
+};
+async function rejectAuthority(payload,origin) {
+ const beforeInventory=Number(sql("SELECT count(*) FROM public.inventory_items"));
+ const result=await createSubclass(payload);
+ assert.ok(result.error,"Original deferred authority must reject: "+origin);
+ assert.match(result.error.message,origin);
+ assert.equal(one("public.characters","creation_request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(Number(sql("SELECT count(*) FROM public.inventory_items")),beforeInventory,
+  "original deferred authority rejection cannot leave starting equipment behind");
+ return result;
+}
+const authorityNonce=randomUUID(),goodAuthority=sourceAuthority(authorityNonce);
+const authoritative=await createSubclass(goodAuthority);
+assert.ifError(authoritative.error);
+assert.match(authoritative.data,/^[a-f0-9-]{36}$/i);
+assert.equal(sql("SELECT sheet->'feats'->>0 FROM public.character_sheets "+
+ "WHERE character_id="+quote(authoritative.data)),"Lucky");
+assert.equal(sql("SELECT sheet#>>'{classFeatureChoices,fightingStyle,selections,0,name}' "+
+ "FROM public.character_sheets WHERE character_id="+quote(authoritative.data)),"Defense");
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(authoritative.data)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(authorityNonce)),1);
+console.log("PASS C34-T5-02: signed original v3 accepts canonical XPHB Lucky feat instance and Defense style under deferred authority");
+
+const beforeReplay={
+ cp:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_progression x WHERE character_id="+quote(authoritative.data)),
+ sheet:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_sheets x WHERE character_id="+quote(authoritative.data)),
+ items:sql("SELECT md5(coalesce(string_agg(to_jsonb(x)::text,'|' ORDER BY x.id::text),'')) FROM public.inventory_items x WHERE owner_type='character' AND owner_id="+quote(authoritative.data))
+};
+const retryAuthority=await createSubclass(goodAuthority);
+assert.ifError(retryAuthority.error);
+assert.equal(retryAuthority.data,authoritative.data);
+const changedAuthority=JSON.parse(JSON.stringify(goodAuthority));
+changedAuthority.sheet.feats=["Unapproved Feat"];
+const changedResult=await createSubclass(changedAuthority);
+rejected(changedResult,"tampered feat summary same immutable nonce","22023");
+assert.deepEqual({
+ cp:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_progression x WHERE character_id="+quote(authoritative.data)),
+ sheet:sql("SELECT md5(to_jsonb(x)::text) FROM public.character_sheets x WHERE character_id="+quote(authoritative.data)),
+ items:sql("SELECT md5(coalesce(string_agg(to_jsonb(x)::text,'|' ORDER BY x.id::text),'')) FROM public.inventory_items x WHERE owner_type='character' AND owner_id="+quote(authoritative.data))
+},beforeReplay,"canonical progression, sheet and gear cannot mutate on retry");
+console.log("PASS C34-T5-03: original v3 nonce replay remains inert; changed feat source intent denied without CP/CS/gear drift");
+
+const mismatchedFeat=sourceAuthority(randomUUID());
+mismatchedFeat.sheet.featGrantInstances=[];
+await rejectAuthority(mismatchedFeat,/feats must exactly match their validated source-owned feat grants/i);
+const missingGrantId=sourceAuthority(randomUUID());
+delete missingGrantId.sheet.featGrantInstances[0].instanceId;
+await rejectAuthority(missingGrantId,/requires an instanceId/i);
+console.log("PASS C34-T5-04: original deferred feat summary and source-original canonical instanceId checks roll back character/nonce/equipment");
+
+const invalidStylePayload=sourceAuthority(randomUUID());
+invalidStylePayload.sheet.classFeatureChoices.fightingStyle.selections[0].name="Impossible Style";
+invalidStylePayload.sheet.classFeatureChoiceSummary[0].name="Impossible Style";
+await rejectAuthority(invalidStylePayload,/not valid for this class, subclass, source, or level/i);
+const incorrectSourceFeat=sourceAuthority(randomUUID());
+incorrectSourceFeat.sheet.featGrantInstances[0].source="PHB";
+await rejectAuthority(incorrectSourceFeat,/does not match its canonical option source/i);
+console.log("PASS C34-T5-05: preferred XPHB feat style rejects nonexistent option; grant source mismatch rejects without nonce/gear");
+
+const fakeSpellSummary=sourceAuthority(randomUUID());
+fakeSpellSummary.sheet.featGrantInstances=[];
+fakeSpellSummary.sheet.feats=[];
+fakeSpellSummary.sheet.classFeatureChoices={};
+fakeSpellSummary.sheet.classFeatureChoiceSummary=[];
+fakeSpellSummary.sheet.spells=["Fire Bolt"];
+await rejectAuthority(fakeSpellSummary,/sheet spell summary must exactly match its validated starting spell assignments/i);
+console.log("PASS C34-T5-06: original deferred spell-summary authority rejects spoofed Fighter class spell without source grant");
+
+const concurrentAuthority=sourceAuthority(randomUUID());
+const pair=await Promise.all([createSubclass(concurrentAuthority),createSubclass(concurrentAuthority)]);
+for(const response of pair)assert.ifError(response.error);
+assert.equal(pair[0].data,pair[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(concurrentAuthority.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(concurrentAuthority.creation_request_id)),1);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(pair[0].data)),1);
+console.log("PASS C34-T5-07: two real signed concurrent source-feat requests serialize to one nonce, character and equipment");
+
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
+ "ORIGINAL_NONEMPTY","legacy nonempty account sheet remains immutable after deferred authority tests");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),
+ "C34_GM_SECRET_STAYS_PRIVATE","original GM secret must remain unchanged by T5");
+assert.equal(sql("SELECT count(*) FROM public.character_stock"),"1",
+ "merchant stock unchanged after all T5 authority/rollback/retry checks");
+console.log("PASS C34-T5-08: original historical sheet, GM Secret and merchant stock preserved; no world-map movement triggers installed");
+console.log("C34 T5 SOURCE-FAITHFUL SIGNED SUBSET PASS: 14/31 originals + 2 proposed NPC privacy; remaining 15 progression and 2 world-map originals held");
