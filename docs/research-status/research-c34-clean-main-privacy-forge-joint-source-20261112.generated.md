@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `98f845d20b764a345a30dfe08dcbd75a2526c7e6` |
+| Exact source commit represented by this archive snapshot | `6753f9b3c91f42e048c228514d505e345143a0ea` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add five original source-locked sheet/character triggers in disposable PG17 |
+| Last source commit title | test(c34): permit local signed adversarial tag-update probe through original RLS |
 | Files changed relative to main | 26 (23 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
