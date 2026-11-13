@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `50db3b864f70f638b6dbd06ef96ef48e3ab4c0dd` |
+| Exact source commit represented by this archive snapshot | `487769f6dd294db784ec174c2c32944d52a3031d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): advance active-work pointer to signed T5 and original feat materializer next |
+| Last source commit title | docs(c34): append exact T5 signed deferred authority and source custody handoff receipt |
 | Files changed relative to main | 34 (30 non-docs; 4 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
