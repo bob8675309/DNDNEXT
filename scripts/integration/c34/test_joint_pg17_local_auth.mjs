@@ -55,7 +55,8 @@ function rejected(r,label,code) {
 }
 const fighter=(id,name)=>({
   creation_request_id:id,name,secret:null,
-  sheet:{classKey:"fighter",level:1,marker:"C34_SOURCE_EQUIPMENT_AFTER_INVENTORY_RLS"}
+  sheet:{classKey:"fighter",level:1,marker:"C34_SOURCE_EQUIPMENT_AFTER_INVENTORY_RLS",
+    startingEquipmentSelections:{mode:"package",ruleset:"vanilla",classOption:"A",choices:{}}}
 });
 const rpc=async(actor,name,args)=>actor.client.rpc(name,args);
 const nonceCountBefore=Number(sql(
