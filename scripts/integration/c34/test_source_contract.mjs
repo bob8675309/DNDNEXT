@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { auditSources, STAGES, RELEASE_BLOCKERS } from "./validate_source_contract.mjs";
 import { verifyOriginalJointDependencies, ORIGINAL_JOINT_DEPENDENCIES } from "./validate_joint_fixture_blobs.mjs";
+import { auditTriggerCoverage } from "./verify_original_trigger_coverage.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const load = (file) => fs.readFileSync(path.join(dir, "sources", file));
@@ -83,4 +84,43 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
     const original=fs.readFileSync(path.join(root,file));
     return file===first ? Buffer.concat([original,Buffer.from("-- changed\n")]) : original;
   }), /signed fixture\/source drift/);
+});
+
+test("C34-T2-S01 exact original production census counts 9/31, not 11/31", () => {
+ const r=auditTriggerCoverage();
+ assert.equal(r.originalTotal,31);
+ assert.deepEqual(r.originalByTable,{
+   character_progression:19,character_sheets:4,characters:6,inventory_items:2
+ });
+ assert.equal(r.stagedOriginalCount,9);
+ assert.equal(r.originalMissingCount,22);
+ assert.equal(r.proposedPrivacyCount,2);
+ assert.equal(r.totalStaged,11);
+ assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
+});
+
+test("C34-T2-N01 mutated original census source is rejected", () => {
+ const root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+   const raw=fs.readFileSync(path.join(root,file));
+   return file.includes("C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE")
+     ? Buffer.concat([raw,Buffer.from("\\n-- tampered\\n")]) : raw;
+ }),/original 31-trigger census blob drift/);
+});
+
+test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted coverage", () => {
+ const root=path.resolve(dir,"../../..");
+ const original=auditTriggerCoverage();
+ const truncated=auditTriggerCoverage(file=>{
+   const raw=fs.readFileSync(path.join(root,file));
+   if(file!=="scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql") return raw;
+   const changed=raw.toString("utf8").replace(
+     /CREATE TRIGGER characters_guard_player_tags_v1\\s+[\\s\\S]*?EXECUTE FUNCTION private\\.guard_player_character_tag_update_v1\\(\\);/,
+     "-- OMITTED TEST TRIGGER FOR NEGATIVE ONLY");
+   assert.notEqual(changed,raw.toString("utf8"));
+   return Buffer.from(changed,"utf8");
+ });
+ assert.equal(original.stagedOriginalCount,9);
+ assert.equal(truncated.stagedOriginalCount,8);
+ assert.equal(truncated.originalMissingCount,23);
 });
