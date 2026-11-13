@@ -127,3 +127,16 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
  assert.equal(truncated.stagedOriginalCount,12);
  assert.equal(truncated.originalMissingCount,19);
 });
+
+test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
+ const root=path.resolve(dir,"../../..");
+ const fixture="scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+   const original=fs.readFileSync(path.join(root,file));
+   if(file!==fixture)return original;
+   const source=original.toString("utf8");
+   const before="BEFORE INSERT ON public.character_progression";
+   assert.ok(source.includes(before),"original subtype trigger SQL is present");
+   return Buffer.from(source.replace(before,"AFTER INSERT ON public.character_progression"),"utf8");
+ }),/exact original Fighter subclass BEFORE INSERT event/);
+});
