@@ -72,7 +72,7 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
 
 test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
   const e=verifyOriginalJointDependencies();
-  assert.equal(e.length,20);
+  assert.equal(e.length,22);
   assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
   assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
 });
@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T4-S01 original production census counts 13/31, not 15/31", () => {
+test("C34-T5-S01 original production census counts 14/31, not 16/31", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,13);
- assert.equal(r.originalMissingCount,18);
+ assert.equal(r.stagedOriginalCount,14);
+ assert.equal(r.originalMissingCount,17);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,15);
+ assert.equal(r.totalStaged,16);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
 });
 
@@ -123,9 +123,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,13);
- assert.equal(truncated.stagedOriginalCount,12);
- assert.equal(truncated.originalMissingCount,19);
+ assert.equal(original.stagedOriginalCount,14);
+ assert.equal(truncated.stagedOriginalCount,13);
+ assert.equal(truncated.originalMissingCount,18);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -139,4 +139,30 @@ test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INS
    assert.ok(source.includes(before),"original subtype trigger SQL is present");
    return Buffer.from(source.replace(before,"AFTER INSERT ON public.character_progression"),"utf8");
  }),/exact original Fighter subclass BEFORE INSERT event/);
+});
+
+test("C34-T5-N04 changing original deferred authority trigger to immediate fails closed", () => {
+ const root=path.resolve(dir,"../../..");
+ const adapter="scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const buf=fs.readFileSync(path.join(root,file));
+  if(file!==adapter)return buf;
+  const source=buf.toString("utf8");
+  const from="DEFERRABLE INITIALLY DEFERRED FOR EACH ROW";
+  assert.ok(source.includes(from));
+  return Buffer.from(source.replace(from,"NOT DEFERRABLE FOR EACH ROW"),"utf8");
+ }),/Timing\/deferral mismatch|exact original deferred progression authority event/);
+});
+
+test("C34-T5-N05 source-original preferred view rewrite fails closed", () => {
+ const root=path.resolve(dir,"../../..");
+ const adapter="scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  if(file!==adapter)return raw;
+  const source=raw.toString("utf8");
+  const from="WHEN o.option_type = 'species'::text";
+  assert.ok(source.includes(from));
+  return Buffer.from(source.replace(from,"WHEN o.option_type = 'unverified'::text"),"utf8");
+ }),/preferred VIEW definitions drifted from held/);
 });
