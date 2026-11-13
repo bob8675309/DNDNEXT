@@ -26,7 +26,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql",
   "scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql",
   "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
-  "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql"
+  "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+  "scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -148,6 +149,24 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   assert.ok(creatorSeedSource.includes(
     "REVOKE ALL ON FUNCTION private.seed_verified_forge_progression_creator_v1()"),
     "C34-T7 candidate must explicitly revoke direct function execution");
+
+  // Exact ORIGINAL held #324 source body and complete live deferred DDL;
+  // function-name-only or altered-handler substitutions must fail closed.
+  const originalMagic=read("scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql").toString("utf8");
+  const stagedMagic=read("scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql").toString("utf8");
+  const magicMark="-- private.validate_player_forge_starting_magic_exactness_v1() MD5 ba645ad0f2c17addad0b40e0602c2ac8";
+  const magicPos=originalMagic.indexOf(magicMark);
+  const magicStart=originalMagic.indexOf("CREATE OR REPLACE FUNCTION private.validate_player_forge_starting_magic_exactness_v1()",magicPos);
+  const magicEnd=originalMagic.indexOf("$function$;",magicStart)+"$function$;".length;
+  assert.ok(magicPos>0&&magicStart>magicPos&&magicEnd>magicStart,"T8 original pg_get_functiondef unavailable");
+  assert.ok(stagedMagic.includes(originalMagic.slice(magicStart,magicEnd)),"T8 source-original starting-magic function body drift");
+  const magicEvent=[
+    "CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_starting_magic_exac",
+    " AFTER INSERT OR UPDATE ON public.character_progression",
+    " DEFERRABLE INITIALLY DEFERRED FOR EACH ROW",
+    " EXECUTE FUNCTION private.validate_player_forge_starting_magic_exactness_v1();"
+  ].join("\n");
+  assert.ok(stagedMagic.includes(magicEvent),"T8 exact source deferred starting-magic trigger event drift");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -171,11 +190,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,15,"C34 T7 expected 15/31 original DDL plus one held creator seed, not full parity");
- assert.equal(r.originalMissingCount,16);
- assert.equal(r.totalStaged,18);
+ assert.equal(r.stagedOriginalCount,16,"C34 T8 expects 16/31 original DDL, not complete parity");
+ assert.equal(r.originalMissingCount,15);
+ assert.equal(r.totalStaged,19);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T8: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }

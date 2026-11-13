@@ -1057,3 +1057,103 @@ assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+qu
  "ORIGINAL_NONEMPTY","older nonempty holder account sheet not altered by T7");
 console.log("PASS C34-T7-GREEN10: direct authenticated grants still denied, GM secrets and historical nonempty account sheet preserved");
 console.log("C34 T7 SIGNED RED->GREEN PASS: original #324 verified creator BEFORE INSERT, original 15/31+2 held privacy+1 held attribution +5 downstream grant hooks; historical NULL grants untouched; NOT merge/production acceptance");
+
+// T8: Source-exact ORIGINAL deferred starting magic summary validator.
+// RED first, then unchanged original trigger installed only on disposable PG17.
+// All T1–T7 have run BEFORE this point.
+const t8Fire="00000000-0000-0000-0000-000000000901";
+const t8Ray="00000000-0000-0000-0000-000000000902";
+const t8Magic=[{spell_id:t8Fire,source_type:"class",access_type:"class-list",prepared:true}];
+const t8Summary=(spell=t8Fire,prepared=true)=>[{spell_id:spell,source_type:"class",source_key:"wizard",prepared}];
+const t8Payload=(nonce,summary)=>({
+ creation_request_id:nonce,name:"T8 signed Wizard "+nonce.slice(0,8),
+ sheet:{...validSheet,classKey:"wizard",startingMagicSelections:summary,
+  startingEquipmentSelections:{...validSheet.startingEquipmentSelections}}
+});
+const t8Rpc=(payload)=>rpc(holder,"create_player_character_v3",{
+ p_payload:payload,p_spell_choices:[],p_magic_selections:t8Magic
+});
+const t8RedNonce=randomUUID(),t8RedPayload=t8Payload(t8RedNonce,[]);
+const t8Red=await t8Rpc(t8RedPayload);
+assert.ifError(t8Red.error);
+assert.equal(one("public.character_spells","character_id="+quote(t8Red.data)+
+ " AND coalesce((raw_payload->>'startingMagic')::boolean,false)"),1);
+assert.equal(sql("SELECT jsonb_array_length(sheet->'startingMagicSelections')::text FROM public.character_sheets WHERE character_id="+quote(t8Red.data)),"0");
+const t8RedHashes={
+ sheet:hashRows("public.character_sheets","character_id="+quote(t8Red.data)),
+ spells:hashRows("public.character_spells","character_id="+quote(t8Red.data))
+};
+console.log("PASS T8 RED: genuine signed original v3 accepts a blank spell summary but materializes one cantrip without original deferred validator");
+sqlFile("scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql");
+assert.equal(one("pg_trigger","tgname='character_progression_validate_player_forge_starting_magic_exac' AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),19);
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_starting_magic_exactness_v1()'::regprocedure))"),
+ "ba645ad0f2c17addad0b40e0602c2ac8");
+// Preserve actual original function grants. On production PUBLIC defaults grant
+// EXECUTE to anon/auth, but private schema is not a public API exposure.
+assert.equal(sql("SELECT has_function_privilege('anon',"+
+ "'private.validate_player_forge_starting_magic_exactness_v1()','EXECUTE')"),"t");
+assert.deepEqual({
+ sheet:hashRows("public.character_sheets","character_id="+quote(t8Red.data)),
+ spells:hashRows("public.character_spells","character_id="+quote(t8Red.data))
+},t8RedHashes,"original T8 must never retroactively rewrite pre-existing mismatched records");
+console.log("PASS T8-01: original deferred MD5/timing and 16/31 staged, no old records backfilled");
+const t8GoodPayload=t8Payload(randomUUID(),t8Summary());
+const t8Good=await t8Rpc(t8GoodPayload);
+assert.ifError(t8Good.error);
+assert.equal(one("public.character_spells","character_id="+quote(t8Good.data)+
+ " AND spell_id="+quote(t8Fire)+" AND source_key='wizard' "+
+ " AND prepared AND coalesce((raw_payload->>'startingMagic')::boolean,false)"),1);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data)),1);
+const t8GoodHashes={
+ progression:hashRows("public.character_progression","character_id="+quote(t8Good.data)),
+ sheet:hashRows("public.character_sheets","character_id="+quote(t8Good.data)),
+ spells:hashRows("public.character_spells","character_id="+quote(t8Good.data)),
+ gear:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data))
+};
+console.log("PASS T8-02: real JWT Wizard v3 creates canonical source-qualified Fire Bolt and equipment");
+const t8Replay=await t8Rpc(t8GoodPayload);
+assert.ifError(t8Replay.error);
+assert.equal(t8Replay.data,t8Good.data);
+assert.deepEqual({
+ progression:hashRows("public.character_progression","character_id="+quote(t8Good.data)),
+ sheet:hashRows("public.character_sheets","character_id="+quote(t8Good.data)),
+ spells:hashRows("public.character_spells","character_id="+quote(t8Good.data)),
+ gear:hashRows("public.inventory_items","owner_type='character' AND owner_id="+quote(t8Good.data))
+},t8GoodHashes);
+console.log("PASS T8-03: signed same-nonce replay is byte-identical across character authority and gear");
+async function t8Negative(summary,message){
+ const nonce=randomUUID(),before=grantCounts();
+ const result=await t8Rpc(t8Payload(nonce,summary));
+ rejected(result,"original deferred T8 signed invalid summary");
+ assert.match(result.error.message,message);
+ assert.equal(one("public.characters","creation_request_id="+quote(nonce)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(nonce)),0);
+ assert.deepEqual(grantCounts(),before);
+}
+await t8Negative([],/Starting magic summary does not match authoritative starting spell rows/);
+console.log("PASS T8-04: signed missing-summary COUNT mismatch rolls back character, nonce, grants and gear");
+await t8Negative(t8Summary(t8Ray),/Starting magic summary contains a spell\/source\/prepared state that was not materialized/);
+await t8Negative(t8Summary(t8Fire,false),/Starting magic summary contains a spell\/source\/prepared state that was not materialized/);
+console.log("PASS T8-05: same-count wrong spell and wrong prepared flag rejected by unchanged original handler");
+await t8Negative({malformed:true},/startingMagicSelections must be a JSON array/);
+console.log("PASS T8-06: wrong JSON sheet shape rejected at deferred commit");
+const t8RacePayload=t8Payload(randomUUID(),t8Summary());
+const t8Race=await Promise.all([t8Rpc(t8RacePayload),t8Rpc(t8RacePayload)]);
+for(const r of t8Race)assert.ifError(r.error);
+assert.equal(t8Race[0].data,t8Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t8RacePayload.creation_request_id)),1);
+assert.equal(one("public.character_spells","character_id="+quote(t8Race[0].data)),1);
+console.log("PASS T8-07: concurrent signed same-nonce Wizard creates one actor and one canonical cantrip");
+const t8Fighter=await createSubclass(sourceAuthority(randomUUID()));
+assert.ifError(t8Fighter.error);
+assert.equal(one("public.character_spells","character_id="+quote(t8Fighter.data)),0);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(t8Fighter.data)),1);
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id="+quote(t8Fighter.data)),holder.id);
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),"ORIGINAL_NONEMPTY");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("PASS T8-08: feat/no-magic Fighter, legacy sheet, GM secret, and world-map trigger exclusion unchanged");
+console.log("C34 T8 signed RED->GREEN: 16/31 originals +2 privacy +1 held seed +5 grant hooks; 13 progression/2 world triggers still untested, HOLD main/production");
