@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `785e645e8673a79b78c11f051dc710e93db555ad` |
+| Exact source commit represented by this archive snapshot | `dd66d0907ca775e807ab088b638be088389b6403` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): use exact DDL offsets for missing-trigger negative to avoid regex escaping error |
-| Files changed relative to main | 28 (24 non-docs; 4 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): source-identical original sprite, Mog and levelup trigger fixtures from held PR #345 |
+| Files changed relative to main | 31 (27 non-docs; 4 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,9 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
+- `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
+- `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -27,6 +29,9 @@
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
+- `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
+- `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
+- `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
