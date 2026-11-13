@@ -72,7 +72,7 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
 
 test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
   const e=verifyOriginalJointDependencies();
-  assert.equal(e.length,16);
+  assert.equal(e.length,19);
   assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
   assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
 });
