@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5201daceb9de711dc31bbe82815aa6f6ee8a9fec` |
+| Exact source commit represented by this archive snapshot | `3ed356369e939b8511d8f0814bae286f5c0e488a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): import source-exact signed Story/nonce and NPC privacy fixtures from held PRs |
-| Files changed relative to main | 20 (17 non-docs; 3 docs) |
-| Last source commit | 8 files (8 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): source-faithful disposable c34_inventory_materializer_setup_pg17.sql fixture |
+| Files changed relative to main | 21 (18 non-docs; 3 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,14 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
-- `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
-- `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
-- `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
-- `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
-- `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
-- `sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql`
-- `sql/candidates/20261109_player_story_complete_intent_i1c_research.sql`
+- `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -34,6 +27,7 @@
 - `docs/HANDOFF_LOG.md`
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
+- `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
