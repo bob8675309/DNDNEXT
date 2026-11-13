@@ -1059,7 +1059,9 @@ console.log("PASS C34-T7-GREEN10: direct authenticated grants still denied, GM s
 console.log("C34 T7 SIGNED RED->GREEN PASS: original #324 verified creator BEFORE INSERT, original 15/31+2 held privacy+1 held attribution +5 downstream grant hooks; historical NULL grants untouched; NOT merge/production acceptance");
 
 // T8: Source-exact ORIGINAL deferred starting magic summary validator.
-// RED first, then unchanged original trigger installed only on disposable PG17.
+// Existing T5 validates sheet.spells (display names); T8 separately validates
+// sheet.startingMagicSelections (canonical spell ID/source/prepared). Keep the
+// T5 display summary correct to isolate T8 RED without bypassing T5.
 // All T1–T7 have run BEFORE this point.
 const t8Fire="00000000-0000-0000-0000-000000000901";
 const t8Ray="00000000-0000-0000-0000-000000000902";
@@ -1067,7 +1069,7 @@ const t8Magic=[{spell_id:t8Fire,source_type:"class",access_type:"class-list",pre
 const t8Summary=(spell=t8Fire,prepared=true)=>[{spell_id:spell,source_type:"class",source_key:"wizard",prepared}];
 const t8Payload=(nonce,summary)=>({
  creation_request_id:nonce,name:"T8 signed Wizard "+nonce.slice(0,8),
- sheet:{...validSheet,classKey:"wizard",startingMagicSelections:summary,
+ sheet:{...validSheet,classKey:"wizard",spells:["Fire Bolt"],startingMagicSelections:summary,
   startingEquipmentSelections:{...validSheet.startingEquipmentSelections}}
 });
 const t8Rpc=(payload)=>rpc(holder,"create_player_character_v3",{
