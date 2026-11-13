@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `35f5af36e28abea3987745c42e68c490c81d6410` |
+| Exact source commit represented by this archive snapshot | `9ecb0649046cee27a77eea99d9b8592129298cc5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): append source-only handoff receipt and explicit untested boundaries |
-| Files changed relative to main | 5 (1 non-docs; 4 docs) |
+| Last source commit title | docs(i2j): preserve read-only exact PG17 source MD5 census of 31 triggers |
+| Files changed relative to main | 6 (1 non-docs; 5 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/integration/I2J_ORIGINAL_31_TRIGGER_SOURCE_FINGERPRINTS_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
@@ -25,6 +25,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/HANDOFF_LOG.md`
 - `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 - `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
+- `docs/integration/I2J_ORIGINAL_31_TRIGGER_SOURCE_FINGERPRINTS_2026-11-12.json`
 - `scripts/validate_i2j_cross_pr_source_lock.mjs`
 
 ## Trust and update procedure
