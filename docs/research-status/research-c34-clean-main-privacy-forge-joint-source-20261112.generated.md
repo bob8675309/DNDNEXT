@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6753f9b3c91f42e048c228514d505e345143a0ea` |
+| Exact source commit represented by this archive snapshot | `ec2c0835ad2fe93910dd02b8caaa104781c13075` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): permit local signed adversarial tag-update probe through original RLS |
+| Last source commit title | test(c34): exercise five additional original triggers with signed positive/negative, deferred rollback and nonce |
 | Files changed relative to main | 26 (23 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
