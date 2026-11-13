@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `371bafe8e128c45a2676b7f9e948a7c9f919ce73` |
+| Exact source commit represented by this archive snapshot | `cb4511b8b8eb691e46fec58a71c4dbeba1773c8b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): request explicit original class A starting-equipment package |
+| Last source commit title | test(c34): signed NPC public-clue/dossier/anon privacy plus explicit six-trigger coverage |
 | Files changed relative to main | 24 (21 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
