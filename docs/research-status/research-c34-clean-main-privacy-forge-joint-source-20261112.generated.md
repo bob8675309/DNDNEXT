@@ -5,19 +5,26 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0d6b42e87749a23483445bf7e01d889e0375ebd2` |
+| Exact source commit represented by this archive snapshot | `5201daceb9de711dc31bbe82815aa6f6ee8a9fec` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): retain first exact-head six-test CI receipt |
-| Files changed relative to main | 12 (9 non-docs; 3 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): import source-exact signed Story/nonce and NPC privacy fixtures from held PRs |
+| Files changed relative to main | 20 (17 non-docs; 3 docs) |
+| Last source commit | 8 files (8 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
+- `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
+- `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
+- `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
+- `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
+- `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
+- `sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql`
+- `sql/candidates/20261109_player_story_complete_intent_i1c_research.sql`
 
 ## Research-branch change inventory versus main
 
@@ -25,6 +32,10 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
+- `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
+- `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
+- `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
 - `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
 - `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
@@ -33,6 +44,10 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
 - `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/validate_source_contract.mjs`
+- `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
+- `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
+- `sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql`
+- `sql/candidates/20261109_player_story_complete_intent_i1c_research.sql`
 
 ## Trust and update procedure
 
