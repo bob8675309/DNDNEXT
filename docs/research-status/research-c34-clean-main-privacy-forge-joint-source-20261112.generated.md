@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `487769f6dd294db784ec174c2c32944d52a3031d` |
+| Exact source commit represented by this archive snapshot | `e72d9ab9fd73dd9bd1b3419a8c68dd9c37b2496a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append exact T5 signed deferred authority and source custody handoff receipt |
+| Last source commit title | docs(c34): separate current T5 active-work pointer from archived historical entries |
 | Files changed relative to main | 34 (30 non-docs; 4 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
