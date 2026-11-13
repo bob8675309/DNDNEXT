@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `6c43af14dd93c940f5e713bbaa6e9d953a1f9cae` |
+| Exact source commit represented by this archive snapshot | `d0f28a98669dfc08c849aaa4491ddf38f39e50be` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(i2j): add offline negative controls and rollback-only SQL shape checks |
-| Files changed relative to main | 16 (10 non-docs; 6 docs) |
+| Last source commit title | ci(i2j): offline source-only tests without DB, secrets or deployment |
+| Files changed relative to main | 17 (11 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,10 +17,11 @@
 
 ## Latest source commit paths
 
-- `scripts/test_i2j_source_lock_and_pg17_probe.mjs`
+- `.github/workflows/i2j-source-lock-static.yml`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/i2j-source-lock-static.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
