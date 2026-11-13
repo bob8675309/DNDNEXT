@@ -1,0 +1,579 @@
+{
+  "schema": "i2j-pr345-reader-compatibility-census-v1",
+  "as_of": "2026-11-12",
+  "repository": "bob8675309/DNDNEXT",
+  "pr345_head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+  "main_head": "6637b14f807ebec79542deb7eef4b2bc3abfb5fd",
+  "scope": "Source-indexed NPC/character_sheets privacy consumers; not all repo usage and not a signed or full-code audit.",
+  "counts": {
+    "runtime_paths": 38,
+    "changed_between_main_and_pr345": 13,
+    "absent_main": 2
+  },
+  "server_rpc_chain": [
+    {
+      "stage": "Stage1",
+      "name": "public.get_npc_profile_visible_v1(uuid)",
+      "effect": "Signed visible/reveal-only projection, original Stage1 version contains unsafe raw-secret optional reveal; must be replaced."
+    },
+    {
+      "stage": "Stage1",
+      "name": "public.get_my_player_characters_v2()",
+      "effect": "Can_edit grants full character+sheet, inventory/convert identity-only; Stage3 supersedes it to remove raw GM secret."
+    },
+    {
+      "stage": "Stage2",
+      "name": "public.get_npc_dossier_admin_v1(uuid)",
+      "effect": "GM-only guarded SECURITY DEFINER, row and original sheet."
+    },
+    {
+      "stage": "Stage2",
+      "name": "public.get_character_editor_narrative_v1(uuid)",
+      "effect": "Can_edit only; no GM secret; role-wide 5-column REVOKE applies even to Admin direct SELECT."
+    },
+    {
+      "stage": "Stage3",
+      "name": "private.can_access_creator_backstory_v1(uuid)",
+      "effect": "True creator provenance plus current can_edit or GM; server-owned trusted definer."
+    },
+    {
+      "stage": "Stage3",
+      "name": "public.can_edit_creator_backstory_v1(uuid)",
+      "effect": "Security invoker capability check; not a creator claim."
+    },
+    {
+      "stage": "Stage3",
+      "name": "public.get_my_player_character_v1()",
+      "effect": "Full editor only, excludes characters.secret."
+    },
+    {
+      "stage": "Stage3",
+      "name": "public.get_my_player_characters_v2()",
+      "effect": "Editor sanitization of characters.secret; inventory-only no sheet."
+    },
+    {
+      "stage": "Stage3",
+      "name": "public.get_npc_profile_visible_v1(uuid)",
+      "effect": "Final safe projection; GM-authored revealed public clue only, never original characters.secret."
+    },
+    {
+      "stage": "Stage3",
+      "name": "public.get_character_secrets_v1(uuid[])/set_character_secret_v1(uuid,text)",
+      "effect": "GM guarded definer; never backfill/clear old GM secrets."
+    },
+    {
+      "stage": "Stage3_then_351",
+      "name": "public.create_player_character_with_private_backstory_v1(...)",
+      "effect": "Stage3 old wrapper REPLACED by #351 Story nonce-aware wrapper; source-original RED changed Story replay preserved."
+    }
+  ],
+  "known_source_conflict": {
+    "item": "Original I2C cannot be sequenced naively with immutable #324",
+    "because": "#324 source gate demands unmodified public v2 MD5 0351f0a00acae023278e1b8b065b00c9 and subsequently replaces public v2 with reservation wrapper. I2C simultaneously requires private reservation table (from #324) while expecting public v2 MD5 0351f0a00acae023278e1b8b065b00c9.",
+    "disposition": "BLOCKED_requires_original_source_specific_v1_patch_and_private_v2_patch_I2D_not_two-stage_blind_concat"
+  },
+  "role_test_pending": [
+    "GM vs editor vs creator+edit vs coeditor vs inventory-only vs convert-only vs outsider vs anon",
+    "visible/hidden NPC and curated public clue vs raw GM secret",
+    "character selection switch while stale sheet/editor cached and then role revoked",
+    "town, inventory and global overlay auth signout or account switch",
+    "player account fallback identity not full sheet, print role safety",
+    "all original 31 triggers simultaneously and original class-spell/gear/merchant negative cases"
+  ],
+  "readers": [
+    {
+      "path": "pages/npcs.js",
+      "pr345_sha": "2e08fa07384958478f323516c4e1b342228bd436",
+      "main_sha": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+      "area": [
+        "gm_editor_identity"
+      ],
+      "expected_contract": [
+        "Selected GM-only dossier vs can_edit editor-narrative RPC; all character-roster SELECTs identity-only; sheet/print editor-gated; selection cache and stale rights must not leak."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "components/NpcPanel.js",
+      "pr345_sha": "606db96649dcdf6646afbd4d24f67a6fc54426eb",
+      "main_sha": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+      "area": [
+        "gm_editor_identity"
+      ],
+      "expected_contract": [
+        "Selected GM-only dossier vs can_edit editor-narrative RPC; all character-roster SELECTs identity-only; sheet/print editor-gated; selection cache and stale rights must not leak."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "components/GlobalNpcProfileOverlay.js",
+      "pr345_sha": "a0e133a7c2446cba3f8c672a1df78f6a5aa73763",
+      "main_sha": null,
+      "area": [
+        "public_identity_profile"
+      ],
+      "expected_contract": [
+        "Safe identity-only table SELECT and restricted Profile-first RPC; GM/creator-private narrative never in roster; logout and account switch close privileged profile."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "components/LocationSideBar.js",
+      "pr345_sha": "a48ba8f85946ce8254b86d0c35ea3aa84fed6ea0",
+      "main_sha": "a48ba8f85946ce8254b86d0c35ea3aa84fed6ea0",
+      "area": [
+        "public_identity_profile"
+      ],
+      "expected_contract": [
+        "Safe identity-only table SELECT and restricted Profile-first RPC; GM/creator-private narrative never in roster; logout and account switch close privileged profile."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/MapPageClient.js",
+      "pr345_sha": "3e6bf39d48de6f28aac90f6bac1400fa9a00bf1f",
+      "main_sha": "61f8738da2ca3d8635b5a413bfdc18c094228a0a",
+      "area": [
+        "public_identity_profile"
+      ],
+      "expected_contract": [
+        "Safe identity-only table SELECT and restricted Profile-first RPC; GM/creator-private narrative never in roster; logout and account switch close privileged profile."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "pages/town/[id].js",
+      "pr345_sha": "22aeb1c18f148ab84e24d1da67b9a2f9d47949ce",
+      "main_sha": "a4e790e5941afb16660a112ee9189e4a84d4afb7",
+      "area": [
+        "public_identity_profile"
+      ],
+      "expected_contract": [
+        "Safe identity-only table SELECT and restricted Profile-first RPC; GM/creator-private narrative never in roster; logout and account switch close privileged profile."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "pages/inventory.js",
+      "pr345_sha": "de0a9e7d787365998a7f08815a330d706bc8f54d",
+      "main_sha": "02d52821d0f22aa82ad92263c5014712906ee385",
+      "area": [
+        "public_identity_profile"
+      ],
+      "expected_contract": [
+        "Safe identity-only table SELECT and restricted Profile-first RPC; GM/creator-private narrative never in roster; logout and account switch close privileged profile."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "components/MerchantPanel.js",
+      "pr345_sha": "22e4d0810603bc0322904573cb5fe0c14bad1f88",
+      "main_sha": "22e4d0810603bc0322904573cb5fe0c14bad1f88",
+      "area": [
+        "public_identity_profile"
+      ],
+      "expected_contract": [
+        "Safe identity-only table SELECT and restricted Profile-first RPC; GM/creator-private narrative never in roster; logout and account switch close privileged profile."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/town/TownCrafterInteractionPanel.js",
+      "pr345_sha": "6be8eb9e041d74f784d136e672c0df9d2d27774d",
+      "main_sha": "345629409b45cd5da5bf305a8124fbbe46ec0d15",
+      "area": [
+        "public_identity_profile"
+      ],
+      "expected_contract": [
+        "Safe identity-only table SELECT and restricted Profile-first RPC; GM/creator-private narrative never in roster; logout and account switch close privileged profile."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/PlayerCharacterProfilePanelUnified.js",
+      "pr345_sha": "d4500ee5aacb11e69bb666b33d587fd8a4b4839a",
+      "main_sha": "8a561e51eafd9e8507db7a4d3f15fd4699d6d1b8",
+      "area": [
+        "player_characters_legacy_fallback"
+      ],
+      "expected_contract": [
+        "Use server get_my_player_characters_v2; identity-only fallback excludes five Stage2-revoked columns; prevent accidental empty player-name match granting sheet."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "components/CreatorBackstoryPanel.js",
+      "pr345_sha": "23b0e86aab7a80b7243365ba107c1d37a5ec5812",
+      "main_sha": null,
+      "area": [
+        "creator_private_story"
+      ],
+      "expected_contract": [
+        "Server creator provenance plus current can_edit; no raw GM secret or client claimed creator; #351 private Story nonce bound to intent; RLS invoker wrapper."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "components/NewNpcModalV3.js",
+      "pr345_sha": "27c8aa95bf95c88adeb80274e7139dbe17270098",
+      "main_sha": "5b4f3cc4e56a0055b57d7ae792ed77c7d3fdcead",
+      "area": [
+        "creator_private_story"
+      ],
+      "expected_contract": [
+        "Server creator provenance plus current can_edit; no raw GM secret or client claimed creator; #351 private Story nonce bound to intent; RLS invoker wrapper."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "verified_direct_client_read_calls_and_pr345_role_gates"
+    },
+    {
+      "path": "components/NpcForgeStepContent.js",
+      "pr345_sha": "a7b17e898c4634aacb98d33ca1db399039866295",
+      "main_sha": "c4899549592e898ebbf5f07a9627c9378afec446",
+      "area": [
+        "creator_private_story"
+      ],
+      "expected_contract": [
+        "Server creator provenance plus current can_edit; no raw GM secret or client claimed creator; #351 private Story nonce bound to intent; RLS invoker wrapper."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/NewNpcModalV2.js",
+      "pr345_sha": "b231b8ea9c31c82d3022c07db6d99d07636edc28",
+      "main_sha": "b231b8ea9c31c82d3022c07db6d99d07636edc28",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterSheetRestSyncBridge.js",
+      "pr345_sha": "7ca66b1f52a2f9278b3e448ea6a800559f3091c0",
+      "main_sha": "7ca66b1f52a2f9278b3e448ea6a800559f3091c0",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "hooks/useNpcSheetActionData.js",
+      "pr345_sha": "61e3acb114c032cd275eb77d4d4c6f245da5ad20",
+      "main_sha": "61e3acb114c032cd275eb77d4d4c6f245da5ad20",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterFeaturesPanel.js",
+      "pr345_sha": "eb761f7497b6ae409edf7ef4c67e702d5e9142d5",
+      "main_sha": "eb761f7497b6ae409edf7ef4c67e702d5e9142d5",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterSpellbookPanel.js",
+      "pr345_sha": "afa86aeb0644ef893a9bd28a8e151847a5ebca2d",
+      "main_sha": "afa86aeb0644ef893a9bd28a8e151847a5ebca2d",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterLevelUpChoices.js",
+      "pr345_sha": "3fa76acd1811a77b0c3e93711906bfb5afb17584",
+      "main_sha": "3fa76acd1811a77b0c3e93711906bfb5afb17584",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterPrimalCompanionPanel.js",
+      "pr345_sha": "e169653fedc64186a097acc522e72e896ede2bcb",
+      "main_sha": "e169653fedc64186a097acc522e72e896ede2bcb",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterAstralTrancePanel.js",
+      "pr345_sha": "83746653aab1f6a95521d26fdf402ceb9b4201c9",
+      "main_sha": "83746653aab1f6a95521d26fdf402ceb9b4201c9",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterCircleLandPanel.js",
+      "pr345_sha": "bb41dd4364239dfbb1360053ac1cbb4676464080",
+      "main_sha": "bb41dd4364239dfbb1360053ac1cbb4676464080",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterDreadAllegiancePanel.js",
+      "pr345_sha": "466ff2cdcbb00d101d70da5193a57eb825b941b8",
+      "main_sha": "466ff2cdcbb00d101d70da5193a57eb825b941b8",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterFiendishResiliencePanel.js",
+      "pr345_sha": "23f3c734ceaea3b6307be4f9a55ab94080f36a42",
+      "main_sha": "23f3c734ceaea3b6307be4f9a55ab94080f36a42",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterEladrinRuntimePanel.js",
+      "pr345_sha": "1efd5494838267a18af8fe1ebb59c1a0ad67f496",
+      "main_sha": "1efd5494838267a18af8fe1ebb59c1a0ad67f496",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterSpeciesRestProficiencyPanel.js",
+      "pr345_sha": "7fe18fbda8e26daafe978df27f3578fcfc622367",
+      "main_sha": "7fe18fbda8e26daafe978df27f3578fcfc622367",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterSpeciesReplaceableCantripPanel.js",
+      "pr345_sha": "b52d661a7e2deb33ac5e73f008bf140cbc68c233",
+      "main_sha": "b52d661a7e2deb33ac5e73f008bf140cbc68c233",
+      "area": [
+        "full_sheet_editor_revalidation"
+      ],
+      "expected_contract": [
+        "All raw character_sheets.sheet reads/updates must fail closed under Stage1 editor-only RLS; role transitions, stale data and operation responses require signed tests."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/CharacterVisualsPanel.js",
+      "pr345_sha": "1dd6e267836152e30052148a2b759bda0e5935d6",
+      "main_sha": "1dd6e267836152e30052148a2b759bda0e5935d6",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/PortraitPickerModal.js",
+      "pr345_sha": "0b825c8196c45a7500026f7a4a98d705d7900fb7",
+      "main_sha": "0b825c8196c45a7500026f7a4a98d705d7900fb7",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/NpcForgeEquipmentStep.js",
+      "pr345_sha": "9269c554d80fb1b02afd571d51f8d626e2a89c50",
+      "main_sha": "9269c554d80fb1b02afd571d51f8d626e2a89c50",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "components/NpcForgeCoreSupport.js",
+      "pr345_sha": "985bd6bb9bcf7d6345c86e9c72a30e8ce5a9b0f7",
+      "main_sha": "985bd6bb9bcf7d6345c86e9c72a30e8ce5a9b0f7",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "pages/admin.js",
+      "pr345_sha": "1ba76a20bfa87934d7e504c056c4770ad1b3a92a",
+      "main_sha": "1ba76a20bfa87934d7e504c056c4770ad1b3a92a",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "pages/admin/character-visuals.js",
+      "pr345_sha": "7c11034147a994a55a0a77971241a4ae54955120",
+      "main_sha": "7c11034147a994a55a0a77971241a4ae54955120",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "pages/encounters/live.js",
+      "pr345_sha": "6b62a759f5b54e3700876ccdde6f11c7401c4ef7",
+      "main_sha": "6b62a759f5b54e3700876ccdde6f11c7401c4ef7",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "pages/encounters/smoke.js",
+      "pr345_sha": "9228a30aad5c50fd108a15d3ee009299ded8c34d",
+      "main_sha": "9228a30aad5c50fd108a15d3ee009299ded8c34d",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "pages/encounters/multiplayer-smoke.js",
+      "pr345_sha": "a417e4a3cf8b09282174f19c4378aa1091ce5ddc",
+      "main_sha": "a417e4a3cf8b09282174f19c4378aa1091ce5ddc",
+      "area": [
+        "nonprivate_roster_and_admin_visuals"
+      ],
+      "expected_contract": [
+        "Explicit safe identity/portrait/role selections; no direct lore columns or wildcard characters SELECT; Admin flag alone must not bypass GM-only RPCs."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "pages/_app.js",
+      "pr345_sha": "5a1981d58af0f0b99519538093157d27a0d60d35",
+      "main_sha": "e5f68c0abb293089d6ad09d4e3e4035612eac598",
+      "area": [
+        "entrypoint_and_print"
+      ],
+      "expected_contract": [
+        "Overlay installed once with role teardown; printable output must not include unrevealed GM secret, editor-only Story or full sheet of inventory-only holder."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    },
+    {
+      "path": "utils/officialCharacterSheetPdf.js",
+      "pr345_sha": "c3ba3651e2e3d8aafbae3b4ad195d53ee25199f0",
+      "main_sha": "a11c3432b40aa938c572d543ecb2e9316878cce2",
+      "area": [
+        "entrypoint_and_print"
+      ],
+      "expected_contract": [
+        "Overlay installed once with role teardown; printable output must not include unrevealed GM secret, editor-only Story or full sheet of inventory-only holder."
+      ],
+      "status": "PINNED_READER_INVENTORY_ROLE_TEST_PENDING",
+      "inspection": "indexed_original_pr345_reader_and_partial_callsite_inspection"
+    }
+  ]
+}
