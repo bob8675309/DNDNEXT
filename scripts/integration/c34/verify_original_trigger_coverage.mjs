@@ -24,7 +24,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql",
   "scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql",
   "scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql",
-  "scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql"
+  "scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql",
+  "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -52,6 +53,7 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   assert.equal(new Set(records.map(x=>x.name)).size,31,"Original trigger names must be unique");
 
   const staged=[];
+  const downstream=[];
   for(const file of sourceFixturePaths){
     const source=read(file).toString("utf8").replace(/\/\*[\s\S]*?\*\//g,"")
       .replace(/^\s*--[^\n]*$/gm,"");
@@ -60,10 +62,32 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
       const ddl=m[0],body=m[3];
       const table=/\bON\s+(?:public\.)?(character_progression|character_sheets|characters|inventory_items)\b/i.exec(body)?.[1];
       const handler=/\bEXECUTE\s+FUNCTION\s+(?:private\.|public\.)?([a-z_0-9]+)\s*\(/i.exec(body)?.[1];
+      if(!table && file==="scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql"){
+        const grantTable=/\bON\s+(?:public\.)?(character_option_grant_instances|character_option_grants)\b/i.exec(body)?.[1];
+        assert.ok(grantTable&&handler,"C34-T6 grant-table trigger requires exact original table and handler: "+m[2]);
+        downstream.push({name:m[2],table:grantTable,handler,file});
+        continue;
+      }
       assert.ok(table&&handler,"Cannot ground exact table and handler for "+m[2]);
       staged.push({name:m[2],table,handler,timing:/DEFERRABLE\s+INITIALLY\s+DEFERRED/i.test(ddl)?"Deferred":"Immediate",file});
     }
   }
+  const expectedDownstream=new Map([
+    ["character_option_grant_instances_direct_authority_guard_v1","character_option_grant_instances|guard_direct_character_authority_mutation_v1"],
+    ["character_option_grants_direct_authority_guard_v1","character_option_grants|guard_direct_character_authority_mutation_v1"],
+    ["character_option_grant_instance_boon_energy_resistance_v1","character_option_grant_instances|materialize_boon_energy_resistance_instance_v1"],
+    ["character_option_grant_instance_cartomancer_v1","character_option_grant_instances|materialize_cartomancer_instance_v1"],
+    ["character_option_grant_instance_feat_runtime_expertise_v1","character_option_grant_instances|materialize_feat_runtime_expertise_instance_v1"]
+  ]);
+  assert.equal(downstream.length,5,"C34-T6 must preserve all five original downstream grant-table triggers");
+  for(const t of downstream){
+    const expected=expectedDownstream.get(t.name);
+    assert.ok(expected,"Unexpected original grant-table trigger: "+t.name);
+    assert.equal(t.table+"|"+t.handler,expected,
+      "C34-T6 exact grant-table handler/table mismatch for "+t.name);
+    expectedDownstream.delete(t.name);
+  }
+  assert.equal(expectedDownstream.size,0,"C34-T6 missing original grant-table triggers");
   const byName=new Map();
   for(const t of staged){
     assert.ok(!byName.has(t.name),"Duplicate staged trigger: "+t.name);
@@ -113,15 +137,16 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "Unaccounted/renamed trigger in verified source fixtures");
   return {originalTotal:31,originalByTable:originals,stagedOriginalCount:integrated.length,
     originalMissingCount:absent.length,proposedPrivacyCount:newHeld.length,
-    totalStaged:staged.length,originalStaged:integrated,originalMissing:absent,
+    totalStaged:staged.length,downstreamGrantTriggerCount:downstream.length,originalStaged:integrated,originalMissing:absent,
     proposedPrivacy:newHeld,sourceOriginalCensusSha:originalSha,
     assurance:"SOURCE_DDL_ONLY_NOT_ALL_BRANCHES_TESTED"};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,14,"C34 T5 expected 14/31 original DDL, not full parity");
- assert.equal(r.originalMissingCount,17);
- assert.equal(r.totalStaged,16);
+ assert.equal(r.stagedOriginalCount,15,"C34 T6 expected 15/31 original DDL, not full parity");
+ assert.equal(r.originalMissingCount,16);
+ assert.equal(r.totalStaged,17);
+ assert.equal(r.downstreamGrantTriggerCount,5);
  console.log("PASS C34-31CENSUS: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
