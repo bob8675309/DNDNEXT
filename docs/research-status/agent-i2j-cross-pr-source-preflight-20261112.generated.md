@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `99c834fb337891bf60533129cba75fa9bb9fb550` |
+| Exact source commit represented by this archive snapshot | `17aa6b318ed0f416d359d05071a4bc0526234392` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): attach exact signed v1-source repair receipt while preserving blocked full I2C |
+| Last source commit title | docs(i2j): reflect signed v1/I2D compatibility and remaining 31-trigger gate |
 | Files changed relative to main | 28 (20 non-docs; 8 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
+- `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
 
 ## Research-branch change inventory versus main
 
