@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dd66d0907ca775e807ab088b638be088389b6403` |
+| Exact source commit represented by this archive snapshot | `2ce0dd40ed1bf39bedf8fff11029b58580a6bc14` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-identical original sprite, Mog and levelup trigger fixtures from held PR #345 |
-| Files changed relative to main | 31 (27 non-docs; 4 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): join original sprite, Mog and levelup guards without world-map movement changes |
+| Files changed relative to main | 32 (28 non-docs; 4 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
-- `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
-- `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
+- `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -37,6 +35,7 @@
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
+- `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
