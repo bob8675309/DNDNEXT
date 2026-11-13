@@ -5,7 +5,7 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `96323c6474b164e0aaed74c7eb17159958bdef8f` |
+| Exact source commit represented by this archive snapshot | `738a2c4b4e43e82a67c5a64928d102be8a7f1b5b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
 | Last source commit title | test(c34): verify 14/31 original deferred authority, unchanged helper/view source and mutation negatives |
 | Files changed relative to main | 34 (30 non-docs; 4 docs) |
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
