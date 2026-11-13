@@ -23,7 +23,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql",
   "scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql",
   "scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql",
-  "scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql"
+  "scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql",
+  "scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -85,6 +86,26 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   ].join("\n");
   assert.ok(fighterSubclassDdl.includes(originalFighterEvent),
     "C34 T4 must retain exact original Fighter subclass BEFORE INSERT event and row handler");
+  const authorityDdl=read("scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql").toString("utf8");
+  const authorityEvent=[
+    "CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_authority_v1",
+    " AFTER INSERT OR UPDATE OF class_id, class_level ON public.character_progression",
+    " DEFERRABLE INITIALLY DEFERRED FOR EACH ROW",
+    " EXECUTE FUNCTION private.validate_player_forge_authority_payload_v1();"
+  ].join("\n");
+  assert.ok(authorityDdl.includes(authorityEvent),
+    "C34 T5 must retain exact original deferred progression authority event and row handler");
+
+  // Prove original preferred-view definitions have not been reinterpreted or
+  // rewritten in C34's compatibility-only adapter (source-original J31).
+  const originalFixture=read("scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql").toString("utf8");
+  const viewStart="CREATE VIEW public.character_option_catalog_all_preferred AS";
+  const viewEnd="-- Deliberate isolated XPHB catalog entries";
+  const start=originalFixture.indexOf(viewStart),end=originalFixture.indexOf(viewEnd,start);
+  assert.ok(start>0 && end>start,"J31 original preferred views extraction markers lost");
+  const sourceViews=originalFixture.slice(start,end).trim();
+  assert.ok(authorityDdl.includes(sourceViews),
+    "C34 T5 original option catalog preferred VIEW definitions drifted from held #324");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -98,9 +119,9 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,13,"C34 T4 expected 13/31 original DDL, not full parity");
- assert.equal(r.originalMissingCount,18);
- assert.equal(r.totalStaged,15);
+ assert.equal(r.stagedOriginalCount,14,"C34 T5 expected 14/31 original DDL, not full parity");
+ assert.equal(r.originalMissingCount,17);
+ assert.equal(r.totalStaged,16);
  console.log("PASS C34-31CENSUS: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
