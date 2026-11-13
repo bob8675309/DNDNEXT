@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `70045c2859d39a2a3719b60192dbb4915d7c4206` |
+| Exact source commit represented by this archive snapshot | `82ddad432ee58dced9dfeef95aeff64618d278d0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): prove exact-source and nonrelease negative gates |
-| Files changed relative to main | 8 (8 non-docs; 0 docs) |
+| Last source commit title | ci(c34): run free exact-blob and fail-closed nonrelease tests |
+| Files changed relative to main | 9 (9 non-docs; 0 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,10 +17,11 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-c34-joint-source-research.yml`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
 - `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
 - `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
