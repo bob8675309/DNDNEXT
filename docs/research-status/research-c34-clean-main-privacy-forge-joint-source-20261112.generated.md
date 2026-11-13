@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e72d9ab9fd73dd9bd1b3419a8c68dd9c37b2496a` |
+| Exact source commit represented by this archive snapshot | `1956c4fd93c43ab4592fb89d277855290ac88067` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): separate current T5 active-work pointer from archived historical entries |
-| Files changed relative to main | 34 (30 non-docs; 4 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): install original #324 feat grants, replace only validated empty local stub |
+| Files changed relative to main | 35 (31 non-docs; 4 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -36,6 +36,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
+- `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
 - `scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql`
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
