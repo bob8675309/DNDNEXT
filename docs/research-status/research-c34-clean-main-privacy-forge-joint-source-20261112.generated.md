@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `620e1696833c54372494a5692d7c6acb220dce29` |
+| Exact source commit represented by this archive snapshot | `97cf35b35fbdcd8942008f139f52ed837d4bda07` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): avoid T4 legacy Champion declaration collision with T1 inventory fixture |
+| Last source commit title | test(c34): enforce original Fighter subclass BEFORE INSERT event in static source audit |
 | Files changed relative to main | 33 (29 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
