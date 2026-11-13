@@ -122,5 +122,9 @@ BEGIN
     AND t.tgdeferrable AND t.tginitdeferred)
  THEN RAISE EXCEPTION 'C34-T2 original sheet validator is not deferred'; END IF;
 END $c34_t2_post$;
+-- Test-only probe privilege. Existing source-shaped RLS still checks can_edit;
+-- original before-trigger must reject the protected tags UPDATE with SQLSTATE 42501.
+-- This grant is deliberately absent from application migrations / main.
+GRANT UPDATE(tags) ON public.characters TO authenticated;
 NOTIFY pgrst,'reload schema';
 \echo 'PASS C34-T2-SETUP: five source-exact originals loaded post-T1; nine original/31 + two new privacy, eleven total'
