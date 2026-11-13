@@ -152,6 +152,63 @@ assert.ifError(allowedAdminItem.error);
 assert.ok(allowedAdminItem.data.id,"original Admin character inventory writes must survive");
 console.log("PASS C34-GREEN03: normal personal inventory and Admin character item insertion retained");
 
+const safeProfile=await stale.client.rpc("get_npc_profile_visible_v1",{
+  p_character_id:characterId
+});
+assert.ifError(safeProfile.error);
+assert.equal(safeProfile.data?.name,"C34 synthetic original inventory NPC");
+assert.ok(!JSON.stringify(safeProfile.data).includes("C34_GM_SECRET_STAYS_PRIVATE"),
+  "visible player-safe Profile must never read original GM-only secret");
+const deniedDossier=await stale.client.rpc("get_npc_dossier_admin_v1",{
+  p_character_id:characterId
+});
+rejected(deniedDossier,"non-GM dossier access","42501");
+const gmDossier=await admin.client.rpc("get_npc_dossier_admin_v1",{
+  p_character_id:characterId
+});
+assert.ifError(gmDossier.error);
+assert.equal(gmDossier.data.secret,"C34_GM_SECRET_STAYS_PRIVATE",
+  "original GM-only dossier remains available to Admin");
+const publishedClue="C34 only GM-published clue is visible";
+const revealed=await admin.client.from("character_public_secret_revelations").insert({
+  character_id:characterId,public_text:publishedClue,is_revealed:true
+}).select("character_id").single();
+assert.ifError(revealed.error);
+assert.equal(revealed.data.character_id,characterId);
+const publicProfile=await stale.client.rpc("get_npc_profile_visible_v1",{
+  p_character_id:characterId
+});
+assert.ifError(publicProfile.error);
+assert.equal(publicProfile.data?.lore?.secret,publishedClue);
+assert.ok(!JSON.stringify(publicProfile.data).includes("C34_GM_SECRET_STAYS_PRIVATE"));
+const forgedClue=await stale.client.from("character_public_secret_revelations")
+  .update({public_text:"C34 forged outsider clue"})
+  .eq("character_id",characterId).select("character_id");
+assert.ok(forgedClue.error || forgedClue.data?.length===0,
+ "non-GM authenticated user cannot publish or overwrite GM clues");
+assert.equal(sql("SELECT public_text FROM public.character_public_secret_revelations WHERE character_id="+quote(characterId)),
+ publishedClue);
+const anonymous=makeClient();
+const anonProfile=await anonymous.rpc("get_npc_profile_visible_v1",{
+  p_character_id:characterId
+});
+assert.ok(anonProfile.error,"anonymous role cannot call protected NPC Profile");
+const anonItems=await anonymous.from("inventory_items").select("id").eq("id",holderItem);
+assert.ok(anonItems.error,"anonymous role has no inventory table SELECT");
+console.log("PASS C34-GREEN05: safe NPC Profile, Admin-only dossier, GM-published clue, outsider/anon denial retain separation");
+const selectedSourceTriggers=Number(sql(
+  "SELECT count(*) FROM pg_trigger WHERE NOT tgisinternal AND tgname IN ("+
+  "'characters_capture_creator_at_insert_v1','characters_guard_player_gm_secret_at_insert_v1',"+
+  "'character_progression_materialize_player_forge_starting_equipme',"+
+  "'sync_character_progression_from_sheet_v1',"+
+  "'inventory_items_apply_structured_crafting_traits_v1',"+
+  "'zz_inventory_items_apply_smithing_affinity_polish_v4')"
+));
+assert.equal(selectedSourceTriggers,6,
+ "C34 must prove exactly six specified source-original triggers are jointly installed");
+console.log("PASS C34-GREEN06: six selected source-original triggers co-reside; 31/31 production graph NOT established");
+
+
 // Demonstrate the narrow preserved #319 nonempty historical account snapshot,
 // while #324 Forge writes the real canonical per-character character_sheets.
 const preservedAccount='{"c34_legacy_sheet_frozen":true,"source":"ORIGINAL_NONEMPTY"}';
@@ -165,6 +222,11 @@ assert.ifError(created.error);
 assert.match(created.data,/^[0-9a-f-]{36}$/i);
 assert.equal(one("public.characters","creation_request_id="+quote(freshNonce)),1);
 assert.equal(one("public.character_sheets","character_id="+quote(created.data)),1);
+const unrelatedSheet=await stale.client.from("character_sheets").select("sheet")
+  .eq("character_id",created.data);
+assert.ifError(unrelatedSheet.error);
+assert.equal(unrelatedSheet.data.length,0,
+ "unrelated signed user cannot read an original Forge canonical full sheet");
 assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
   "ORIGINAL_NONEMPTY","historical nonempty account sheet source must remain frozen");
 assert.equal(sql("SELECT sheet->>'c34_legacy_sheet_frozen' FROM public.players WHERE user_id="+quote(holder.id)),
