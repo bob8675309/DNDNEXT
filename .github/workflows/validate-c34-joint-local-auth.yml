@@ -45,6 +45,7 @@ jobs:
       - name: Check exact source provenance and local-only JS syntax
         run: |
           node scripts/integration/c34/validate_source_contract.mjs --json
+          node scripts/integration/c34/validate_joint_fixture_blobs.mjs
           node --check scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs
           node --check scripts/integration/c34/test_joint_pg17_local_auth.mjs
           node --test scripts/integration/c34/test_source_contract.mjs
