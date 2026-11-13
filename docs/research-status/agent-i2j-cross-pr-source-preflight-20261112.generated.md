@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `1eb0ea9ec6bee5dce3370cd22d669475aa0ced31` |
+| Exact source commit represented by this archive snapshot | `99c834fb337891bf60533129cba75fa9bb9fb550` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): record verified 11/11 signed original v1 RED and immutable v2 green acceptance |
+| Last source commit title | docs(i2j): attach exact signed v1-source repair receipt while preserving blocked full I2C |
 | Files changed relative to main | 28 (20 non-docs; 8 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/integration/I2J_V1_OPTION_A_SIGNED_RESEARCH_2026-11-12.md`
+- `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 
 ## Research-branch change inventory versus main
 
