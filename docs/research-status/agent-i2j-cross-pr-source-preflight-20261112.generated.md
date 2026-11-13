@@ -5,19 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `1fd7e86ba48e04035651e39659c58c503c10f468` |
+| Exact source commit represented by this archive snapshot | `23c758d95841bd9e20361a27dd4a54f3143ea2a6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): append exact source-audit, rollback CI and blocked-order handoff receipt |
-| Files changed relative to main | 18 (11 non-docs; 7 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(i2j): pin exact original v1 signup and isolated PG17 source fixtures |
+| Files changed relative to main | 22 (15 non-docs; 7 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
+- `scripts/fixtures/i2j/pinned/forge_creation_replay_local_auth_pg17.sql`
+- `scripts/fixtures/i2j/pinned/i2c_original_creation_signup_shared_forge_pg17.sql`
+- `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -29,13 +32,17 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/integration/I2J_NPC_PRIVACY_CONSUMER_AUDIT_2026-11-12.md`
 - `docs/integration/I2J_ORIGINAL_31_TRIGGER_SOURCE_FINGERPRINTS_2026-11-12.json`
 - `docs/integration/I2J_PR345_NPC_PRIVACY_READER_CROSSWALK_2026-11-12.json`
+- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/i2j/pinned/20261104_gm_vs_player_backstory_secrets_stage3.sql`
 - `scripts/fixtures/i2j/pinned/20261104_npc_gm_dossier_column_acl_stage2.sql`
 - `scripts/fixtures/i2j/pinned/20261104_npc_player_safe_profile_rls_v1.sql`
 - `scripts/fixtures/i2j/pinned/20261109_player_story_complete_intent_i1c_research.sql`
 - `scripts/fixtures/i2j/pinned/README.md`
+- `scripts/fixtures/i2j/pinned/forge_creation_replay_local_auth_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2c_option_a_creator_identity_only_scratch_pg17.sql`
+- `scripts/fixtures/i2j/pinned/i2c_original_creation_signup_shared_forge_pg17.sql`
 - `scripts/fixtures/i2j/pinned/i2d_option_a_private_forge_source_scratch_pg17.sql`
+- `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/release/i2j_disposable_privacy_composition.mjs`
 - `scripts/test_i2j_source_lock_and_pg17_probe.mjs`
 - `scripts/validate_i2j_cross_pr_source_lock.mjs`
