@@ -114,9 +114,12 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
  const truncated=auditTriggerCoverage(file=>{
    const raw=fs.readFileSync(path.join(root,file));
    if(file!=="scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql") return raw;
-   const changed=raw.toString("utf8").replace(
-     /CREATE TRIGGER characters_guard_player_tags_v1\\s+[\\s\\S]*?EXECUTE FUNCTION private\\.guard_player_character_tag_update_v1\\(\\);/,
-     "-- OMITTED TEST TRIGGER FOR NEGATIVE ONLY");
+   const source=raw.toString("utf8");
+   const start=source.indexOf("CREATE TRIGGER characters_guard_player_tags_v1\n");
+   const tail="EXECUTE FUNCTION private.guard_player_character_tag_update_v1();";
+   const stop=source.indexOf(tail,start);
+   assert.ok(start>0 && stop>start,"expected live-original trigger DDL in C34 fixture");
+   const changed=source.slice(0,start)+"-- OMITTED ORIGINAL TRIGGER NEGATIVE\n"+source.slice(stop+tail.length);
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
