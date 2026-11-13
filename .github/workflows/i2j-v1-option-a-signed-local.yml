@@ -1,0 +1,101 @@
+name: I2J v1 Option A immutable Forge signed disposable PG17
+on:
+  push:
+    branches:
+      - 'agent/i2j-*'
+    paths:
+      - '.github/workflows/i2j-v1-option-a-signed-local.yml'
+      - 'scripts/fixtures/i2j/**'
+      - 'scripts/fixtures/i2j_v1_option_a_identity_only_after_immutable_pg17.sql'
+      - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
+      - 'scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql'
+      - 'scripts/test_i2j_v1_option_a_after_immutable_local_auth.mjs'
+      - 'scripts/release/i2j_compose_v1_original_setup.mjs'
+      - 'sql/candidates/20261105_player_creation_immutable_intent_v1.sql'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  i2j-v1-signed-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      GITHUB_ACTIONS: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '55622'
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGAPPNAME: dndnext-i2j-v1-local
+      DNDNEXT_I2J_V1_CONFIRM: DISPOSABLE_ONLY_V1_AFTER_IMMUTABLE
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Source/static preflight
+        run: |
+          node --check scripts/release/i2j_compose_v1_original_setup.mjs
+          node --check scripts/test_i2j_v1_option_a_after_immutable_local_auth.mjs
+          node scripts/release/i2j_compose_v1_original_setup.mjs --check
+          node scripts/validate_i2j_cross_pr_source_lock.mjs
+      - name: Install pinned app dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Create completely isolated local PG17 and genuine GoTrue configuration
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/i2j-v1-local/supabase"
+          cat > "$RUNNER_TEMP/i2j-v1-local/supabase/config.toml" <<'TOML'
+          project_id = "i2j-v1-option-a-immutable-local-only"
+          [api]
+          port = 55621
+          [db]
+          port = 55622
+          shadow_port = 55620
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local PG17, GoTrue, PostgREST
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/i2j-v1-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Original Stage1-3, immutable v2/v3, #351 Story, v1 source RED and scratch GREEN
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '55622'
+          test "$PGDATABASE" = 'postgres'
+          test "$PGAPPNAME" = 'dndnext-i2j-v1-local'
+          test "$DNDNEXT_I2J_V1_CONFIRM" = DISPOSABLE_ONLY_V1_AFTER_IMMUTABLE
+          (cd "$RUNNER_TEMP/i2j-v1-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i2j-v1-local-env"
+          set -a
+          source "$RUNNER_TEMP/i2j-v1-local-env"
+          set +a
+          export DNDNEXT_I2J_V1_LOCAL_URL='http://127.0.0.1:55621'
+          export DNDNEXT_I2J_V1_ANON_KEY="$ANON_KEY"
+
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 -f scripts/fixtures/i2j/pinned/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/i2j/pinned/20261104_npc_player_safe_profile_rls_v1.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/i2j/pinned/20261104_npc_gm_dossier_column_acl_stage2.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/i2j/pinned/20261104_gm_vs_player_backstory_secrets_stage3.sql
+          psql -X -v ON_ERROR_STOP=1 -f sql/candidates/20261105_player_creation_immutable_intent_v1.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/i2j/pinned/20261109_player_story_complete_intent_i1c_research.sql
+          node scripts/release/i2j_compose_v1_original_setup.mjs --out "$RUNNER_TEMP/i2j-v1-source-original.sql"
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/i2j-v1-source-original.sql"
+          node scripts/test_i2j_v1_option_a_after_immutable_local_auth.mjs
+      - name: Stop and discard all local DB/auth services
+        if: always()
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/i2j-v1-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
