@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T2-S01 exact original production census counts 9/31, not 11/31", () => {
+test("C34-T3-S01 original production census counts 12/31, not 14/31", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,9);
- assert.equal(r.originalMissingCount,22);
+ assert.equal(r.stagedOriginalCount,12);
+ assert.equal(r.originalMissingCount,19);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,11);
+ assert.equal(r.totalStaged,14);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
 });
 
@@ -123,7 +123,7 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,9);
- assert.equal(truncated.stagedOriginalCount,8);
- assert.equal(truncated.originalMissingCount,23);
+ assert.equal(original.stagedOriginalCount,12);
+ assert.equal(truncated.stagedOriginalCount,11);
+ assert.equal(truncated.originalMissingCount,20);
 });
