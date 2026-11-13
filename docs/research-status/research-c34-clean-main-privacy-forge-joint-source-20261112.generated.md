@@ -5,7 +5,7 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d7588120528988d76287399c209b2a0914332ba3` |
+| Exact source commit represented by this archive snapshot | `4c1d65d4f527117d9ad80d57b132fbe611961850` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
 | Last source commit title | test(c34): pin source-original Fighter subclass and count 13/31 plus 2 held privacy |
 | Files changed relative to main | 33 (29 non-docs; 4 docs) |
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
