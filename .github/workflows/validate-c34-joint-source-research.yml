@@ -27,6 +27,7 @@ jobs:
         run: |
           node scripts/integration/c34/validate_source_contract.mjs --json
           node scripts/integration/c34/validate_joint_fixture_blobs.mjs
+          node scripts/integration/c34/verify_original_trigger_coverage.mjs
       - name: Run static and negative regression tests
         run: node --test scripts/integration/c34/test_source_contract.mjs
       - name: Assert this research cannot pass as a release candidate
