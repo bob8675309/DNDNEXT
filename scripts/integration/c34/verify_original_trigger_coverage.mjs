@@ -77,6 +77,10 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     assert.equal(t.timing,o.timing,"Timing/deferral mismatch for original trigger "+o.name);
     integrated.push(o.name);
   }
+  const fighterSubclassDdl=read("scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql").toString("utf8");
+  assert.match(fighterSubclassDdl,
+    /^CREATE TRIGGER character_progression_apply_forge_subclass_v1\\s+BEFORE INSERT ON public\\.character_progression\\s+FOR EACH ROW EXECUTE FUNCTION private\\.apply_character_forge_subclass_choice_v1\\(\\);/im,
+    "C34 T4 must retain exact original Fighter subclass BEFORE INSERT event and row handler");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
