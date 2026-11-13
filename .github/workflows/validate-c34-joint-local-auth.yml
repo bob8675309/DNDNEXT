@@ -92,5 +92,7 @@ jobs:
       - name: Discard local databases and credentials
         if: always()
         run: |
-          cd "$RUNNER_TEMP/c34-original-joint"
-          npx --yes supabase@2.120.0 stop --no-backup || true
+          if test -d "$RUNNER_TEMP/c34-original-joint/supabase"; then
+            cd "$RUNNER_TEMP/c34-original-joint"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          fi
