@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `460ca56fcbff054ca273d8c23bc58127e0f53ad9` |
+| Exact source commit represented by this archive snapshot | `65c58a412f8ed8587668f900703c40733774c2c4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record 12/31 source-original trigger signed T2/T3 receipts and correct 4+2 initial census |
+| Last source commit title | docs(c34): switch active bounded task to 17 remaining progression originals; world-map triggers held |
 | Files changed relative to main | 32 (28 non-docs; 4 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
