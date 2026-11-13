@@ -205,8 +205,8 @@ const selectedSourceTriggers=Number(sql(
   "'zz_inventory_items_apply_smithing_affinity_polish_v4')"
 ));
 assert.equal(selectedSourceTriggers,6,
- "C34 must prove exactly six specified source-original triggers are jointly installed");
-console.log("PASS C34-GREEN06: six selected source-original triggers co-reside; 31/31 production graph NOT established");
+ "C34 must prove four original production triggers plus two HELD NPC privacy triggers");
+console.log("PASS C34-GREEN06: 4/31 original deployed Forge triggers + 2 proposed NPC privacy triggers co-reside; no 31/31 claim");
 
 
 // Demonstrate the narrow preserved #319 nonempty historical account snapshot,
@@ -245,3 +245,137 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.ok(Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1"))>=nonceCountBefore+1);
 console.log("PASS C34-GREEN04: signed original v3 + real nonce + deferred equipment materializer + nonempty legacy snapshot + GM secret/stock preservation");
 console.log("C34 SIGNED JOIN PASS: genuine PG17/GoTrue source-original subset, NOT full 31-trigger or production acceptance");
+
+ 
+// T2 begins only after the already-green full signed I1C + C34 inventory suite.
+// Adds five original live triggers while preserving *all* earlier acceptance.
+sqlFile("scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql");
+const originalTriggerNames=[
+  "character_progression_materialize_player_forge_starting_equipme",
+  "sync_character_progression_from_sheet_v1",
+  "inventory_items_apply_structured_crafting_traits_v1",
+  "zz_inventory_items_apply_smithing_affinity_polish_v4",
+  "character_sheets_validate_player_forge_starting_equipment_v1",
+  "character_sheets_authority_fields_guard_v1",
+  "character_sheets_sync_player_tags_v1",
+  "characters_guard_player_tags_v1",
+  "sync_character_portrait_library_id_v1"
+];
+const privacyTriggerNames=[
+  "characters_capture_creator_at_insert_v1",
+  "characters_guard_player_gm_secret_at_insert_v1"
+];
+for (const triggerName of [...originalTriggerNames,...privacyTriggerNames]) {
+  assert.match(triggerName,/^[a-z_]+[a-z0-9_]*$/i);
+  assert.equal(one("pg_trigger","tgname='"+triggerName+"' AND NOT tgisinternal AND tgenabled='O'"),1,
+    "T2 requires one enabled source-original or explicitly held privacy trigger: "+triggerName);
+}
+assert.equal(originalTriggerNames.length,9);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' "+
+ "AND c.relname IN ('character_progression','character_sheets','characters','inventory_items')")),11);
+const deferredDdl=sql("SELECT pg_get_triggerdef(t.oid,true) FROM pg_trigger t "+
+ "WHERE t.tgrelid='public.character_sheets'::regclass "+
+ "AND t.tgname='character_sheets_validate_player_forge_starting_equipment_v1'");
+assert.match(deferredDdl,/DEFERRABLE INITIALLY DEFERRED/);
+console.log("PASS C34-T2-01: nine exact original deployed trigger names + two proposed NPC privacy triggers, with preserved deferral");
+
+const portraitId=randomUUID(),portraitPath="c34/source-verified/library-"+randomUUID()+".png";
+sql("INSERT INTO public.npc_portrait_library(id,is_active,storage_path,public_url,name,sort_order) VALUES("+
+ quote(portraitId)+",true,'"+portraitPath+"','https://example.invalid/c34-portrait.png','C34 tested library',1)");
+
+const signedNonce=randomUUID();
+const validSheet={
+  classKey:"fighter",level:1,background:"Soldier",
+  meta:{backgroundSource:"XPHB"},
+  startingEquipmentSelections:{
+    mode:"package",ruleset:"vanilla",classOption:"A",
+    backgroundId:"00000000-0000-0000-0000-000000009150",backgroundOption:"A",choices:{}
+  }
+};
+const signedPayload={
+  creation_request_id:signedNonce,
+  name:"C34 T2 original sheet and portrait "+signedNonce.slice(0,8),
+  portrait_source:"library",
+  portrait_storage_path:portraitPath,
+  portrait_url:"https://example.invalid/c34-portrait.png",
+  sheet:validSheet
+};
+const successful=await rpc(holder,"create_player_character_v3",{
+  p_payload:signedPayload,p_spell_choices:[],p_magic_selections:[]
+});
+assert.ifError(successful.error);
+assert.match(successful.data,/^[0-9a-f-]{36}$/i);
+const secondId=successful.data;
+assert.equal(one("public.characters","creation_request_id="+quote(signedNonce)),1);
+assert.equal(one("public.character_sheets","character_id="+quote(secondId)),1);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(secondId)),1);
+assert.equal(sql("SELECT portrait_library_id::text FROM public.characters WHERE id="+quote(secondId)),
+  portraitId,"Original BEFORE-INSERT portrait sync must resolve the active source library");
+const derivedTags=sql("SELECT array_to_string(tags,',') FROM public.characters WHERE id="+quote(secondId));
+assert.ok(derivedTags.split(",").includes("player-character"),"Player tag remains");
+assert.ok(derivedTags.split(",").includes("class:fighter"),"Original sheet-to-tags sync derives class");
+assert.ok(derivedTags.split(",").includes("background:soldier"),"Original sheet-to-tags sync derives background");
+console.log("PASS C34-T2-02: signed Forge+original deferred Background validator+original sheet tag sync+active portrait linkage+character gear");
+
+const replay=await rpc(holder,"create_player_character_v3",{
+  p_payload:signedPayload,p_spell_choices:[],p_magic_selections:[]
+});
+assert.ifError(replay.error);
+assert.equal(replay.data,secondId);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(secondId)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(signedNonce)),1);
+console.log("PASS C34-T2-03: same-nonce signed retry is inert across original five added triggers");
+
+const directTags=await holder.client.from("characters")
+ .update({tags:["player-character","forged:campaign-admin"]})
+ .eq("id",secondId).select("id");
+rejected(directTags,"direct signed player tags mutation under original BEFORE guard","42501");
+assert.ok(!sql("SELECT array_to_string(tags,',') FROM public.characters WHERE id="+quote(secondId))
+  .includes("forged:campaign-admin"),"no post-rejection tag overwrite");
+
+const editorSheet=await holder.client.from("character_sheets").select("sheet")
+  .eq("character_id",secondId).single();
+assert.ifError(editorSheet.error);
+const protectedSheet={...editorSheet.data.sheet,sourceChoices:{
+  outsiderInjected:{ownerType:"feat",placement:"spells"}
+}};
+const forbidden=await holder.client.from("character_sheets")
+  .update({sheet:protectedSheet}).eq("character_id",secondId).select("character_id");
+rejected(forbidden,"authenticated direct authoritative source choices","42501");
+assert.equal(sql("SELECT sheet ? 'sourceChoices' FROM public.character_sheets WHERE character_id="+quote(secondId)),
+  String(Object.hasOwn(editorSheet.data.sheet,"sourceChoices") ? "t":"f"),
+  "original sheet authoritative field must not be changed");
+console.log("PASS C34-T2-04: original player tag/authoritative sheet BEFORE guards reject direct JWT mutation");
+
+const notesSheet={...editorSheet.data.sheet,description:"C34 original harmless authorized note"};
+const allowed=await holder.client.from("character_sheets")
+ .update({sheet:notesSheet}).eq("character_id",secondId).select("character_id");
+assert.ifError(allowed.error);
+assert.equal(allowed.data?.length,1,"current sheet editor may still update harmless narrative");
+assert.equal(sql("SELECT sheet->>'description' FROM public.character_sheets WHERE character_id="+quote(secondId)),
+  "C34 original harmless authorized note");
+console.log("PASS C34-T2-05: original source authority guard preserves legitimate signed narrative edits");
+
+// An original deferred sheet-equipment validator must reject mismatched
+// canonical background and rollback the entire Forge + nonce + equipment.
+const invalidNonce=randomUUID();
+const badPayload={
+  ...signedPayload,creation_request_id:invalidNonce,
+  name:"C34 T2 mismatched background "+invalidNonce.slice(0,8),
+  sheet:{...validSheet,background:"Unmatched Commoner"}
+};
+const mismatch=await rpc(holder,"create_player_character_v3",{
+  p_payload:badPayload,p_spell_choices:[],p_magic_selections:[]
+});
+assert.ok(mismatch.error,"original deferred background mismatch must reject");
+assert.match(mismatch.error.message,/Starting equipment Background does not match/);
+assert.equal(one("public.characters","creation_request_id="+quote(invalidNonce)),0);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(invalidNonce)),0);
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
+  "ORIGINAL_NONEMPTY","legacy account snapshot stays preserved after deferred rollback");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),
+  "C34_GM_SECRET_STAYS_PRIVATE","legacy GM secret unchanged after T2 rejection");
+console.log("PASS C34-T2-06: original deferred canonical Background mismatch aborts Forge, nonce and gear atomically");
+console.log("C34 T2 SIGNED SOURCE SUBSET PASS: 9/31 original triggers + 2 held privacy; NOT 31/31 production graph");
+
