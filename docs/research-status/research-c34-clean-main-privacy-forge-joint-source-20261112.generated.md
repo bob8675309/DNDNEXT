@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `31d0c2107234d092c48c3a96d1f63c2af894344d` |
+| Exact source commit represented by this archive snapshot | `37e57920e70110ce35a5947abb39f10541806d91` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): gate 9/31 original plus 2 held privacy trigger coverage from exact census |
+| Last source commit title | test(c34): ignore 4-column historical summary when parsing 31 trigger rows |
 | Files changed relative to main | 28 (24 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
