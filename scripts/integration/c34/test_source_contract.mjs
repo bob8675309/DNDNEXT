@@ -72,7 +72,7 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
 
 test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
   const e=verifyOriginalJointDependencies();
-  assert.equal(e.length,22);
+  assert.equal(e.length,25);
   assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
   assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
 });
@@ -86,16 +86,17 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T5-S01 original production census counts 14/31, not 16/31", () => {
+test("C34-T6-S01 original production census counts 15/31, not 17/31", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,14);
- assert.equal(r.originalMissingCount,17);
+ assert.equal(r.stagedOriginalCount,15);
+ assert.equal(r.originalMissingCount,16);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,16);
+ assert.equal(r.totalStaged,17);
+ assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
 });
 
@@ -123,9 +124,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,14);
- assert.equal(truncated.stagedOriginalCount,13);
- assert.equal(truncated.originalMissingCount,18);
+ assert.equal(original.stagedOriginalCount,15);
+ assert.equal(truncated.stagedOriginalCount,14);
+ assert.equal(truncated.originalMissingCount,17);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -165,4 +166,32 @@ test("C34-T5-N05 source-original preferred view rewrite fails closed", () => {
   assert.ok(source.includes(from));
   return Buffer.from(source.replace(from,"WHEN o.option_type = 'unverified'::text"),"utf8");
  }),/preferred VIEW definitions drifted from held/);
+});
+
+test("C34-T6-N06 tampering with an original downstream grant hook is rejected", () => {
+ const root=path.resolve(dir,"../../..");
+ const p="scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  if(file!==p)return raw;
+  const source=raw.toString("utf8");
+  const trigger="CREATE TRIGGER character_option_grant_instance_cartomancer_v1";
+  assert.ok(source.includes(trigger));
+  return Buffer.from(source.replace(trigger,
+    "CREATE TRIGGER character_option_grant_instance_malicious_replacement_v1"),"utf8");
+ }),/Unexpected original grant-table trigger|missing original grant-table triggers/);
+});
+
+test("C34-T6-N07 wrong grant-table authorization guard cannot masquerade as original", () => {
+ const root=path.resolve(dir,"../../..");
+ const p="scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  if(file!==p)return raw;
+  const source=raw.toString("utf8");
+  const from="EXECUTE FUNCTION private.guard_direct_character_authority_mutation_v1();";
+  assert.ok(source.includes(from));
+  return Buffer.from(source.replace(from,
+   "EXECUTE FUNCTION private.materialize_cartomancer_instance_v1();"),"utf8");
+ }),/exact grant-table handler\/table mismatch/);
 });
