@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c0759d881fdf381d36887a27c3261104ce3d4617` |
+| Exact source commit represented by this archive snapshot | `de55547bd2028d22946ee21fae3cc567be91cb64` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): SHA-pin three original #324 feat materializer and discriminator files |
+| Last source commit title | test(c34): assert original 15/31+2 privacy, five grant hooks, 25 source blobs and grant-hook tamper negatives |
 | Files changed relative to main | 35 (31 non-docs; 4 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
