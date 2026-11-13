@@ -375,3 +375,10 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 - **CI evidence:** new C34 static SHA/contract/negative workflow added. Its exact-HEAD run has **not yet been recorded at the time of this entry**; fetch current HEAD and workflow before claiming PASS.
 - **Untested:** source-faithful co-resident 31-trigger PG17 + real GoTrue acceptance, cross-feature original RED/GREEN and rollback, Option A remaining 22 of 34 account writers, authenticated application-browser consumers, production restore proof. Old negative receipts remain preserved.
 - **Next single task:** construct and exercise an isolated source-faithful PG17/GoTrue joint integration fixture incorporating Stage1–3, #324 reservation/source v2/v3, #351 final Story nonce, paired inventory RLS/CHECK and relevant original Option A creator writers; prove adversarial RED and corrected GREEN without any hosted DB mutation.
+
+### 2026-11-13 C34 initial exact-head CI receipt
+
+- **Tested head:** `216247b2bfdb6becdab989e7732fb07660770187` for research-only [PR #379](https://github.com/bob8675309/DNDNEXT/pull/379).
+- **Observed GitHub Actions:** [C34 source and negative run #43376274734](https://github.com/bob8675309/DNDNEXT/actions/runs/43376274734) SUCCESS; six named Node tests passed, zero failed. Explicit `--release` negative was rejected, as intended. The three inherited-main regression workflows — handoff registry, Class browser polish, and tactical spell preservation — also completed SUCCESS at that exact head. This is **T0 only**, NOT signed PG17 or browser.
+- **Documentation note:** This added receipt changes the PR head and triggers fresh Actions. Verify the final head separately; do not reuse the preceding green run to claim the amended head passed.
+- **One next task unchanged:** original full-trigger signed disposable PG17/GoTrue joint RED/GREEN; no production migration or deployment.
