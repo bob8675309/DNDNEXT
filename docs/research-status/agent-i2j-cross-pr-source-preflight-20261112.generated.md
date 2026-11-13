@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `57ef835ee3cde24f18e233df7496bbcf0bcb5eaf` |
+| Exact source commit represented by this archive snapshot | `310d3ebb8157fb8c7cd049cc03c41877e464088d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(i2j): pin original I2C signed profile-only ACL fixture |
-| Files changed relative to main | 25 (18 non-docs; 7 docs) |
+| Last source commit title | test(i2j): add signed v1 legacy-sheet RED/GREEN and immutable v2 I2D Story coexistence |
+| Files changed relative to main | 26 (19 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/fixtures/i2j/pinned/i2c_option_a_signup_profile_acl_scratch_pg17.sql`
+- `scripts/test_i2j_v1_option_a_after_immutable_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -45,6 +45,7 @@
 - `scripts/release/i2j_compose_v1_original_setup.mjs`
 - `scripts/release/i2j_disposable_privacy_composition.mjs`
 - `scripts/test_i2j_source_lock_and_pg17_probe.mjs`
+- `scripts/test_i2j_v1_option_a_after_immutable_local_auth.mjs`
 - `scripts/validate_i2j_cross_pr_source_lock.mjs`
 
 ## Trust and update procedure
