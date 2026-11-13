@@ -72,7 +72,7 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
 
 test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
   const e=verifyOriginalJointDependencies();
-  assert.equal(e.length,28);
+  assert.equal(e.length,31);
   assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
   assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
 });
@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T9-S01 original census counts 17/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T10-S01 original census counts 18/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,17);
- assert.equal(r.originalMissingCount,14);
+ assert.equal(r.stagedOriginalCount,18);
+ assert.equal(r.originalMissingCount,13);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,20);
+ assert.equal(r.totalStaged,21);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,17);
- assert.equal(truncated.stagedOriginalCount,16);
- assert.equal(truncated.originalMissingCount,15);
+ assert.equal(original.stagedOriginalCount,18);
+ assert.equal(truncated.stagedOriginalCount,17);
+ assert.equal(truncated.originalMissingCount,14);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,17);
- assert.equal(r.originalMissingCount,14);
+ assert.equal(r.stagedOriginalCount,18);
+ assert.equal(r.originalMissingCount,13);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,20);
+ assert.equal(r.totalStaged,21);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
@@ -303,4 +303,51 @@ test("C34-T9-N17 original nested handler source change fails raw Git-blob pin", 
   if(file!==source)return raw;
   return Buffer.concat([raw,Buffer.from("\n-- intentional tampered source\n")]);
  }),/T9 original nested-choice function Git blob drift/);
+});
+
+test("C34-T10-N18 original starting-spells event columns cannot drift",()=>{
+ const f="scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  if(file!==f)return raw;
+  const s=raw.toString("utf8");
+  const a="AFTER INSERT OR UPDATE OF class_id, class_level ON public.character_progression";
+  assert.ok(s.includes(a));
+  return Buffer.from(s.replace(a,"AFTER INSERT OR UPDATE OF class_level ON public.character_progression"));
+ }),/T10 original deferred starting-spells trigger event\/handler drift/);
+});
+test("C34-T10-N19 original starting-spells deferred timing cannot become immediate",()=>{
+ const f="scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  if(file!==f)return raw;
+  const s=raw.toString("utf8");
+  const a="DEFERRABLE INITIALLY DEFERRED FOR EACH ROW";
+  assert.ok(s.includes(a));
+  return Buffer.from(s.replace(a,"NOT DEFERRABLE FOR EACH ROW"));
+ }),/T10 original deferred starting-spells trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T10-N20 imported original spell handler cannot be stubbed",()=>{
+ const f="scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  if(file!==f)return raw;
+  const s=raw.toString("utf8"),a="\\i scripts/fixtures/forge_starting_spells_original_pg17.sql";
+  assert.ok(s.includes(a));
+  return Buffer.from(s.replace(a,"-- no source function"));
+ }),/T10 original source-install fixture drift|T10 original live pg_get_functiondef MD5 and import required/);
+});
+test("C34-T10-N21 original live function source byte tamper fails closed",()=>{
+ const f="scripts/fixtures/forge_starting_spells_original_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  return file===f?Buffer.concat([raw,Buffer.from("\n-- tampered\n")]):raw;
+ }),/T10 original starting-spells handler Git blob drift/);
+});
+test("C34-T10-N22 source-identified Wizard 2024 spell catalog tamper fails closed",()=>{
+ const f="scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const raw=fs.readFileSync(path.join(root,file));
+  return file===f?Buffer.concat([raw,Buffer.from("\n-- altered Wizard source\n")]):raw;
+ }),/T10 source-identified 2024 Wizard specimen drift/);
 });

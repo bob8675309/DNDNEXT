@@ -1258,3 +1258,126 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("PASS C34-T9-GREEN05: direct source edit denied, historical account sheet and GM secret preserved; no map triggers");
 console.log("C34 T9 SIGNED RED->GREEN PASS: original 17/31 +2 privacy +1 held seed +5 downstream grant hooks. Required-child branch (Agonizing Blast) not fully simulated because Warlock/catalog and child grants are not loaded. 12 progression+2 protected map originals remain; HOLD main/production.");
+
+// T10: original deployed deferred starting-spells count/source validator.
+// T8 only validated startingMagicSelections against the actual 1 cantrip;
+// T10 additionally enforces true Wizard starting cantrip/spellbook/prepared
+// counts from the source-qualified 2024 XPHB level1 progression specimen.
+const t10OldPayload=t8Payload(randomUUID(),t8Summary());
+const t10Red=await t8Rpc(t10OldPayload);
+assert.ifError(t10Red.error);
+assert.equal(one("public.character_spells","character_id="+quote(t10Red.data)),1);
+const t10RedBefore={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t10Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t10Red.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t10Red.data))
+};
+console.log("PASS C34-T10-RED01: signed original v3/T5/T8/T9 accepts ONE Wizard cantrip before original starting-count validator");
+sqlFile("scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_starting_spells_v1()'::regprocedure))"),
+ "6870e810de909209c44aecd02f5c72e2");
+assert.equal(one("pg_trigger","tgname='character_progression_validate_player_forge_spells_v1' AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),21);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t10Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t10Red.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t10Red.data))
+},t10RedBefore,"T10 never changes historical incomplete canonical character spell records");
+console.log("PASS C34-T10-GREEN01: source-original deferred DDL+PG17 MD5, 18/31 originals; prior mismatch rows not backfilled");
+// These 9 exact spell IDs/names/classes were captured from read-only live
+// XPHB Wizard catalog in held #324 fixture; do not invent class entitlements.
+const t10Spells=[
+ ["fe27551a-bebb-4140-8dc0-2ab904f99955","Fire Bolt",0,true],
+ ["4b84d266-3847-45f9-b154-77fd26695b55","Mage Hand",0,true],
+ ["38ccd26c-f6dc-4bcc-a86d-dc83fb61f177","Ray of Frost",0,true],
+ ["d05171bc-855f-4e03-a074-c3f8f6fc09bf","Detect Magic",1,true],
+ ["6c7a0380-a32a-4df5-871c-abf42400b045","Feather Fall",1,true],
+ ["c9803497-bd5c-4800-aa79-01dbb80922fe","Mage Armor",1,true],
+ ["b975c0a7-8b4d-439b-85ff-3e0094656e2f","Magic Missile",1,true],
+ ["4d757f8f-88fd-4b6a-9bf2-b6d20788f928","Shield",1,false],
+ ["0fec723c-1a3a-42d9-bdfb-1d338c745676","Sleep",1,false]
+];
+const t10WizardInput=(nonce,choices=t10Spells)=>({
+ payload:{
+  creation_request_id:nonce,name:"C34 T10 true XPHB Wizard "+nonce.slice(0,8),
+  sheet:{...validSheet,classKey:"wizard",level:1,
+   spells:choices.map(x=>x[1]),startingMagicSelections:choices.map(x=>({
+    spell_id:x[0],source_type:"class",source_key:"wizard",prepared:x[3]
+   })),startingEquipmentSelections:{...validSheet.startingEquipmentSelections}}
+ },
+ magic:choices.map(x=>({spell_id:x[0],source_type:"class",access_type:"class-list",prepared:x[3]}))
+});
+const t10Rpc=(req)=>rpc(holder,"create_player_character_v3",{
+ p_payload:req.payload,p_spell_choices:[],p_magic_selections:req.magic
+});
+const t10ValidInput=t10WizardInput(randomUUID());
+const t10Valid=await t10Rpc(t10ValidInput);
+assert.ifError(t10Valid.error);
+assert.equal(one("public.character_spells","character_id="+quote(t10Valid.data)+" AND coalesce((raw_payload->>'startingMagic')::boolean,false)"),9);
+assert.equal(sql("SELECT count(*) FILTER (WHERE s.level=0)::text || ':' || count(*) FILTER (WHERE s.level>0)::text || ':' || "+
+ "count(*) FILTER (WHERE s.level>0 AND cs.prepared)::text FROM public.character_spells cs JOIN public.spells_catalog s ON s.id=cs.spell_id WHERE cs.character_id="+quote(t10Valid.data)),"3:6:4");
+assert.equal(one("public.character_spells","character_id="+quote(t10Valid.data)+
+ " AND source_type='class' AND source_key='wizard' AND known AND "+
+ "coalesce(raw_payload->>'accessType','')='class-list'"),9);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(t10Valid.data)),0,
+ "reduced Wizard fixture does not include a source-owned class starting-gear package");
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id="+quote(t10Valid.data)),holder.id);
+const t10Hash={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t10Valid.data)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t10Valid.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t10Valid.data))
+};
+console.log("PASS C34-T10-GREEN02: signed original XPHB Wizard level1 exact 3 cantrips, 6 spellbook, 4 prepared canonical rows");
+const t10Retry=await t10Rpc(t10ValidInput);
+assert.ifError(t10Retry.error);
+assert.equal(t10Retry.data,t10Valid.data);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t10Valid.data)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t10Valid.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t10Valid.data))
+},t10Hash,"T10 real signed nonce replay cannot rewrite Wizard canonical spells or sheet");
+console.log("PASS C34-T10-GREEN03: signed identical immutable nonce replay preserves original 9 spell and progression hashes");
+async function t10Negative(choices,rejectPattern){
+ const nonce=randomUUID(),req=t10WizardInput(nonce,choices),before={
+  grants:grantCounts(),
+  items:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  chars:Number(sql("SELECT count(*) FROM public.characters")),
+  spells:Number(sql("SELECT count(*) FROM public.character_spells"))
+ };
+ const result=await t10Rpc(req);
+ rejected(result,"C34 T10 original deferred Wizard starting-spell count must reject");
+ assert.match(result.error.message,rejectPattern);
+ assert.equal(one("public.characters","creation_request_id="+quote(nonce)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(nonce)),0);
+ assert.equal(Number(sql("SELECT count(*) FROM public.characters")),before.chars);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_spells")),before.spells);
+ assert.equal(Number(sql("SELECT count(*) FROM public.inventory_items")),before.items);
+ assert.deepEqual(grantCounts(),before.grants);
+}
+await t10Negative(t10Spells.slice(0,1),/Choose exactly 3 starting cantrip\(s\); received 1/);
+await t10Negative(t10Spells.filter(x=>x[1]!=="Mage Hand"),/Choose exactly 3 starting cantrip\(s\); received 2/);
+console.log("PASS C34-T10-GREEN04: signed under-selected cantrips fail exact 2024 count and atomically rollback");
+await t10Negative(t10Spells.filter(x=>x[1]!=="Sleep"),/Choose exactly 6 starting leveled spell\(s\); received 5/);
+const t10ThreePrepared=t10Spells.map(x=>x[1]==="Magic Missile"?[x[0],x[1],x[2],false]:x);
+await t10Negative(t10ThreePrepared,/Mark exactly 4 starting leveled spell\(s\) as prepared; received 3/);
+console.log("PASS C34-T10-GREEN05: 6 leveled spellbook and 4 prepared exactness reject under-selection atomically");
+const t10RaceInput=t10WizardInput(randomUUID());
+const t10Race=await Promise.all([t10Rpc(t10RaceInput),t10Rpc(t10RaceInput)]);
+for(const rs of t10Race)assert.ifError(rs.error);
+assert.equal(t10Race[0].data,t10Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t10RaceInput.payload.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(t10RaceInput.payload.creation_request_id)),1);
+assert.equal(one("public.character_spells","character_id="+quote(t10Race[0].data)),9);
+console.log("PASS C34-T10-GREEN06: two real signed simultaneous same-nonce Wizards create one actor and exact 9 canonical spells");
+const t10Fighter=await createSubclass(sourceAuthority(randomUUID()));
+assert.ifError(t10Fighter.error);
+assert.equal(one("public.character_spells","character_id="+quote(t10Fighter.data)),0);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(t10Fighter.data)),1);
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id="+quote(t10Fighter.data)),holder.id);
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),"ORIGINAL_NONEMPTY");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("PASS C34-T10-GREEN07: no-magic Fighter, creator/feat provenance, historical account sheet, GM secrecy, world-map guard retained");
+console.log("C34 T10 SIGNED RED->GREEN PASS: 18/31 original DDL +2 held privacy +1 creator seed +5 downstream grants; 11 non-map progression/2 protected world movement originals missing. Reduced XPHB view/9 source-qualified spells not full production catalogue. HOLD main/production.");

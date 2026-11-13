@@ -28,7 +28,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
   "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
   "scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql",
-  "scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql"
+  "scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql",
+  "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -187,6 +188,30 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   ].join("\n");
   assert.ok(nestedAdapter.includes(nestedEvent),
     "T9 original deferred nested-choice trigger event/handler drift");
+
+  // T10 imported original source bytes and original deferred event must be
+  // unchanged; no permissive test-specific handler or omitted dependencies.
+  const t10Source=read("scripts/fixtures/forge_starting_spells_original_pg17.sql");
+  assert.ok(Buffer.isBuffer(t10Source),"T10 original starting-spells handler source must be raw Git blob");
+  assert.equal(gitBlobSha(t10Source),"d56ed5ea44289bbb20720c1323f9b22f362b31c5","T10 original starting-spells handler Git blob drift");
+  const t10Fixture=read("scripts/fixtures/forge_starting_spells_local_auth_pg17.sql").toString("utf8");
+  const t10WizardSeed=read("scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql");
+  assert.equal(gitBlobSha(Buffer.from(t10Fixture,"utf8")),"4b6eeecdbfba49cca5a74c26e2f88b6d83123897","T10 original source-install fixture drift");
+  assert.ok(Buffer.isBuffer(t10WizardSeed),"T10 Wizard source-identified catalog must remain raw");
+  assert.equal(gitBlobSha(t10WizardSeed),"bbf8cece98f46b1008d8e2ff79650647f89a5e20","T10 source-identified 2024 Wizard specimen drift");
+  const t10Event=[
+    "CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_spells_v1",
+    " AFTER INSERT OR UPDATE OF class_id, class_level ON public.character_progression",
+    " DEFERRABLE INITIALLY DEFERRED FOR EACH ROW",
+    " EXECUTE FUNCTION private.validate_player_forge_starting_spells_v1();"
+  ].join("\n");
+  assert.ok(t10Fixture.includes(t10Event),"T10 original deferred starting-spells trigger event/handler drift");
+  const t10Joint=read("scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql").toString("utf8");
+  assert.ok(t10Joint.includes("\\i scripts/fixtures/forge_starting_spells_local_auth_pg17.sql")&&t10Joint.includes("\\i scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql"),
+    "T10 wrapper must stage original source DDL and verified Wizard catalog");
+  assert.ok(t10Fixture.includes("\\i scripts/fixtures/forge_starting_spells_original_pg17.sql")&&
+    t10Fixture.includes("'6870e810de909209c44aecd02f5c72e2'"),
+    "T10 original live pg_get_functiondef MD5 and import required");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -210,11 +235,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,17,"C34 T9 expects 17/31 original DDL, not complete parity");
- assert.equal(r.originalMissingCount,14);
- assert.equal(r.totalStaged,20);
+ assert.equal(r.stagedOriginalCount,18,"C34 T10 expects 18/31 original DDL, not complete parity");
+ assert.equal(r.originalMissingCount,13);
+ assert.equal(r.totalStaged,21);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T9: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T10: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
