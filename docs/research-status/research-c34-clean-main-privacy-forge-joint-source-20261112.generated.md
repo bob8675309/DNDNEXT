@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5577bc5be3443c021699f3667e38d07f071ce089` |
+| Exact source commit represented by this archive snapshot | `deef6900036512bd3deb33371afea960203d1a67` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): audit all 44 open drafts and full 211-path original blob/head-base-main-C34 parity before merging |
+| Last source commit title | docs(c34): record T7 signed prospective creator RED/GREEN and full 44-PR/211-path nonretirement gate |
 | Files changed relative to main | 37 (32 non-docs; 5 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
