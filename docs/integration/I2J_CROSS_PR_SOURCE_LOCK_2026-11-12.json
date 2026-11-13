@@ -1,0 +1,218 @@
+{
+  "schema": "i2j-cross-pr-source-lock-v1",
+  "as_of": "2026-11-12",
+  "repository": "bob8675309/DNDNEXT",
+  "base_main": "6637b14f807ebec79542deb7eef4b2bc3abfb5fd",
+  "release_state": "BLOCKED_SOURCE_INVENTORY_ONLY",
+  "source_count": 19,
+  "read_only_production_census": {
+    "pg_version": "17.4",
+    "forge_related_enabled_triggers": 31,
+    "original_account_UPDATE_writers": 34,
+    "option_a_writers_bounded_tested": 12,
+    "option_a_writers_not_bounded_tested": 22,
+    "remote_migrations": 243,
+    "npc_privacy_rpc_installed": false,
+    "creator_story_table_installed": false,
+    "old_inventory_owner_check_still_enforced": true
+  },
+  "source_heads": {
+    "main": "6637b14f807ebec79542deb7eef4b2bc3abfb5fd",
+    "p345": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+    "p351": "5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7",
+    "p371": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+    "p318": "ec741eca901aef062f3d472b33c5a8b451cec299",
+    "p312": "26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254",
+    "p317": "69e741d7c7d8874c22467e2d30791e30c009ff6e"
+  },
+  "source_order_hypothesis": [
+    "npc_stage1",
+    "npc_stage2",
+    "npc_stage3",
+    "immutable_324",
+    "story_nonce_351",
+    "option_a_creation_371",
+    "option_a_private_v2_371",
+    "option_a_acl_371",
+    "inventory_stage4"
+  ],
+  "notes": [
+    "Ordering is a research hypothesis only; do not concatenate original SQL candidate BEGIN/COMMIT wrappers or apply to any hosted database.",
+    "Stage3 redefines Stage1 player profile; Stage3 original Story wrapper must then be replaced by #351. Preserve Stage3 GM/creator guards.",
+    "Neither source blob identity nor green workflow is real signed multi-role full 31-trigger application acceptance.",
+    "The 34-writer freeze, full source consumers, grants, rollback and 19 current spell adapters must remain separately gated."
+  ],
+  "sources": [
+    {
+      "id": "immutable_324",
+      "source_pr": "main",
+      "head": "6637b14f807ebec79542deb7eef4b2bc3abfb5fd",
+      "path": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+      "blob_sha": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+      "disposition": "exact_copy_research_unapplied",
+      "purpose": "Original immutable nonce reservation and private original v2/v3; still contains prohibited Option A sheet mirror"
+    },
+    {
+      "id": "inventory_stage4",
+      "source_pr": "main",
+      "head": "6637b14f807ebec79542deb7eef4b2bc3abfb5fd",
+      "path": "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+      "blob_sha": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+      "disposition": "exact_copy_research_unapplied",
+      "purpose": "Combined four inventory RLS policies and old NOT VALID owner CHECK retirement; unapplied"
+    },
+    {
+      "id": "npc_stage1",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
+      "blob_sha": "9dfe44eee49df6ead8c8ccfc7a0454a996b8bee3",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Source-original Stage1 only; its unsafe legacy secret projection must be superseded"
+    },
+    {
+      "id": "npc_stage2",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql",
+      "blob_sha": "afdd2849c3ae2be5929fd8c11c9b4e19f4f6a7ac",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Authenticated five-column ACL revoke plus GM dossier/editor narrative"
+    },
+    {
+      "id": "npc_stage3",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+      "blob_sha": "01e48823ac3a46aa5880e98200e97c2595501ce7",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Creator attribution, private Story, GM-only secret and final published-clue-safe NPC profile"
+    },
+    {
+      "id": "forge_ui_345",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "components/NewNpcModalV3.js",
+      "blob_sha": "27c8aa95bf95c88adeb80274e7139dbe17270098",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Player Story submission and original ten-step Forge entry"
+    },
+    {
+      "id": "npc_panel_345",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "components/NpcPanel.js",
+      "blob_sha": "606db96649dcdf6646afbd4d24f67a6fc54426eb",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Safe RPC/role-dependent profile, sheet/print gating and merchant first-Profile flow"
+    },
+    {
+      "id": "npc_admin_345",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "pages/npcs.js",
+      "blob_sha": "2e08fa07384958478f323516c4e1b342228bd436",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Current selected dossier/role-scoped Admin NPC editor must not be overwritten by older PRs"
+    },
+    {
+      "id": "player_profile_345",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "components/PlayerCharacterProfilePanelUnified.js",
+      "blob_sha": "d4500ee5aacb11e69bb666b33d587fd8a4b4839a",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Narrowed character direct-SELECT fallback after five-column authenticated revoke"
+    },
+    {
+      "id": "story_nonce_351",
+      "source_pr": "p351",
+      "head": "5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7",
+      "path": "sql/candidates/20261109_player_story_complete_intent_i1c_research.sql",
+      "blob_sha": "91f5fb918bf205f2d4462e2ff0089f656601328e",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Latest SHA-256 private Story-inclusive immutable creation intent; replaces Stage3 old wrapper"
+    },
+    {
+      "id": "story_nonce_signed_test_351",
+      "source_pr": "p351",
+      "head": "5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7",
+      "path": "scripts/test_i1c_forge_private_story_nonce_local_auth.mjs",
+      "blob_sha": "90fb3058bc1c93ef72a331bad0747920c3c1202e",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Original Story-only changed-nonce RED and corrected signed GoTrue/PG17 source test"
+    },
+    {
+      "id": "option_a_creation_371",
+      "source_pr": "p371",
+      "head": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+      "path": "scripts/fixtures/i2c_option_a_creator_identity_only_scratch_pg17.sql",
+      "blob_sha": "c9957a542055ba5aea6e28402c8bc8b6469dcfa7",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Original v1/v2 identity-only account insert, no legacy sheet mirror; scratch only"
+    },
+    {
+      "id": "option_a_acl_371",
+      "source_pr": "p371",
+      "head": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+      "path": "scripts/fixtures/i2c_option_a_signup_profile_acl_scratch_pg17.sql",
+      "blob_sha": "4a3b270b1f303698737d5bf2b321eb063a93c481",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Scratch role ACL: legitimate name edits allowed but direct sheet write denied"
+    },
+    {
+      "id": "option_a_private_v2_371",
+      "source_pr": "p371",
+      "head": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+      "path": "scripts/fixtures/i2d_option_a_private_forge_source_scratch_pg17.sql",
+      "blob_sha": "889b661aef1317ca91a44eeac2d2ef7238d8cad6",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Private copied #324 v2 source UPSERT replaced by identity-only insert; original RED preserved"
+    },
+    {
+      "id": "option_a_signed_test_371",
+      "source_pr": "p371",
+      "head": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+      "path": "scripts/test_i2d_private_v3_story_option_a_local_auth.mjs",
+      "blob_sha": "ff6530fe32d6e64418e60e69b910a5ca7da4a3f4",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Signed empty-sheet source RED and scratch GREEN; no claim complete 34-writer freeze"
+    },
+    {
+      "id": "npc_privacy_signed_test_345",
+      "source_pr": "p345",
+      "head": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "path": "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
+      "blob_sha": "949da8a7047db370e48bbf024d8acd89e89d26fa",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Original local JWT profile and role negative security test baseline"
+    },
+    {
+      "id": "admin_rights_318",
+      "source_pr": "p318",
+      "head": "ec741eca901aef062f3d472b33c5a8b451cec299",
+      "path": "components/character/AdminCharacterPermissionsPanel.js",
+      "blob_sha": "c49bea9def0bd8c62ebdc1afaeccb582dcdd111a",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Deferred original independent Admin legacy rights editor"
+    },
+    {
+      "id": "delegate_rights_312",
+      "source_pr": "p312",
+      "head": "26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254",
+      "path": "components/NpcControlPermissionsPanel.js",
+      "blob_sha": "67572c7b04ef0be49790c1320c6bf6ff4ca4d8cf",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Deferred original can_control UI; not safe until global tactical locks and replay"
+    },
+    {
+      "id": "global_lock_graph_317",
+      "source_pr": "p317",
+      "head": "69e741d7c7d8874c22467e2d30791e30c009ff6e",
+      "path": "scripts/fixtures/p1_3_lock_order_graph.json",
+      "blob_sha": "f48bf48cef94c845cc8be5497f0ad9364926c829",
+      "disposition": "deferred_preserved_pinned",
+      "purpose": "Deferred cross-family actor/encounter/ledger/grants/inventory lock graph"
+    }
+  ]
+}
