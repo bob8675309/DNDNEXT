@@ -41,6 +41,7 @@ export const ORIGINAL_JOINT_DEPENDENCIES = Object.freeze([
   ["scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql", "b73e418b1f3b7fdbab528a9d52efe375af72e1e8"],
   ["sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql", "ecddcd514917a4d379d14b02477dfb41dbf44f29"],
   ["scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql", "9da41b637b077ce5ab3f80e6308e0ca9b91fd002"],
+  ["scripts/fixtures/forge_nested_choices_original_pg17.sql", "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a"],
 ]);
 export function verifyOriginalJointDependencies(read=(name)=>fs.readFileSync(path.join(root,name))) {
   return ORIGINAL_JOINT_DEPENDENCIES.map(([file,expected])=>{

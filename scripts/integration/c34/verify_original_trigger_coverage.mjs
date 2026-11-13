@@ -27,7 +27,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql",
   "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
   "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
-  "scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql"
+  "scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql",
+  "scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -167,6 +168,25 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     " EXECUTE FUNCTION private.validate_player_forge_starting_magic_exactness_v1();"
   ].join("\n");
   assert.ok(stagedMagic.includes(magicEvent),"T8 exact source deferred starting-magic trigger event drift");
+
+  // T9 original handler is imported from a separately sha-pinned original
+  // runtime fixture. Silent replacement with reimplemented code is forbidden.
+  const nestedOriginalPath="scripts/fixtures/forge_nested_choices_original_pg17.sql";
+  const nestedAdapter=read("scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql").toString("utf8");
+  const nestedRaw=read(nestedOriginalPath);
+  assert.ok(Buffer.isBuffer(nestedRaw),"T9 requires original raw function source");
+  assert.equal(gitBlobSha(nestedRaw),"6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a","T9 original nested-choice function Git blob drift");
+  assert.ok(nestedAdapter.includes("\\i "+nestedOriginalPath),
+    "T9 must import the exact original nested-choice function, not a replacement");
+  const nestedEvent=[
+    "CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_nested_choices_v1",
+    " AFTER INSERT OR UPDATE OF class_id, class_level, subclass_name, subclass_source, level_choices",
+    " ON public.character_progression",
+    " DEFERRABLE INITIALLY DEFERRED FOR EACH ROW",
+    " EXECUTE FUNCTION private.validate_player_forge_nested_choice_payload_v1();"
+  ].join("\n");
+  assert.ok(nestedAdapter.includes(nestedEvent),
+    "T9 original deferred nested-choice trigger event/handler drift");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -190,11 +210,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,16,"C34 T8 expects 16/31 original DDL, not complete parity");
- assert.equal(r.originalMissingCount,15);
- assert.equal(r.totalStaged,19);
+ assert.equal(r.stagedOriginalCount,17,"C34 T9 expects 17/31 original DDL, not complete parity");
+ assert.equal(r.originalMissingCount,14);
+ assert.equal(r.totalStaged,20);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T8: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T9: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }

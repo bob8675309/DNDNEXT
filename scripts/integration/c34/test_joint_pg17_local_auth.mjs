@@ -1163,3 +1163,98 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("PASS T8-08: feat/no-magic Fighter, legacy sheet, GM secret, and world-map trigger exclusion unchanged");
 console.log("C34 T8 signed RED->GREEN: 16/31 originals +2 privacy +1 held seed +5 grant hooks; 13 progression/2 world triggers still untested, HOLD main/production");
+
+// T9: the ORIGINAL deferred nested-choice dependency guard from held #324.
+// Existing T5 validates Defense/source/class; T9 separately enforces the
+// activeWhen parent option. No synthetic Warlock parent is invented.
+const t9Payload=(nonce,optionNames=null)=>{
+ const payload=sourceAuthority(nonce);
+ payload.name="C34 T9 nested source "+nonce.slice(0,8);
+ if(optionNames!==null)
+  payload.sheet.classFeatureChoices.fightingStyle.activeWhen={optionNames};
+ return payload;
+};
+const t9RedPayload=t9Payload(randomUUID(),["Agonizing Blast"]);
+const t9Red=await createSubclass(t9RedPayload);
+assert.ifError(t9Red.error);
+assert.equal(one("public.characters","creation_request_id="+quote(t9RedPayload.creation_request_id)),1);
+assert.equal(sql("SELECT sheet#>>'{classFeatureChoices,fightingStyle,activeWhen,optionNames,0}' FROM public.character_sheets WHERE character_id="+quote(t9Red.data)),"Agonizing Blast");
+const t9Old={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t9Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t9Red.data)),
+ gear:t8RowHash("public.inventory_items","owner_type='character' AND owner_id="+quote(t9Red.data))
+};
+console.log("PASS C34-T9-RED01: genuine signed v3 T5-approved Defense choice with activeWhen missing Warlock parent creates BEFORE T9");
+sqlFile("scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql");
+assert.equal(one("pg_trigger","tgname='character_progression_validate_player_forge_nested_choices_v1' AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),20);
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_nested_choice_payload_v1()'::regprocedure))"),
+ "df2861cc76b0b74bb7cd57fbe61c9a05");
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t9Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t9Red.data)),
+ gear:t8RowHash("public.inventory_items","owner_type='character' AND owner_id="+quote(t9Red.data))
+},t9Old,"T9 must not retroactively mutate RED legacy rows");
+console.log("PASS C34-T9-GREEN01: source MD5/deferred exact event, 17/31 original and historical no-backfill");
+const t9ValidPayload=t9Payload(randomUUID());
+const t9Valid=await createSubclass(t9ValidPayload);
+assert.ifError(t9Valid.error);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(t9Valid.data)),1);
+assert.equal(one("public.inventory_items","owner_type='character' AND owner_id="+quote(t9Valid.data)),1);
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id="+quote(t9Valid.data)),holder.id);
+const t9ValidRows={
+ progression:t8RowHash("public.character_progression","character_id="+quote(t9Valid.data)),
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t9Valid.data)),
+ grant:t8RowHash("public.character_option_grant_instances","character_id="+quote(t9Valid.data)),
+ equipment:t8RowHash("public.inventory_items","owner_type='character' AND owner_id="+quote(t9Valid.data))
+};
+assert.equal((await createSubclass(t9ValidPayload)).data,t9Valid.data);
+assert.deepEqual({
+ progression:t8RowHash("public.character_progression","character_id="+quote(t9Valid.data)),
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t9Valid.data)),
+ grant:t8RowHash("public.character_option_grant_instances","character_id="+quote(t9Valid.data)),
+ equipment:t8RowHash("public.inventory_items","owner_type='character' AND owner_id="+quote(t9Valid.data))
+},t9ValidRows,"original signed nonce replay cannot re-run nested authority/feat/gear");
+console.log("PASS C34-T9-GREEN02: source-qualified Defense/Lucky Fighter valid and original signed nonce replay inert");
+async function t9Reject(names,origin){
+ const nonce=randomUUID(),p=t9Payload(nonce,names),before={
+  grants:grantCounts(),items:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  reservations:Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1"))
+ };
+ const result=await createSubclass(p);
+ rejected(result,"T9 original deferred missing-parent dependency");
+ assert.match(result.error.message,origin,"negative must be from original nested handler");
+ assert.equal(one("public.characters","creation_request_id="+quote(nonce)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(nonce)),0);
+ assert.deepEqual(grantCounts(),before.grants);
+ assert.equal(Number(sql("SELECT count(*) FROM public.inventory_items")),before.items);
+ assert.equal(Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1")),before.reservations);
+}
+await t9Reject(["Agonizing Blast"],/Dependent class choice group fightingStyle is active without its required parent option/);
+await t9Reject([],/Dependent class choice group fightingStyle is active without its required parent option/);
+console.log("PASS C34-T9-GREEN03: missing required parent or empty parent array rejects signed v3 atomically (character/nonce/feat/gear)");
+const t9RacePayload=t9Payload(randomUUID());
+const t9Race=await Promise.all([createSubclass(t9RacePayload),createSubclass(t9RacePayload)]);
+for(const res of t9Race)assert.ifError(res.error);
+assert.equal(t9Race[0].data,t9Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t9RacePayload.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(t9RacePayload.creation_request_id)),1);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(t9Race[0].data)),1);
+console.log("PASS C34-T9-GREEN04: genuine signed same-nonce race creates one Fighter, one canonical grant and nonce");
+const t9Unauthorized=await holder.client.from("character_sheets").update({
+ sheet:{...t9ValidPayload.sheet,classFeatureChoices:{
+  ...t9ValidPayload.sheet.classFeatureChoices,
+  fightingStyle:{...t9ValidPayload.sheet.classFeatureChoices.fightingStyle,
+   activeWhen:{optionNames:["Agonizing Blast"]}}
+ }}
+}).eq("character_id",t9Valid.data).select("character_id");
+rejected(t9Unauthorized,"original sheet authority fields reject client-side direct nested edit","42501");
+assert.equal(sql("SELECT sheet#>'{classFeatureChoices,fightingStyle,activeWhen}' IS NULL "+
+ "FROM public.character_sheets WHERE character_id="+quote(t9Valid.data)),"t");
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),"ORIGINAL_NONEMPTY");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("PASS C34-T9-GREEN05: direct source edit denied, historical account sheet and GM secret preserved; no map triggers");
+console.log("C34 T9 SIGNED RED->GREEN PASS: original 17/31 +2 privacy +1 held seed +5 downstream grant hooks. Required-child branch (Agonizing Blast) not fully simulated because Warlock/catalog and child grants are not loaded. 12 progression+2 protected map originals remain; HOLD main/production.");
