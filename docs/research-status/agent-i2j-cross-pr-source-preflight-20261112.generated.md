@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-cross-pr-source-preflight-20261112` |
-| Exact source commit represented by this archive snapshot | `d71b6e01c1a978f244f7c54e1f0102b52bc40d02` |
+| Exact source commit represented by this archive snapshot | `942d19be63b919af35d058503e9361769816bb3d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(i2j): record fail-closed PG17 integration and original negative gates |
-| Files changed relative to main | 3 (1 non-docs; 2 docs) |
+| Last source commit title | docs(i2j): set current bounded source-lock work and next acceptance gate |
+| Files changed relative to main | 4 (1 non-docs; 3 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,10 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
+- `docs/ACTIVE_WORK.md`
 - `docs/integration/I2J_CROSS_PR_SOURCE_LOCK_2026-11-12.json`
 - `docs/integration/I2J_DISPOSABLE_INTEGRATION_PLAN_2026-11-12.md`
 - `scripts/validate_i2j_cross_pr_source_lock.mjs`
