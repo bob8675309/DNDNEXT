@@ -57,6 +57,27 @@ VALUES
 ('47d3fd14-695b-4d54-a3fb-9c210ed59952','Eldritch Blast',0,ARRAY['Warlock'],'XPHB','Evocation',ARRAY['force'],'1d10','Ranged Spell Attack','feet',120),
 ('27d42a4f-4fbc-44c2-8f8c-e8d68978ef98','Poison Spray',0,ARRAY['Artificer','Druid','Sorcerer','Warlock','Wizard'],'XPHB','Necromancy',ARRAY['poison'],'1d12','Ranged Spell Attack','feet',30)
 ON CONFLICT (id) DO NOTHING;
+-- Previous signed source specimens already own Eldritch Blast's exact XPHB
+-- UUID but may omit its damage/attack fields. Enrich ONLY missing scratch
+-- fields from the real held #355 XPHB source record; never rewrite name,
+-- source, class eligibility, id, or an existing nonempty gameplay fact.
+DO $t18_spell_existing$
+BEGIN
+ IF EXISTS(SELECT 1 FROM public.spells_catalog s WHERE
+  s.id='47d3fd14-695b-4d54-a3fb-9c210ed59952'::uuid AND
+  (s.name<>'Eldritch Blast' OR s.source<>'XPHB' OR s.level<>0 OR
+   NOT ('Warlock'=ANY(s.classes))))
+ THEN RAISE EXCEPTION 'T18 existing canonical Eldritch Blast source or class differs'; END IF;
+END $t18_spell_existing$;
+UPDATE public.spells_catalog SET
+ damage_types=CASE WHEN coalesce(array_length(damage_types,1),0)=0
+  THEN ARRAY['force']::text[] ELSE damage_types END,
+ damage_dice=coalesce(nullif(damage_dice,''),'1d10'),
+ attack_type=coalesce(nullif(attack_type,''),'Ranged Spell Attack'),
+ range_unit=coalesce(nullif(range_unit,''),'feet'),
+ range_distance=coalesce(range_distance,120)
+WHERE id='47d3fd14-695b-4d54-a3fb-9c210ed59952'::uuid
+ AND name='Eldritch Blast' AND source='XPHB' AND level=0;
 INSERT INTO public.class_feature_option_catalog
 (id,option_key,option_type,name,source,class_key,repeatable,prerequisites,choice_schema)
 VALUES
