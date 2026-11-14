@@ -1664,3 +1664,126 @@ assert.equal(sql("SELECT to_regprocedure('public.configure_character_species_rep
  "T12 does NOT claim independently untested rest/encounter/role-authorized replacement RPC");
 console.log("PASS C34-T12-GREEN08: real parallel signed nonce only one actor/spell/runtime; GM secret, legacy sheet, protected world map and RPC boundary preserved");
 console.log("C34 T12 SIGNED RED->GREEN PASS: 20/31 source-original triggers (progression 10/19, sheets 4/4, characters 4/6, inventory 2/2); 9 non-map progression +2 protected world original missing; High Elf/Khoravar initial cantrip only, Long Rest RPC/browser untested. DRAFT HOLD.");
+
+
+// T13: source-original MPMM Eladrin initial seasonal Fey Step runtime state.
+// Held PR #357's ORIGINAL functions/event; reused T12's canonical runtime
+// table, never its obsolete disposable reduced table or post-rest public RPC.
+const t13Season=(nonce,keys=["winter"],species="Eladrin",source="MPMM")=>{
+ const p=sourceAuthority(nonce);
+ return {...p,name:"T13 signed "+species+" season "+nonce.slice(0,8),
+  sheet:{...p.sheet,species,meta:{...p.sheet.meta,speciesKey:species,speciesSource:source},
+   sourceChoices:keys===null?{}:{"species-runtime-eladrin-season":{
+    placement:"species",ownerType:"species-runtime",ownerKey:"eladrin-season",
+    label:"Seasonal Fey Step",source:"MPMM",level:1,
+    metadata:{family:"eladrin-season",cadence:"long-rest",runtimeInitial:true},
+    fields:{season:{kind:"season",count:1,required:true,
+      selections:keys.map(key=>({key,value:key,name:key,source:"MPMM"}))}}
+   }}
+  }
+ };
+};
+const t13SeasonFor=id=>sql("SELECT state->'season'->>'key' FROM public.character_runtime_feature_choices "+
+  "WHERE character_id="+quote(id)+" AND feature_key='eladrin-season'");
+const t13RuntimeCount=id=>one("public.character_runtime_feature_choices",
+  "character_id="+quote(id)+" AND feature_key='eladrin-season'");
+const t13Projection=id=>sql("SELECT sheet#>>'{runtimeFeatures,eladrinSeason,season,key}' "+
+  "FROM public.character_sheets WHERE character_id="+quote(id));
+const t13RedPayload=t13Season(randomUUID(),["winter"]);
+const t13Red=await createSubclass(t13RedPayload);
+assert.ifError(t13Red.error);
+assert.equal(t13RuntimeCount(t13Red.data),0);
+assert.equal(t13Projection(t13Red.data),"");
+const t13RedHashes={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t13Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t13Red.data)),
+ runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t13Red.data))
+};
+console.log("PASS C34-T13-RED01: genuine signed MPMM Eladrin winter accepted prepatch without original runtime season");
+sqlFile("scripts/integration/c34/c34_original_eladrin_season_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_eladrin_season_v1()'::regprocedure))"),
+ "b866a8dff88bbfe6fb2c4f6d4c102fee");
+assert.equal(one("pg_trigger","tgname='character_progression_materialize_eladrin_season_v1' "+
+ "AND NOT tgisinternal AND tgenabled='O' AND tgdeferrable AND tginitdeferred"),1);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),24);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t13Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t13Red.data)),
+ runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t13Red.data))
+},t13RedHashes);
+console.log("PASS C34-T13-GREEN01: 21/31 source-original deferred DDL, unchanged RED historical row and source MD5");
+for(const season of ["autumn","winter","spring","summer"]){
+ const input=t13Season(randomUUID(),[season]);
+ const made=await createSubclass(input);
+ assert.ifError(made.error);
+ assert.equal(t13RuntimeCount(made.data),1);
+ assert.equal(t13SeasonFor(made.data),season);
+ assert.equal(t13Projection(made.data),season);
+ assert.equal(sql("SELECT source||':'||cadence||':'||(state->>'configured')||':'||(state->>'initial') "+
+  "FROM public.character_runtime_feature_choices WHERE character_id="+quote(made.data)+
+  " AND feature_key='eladrin-season'"),"MPMM:long_rest:true:true");
+ assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),
+  "ORIGINAL_NONEMPTY","Option A protected historical account snapshot must not be overwritten");
+ if(season==="winter"){
+  const before={
+   sheet:t8RowHash("public.character_sheets","character_id="+quote(made.data)),
+   runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(made.data)),
+   progression:t8RowHash("public.character_progression","character_id="+quote(made.data)),
+   spells:t8RowHash("public.character_spells","character_id="+quote(made.data)),
+   feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(made.data))
+  };
+  const replay=await createSubclass(input);
+  assert.ifError(replay.error);
+  assert.equal(replay.data,made.data);
+  assert.deepEqual({
+   sheet:t8RowHash("public.character_sheets","character_id="+quote(made.data)),
+   runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(made.data)),
+   progression:t8RowHash("public.character_progression","character_id="+quote(made.data)),
+   spells:t8RowHash("public.character_spells","character_id="+quote(made.data)),
+   feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(made.data))
+  },before,"same nonce must never replace first-season state, feats or related data");
+ }
+}
+console.log("PASS C34-T13-GREEN02: all four original Eladrin seasons materialize source-owned runtime+canonical sheet without legacy account overwrite, nonce replay immutable");
+async function t13Reject(keys,pattern){
+ const payload=t13Season(randomUUID(),keys);
+ const before={
+  totals:grantCounts(),
+  spells:Number(sql("SELECT count(*) FROM public.character_spells")),
+  runtime:Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices"))
+ };
+ const res=await createSubclass(payload);
+ rejected(res,"T13 invalid Eladrin starting-season source");
+ assert.match(res.error.message,pattern);
+ assert.equal(one("public.characters","creation_request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(payload.creation_request_id)),0);
+ assert.deepEqual(grantCounts(),before.totals);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_spells")),before.spells);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices")),before.runtime);
+}
+await t13Reject(null,/Eladrin Player Forge references an invalid season/);
+await t13Reject([],/Eladrin requires exactly one current season during Player Forge creation/);
+await t13Reject(["winter","autumn"],/Eladrin requires exactly one current season during Player Forge creation/);
+await t13Reject(["monsoon"],/Eladrin Player Forge references an invalid season/);
+console.log("PASS C34-T13-GREEN03: missing, empty, double and fabricated season selections reject atomically (character/nonce/feat/gear/spells/runtime)");
+const t13Other=await createSubclass(t13Season(randomUUID(),["winter"],"Elf","XPHB"));
+assert.ifError(t13Other.error);
+assert.equal(t13RuntimeCount(t13Other.data),0);
+assert.equal(t13Projection(t13Other.data),"");
+console.log("PASS C34-T13-GREEN04: source-gated non-Eladrin Elf does not acquire MPMM season");
+const t13RacePayload=t13Season(randomUUID(),["spring"]);
+const t13Race=await Promise.all([createSubclass(t13RacePayload),createSubclass(t13RacePayload)]);
+for(const res of t13Race)assert.ifError(res.error);
+assert.equal(t13Race[0].data,t13Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t13RacePayload.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(t13RacePayload.creation_request_id)),1);
+assert.equal(t13RuntimeCount(t13Race[0].data),1);
+assert.equal(t13Projection(t13Race[0].data),"spring");
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),"ORIGINAL_NONEMPTY");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+assert.equal(sql("SELECT to_regprocedure('public.configure_character_eladrin_season_v1(uuid,text)') IS NULL"),"t");
+console.log("PASS C34-T13-GREEN05: simultaneous real signed nonce creates one season state; protected map, GM secret and rest-RPC release boundary intact");
+console.log("C34 T13 signed RED->GREEN PASS: 21/31 original trigger definitions; 8 non-map progression +2 world-map originals still held. Eladrin initial season only, NOT long-rest replacement, full browser, source catalogs, Option A 34 writers or production acceptance. DRAFT HOLD.");
