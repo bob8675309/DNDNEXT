@@ -2363,3 +2363,214 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("PASS C34-T16-GREEN07: genuine signed Wizard nonce concurrency, GM secret, legacy accounts and protected map unchanged");
 console.log("C34 T16 original Wizard Savant/Signature SOURCE RED + deliberately non-original Option A signature projection GREEN: 25/31 original deferred DDL, four non-map progression + two protected world map remain; reduced synthetic spell/catalog/role data, no production/browser/restore acceptance.");
+
+
+// T17 — held #360 original EFA Artificer Magic Item Plans deferred acquisition.
+// Original helper first runs with historical account mirror ON for real signed
+// RED; explicit Option A compatible candidate differs by mirror removal ONLY.
+// Source EFA class / six option IDs / two XDMG item IDs are exactly archived;
+// level2 starting-spell count is an explicitly reduced disposable test parameter.
+sqlFile("scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql");
+const t17Plan=[
+ {key:"artificer-plan:1-shield|EFA",id:"bee85784-f6cd-416d-9c0d-cb9f6fbdadaf",name:"+1 Shield"},
+ {key:"artificer-plan:1-wand-of-the-war-mage|EFA",id:"c3e113c1-8f41-4028-9ca5-2f123c321818",name:"+1 Wand of the War Mage"},
+ {key:"artificer-plan:1-weapon|EFA",id:"f38fac21-028d-4314-a170-f1b171a9ed75",name:"+1 Weapon"},
+ {key:"artificer-plan:1-wraps-of-unarmed-power|EFA",id:"cdd0e441-d773-4d01-90a4-c3e3e3e13b76",name:"+1 Wraps of Unarmed Power"}
+];
+const t17Wildcard={key:"artificer-plan:common-magic-item-that-isn-t-a-potion-a-scroll-or-cursed|EFA",
+ id:"f8897bf9-5bb5-4e4f-8280-ad2a2e941112",name:"Common magic item that isn't a Potion, a Scroll, or cursed"};
+const t17Armor={key:"artificer-plan:1-armor|EFA",id:"eda4194f-7d01-44e4-a78c-79f29b7a83e2",name:"+1 Armor"};
+const t17Prosthetic="8adeb0df-1434-41f3-8702-1e1e3e0b5da7";
+const t17Potion="d0f8d472-b20f-402b-8405-b65a4330d348";
+const t17Magic=[t10Spells[0],t10Spells[1],t10Spells[3],t10Spells[4]];
+const t17Group=(slot,opt,item)=>{
+ const g={ownerType:"class-option",ownerKey:"artificer",placement:"class",
+  source:"EFA",label:"Magic Item Plan",level:2,
+  metadata:{family:"artificer-plan",slot},
+  fields:{plan:{kind:"option",count:1,required:true,
+   selections:[{key:opt.key,value:opt.key,name:opt.name,source:"EFA"}]}}};
+ if(item!==undefined)g.fields["magic-item-child"]={
+   kind:"item",count:1,required:true,metadata:{planOptionKey:opt.key},
+   selections:item===null?[]:[{key:item,value:item,name:"Source-qualified item",source:"XDMG"}]
+ };
+ return g;
+};
+const t17Art=(nonce,slots=t17Plan.map(x=>[x]))=>{
+ const base=t10WizardInput(nonce,t17Magic);
+ const artChoices=Object.fromEntries(slots.map(([opt,item],i)=>
+  ["artificer-plan-slot-"+(i+1),t17Group(i+1,opt,item)]));
+ return {payload:{...base.payload,name:"T17 signed EFA Artificer "+nonce.slice(0,8),
+  sheet:{...base.payload.sheet,classKey:"artificer",level:2,
+   startingMagicSelections:base.payload.sheet.startingMagicSelections.map(c=>({
+    ...c,source_key:"artificer"
+   })),
+   sourceChoices:{...base.payload.sheet.sourceChoices,...artChoices}
+  }},
+  magic:base.magic};
+};
+const t17Create=(actor,req)=>rpc(actor,"create_player_character_v3",{
+ p_payload:req.payload,p_spell_choices:[],p_magic_selections:req.magic
+});
+const t17GrantCount=id=>one("public.character_class_option_grant_instances",
+ "character_id="+quote(id)+" AND option_type='artificer-plan'");
+const t17GrantsHash=id=>t8RowHash("public.character_class_option_grant_instances",
+ "character_id="+quote(id)+" AND option_type='artificer-plan'");
+const t17Projection=id=>sql("SELECT sheet#>>'{classFeatureChoices,artificer-magic-item-plans,count}' "+
+ "FROM public.character_sheets WHERE character_id="+quote(id));
+const t17AccountHash=id=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+quote(id));
+const t17RedOwner=await signed("artificer-original-red-owner");
+const t17RedEditor=await signed("artificer-original-red-linked");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t17RedOwner.id)+
+ ",'T17 original Artificer owner','{\"source\":\"HISTORIC_T17_OWNER\",\"marker\":\"T17_ACCOUNT_FROZEN\"}'::jsonb)");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t17RedEditor.id)+
+ ",'T17 original Artificer linked coeditor','{\"source\":\"HISTORIC_T17_EDITOR\",\"marker\":\"T17_EDITOR_FROZEN\"}'::jsonb)");
+const t17RedInput=t17Art(randomUUID());
+const t17RedBefore=await t17Create(t17RedOwner,t17RedInput);
+assert.ifError(t17RedBefore.error);
+assert.equal(t17GrantCount(t17RedBefore.data),0);
+assert.equal(t17Projection(t17RedBefore.data),"");
+const t17RedHashes={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t17RedBefore.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t17RedBefore.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t17RedBefore.data))
+};
+console.log("PASS C34-T17-RED01: source-authentic signed EFA Artificer first-create has no original Magic Item Plan grants before trigger");
+sqlFile("scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.sync_character_artificer_plan_projection_v1(uuid)'::regprocedure))"),
+ "5ebf572db01143e9b523c7dba0d43ad5");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))"),
+ "67766989a466b82f170b5e00f9154e24");
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t17RedBefore.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t17RedBefore.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t17RedBefore.data))
+},t17RedHashes,"T17 no historical pre-trigger backfill");
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),29);
+console.log("PASS C34-T17-GREEN01: all six source-original Artificer private functions and original deferred trigger co-resident, 26/31; RED rows unchanged");
+const t17Original=await t17Create(t17RedOwner,t17Art(randomUUID()));
+assert.ifError(t17Original.error);
+assert.equal(t17GrantCount(t17Original.data),4);
+assert.equal(t17Projection(t17Original.data),"4");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t17RedOwner.id)),"",
+ "ORIGINAL RED Artificer mirror unexpectedly preserved historical account marker");
+console.log("PASS C34-T17-RED02: genuine source-original Artificer grants four plans but overwrites creator's frozen historical account sheet");
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) "+
+ "VALUES("+quote(t17Original.data)+","+quote(t17RedEditor.id)+",false,true,false)");
+sql("SELECT private.sync_character_artificer_plan_projection_v1("+quote(t17Original.data)+")");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t17RedEditor.id)),"",
+ "ORIGINAL RED privileged plan projector must overwrite linked editor account");
+const t17RedAfter={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t17Original.data)),
+ grants:t17GrantsHash(t17Original.data)
+};
+console.log("PASS C34-T17-RED03: unchanged original source Artificer helper overwrites a separately signed linked editor's account snapshot");
+sqlFile("scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql");
+assert.notEqual(sql("SELECT md5(pg_get_functiondef('private.sync_character_artificer_plan_projection_v1(uuid)'::regprocedure))"),
+ "5ebf572db01143e9b523c7dba0d43ad5");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))"),
+ "67766989a466b82f170b5e00f9154e24");
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t17Original.data)),
+ grants:t17GrantsHash(t17Original.data)
+},t17RedAfter,"new Artificer Option A candidate must not rewrite RED historic rows");
+console.log("PASS C34-T17-GREEN02: explicitly NON-ORIGINAL scoped Artificer projection activated; original materializer retains exact source body");
+const t17SafeOwner=await signed("artificer-option-a-owner");
+const t17SafeEditor=await signed("artificer-option-a-coeditor");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t17SafeOwner.id)+
+ ",'T17 safe owner','{\"source\":\"T17_SAFE_ACCOUNT\",\"marker\":\"T17_OWNER_FROZEN\"}'::jsonb)");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t17SafeEditor.id)+
+ ",'T17 safe coeditor','{\"source\":\"T17_SAFE_EDITOR\",\"marker\":\"T17_EDITOR_FROZEN\"}'::jsonb)");
+const t17OwnerHash=t17AccountHash(t17SafeOwner.id),t17EditorHash=t17AccountHash(t17SafeEditor.id);
+const t17FixedReq=t17Art(randomUUID());
+const t17Fixed=await t17Create(t17SafeOwner,t17FixedReq);
+assert.ifError(t17Fixed.error);
+const t17FixedId=t17Fixed.data;
+assert.equal(t17GrantCount(t17FixedId),4);
+assert.equal(t17Projection(t17FixedId),"4");
+assert.equal(sql("SELECT string_agg(o.option_key,',' ORDER BY g.instance_key) FROM "+
+ "public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o "+
+ "ON o.id=g.option_catalog_id WHERE g.character_id="+quote(t17FixedId)+
+ " AND g.option_type='artificer-plan'"),t17Plan.map(x=>x.key).join(","));
+assert.equal(one("public.character_class_option_grant_instances",
+ "character_id="+quote(t17FixedId)+" AND option_type='artificer-plan' AND acquired_level=2 "+
+ "AND metadata->>'materializesInventory'='false'"),4);
+assert.equal(t17AccountHash(t17SafeOwner.id),t17OwnerHash);
+assert.equal(t17AccountHash(t17SafeEditor.id),t17EditorHash);
+const t17FixedHash={
+ grant:t17GrantsHash(t17FixedId),
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t17FixedId)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t17FixedId)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t17FixedId))
+};
+const t17Replay=await t17Create(t17SafeOwner,t17FixedReq);
+assert.ifError(t17Replay.error);assert.equal(t17Replay.data,t17FixedId);
+assert.deepEqual({
+ grant:t17GrantsHash(t17FixedId),
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t17FixedId)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t17FixedId)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t17FixedId))
+},t17FixedHash);
+console.log("PASS C34-T17-GREEN03: signed original four fixed EFA plans, canonical projection, 4 correct slot levels, no physical plan grants, idempotent nonce and frozen account");
+const t17WildInput=t17Art(randomUUID(),[[t17Plan[0]],[t17Wildcard,t17Prosthetic],[t17Plan[2]],[t17Plan[3]]]);
+const t17Wild=await t17Create(t17SafeOwner,t17WildInput);
+assert.ifError(t17Wild.error);
+assert.equal(t17GrantCount(t17Wild.data),4);
+assert.equal(t17Projection(t17Wild.data),"4");
+assert.equal(sql("SELECT choices#>>'{child,key}' FROM public.character_class_option_grant_instances WHERE "+
+ "character_id="+quote(t17Wild.data)+" AND instance_key='artificer-plan-2'"),t17Prosthetic);
+assert.equal(sql("SELECT sheet#>>'{classFeatureChoices,artificer-magic-item-plans,selections,1,item,key}' "+
+ "FROM public.character_sheets WHERE character_id="+quote(t17Wild.data)),t17Prosthetic);
+assert.equal(t17AccountHash(t17SafeOwner.id),t17OwnerHash);
+console.log("PASS C34-T17-GREEN04: real source XDMG Prosthetic Limb wildcard grants a plan, not a physical limb, without account overwrite");
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) "+
+ "VALUES("+quote(t17FixedId)+","+quote(t17SafeEditor.id)+",false,true,false)");
+sql("SELECT private.sync_character_artificer_plan_projection_v1("+quote(t17FixedId)+")");
+assert.equal(t17AccountHash(t17SafeOwner.id),t17OwnerHash);
+assert.equal(t17AccountHash(t17SafeEditor.id),t17EditorHash);
+assert.equal(t17Projection(t17FixedId),"4");
+console.log("PASS C34-T17-GREEN05: linked owner and coeditor historical accounts remain unchanged after canonical re-projection");
+async function t17Reject(slots,rx){
+ const input=t17Art(randomUUID(),slots),before={
+  grants:grantCounts(),items:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  spells:Number(sql("SELECT count(*) FROM public.character_spells")),
+  art:Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE option_type='artificer-plan'")),
+  owner:t17AccountHash(t17SafeOwner.id),editor:t17AccountHash(t17SafeEditor.id)
+ };
+ const res=await t17Create(t17SafeOwner,input);
+ rejected(res,"invalid original Artificer plan/source selection");
+ assert.match(res.error.message,rx);
+ assert.equal(one("public.characters","creation_request_id="+quote(input.payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(input.payload.creation_request_id)),0);
+ assert.deepEqual(grantCounts(),before.grants);
+ assert.equal(Number(sql("SELECT count(*) FROM public.inventory_items")),before.items);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_spells")),before.spells);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE option_type='artificer-plan'")),before.art);
+ assert.equal(t17AccountHash(t17SafeOwner.id),before.owner);
+ assert.equal(t17AccountHash(t17SafeEditor.id),before.editor);
+}
+await t17Reject(t17Plan.slice(0,3).map(x=>[x]),/missing Magic Item Plan slot 4/);
+await t17Reject([[t17Plan[0]],[t17Plan[0]],[t17Plan[2]],[t17Plan[3]]],/already a learned Magic Item Plan/);
+await t17Reject([[t17Armor],[t17Plan[1]],[t17Plan[2]],[t17Plan[3]]],/requires Artificer level 6/);
+await t17Reject([[t17Plan[0]],[t17Wildcard,null],[t17Plan[2]],[t17Plan[3]]],/requires one concrete magic item/);
+await t17Reject([[t17Plan[0]],[t17Wildcard,t17Potion],[t17Plan[2]],[t17Plan[3]]],/selected item is not legal/);
+await t17Reject([[t17Plan[0]],[{key:"artificer-plan:invented|EFA",name:"Invented"}],[t17Plan[2]],[t17Plan[3]]],/references an unknown plan/);
+console.log("PASS C34-T17-GREEN06: six original missing/duplicate/prerequisite/child/potion/forged-plan cases atomically roll back nonce, inventory, grants, spells and accounts");
+const t17Fighter=await createSubclass(sourceAuthority(randomUUID()));
+assert.ifError(t17Fighter.error);
+assert.equal(t17GrantCount(t17Fighter.data),0);
+const t17RaceInput=t17Art(randomUUID());
+const t17Race=await Promise.all([t17Create(t17SafeOwner,t17RaceInput),t17Create(t17SafeOwner,t17RaceInput)]);
+for(const x of t17Race)assert.ifError(x.error);
+assert.equal(t17Race[0].data,t17Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t17RaceInput.payload.creation_request_id)),1);
+assert.equal(t17GrantCount(t17Race[0].data),4);
+assert.equal(one("private.player_creation_intent_reservations_v1",
+ "request_id="+quote(t17RaceInput.payload.creation_request_id)),1);
+assert.equal(t17AccountHash(t17SafeOwner.id),t17OwnerHash);
+assert.equal(t17AccountHash(t17SafeEditor.id),t17EditorHash);
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+console.log("PASS C34-T17-GREEN07: original Artificer skips Fighter, genuine signed concurrent nonce produces one four-plan actor; privacy and protected map intact");
+console.log("C34 T17 original EFA Artificer SOURCE RED + deliberately non-original Option A scoped helper GREEN: 26/31 original trigger DDL, 3 Warlock non-map and 2 protected world map remain; reduced lvl2 starting-spell fixture, source original null-parent conditional retained, NO production parity.");
