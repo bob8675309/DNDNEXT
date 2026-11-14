@@ -113,6 +113,7 @@ jobs:
           styles/npc-profile-centered.css 150eb9ad78aeba268be955e63c8451e3c0ed0e14
           scripts/browser/verify_c33_creator_backstory_dom.mjs 7b3a813d11d4b9e0fcd1ba8aef9d4e8463f58aa4
           scripts/browser/verify_c33_next_town_route.mjs d19b134fdb4e4b58833fe339f918c027959eae02
+          scripts/browser/verify_c33_npc_pdf_visual.mjs 1ee0f29a5c017906f2029eff25a9b1c1b88c5760
           scripts/fixtures/c33_next_town_route_pg17.sql 0d3f1b261b7600944121c9be6f808fa190e8dddc
           SOURCEPINS
           node --check held345/scripts/browser/verify_c33_creator_backstory_dom.mjs
@@ -154,6 +155,32 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f held345/scripts/fixtures/c33_next_town_route_pg17.sql
           (cd held345 && node scripts/browser/verify_c33_next_town_route.mjs)
           echo 'PASS C34-T20: held #345 Chromium and Next browser against same T19 29/31 disposable DB'
+      - name: T20 render original #345 public, GM and dense official PDF pages (synthetic data only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$(git -C held345 rev-parse HEAD)" = 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          test "$(git -C held345 hash-object scripts/browser/verify_c33_npc_pdf_visual.mjs)" = 1ee0f29a5c017906f2029eff25a9b1c1b88c5760
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          command -v pdftotext
+          command -v pdftoppm
+          mkdir -p "$RUNNER_TEMP/c34-t20-npc-pdf"
+          (cd held345 && DNDNEXT_PDF_VISUAL_OUT="$RUNNER_TEMP/c34-t20-npc-pdf" \
+             DNDNEXT_PDF_VISUAL_LOG_IMAGES=0 \
+             node scripts/browser/verify_c33_npc_pdf_visual.mjs)
+          echo 'PASS C34-T20-PDF: held #345 original 3-page PDF public/GM/dense content and JPEG previews'
+      - name: Preserve only synthetic PDF/page image evidence (no real user records)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c34-t20-held345-synthetic-pdf-page-previews
+          path: ${{ runner.temp }}/c34-t20-npc-pdf/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Discard local databases and credentials
         if: always()
         run: |
