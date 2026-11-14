@@ -5,19 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c7994f53f0fbe1ab605a1ec49f043b7d43b9caa4` |
+| Exact source commit represented by this archive snapshot | `d39f5401ae75776e02038fd58636760666cc43c8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): preserve held Forge and NPC Profile source and frontend consumer omissions |
-| Files changed relative to main | 76 (63 non-docs; 13 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | chore(C34 preserve): archive four exact original #345 NPC Profile UI blobs, inactive |
+| Files changed relative to main | 80 (67 non-docs; 13 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
+- `scripts/integration/c34/preserved/held345/components/CreatorBackstoryPanel.js`
+- `scripts/integration/c34/preserved/held345/components/GlobalNpcProfileOverlay.js`
+- `scripts/integration/c34/preserved/held345/styles/npc-profile-centered.css`
+- `scripts/integration/c34/preserved/held345/utils/npcProfileOverlay.js`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
-- … 26 more
+- … 30 more
 
 ## Trust and update procedure
 
