@@ -146,6 +146,10 @@ jobs:
           export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
           export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
           test -n "$C33_BROWSER_CHROME" || { echo 'Local Chromium missing; no remote fallback' >&2; exit 1; }
+          # C34-only scratch source-qualified T19 Forge seed compatibility;
+          # all ORIGINAL browser assertions and React components unchanged.
+          node scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs
+          node --check held345/scripts/browser/verify_c33_creator_backstory_dom.mjs
           (cd held345 && node scripts/browser/verify_c33_creator_backstory_dom.mjs)
           psql -X -v ON_ERROR_STOP=1 -f held345/scripts/fixtures/c33_next_town_route_pg17.sql
           (cd held345 && node scripts/browser/verify_c33_next_town_route.mjs)

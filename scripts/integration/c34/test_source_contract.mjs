@@ -9,6 +9,7 @@ import { auditSources, STAGES, RELEASE_BLOCKERS } from "./validate_source_contra
 import { verifyOriginalJointDependencies, ORIGINAL_JOINT_DEPENDENCIES } from "./validate_joint_fixture_blobs.mjs";
 import { auditTriggerCoverage } from "./verify_original_trigger_coverage.mjs";
 import { auditHeld345InactiveUiCapsule, HELD345_UI_PINS } from "./verify_held345_inactive_ui_capsule.mjs";
+import { adaptOriginalC3BBrowserFixture, ORIGINAL_C3B_BLOB, SYNTHETIC_FROM, SYNTHETIC_TO, gitBlobSha as c3bBlobSha } from "./t20_adapt_held345_browser_fixture.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const load = (file) => fs.readFileSync(path.join(dir, "sources", file));
@@ -721,4 +722,20 @@ test("C34-P345-N02 activation without original privacy SQL must fail closed", ()
       ? Buffer.concat([bytes, Buffer.from("\n// Unsafe GlobalNpcProfileOverlay early activation\n")])
       : bytes;
   }), /requires coordinated privacy SQL\+UI cutover before activation/);
+});
+
+
+test("C34-T20-COMPAT-S01 original held C3B source is pinned, only verified synthetic Fighter seed may change",()=>{
+ const root=path.resolve(dir,"../../..");
+ const original=fs.readFileSync(path.join(root,"scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_creator_backstory_dom.mjs"));
+ assert.equal(c3bBlobSha(original),ORIGINAL_C3B_BLOB);
+ const adapted=adaptOriginalC3BBrowserFixture(original);
+ assert.equal(adapted.replace(SYNTHETIC_TO,SYNTHETIC_FROM),original.toString("utf8"));
+ assert.ok(adapted.includes("PASS C3P06: signed co-editor used original Print Sheet"));
+});
+test("C34-T20-COMPAT-N01 tampered or previously adapted original C3B is rejected",()=>{
+ const root=path.resolve(dir,"../../..");
+ const original=fs.readFileSync(path.join(root,"scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_creator_backstory_dom.mjs"));
+ assert.throws(()=>adaptOriginalC3BBrowserFixture(Buffer.concat([original,Buffer.from("\n// tampered")])),/source drift/);
+ assert.throws(()=>adaptOriginalC3BBrowserFixture(adaptOriginalC3BBrowserFixture(original)),/source drift/);
 });
