@@ -2008,11 +2008,21 @@ const t15ManeuverNames=[
 ];
 const t15Battle=(nonce,choices=null,level=3)=>{
  const p=makeSubclass(nonce,"Battle Master","XPHB",level);
+ // Unlike old isolated I1-F, this joined research also retains original T5:
+ // every source-qualified selection requires its feature ownership, count,
+ // level and an exactly matching canonical summary from the Forge serializer.
+ const selections=(choices||[]).map(name=>({name,source:"XPHB"}));
+ const sourceGroup=choices===null?{}:{"battle-master-choices":{
+  kind:"battle-master-maneuver",sourceFeature:"Battle Master",
+  label:"Battle Master",subclassName:"Battle Master",level:3,
+  count:selections.length,selections
+ }};
  return {...p,name:"T15 source signed Battle Master "+nonce.slice(0,8),
-  sheet:{...p.sheet,classFeatureChoices:choices===null?{}:{
-   "battle-master-choices":{kind:"battle-master-maneuver",
-    subclassName:"Battle Master",selections:choices.map(name=>({name}))}
-  }}
+  sheet:{...p.sheet,classFeatureChoices:sourceGroup,
+   classFeatureChoiceSummary:choices===null?[]:selections.map(x=>({
+    groupId:"battle-master-choices",key:"",name:x.name,source:"XPHB"
+   }))
+  }
  };
 };
 const t15RedInput=t15Battle(randomUUID());
@@ -2071,9 +2081,9 @@ async function t15Reject(choices,rx){
  assert.equal(Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances")),beforeManeuvers);
 }
 await t15Reject(t15ManeuverNames.slice(0,2),/requires exactly 3 maneuver choice/);
-await t15Reject(["Ambush","Ambush","Disarming Attack"],/must be distinct/);
-await t15Reject(["Ambush","Disarming Attack","Forged XPHB Maneuver"],/unknown maneuver choice/);
-console.log("PASS C34-T15-GREEN04: original choice count, duplicate and unknown source maneuvers rejected atomically");
+await t15Reject(["Ambush","Ambush","Disarming Attack"],/contains empty or duplicate selections|must be distinct/);
+await t15Reject(["Ambush","Disarming Attack","Forged XPHB Maneuver"],/not valid for this class|unknown maneuver choice/);
+console.log("PASS C34-T15-GREEN04: co-resident original T5 and T15 validators reject count, duplicate and unknown source maneuvers atomically");
 function t15RejectedTransaction(statement,rx){
  const out=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-qAt"],{
   env,input:"BEGIN;\n"+statement+"\nCOMMIT;\n",encoding:"utf8",timeout:35000
