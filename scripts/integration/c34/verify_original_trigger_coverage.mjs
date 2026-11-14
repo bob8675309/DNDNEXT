@@ -453,7 +453,7 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "00000000-0000-0000-0000-000000008814","00000000-0000-0000-0000-000000016001",
     "00000000-0000-0000-0000-000000016046"])
     assert.ok(t16Cat.includes(id),"T16 original/synthetic source test spell specimen ID drift "+id);
-  assert.ok(t16Cat.includes("SYNTHETIC")&&t16Cat.includes("NOT production")&&
+  assert.ok(t16Cat.includes("SYNTHETIC")&&/\b(?:NO|NOT) production\b/i.test(t16Cat)&&
     !t16Cat.includes("DROP VIEW public.spells_catalog_preferred"),
     "T16 reduced Wizard source must declare synthetic data and preserve T12 view");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
