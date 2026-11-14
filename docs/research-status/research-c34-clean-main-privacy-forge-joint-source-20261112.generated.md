@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ec3d0f6c28d27c2ca2ed68c414c34abc8d372c06` |
+| Exact source commit represented by this archive snapshot | `4608477319d756257e1b59a2c999d2d16c8bd757` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T14: source-original Khoravar signed legacy mirror RED and character-scoped Option A GREEN suite |
+| Last source commit title | C34 T14: prove original Khoravar source blob/handler identity and explicit no-mirror Option A adapter |
 | Files changed relative to main | 52 (45 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
