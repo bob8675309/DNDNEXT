@@ -510,7 +510,7 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
       assert.ok(functionStart>=0&&functionEnd>functionStart,
         "T17 candidate projection function missing");
       const actualFunction=t17Candidate.slice(functionStart,functionEnd+"$function$;".length);
-      assert.equal(actualFunction.replace("  v_choice_summary jsonb;\\n","").replace(summaryDelta,""),
+      assert.equal(actualFunction.replace("  v_choice_summary jsonb;\n","").replace(summaryDelta,""),
         corrected,
         "T17 candidate can only differ from original by NULL-parent, mirror removal and pinned summary parity");
       assert.ok(!corrected.includes(parentFrom),"T17 NULL-parent correction not applied");
