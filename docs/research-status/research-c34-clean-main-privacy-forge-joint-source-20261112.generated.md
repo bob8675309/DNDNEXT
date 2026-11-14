@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3531e40ba8ce066fcd1c9c1680dbf2bb630cbe71` |
+| Exact source commit represented by this archive snapshot | `917d8395e49ce38eeff68b3f9694c1c28306bb1c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T11 source-original Astral Elf species magic signed RED→GREEN and 19/31 census |
+| Last source commit title | fix(c34): terminate five verbatim live PG17 function DDL statements in T11 disposable fixture |
 | Files changed relative to main | 43 (37 non-docs; 6 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
-- `scripts/integration/c34/test_source_contract.mjs`
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql`
 
 ## Research-branch change inventory versus main
 
