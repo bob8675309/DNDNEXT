@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4cc1fd515aafdc8ff484a9f0d35c5451e7a70095` |
+| Exact source commit represented by this archive snapshot | `19607ce8af29c8668ac4516a8cfd30b7c54c2e8f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(C34 T18): preserve pre-existing XPHB Eldritch Blast catalog row during fixture seeding |
+| Last source commit title | fix(C34 T18): use bounded package A recognized by inherited disposable equipment stub |
 | Files changed relative to main | 74 (63 non-docs; 11 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
