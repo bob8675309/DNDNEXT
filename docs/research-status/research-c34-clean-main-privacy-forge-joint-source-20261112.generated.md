@@ -5,19 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2831922df9e20227ee90314b53ed8ce2f5069997` |
+| Exact source commit represented by this archive snapshot | `46a697b92d590f1169420c12589809dba8de61b0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T16): comment original triggerdef example, preserve exact executable deferred Wizard trigger |
-| Files changed relative to main | 62 (53 non-docs; 9 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34 T16): signed Wizard original mirror RED / Option A GREEN, 25/31 source DDL, release HOLD |
+| Files changed relative to main | 63 (53 non-docs; 10 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
+- `docs/ACTIVE_WORK.md`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -30,6 +33,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
+- `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -70,8 +74,7 @@
 - `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
 - `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql`
-- `scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql`
-- … 12 more
+- … 13 more
 
 ## Trust and update procedure
 
