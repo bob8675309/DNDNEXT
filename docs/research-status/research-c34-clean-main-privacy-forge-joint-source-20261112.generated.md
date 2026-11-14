@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d299fc8aff87f01a818ebc80b68720c6d47ac927` |
+| Exact source commit represented by this archive snapshot | `64fe5ca1340ae4d342bfa9cd9e6d9545d2a1b817` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T16): original Wizard Savant/Signature mirror RED and scoped Option A GREEN with signed PG17 |
+| Last source commit title | test(C34 T16): audit synthetic source warning regardless of NO/NOT wording |
 | Files changed relative to main | 62 (53 non-docs; 9 docs) |
-| Last source commit | 8 files (8 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,13 +17,6 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
-- `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
-- `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
-- `scripts/integration/c34/sources/11_i1e_original_wizard_functions_pg17.sql`
-- `scripts/integration/c34/sources/12_i1e_original_wizard_setup_pg17.sql`
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
-- `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
