@@ -1846,7 +1846,7 @@ assert.equal(sql("SELECT sheet#>>'{runtimeProficiencies,khoravarSkillVersatility
 assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t14Legacy.id)),"",
  "SOURCE RED: original helper unexpectedly preserved historical account marker");
 const t14RedRuntimeHash=t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t14Red.data));
-const t14RedSheetHash=t8RowHash("public.character_sheets","character_id="+quote(t14Red.data));
+let t14RedSheetHash=t8RowHash("public.character_sheets","character_id="+quote(t14Red.data));
 console.log("PASS C34-T14-RED01: real signed original Khoravar source helper overwrites historical players.sheet, losing unrelated account marker; 22/31 original triggers");
 // RED shows original helper's second hazard: a linked co-editor is also mirrored
 // by the original SECURITY DEFINER helper, regardless of character ownership.
@@ -1864,6 +1864,10 @@ assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+qu
 assert.equal(sql("SELECT sheet#>>'{runtimeProficiencies,khoravarSkillVersatility,proficiency,key}' "+
  "FROM public.players WHERE user_id="+quote(t14Witness.id)),t14Skill);
 console.log("PASS C34-T14-RED02: unchanged source-original helper also overwrites another linked actor's historical account sheet");
+ // RED02 intentionally invoked the original projection a second time; that
+ // legitimate pre-candidate write advances character_sheets.updated_at. Snapshot
+ // AFTER both original RED witnesses, then prove the candidate itself is inert.
+ t14RedSheetHash=t8RowHash("public.character_sheets","character_id="+quote(t14Red.data));
 // Scope-aware helper replacement candidate explicitly diverges from original;
 // the held original SQL source/MD5 remains archived and separately audited.
 sqlFile("scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql");
