@@ -2594,3 +2594,165 @@ assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()
 assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
 console.log("PASS C34-T17-GREEN07: original Artificer skips Fighter, genuine signed concurrent nonce produces one four-plan actor; privacy and protected map intact");
 console.log("C34 T17 original EFA Artificer SOURCE RED + deliberately non-original Option A scoped helper GREEN: 26/31 original trigger DDL, 3 Warlock non-map and 2 protected world map remain; reduced lvl2 starting-spell fixture, source original null-parent conditional retained, NO production parity.");
+
+// T18 — the THREE ORIGINAL XPHB Warlock deferred handlers from held #355/#356,
+// now joined after all 26 T17 originals in this disposable signed PG17 fixture.
+// Original IDs, handlers and event timings are NEVER rewritten or short-circuited.
+sqlFile("scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql");
+const t18ClassId="6792abd0-1fd9-44fb-ae4c-56c307ab791a";
+const t18Blast="47d3fd14-695b-4d54-a3fb-9c210ed59952";
+const t18Poison="27d42a4f-4fbc-44c2-8f8c-e8d68978ef98";
+const t18Spells=[[t18Blast,"Eldritch Blast",0,true],[t18Poison,"Poison Spray",0,true]];
+const t18OptionKeys={
+ "Pact of the Blade":"optional-feature:pact-of-the-blade|XPHB",
+ "Armor of Shadows":"optional-feature:armor-of-shadows|XPHB",
+ "Eldritch Mind":"optional-feature:eldritch-mind|XPHB",
+ "Agonizing Blast":"optional-feature:agonizing-blast|XPHB",
+ "Devil's Sight":"optional-feature:devils-sight|XPHB",
+ "Thirsting Blade":"optional-feature:thirsting-blade|XPHB"
+};
+const t18Group=(slot,name,child=null)=>{
+ const key=t18OptionKeys[name];assert.ok(key,"T18 cannot invent Warlock source option "+name);
+ const level=slot===1?1:2;
+ const group={placement:"class",ownerType:"class-option",ownerKey:"warlock",
+  label:"Eldritch Invocation",level,
+  metadata:{family:"eldritch-invocation",slot,acquisitionLevel:level},
+  fields:{invocation:{kind:"option",count:1,required:true,
+   selections:[{key,name,source:"XPHB"}]}}};
+ if(child!==null)group.fields["child-agonizing-blast"]={
+  kind:"spell",count:1,required:true,
+  activeWhen:{groupId:"warlock-invocation-slot-"+slot,fieldId:"invocation",values:[key]},
+  selections:[{key:child,value:child,name:"Eldritch Blast",source:"XPHB"}]
+ };
+ return group;
+};
+const t18Make=(nonce,level=1,entries=[[1,"Pact of the Blade"]])=>{
+ const w=t10WizardInput(nonce,t18Spells);
+ const sourceChoices=Object.fromEntries(entries.map(([slot,name,child])=>
+  ["warlock-invocation-slot-"+slot,t18Group(slot,name,child??null)]));
+ return {payload:{...w.payload,name:"T18 original XPHB Warlock "+nonce.slice(0,8),
+  sheet:{...w.payload.sheet,classKey:"warlock",level,
+   startingEquipmentSelections:{...w.payload.sheet.startingEquipmentSelections,
+    mode:"package",classOption:"B"},
+   startingMagicSelections:w.payload.sheet.startingMagicSelections.map(x=>({
+    ...x,source_key:"warlock"
+   })),sourceChoices
+  }},
+  magic:w.magic
+ };
+};
+const t18Create=(actor,req)=>rpc(actor,"create_player_character_v3",{
+ p_payload:req.payload,p_spell_choices:[],p_magic_selections:req.magic
+});
+const t18Grants=id=>one("public.character_class_option_grant_instances",
+ "character_id="+quote(id)+" AND option_type='eldritch-invocation'");
+const t18GrantHash=id=>t8RowHash("public.character_class_option_grant_instances",
+ "character_id="+quote(id)+" AND option_type='eldritch-invocation'");
+const t18AccountHash=id=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+quote(id));
+const t18Owner=await signed("warlock-source-owner");
+const t18Editor=await signed("warlock-linked-editor");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t18Owner.id)+
+ ",'T18 historic Warlock owner','{\"marker\":\"T18_LEGACY_OWNER_FROZEN\"}'::jsonb)");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t18Editor.id)+
+ ",'T18 historic Warlock editor','{\"marker\":\"T18_LEGACY_EDITOR_FROZEN\"}'::jsonb)");
+const t18History=t18AccountHash(t18Owner.id),t18EditorHistory=t18AccountHash(t18Editor.id);
+assert.equal(sql("SELECT class_id::text FROM public.class_level_progression WHERE class_id="+quote(t18ClassId)+" LIMIT 1"),t18ClassId);
+const t18RedNonce=randomUUID();
+const t18Red=await t18Create(t18Owner,t18Make(t18RedNonce));
+rejected(t18Red,"T18 original two guards must reject new Warlock without acquisition");
+assert.match(t18Red.error.message,/requires exactly 1 normalized Invocation instance|requires exactly 1 source-owned Eldritch Invocation|Warlock/i);
+assert.equal(one("public.characters","creation_request_id="+quote(t18RedNonce)),0);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(t18RedNonce)),0);
+assert.equal(t18AccountHash(t18Owner.id),t18History);
+console.log("PASS C34-T18-RED01: signed source-valid Warlock rejected with 2 original guards but without original acquisition; nonce/account rollback");
+
+sqlFile("scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql");
+for(const [name,md5] of [
+ ["private.reject_unmarked_legacy_warlock_invocations_v1()","631fbb585f47e71a619ca8ac8e212407"],
+ ["private.validate_existing_normalized_warlock_invocations_v2()","4f1752db655b6ba490113f604c7583ef"],
+ ["private.validate_and_materialize_player_forge_class_options_v1()","6df5aee6f0519c9c77758d6e887ed8e4"]])
+ assert.equal(sql("SELECT md5(pg_get_functiondef('"+name+"'::regprocedure))"),md5);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),32);
+console.log("PASS C34-T18-GREEN01: all 3 original Warlock deferred DDL enabled with pinned original source bodies, 29/31 combined originals");
+
+const t18OneReq=t18Make(randomUUID()),t18One=await t18Create(t18Owner,t18OneReq);
+assert.ifError(t18One.error);
+assert.equal(t18Grants(t18One.data),1);
+assert.equal(sql("SELECT acquired_level FROM public.character_class_option_grant_instances WHERE character_id="+quote(t18One.data)+" AND option_type='eldritch-invocation'"),"1");
+const t18OneHash=t18GrantHash(t18One.data);
+assert.equal((await t18Create(t18Owner,t18OneReq)).data,t18One.data);
+assert.equal(t18GrantHash(t18One.data),t18OneHash);
+assert.equal(t18AccountHash(t18Owner.id),t18History);
+console.log("PASS C34-T18-GREEN02: signed Warlock1 creates one source-owned Pact invocation with canonical spell+nonce and historical account isolation");
+
+const t18Lvl2=[[1,"Pact of the Blade"],[2,"Agonizing Blast",t18Blast],[3,"Eldritch Mind"]];
+const t18TwoReq=t18Make(randomUUID(),2,t18Lvl2);
+const t18Two=await t18Create(t18Owner,t18TwoReq);
+assert.ifError(t18Two.error);
+assert.equal(t18Grants(t18Two.data),3);
+assert.equal(sql("SELECT choices#>>'{child,value}' FROM public.character_class_option_grant_instances "+
+ "WHERE character_id="+quote(t18Two.data)+" AND instance_key='warlock-invocation-slot-2'"),t18Blast);
+assert.equal(sql("SELECT string_agg(acquired_level::text,',' ORDER BY instance_key) FROM "+
+ "public.character_class_option_grant_instances WHERE character_id="+quote(t18Two.data)+
+ " AND option_type='eldritch-invocation'"),"1,2,2");
+const t18TwoHash=t18GrantHash(t18Two.data);
+assert.equal((await t18Create(t18Owner,t18TwoReq)).data,t18Two.data);
+assert.equal(t18GrantHash(t18Two.data),t18TwoHash);
+assert.equal(t18AccountHash(t18Owner.id),t18History);
+console.log("PASS C34-T18-GREEN03: signed Warlock2 materializes 3 original slots with XPHB Agonizing Blast child and immutable replay");
+
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES("+
+ quote(t18Two.data)+","+quote(t18Editor.id)+",true,false,false)");
+assert.equal(t18AccountHash(t18Editor.id),t18EditorHistory);
+const t18Alter=(id,label)=>"UPDATE public.character_progression SET level_choices=level_choices||"+
+ "'{\"c34T18\":\""+label+"\"}'::jsonb WHERE character_id="+quote(id);
+sql(t18Alter(t18Two.data,"original-validator-present"));
+assert.equal(t18GrantHash(t18Two.data),t18TwoHash);
+assert.equal(t18AccountHash(t18Owner.id),t18History);
+assert.equal(t18AccountHash(t18Editor.id),t18EditorHistory);
+console.log("PASS C34-T18-GREEN04: original UPDATE validator accepts valid normalized grants and both historical account snapshots stay frozen");
+
+async function t18Reject(label,level,entries,matcher){
+ const req=t18Make(randomUUID(),level,entries);
+ const before={grant:Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances")),
+  character:Number(sql("SELECT count(*) FROM public.characters")),
+  nonce:Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1")),
+  item:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  spell:Number(sql("SELECT count(*) FROM public.character_spells")),
+  owner:t18AccountHash(t18Owner.id),editor:t18AccountHash(t18Editor.id)};
+ const res=await t18Create(t18Owner,req);
+ rejected(res,"T18 original source invalid "+label);
+ assert.match(res.error.message,matcher);
+ assert.equal(one("public.characters","creation_request_id="+quote(req.payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1",
+  "request_id="+quote(req.payload.creation_request_id)),0);
+ assert.deepEqual({grant:Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances")),
+  character:Number(sql("SELECT count(*) FROM public.characters")),
+  nonce:Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1")),
+  item:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  spell:Number(sql("SELECT count(*) FROM public.character_spells")),
+  owner:t18AccountHash(t18Owner.id),editor:t18AccountHash(t18Editor.id)},before);
+}
+await t18Reject("missing-third-slot",2,t18Lvl2.slice(0,2),/requires exactly 3 source-owned Eldritch Invocation|Invocation/i);
+await t18Reject("nonrepeatable-duplicate",2,[[1,"Pact of the Blade"],[2,"Armor of Shadows"],[3,"Armor of Shadows"]],/not repeatable/i);
+await t18Reject("illegal-level",1,[[1,"Thirsting Blade"]],/not available at the acquisition level|Warlock/i);
+await t18Reject("missing-Agonizing-child",2,[[1,"Pact of the Blade"],[2,"Agonizing Blast"],[3,"Eldritch Mind"]],/dependent source choice|Agonizing Blast/i);
+await t18Reject("wrong-cantrip",2,[[1,"Pact of the Blade"],[2,"Agonizing Blast","00000000-0000-0000-0000-000000000901"],[3,"Eldritch Mind"]],/preferred Warlock damage cantrip|cantrip/i);
+console.log("PASS C34-T18-GREEN05: source-owned missing/duplicate/level/child/illegal-spell options reject and atomically roll back all canonical tables");
+
+const t18RaceReq=t18Make(randomUUID(),2,t18Lvl2);
+const t18Race=await Promise.all([t18Create(t18Owner,t18RaceReq),t18Create(t18Owner,t18RaceReq)]);
+for(const r of t18Race)assert.ifError(r.error);
+assert.equal(t18Race[0].data,t18Race[1].data);
+assert.equal(t18Grants(t18Race[0].data),3);
+assert.equal(one("public.characters","creation_request_id="+quote(t18RaceReq.payload.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1",
+ "request_id="+quote(t18RaceReq.payload.creation_request_id)),1);
+assert.equal(t18AccountHash(t18Owner.id),t18History);
+assert.equal(t18AccountHash(t18Editor.id),t18EditorHistory);
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("PASS C34-T18-GREEN06: concurrent same nonce creates one source-owned Warlock, 3 Invocation grants, unchanged privacy and no world-map trigger");
+console.log("C34 T18 Warlock 29/31 original non-map DDL in disposable signed PG17; two owner-protected world-map triggers excluded. Source-provenance catalogs RED/GREEN only, NOT production parity or release.");
