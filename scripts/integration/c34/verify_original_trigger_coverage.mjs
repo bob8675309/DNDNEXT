@@ -31,7 +31,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql",
   "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
   "scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",
-  "scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql"
+  "scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",
+  "scripts/integration/c34/c34_original_eladrin_season_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -276,6 +277,38 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "6e4e3cc8-ed5f-4f81-8232-600c83beeec8",
     "bf50a82c-7111-45e1-90a6-cd4c5ab2f462"])
    assert.ok(t12Species.includes(evidence),"T12 original source-identified species/spell specimen drift: "+evidence);
+  // T13: original held #357 Eladrin source fixture is a byte-for-byte archived Git blob.
+  // Prove every original helper body (not merely its name) and original trigger event.
+  const t13Raw=read("scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql");
+  assert.equal(gitBlobSha(t13Raw),"323ef20258d8b3a7c7bc96e0b1d279ba755fcce5",
+    "T13 held #357 original Eladrin fixture SHA drift");
+  const t13Original=t13Raw.toString("utf8");
+  const t13Adapter=read("scripts/integration/c34/c34_original_eladrin_season_pg17.sql").toString("utf8");
+  for(const name of ["eladrin_season_options_v1","resolve_eladrin_season_v1",
+    "set_eladrin_season_projection_v1","materialize_player_forge_eladrin_season_v1"]){
+    const start=t13Original.indexOf("CREATE OR REPLACE FUNCTION private."+name+"(");
+    const end=t13Original.indexOf("$function$;",start);
+    assert.ok(start>=0&&end>start,"T13 original function missing: "+name);
+    assert.ok(t13Adapter.includes(t13Original.slice(start,end+"$function$;".length)),
+      "T13 original Eladrin function body drift: "+name);
+  }
+  const t13Event=[
+    "CREATE CONSTRAINT TRIGGER character_progression_materialize_eladrin_season_v1",
+    " AFTER INSERT ON public.character_progression",
+    " DEFERRABLE INITIALLY DEFERRED",
+    " FOR EACH ROW EXECUTE FUNCTION private.materialize_player_forge_eladrin_season_v1();"
+  ].join("\n");
+  assert.ok(t13Original.includes(t13Event)&&t13Adapter.includes(t13Event),
+    "T13 original Eladrin deferred trigger event/handler drift");
+  for(const md5 of ["d1264573b17e7569ba75371aa7e912eb",
+    "a142c557fa028eb1b7a087c7802a7afb",
+    "5f351b120410855845d72586dc66c62b",
+    "eb1da99fed6f0785266eb061ce8bad39",
+    "b866a8dff88bbfe6fb2c4f6d4c102fee"])
+    assert.ok(t13Adapter.includes(md5),"T13 original Eladrin live function MD5 missing: "+md5);
+  assert.ok(t13Adapter.includes("IF n<>23")&&t13Adapter.includes("IF n<>24")&&
+    !t13Adapter.includes("CREATE TABLE public.character_runtime_feature_choices"),
+    "T13 must reuse T12 original runtime table, not install held I1-I reduced table");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -299,11 +332,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,20,"C34 T12 expects 20/31 original DDL, 9 non-map progression+2 world");
- assert.equal(r.originalMissingCount,11);
- assert.equal(r.totalStaged,23);
+ assert.equal(r.stagedOriginalCount,21,"C34 T13 expects 21/31 original DDL, 8 non-map progression+2 world");
+ assert.equal(r.originalMissingCount,10);
+ assert.equal(r.totalStaged,24);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T12: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T13: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
