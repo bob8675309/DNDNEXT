@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T13-S01 original census counts 21/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T14-S01 original census counts 22/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,21);
- assert.equal(r.originalMissingCount,10);
+ assert.equal(r.stagedOriginalCount,22);
+ assert.equal(r.originalMissingCount,9);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,24);
+ assert.equal(r.totalStaged,25);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,21);
- assert.equal(truncated.stagedOriginalCount,20);
- assert.equal(truncated.originalMissingCount,11);
+ assert.equal(original.stagedOriginalCount,22);
+ assert.equal(truncated.stagedOriginalCount,21);
+ assert.equal(truncated.originalMissingCount,10);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,21);
- assert.equal(r.originalMissingCount,10);
+ assert.equal(r.stagedOriginalCount,22);
+ assert.equal(r.originalMissingCount,9);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,24);
+ assert.equal(r.totalStaged,25);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
@@ -500,4 +500,62 @@ test("C34-T13-N37 original Eladrin live source MD5 pin required",()=>{
   assert.ok(s.includes(from));
   return Buffer.from(s.replaceAll(from,"00000000000000000000000000000000"));
  }),/T13 original Eladrin live function MD5 missing/);
+});
+
+test("C34-T14-N38 original held I1-J Git source must be byte-identical",()=>{
+ const file="scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  return p===file?Buffer.concat([b,Buffer.from("\n-- injected source\n")]):b;
+ }),/T14 held #358 original I1-J Khoravar raw source blob drift/);
+});
+test("C34-T14-N39 original Khoravar deferred trigger timing cannot become immediate",()=>{
+ const file="scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from=" DEFERRABLE INITIALLY DEFERRED FOR EACH ROW";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from," NOT DEFERRABLE FOR EACH ROW"));
+ }),/T14 original Khoravar deferred trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T14-N40 original Khoravar materializer cannot be replaced by a permissive stub",()=>{
+ const file="scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from="Khoravar Skill Versatility requires exactly one skill or tool proficiency.";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"Khoravar accepts anything"));
+ }),/T14 original Khoravar function body drift/);
+});
+test("C34-T14-N41 candidate may not re-enable cross-account players sheet writes",()=>{
+ const file="scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from="  -- projection to the legacy account-wide players.sheet snapshot.";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"  update public.players p set sheet=v_sheet;"));
+ }),/T14 Option A helper must differ ONLY by explicit account mirror removal/);
+});
+test("C34-T14-N42 bypassing runtime no-mirror guard is rejected",()=>{
+ const file="scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from="IF position('update public.players' in lower(v_helper))>0";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"IF false"));
+ }),/T14 candidate must be labeled non-original, guard no-mirror/);
+});
+test("C34-T14-N43 original source-identified skill/tool UUID is not substitutable",()=>{
+ const file="scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from="bd914b52-04de-4cf3-a0ca-0200c9930e06";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replaceAll(from,"00000000-0000-0000-0000-000000000999"));
+ }),/T14 source XPHB skill\/tool specimen drift/);
 });
