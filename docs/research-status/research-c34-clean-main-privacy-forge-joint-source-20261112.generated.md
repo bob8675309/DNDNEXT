@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e7dfab2ff91a1377709f9013414affa0ce3e3fec` |
+| Exact source commit represented by this archive snapshot | `9698801ff1f8e82051f7aa58ffe895e4dd08329b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): record T13 Eladrin original-source signed RED/GREEN and outstanding Option A conflict |
-| Files changed relative to main | 48 (41 non-docs; 7 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | C34 T14 source archive: preserve unchanged original I1-J Khoravar skill/projection fixture |
+| Files changed relative to main | 49 (42 non-docs; 7 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -60,6 +60,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/sources/05_inventory_constraint_rls.sql`
 - `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
 - `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
+- `scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql`
 - `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 - `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
