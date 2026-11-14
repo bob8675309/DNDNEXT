@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0f6079326267ed46029e7ec275a749889a4d7776` |
+| Exact source commit represented by this archive snapshot | `c5b68da2e9e0c1572161c128a92d7e1fa18a7258` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T14: import source-original Khoravar materializer and original legacy writer as signed RED fixture |
-| Files changed relative to main | 51 (44 non-docs; 7 docs) |
+| Last source commit title | C34 T14: explicit non-original Option A helper candidate removes legacy account-wide sheet overwrite |
+| Files changed relative to main | 52 (45 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql`
+- `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -38,6 +38,7 @@
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
+- `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
 - `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
 - `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
@@ -70,8 +71,7 @@
 - `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 - `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
 - `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
-- `sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql`
-- … 1 more
+- … 2 more
 
 ## Trust and update procedure
 
