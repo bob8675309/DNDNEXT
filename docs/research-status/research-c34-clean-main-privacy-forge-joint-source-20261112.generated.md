@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4c575a14a33dadd476e34f5096bec94a44ae61de` |
+| Exact source commit represented by this archive snapshot | `5a1ceb6ec2699bb83c2b4a6bf11374b8b92641aa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T17): archive original EFA Artificer six-function source; stage original mirror RED and scoped Option A candidate |
+| Last source commit title | test(C34 T17): source-pin original EFA Artificer, audit 26/31 DDL, four fail-closed tamper cases |
 | Files changed relative to main | 66 (56 non-docs; 10 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
-- `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
-- `scripts/integration/c34/sources/13_i1l_original_artificer_plans_pg17.sql`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
