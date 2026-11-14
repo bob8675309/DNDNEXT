@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d8f2934675a2a574c5d78501d657a6e35824ba0b` |
+| Exact source commit represented by this archive snapshot | `4f81562034d186e601336d51935d653719b7cf86` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed T12 XPHB High Elf + EFA Khoravar original fixed cantrip RED→GREEN and T11 co-residence |
+| Last source commit title | test(c34): add exact original created_at to reduced local character_spells schema for T12 |
 | Files changed relative to main | 45 (39 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql`
 
 ## Research-branch change inventory versus main
 
