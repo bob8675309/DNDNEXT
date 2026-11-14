@@ -2,10 +2,11 @@
 -- Original held #360 six source bodies and deferred DDL preserved unchanged.
 -- Original private.sync_character_artificer_plan_projection_v1 MD5
 -- 5ebf572db01143e9b523c7dba0d43ad5.
--- TWO deliberate, explicitly NON-ORIGINAL changes: (1) NULL-safe creation
+-- THREE deliberate, explicitly NON-ORIGINAL changes: (1) NULL-safe creation
 -- of missing classFeatureChoices parent (required by real signed C34 RED),
--- (2) remove the cross-account legacy players.sheet UPDATE. All six original
--- functions, source identifiers and deferred trigger remain preserved raw.
+-- (2) remove the cross-account legacy players.sheet UPDATE, (3) synchronize
+-- only the projected Artificer class choice summary for original T5 authority.
+-- All six original source blobs, IDs and deferred trigger remain archived raw.
 -- Neither correction is a production migration or full writer/reader acceptance.
 \set ON_ERROR_STOP on
 DO $t17_safe_pre$
@@ -27,6 +28,7 @@ declare
   v_sheet jsonb;
   v_selections jsonb;
   v_group jsonb;
+  v_choice_summary jsonb;
 begin
   select coalesce(sheet,'{}'::jsonb) into v_sheet
   from public.character_sheets
@@ -69,6 +71,35 @@ begin
   end if;
   v_sheet:=jsonb_set(v_sheet,'{classFeatureChoices,artificer-magic-item-plans}',v_group,true);
 
+  -- T17 deliberate Option A compatibility: source-original deferred Forge
+  -- authority validates classFeatureChoices and its summary as one contract.
+  -- Replace only this derived group; preserve unrelated player selections.
+  if v_sheet ? 'classFeatureChoiceSummary'
+    and jsonb_typeof(v_sheet->'classFeatureChoiceSummary') <> 'array' then
+    raise exception 'Artificer plan projection requires a class feature choice summary array.';
+  end if;
+  select coalesce(jsonb_agg(e.item order by e.ordinality),'[]'::jsonb)
+    into v_choice_summary
+    from jsonb_array_elements(coalesce(v_sheet->'classFeatureChoiceSummary','[]'::jsonb))
+      with ordinality as e(item,ordinality)
+    where coalesce(e.item->>'groupId','') <> 'artificer-magic-item-plans';
+  v_choice_summary:=v_choice_summary||(
+    select coalesce(jsonb_agg(jsonb_build_object(
+      'groupId','artificer-magic-item-plans',
+      'groupLabel','Magic Item Plans',
+      'groupKind','artificer-plan',
+      'level',2,
+      'placement','class',
+      'cadence','creation',
+      'key',e.item->>'key',
+      'name',e.item->>'name',
+      'source',e.item->>'source',
+      'kind','artificer-plan'
+    ) order by e.ordinality),'[]'::jsonb)
+    from jsonb_array_elements(v_selections) with ordinality as e(item,ordinality)
+  );
+  v_sheet:=jsonb_set(v_sheet,'{classFeatureChoiceSummary}',v_choice_summary,true);
+
   update public.character_sheets set sheet=v_sheet,updated_at=now()
   where character_id=p_character_id;
   -- T17 Option A scoped projection: account-wide players.sheet mirror REMOVED.
@@ -81,10 +112,11 @@ DECLARE d text;
 BEGIN
  d:=lower(pg_get_functiondef('private.sync_character_artificer_plan_projection_v1(uuid)'::regprocedure));
  IF position('coalesce(jsonb_typeof(' in d)=0
+ OR position('classfeaturechoicesummary' in d)=0
  OR position('update public.players' in d)>0
  OR md5(d)='5ebf572db01143e9b523c7dba0d43ad5'
  OR md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))<>'67766989a466b82f170b5e00f9154e24'
  OR has_function_privilege('authenticated','private.sync_character_artificer_plan_projection_v1(uuid)','EXECUTE')
  THEN RAISE EXCEPTION 'T17 NULL-parent and Option A account-mirror compatibility or original handler drift'; END IF;
 END $t17_safe_post$;
-\echo 'PASS C34 T17 explicit NON-ORIGINAL Artificer NULL-parent + Option A no-mirror helper (local only)'
+\echo 'PASS C34 T17 explicit NON-ORIGINAL Artificer NULL-parent + summary parity + Option A no-mirror helper (local only)'

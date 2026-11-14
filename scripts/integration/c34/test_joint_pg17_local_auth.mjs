@@ -2417,6 +2417,13 @@ const t17GrantsHash=id=>t8RowHash("public.character_class_option_grant_instances
  "character_id="+quote(id)+" AND option_type='artificer-plan'");
 const t17Projection=id=>sql("SELECT sheet#>>'{classFeatureChoices,artificer-magic-item-plans,count}' "+
  "FROM public.character_sheets WHERE character_id="+quote(id));
+const t17SummaryKeys=id=>sql("SELECT string_agg(e.item->>'key',',' ORDER BY e.ordinality) "+
+  "FROM public.character_sheets cs "+
+  "CROSS JOIN LATERAL jsonb_array_elements(cs.sheet->'classFeatureChoiceSummary') "+
+  "WITH ORDINALITY AS e(item,ordinality) WHERE cs.character_id="+quote(id)+
+  " AND e.item->>'groupId'='artificer-magic-item-plans'");
+const t17SummaryHash=id=>sql("SELECT md5((sheet->'classFeatureChoiceSummary')::text) "+
+  "FROM public.character_sheets WHERE character_id="+quote(id));
 const t17AccountHash=id=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+quote(id));
 const t17RedOwner=await signed("artificer-original-red-owner");
 const t17RedEditor=await signed("artificer-original-red-linked");
@@ -2492,6 +2499,12 @@ assert.ifError(t17Fixed.error);
 const t17FixedId=t17Fixed.data;
 assert.equal(t17GrantCount(t17FixedId),4);
 assert.equal(t17Projection(t17FixedId),"4");
+assert.equal(sql("SELECT jsonb_array_length(sheet->'classFeatureChoiceSummary') "+
+  "FROM public.character_sheets WHERE character_id="+quote(t17FixedId)),"4",
+  "Artificer canonical projection must keep source-authorized group/summary counts aligned");
+assert.equal(t17SummaryKeys(t17FixedId),t17Plan.map(x=>x.key).join(","),
+  "Artificer class summary must enumerate each source-owned plan once in slot order");
+
 assert.equal(sql("SELECT string_agg(o.option_key,',' ORDER BY g.instance_key) FROM "+
  "public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o "+
  "ON o.id=g.option_catalog_id WHERE g.character_id="+quote(t17FixedId)+
@@ -2501,6 +2514,7 @@ assert.equal(one("public.character_class_option_grant_instances",
  "AND metadata->>'materializesInventory'='false'"),4);
 assert.equal(t17AccountHash(t17SafeOwner.id),t17OwnerHash);
 assert.equal(t17AccountHash(t17SafeEditor.id),t17EditorHash);
+const t17FixedSummaryHash=t17SummaryHash(t17FixedId);
 const t17FixedHash={
  grant:t17GrantsHash(t17FixedId),
  sheet:t8RowHash("public.character_sheets","character_id="+quote(t17FixedId)),
@@ -2521,6 +2535,7 @@ const t17Wild=await t17Create(t17SafeOwner,t17WildInput);
 assert.ifError(t17Wild.error);
 assert.equal(t17GrantCount(t17Wild.data),4);
 assert.equal(t17Projection(t17Wild.data),"4");
+assert.equal(t17SummaryKeys(t17Wild.data),[t17Plan[0].key,t17Wildcard.key,t17Plan[2].key,t17Plan[3].key].join(","));
 assert.equal(sql("SELECT choices#>>'{child,key}' FROM public.character_class_option_grant_instances WHERE "+
  "character_id="+quote(t17Wild.data)+" AND instance_key='artificer-plan-2'"),t17Prosthetic);
 assert.equal(sql("SELECT sheet#>>'{classFeatureChoices,artificer-magic-item-plans,selections,1,item,key}' "+
@@ -2533,6 +2548,8 @@ sql("SELECT private.sync_character_artificer_plan_projection_v1("+quote(t17Fixed
 assert.equal(t17AccountHash(t17SafeOwner.id),t17OwnerHash);
 assert.equal(t17AccountHash(t17SafeEditor.id),t17EditorHash);
 assert.equal(t17Projection(t17FixedId),"4");
+assert.equal(t17SummaryHash(t17FixedId),t17FixedSummaryHash,
+ "re-projection must not duplicate or reorder the Artificer choice summary");
 console.log("PASS C34-T17-GREEN05: linked owner and coeditor historical accounts remain unchanged after canonical re-projection");
 async function t17Reject(slots,rx){
  const input=t17Art(randomUUID(),slots),before={
