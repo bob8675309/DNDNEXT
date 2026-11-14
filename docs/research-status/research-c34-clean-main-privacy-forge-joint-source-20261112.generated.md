@@ -5,21 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `bcabbc2dd61ade0e5747e4dac7217f41471ebf07` |
+| Exact source commit represented by this archive snapshot | `97584bc276f511e8ce1c741a51582464055ebc8f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record signed T11 AAG species source magic RED→GREEN 19/31 HOLD |
-| Files changed relative to main | 43 (37 non-docs; 6 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): capture original T12 High Elf/Khoravar cantrip runtime source in disposable-only fixtures |
+| Files changed relative to main | 45 (39 non-docs; 6 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql`
+- `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -44,10 +43,12 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql`
 - `scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql`
 - `scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql`
+- `scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql`
+- `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
