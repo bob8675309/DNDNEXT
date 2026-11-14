@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `111ebce28263f941a0a9bb7b7aea0e06b5466e62` |
+| Exact source commit represented by this archive snapshot | `c7994f53f0fbe1ab605a1ec49f043b7d43b9caa4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34 T18): preserve signed Warlock acceptance, original hashes, and no-loss-work next task |
-| Files changed relative to main | 75 (63 non-docs; 12 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(C34): preserve held Forge and NPC Profile source and frontend consumer omissions |
+| Files changed relative to main | 76 (63 non-docs; 13 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
+- `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -28,6 +26,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
@@ -72,8 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
-- `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
-- … 25 more
+- … 26 more
 
 ## Trust and update procedure
 
