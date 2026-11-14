@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5f2319f7926bc91787cb04a2589d82a8b52fa265` |
+| Exact source commit represented by this archive snapshot | `6dbe9ed2d14ec2d121fb983fd521dcf2492238d2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T18): stage exact XPHB Warlock source data and all three original deferred handlers in disposable PG17 |
+| Last source commit title | test(C34 T18): exercise three original Warlock triggers with genuine signed RED/GREEN and preserved T1–T17 |
 | Files changed relative to main | 74 (63 non-docs; 11 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
-- `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
