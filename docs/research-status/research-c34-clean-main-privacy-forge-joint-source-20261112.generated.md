@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5a1ceb6ec2699bb83c2b4a6bf11374b8b92641aa` |
+| Exact source commit represented by this archive snapshot | `dc2f97bc41f608462310eb2b4963f226424a47e4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T17): source-pin original EFA Artificer, audit 26/31 DDL, four fail-closed tamper cases |
-| Files changed relative to main | 66 (56 non-docs; 10 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit title | test(C34 T17): isolate source Artificer catalog before signed original trigger RED; retain exact original functions |
+| Files changed relative to main | 67 (57 non-docs; 10 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,8 @@
 
 ## Latest source commit paths
 
+- `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
+- `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
@@ -40,6 +42,7 @@
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
+- `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
@@ -71,8 +74,7 @@
 - `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
 - `scripts/integration/c34/sources/04_private_story_stage3.sql`
 - `scripts/integration/c34/sources/05_inventory_constraint_rls.sql`
-- `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
-- … 16 more
+- … 17 more
 
 ## Trust and update procedure
 
