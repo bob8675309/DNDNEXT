@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { auditSources, STAGES, RELEASE_BLOCKERS } from "./validate_source_contract.mjs";
 import { verifyOriginalJointDependencies, ORIGINAL_JOINT_DEPENDENCIES } from "./validate_joint_fixture_blobs.mjs";
 import { auditTriggerCoverage } from "./verify_original_trigger_coverage.mjs";
+import { auditHeld345InactiveUiCapsule, HELD345_UI_PINS } from "./verify_held345_inactive_ui_capsule.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const load = (file) => fs.readFileSync(path.join(dir, "sources", file));
@@ -690,4 +691,34 @@ test("C34-T18-N58 original Warlock AFTER INSERT acquisition event cannot become 
   assert.ok(source.includes(before));
   return Buffer.from(source.replace(before," AFTER UPDATE ON public.character_progression"));
  }),/T18 exact original held AFTER INSERT acquisition DDL drift|Event\/handler|Timing\/deferral mismatch/);
+});
+
+
+test("C34-P345-S01 four original NPC Profile UI blobs are preserved without mounting a runtime", () => {
+  const evidence = auditHeld345InactiveUiCapsule();
+  assert.equal(evidence.originalBlobs, 4);
+  assert.equal(evidence.sourceIntegrity, "PASS");
+  assert.equal(evidence.runtimeMounted, false);
+  assert.equal(evidence.productionReadiness, "HOLD");
+});
+
+test("C34-P345-N01 mutation of any archived UI source fails the Git blob pin", () => {
+  const root = path.resolve(dir, "../../..");
+  for (const [source] of HELD345_UI_PINS) {
+    const altered = "scripts/integration/c34/preserved/held345/" + source;
+    assert.throws(() => auditHeld345InactiveUiCapsule((file) => {
+      const bytes = fs.readFileSync(path.join(root, file));
+      return file === altered ? Buffer.concat([bytes, Buffer.from("\n// unauthorized mutation\n")]) : bytes;
+    }), /held #345 inactive Profile source blob drift/, source);
+  }
+});
+
+test("C34-P345-N02 activation without original privacy SQL must fail closed", () => {
+  const root = path.resolve(dir, "../../..");
+  assert.throws(() => auditHeld345InactiveUiCapsule((file) => {
+    const bytes = fs.readFileSync(path.join(root, file));
+    return file === "pages/_app.js"
+      ? Buffer.concat([bytes, Buffer.from("\n// Unsafe GlobalNpcProfileOverlay early activation\n")])
+      : bytes;
+  }), /requires coordinated privacy SQL\+UI cutover before activation/);
 });
