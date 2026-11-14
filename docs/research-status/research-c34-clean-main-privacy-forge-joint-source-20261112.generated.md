@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dc2f97bc41f608462310eb2b4963f226424a47e4` |
+| Exact source commit represented by this archive snapshot | `1e2b630e09fb4e2f8e1ec50ec5431164ab52c333` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T17): isolate source Artificer catalog before signed original trigger RED; retain exact original functions |
+| Last source commit title | test(C34 T17): signed original Artificer RED, scoped Option A GREEN, canonical plans, rollback and concurrent nonce |
 | Files changed relative to main | 67 (57 non-docs; 10 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
-- `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
-- `scripts/integration/c34/test_source_contract.mjs`
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
