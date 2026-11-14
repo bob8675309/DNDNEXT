@@ -443,7 +443,7 @@ begin
   return new;
 end;
 $function$;
-CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_wizard_final_v1
+-- CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_wizard_final_v1
 -- AFTER INSERT ON character_progression DEFERRABLE INITIALLY DEFERRED
 -- FOR EACH ROW EXECUTE FUNCTION private.materialize_player_forge_wizard_final_v1()
 CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_wizard_final_v1
