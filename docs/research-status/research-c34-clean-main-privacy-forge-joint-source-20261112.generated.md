@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b9d199877104b323429ab8d950c00229e369a432` |
+| Exact source commit represented by this archive snapshot | `d8f2934675a2a574c5d78501d657a6e35824ba0b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T12 source-original cantrip 20/31 coverage and fail-closed negative fixtures |
+| Last source commit title | test(c34): signed T12 XPHB High Elf + EFA Khoravar original fixed cantrip RED→GREEN and T11 co-residence |
 | Files changed relative to main | 45 (39 non-docs; 6 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
-- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
