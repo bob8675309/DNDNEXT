@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `745cfa5710062bd96450b00d5f1c944cd1cbceef` |
+| Exact source commit represented by this archive snapshot | `e7dfab2ff91a1377709f9013414affa0ce3e3fec` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): append original T13 signed evidence and 21/31 research handoff |
+| Last source commit title | docs(C34): record T13 Eladrin original-source signed RED/GREEN and outstanding Option A conflict |
 | Files changed relative to main | 48 (41 non-docs; 7 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
