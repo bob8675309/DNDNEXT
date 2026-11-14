@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7ca48e4df828c64fbbf3f56037bb2344e5bc4a90` |
+| Exact source commit represented by this archive snapshot | `8680853a1f761b148e126775a16f608d874061d5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34 T14): exact signed original Khoravar mirror RED, Option A scoped GREEN, 22/31 HELD |
-| Files changed relative to main | 53 (45 non-docs; 8 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | test(C34 T15): original paired Battle Master 2024 grants+validator in signed disposable PG17 |
+| Files changed relative to main | 56 (48 non-docs; 8 docs) |
+| Last source commit | 7 files (6 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,9 +18,12 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `docs/ACTIVE_WORK.md`
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
+- `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
+- `scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql`
+- `scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -44,6 +47,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
+- `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
 - `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
 - `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
@@ -68,13 +72,12 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
 - `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql`
+- `scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql`
+- `scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql`
 - `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 - `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
-- `scripts/integration/c34/validate_source_contract.mjs`
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
-- `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
-- … 3 more
+- … 6 more
 
 ## Trust and update procedure
 
