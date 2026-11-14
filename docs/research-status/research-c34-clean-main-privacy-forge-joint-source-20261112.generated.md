@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1607de9fbcc7d26f1ab7729034517f623daab751` |
+| Exact source commit represented by this archive snapshot | `0b0480ead4c5cf548d8fc3fc8cb55af3fd41c387` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T15): serialize source-qualified Battle Master choices for original T5 authority plus paired original maneuvers |
+| Last source commit title | test(C34 T15): supply original valid higher-level d10 wealth result in level10 signed Battle Master specimen |
 | Files changed relative to main | 56 (48 non-docs; 8 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
