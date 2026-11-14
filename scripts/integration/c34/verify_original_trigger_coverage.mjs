@@ -36,7 +36,9 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql",
   "scripts/integration/c34/c34_original_battle_master_pair_pg17.sql",
   "scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql",
-  "scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql"
+  "scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql",
+  "scripts/integration/c34/sources/16_i1g_original_warlock_safeguard_triggers_pg17.sql",
+  "scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -545,6 +547,38 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     t17Catalog.includes("sourceOriginalPlanNames',jsonb_agg(o.name ORDER BY o.name)")&&
     t17Catalog.includes("synthetic FEATURE ROW UUID"),
     "T17 original+adapted EFA source custody/preflight/synthetic warning drift");
+  // T18 — original #355/#356 source custody. Four raw original blob copies
+  // MUST remain identical, regardless of any local integration glue/tests.
+  const heldWarlock=new Map([
+    ["scripts/integration/c34/sources/14_i1g_original_warlock_functions_pg17.sql","7a1cb66a17552b11e52c391563d0cf5aba52829a"],
+    ["scripts/integration/c34/sources/15_i1g_original_warlock_acquisition_pg17.sql","7ec34da724bb22ed5d299ff27a5e07e0f0373180"],
+    ["scripts/integration/c34/sources/16_i1g_original_warlock_safeguard_triggers_pg17.sql","90fd7a3f7dc81fd146605de131747755312b4aa9"],
+    ["scripts/integration/c34/sources/17_i1h_original_warlock_joint_install_pg17.sql","c8c22cafa567f986d8049060d02e687fd040601e"]
+  ]);
+  for(const [file,sha] of heldWarlock)
+    assert.equal(gitBlobSha(read(file)),sha,"T18 original held Warlock source drift: "+file);
+  const t18Setup=read("scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql").toString("utf8");
+  const t18Acq=read("scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql").toString("utf8");
+  const t18OriginalG=read("scripts/integration/c34/sources/16_i1g_original_warlock_safeguard_triggers_pg17.sql").toString("utf8");
+  const t18OriginalA=read("scripts/integration/c34/sources/17_i1h_original_warlock_joint_install_pg17.sql").toString("utf8");
+  for(const name of ["character_progression_reject_unmarked_legacy_warlock_invocation",
+   "character_progression_validate_player_forge_class_options_v2"])
+    assert.ok(t18OriginalG.includes("CREATE CONSTRAINT TRIGGER "+name),
+      "T18 original held Warlock safeguard DDL missing "+name);
+  const t18AcqDdl="CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_class_options_v1\\n"+
+   " AFTER INSERT ON public.character_progression\\n"+
+   " DEFERRABLE INITIALLY DEFERRED\\n"+
+   " FOR EACH ROW EXECUTE FUNCTION private.validate_and_materialize_player_forge_class_options_v1();";
+  assert.ok(t18OriginalA.includes(t18AcqDdl)&&t18Acq.includes(t18AcqDdl),
+    "T18 exact original held AFTER INSERT acquisition DDL drift");
+  assert.ok(t18Setup.includes("sources/14_i1g_original_warlock_functions_pg17.sql")&&
+    t18Setup.includes("sources/16_i1g_original_warlock_safeguard_triggers_pg17.sql")&&
+    t18Acq.includes("sources/15_i1g_original_warlock_acquisition_pg17.sql")&&
+    t18Acq.includes("6df5aee6f0519c9c77758d6e887ed8e4")&&
+    t18Setup.includes("source option/Warlock spell fixtures incomplete")&&
+    !t18Acq.includes("DROP TRIGGER")&&
+    !t18Setup.includes("trg_force_depart_on_route_assign()'::regprocedure"),
+    "T18 original source/preflight/retained-guard checks drift");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -568,11 +602,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,26,"C34 T17 expects 26/31 original DDL, 3 Warlock non-map progression+2 world");
- assert.equal(r.originalMissingCount,5);
- assert.equal(r.totalStaged,29);
+ assert.equal(r.stagedOriginalCount,29,"C34 T18 expects 29/31 original DDL, only protected 2 world-map originals absent");
+ assert.equal(r.originalMissingCount,2);
+ assert.equal(r.totalStaged,32);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T17: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T18: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
