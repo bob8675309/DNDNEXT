@@ -1974,7 +1974,7 @@ await t14Reject([t14Skill,t14Tool],/Khoravar Skill Versatility requires exactly 
 await t14Reject(["skill:astrology"],/Khoravar Skill Versatility references an invalid skill or tool/);
 await t14Reject(["tool:00000000-0000-0000-0000-000000000999"],/Khoravar Skill Versatility references an invalid skill or tool/);
 console.log("PASS C34-T14-GREEN05: five original source-invalid skill/tool negative cases atomically roll back character, nonce, spells, feat, equipment, runtime and legacy snapshots");
-const t14Human=await t14Create(t14SafeOwner,t14Khoravar(randomUUID(),null,"Human","XPHB"));
+const t14Human=await t14Create(t14SafeOwner,t14Khoravar(randomUUID(),null,"Elf","XPHB"));
 assert.ifError(t14Human.error);
 assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t14Human.data)),0);
 console.log("PASS C34-T14-GREEN06: non-Khoravar source never acquires a Khoravar proficiency");
