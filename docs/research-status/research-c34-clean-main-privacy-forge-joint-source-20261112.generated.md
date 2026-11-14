@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4b3d44c1464e356c0b171111cebcc73c94b9ed95` |
+| Exact source commit represented by this archive snapshot | `0a998b3f6c58c2ec37c6307998fa14b172698b38` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T14): snapshot RED historical row after deliberate second original mirror invocation |
+| Last source commit title | test(C34 T14): use source-valid Elf as non-Khoravar gate (Human requires Skillful) |
 | Files changed relative to main | 52 (45 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
