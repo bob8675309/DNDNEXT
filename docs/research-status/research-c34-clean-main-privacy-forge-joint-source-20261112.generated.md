@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8a788c9f9f54ca457964ff5609f2a476424bf968` |
+| Exact source commit represented by this archive snapshot | `f46b58db1c74ab819ea624097ba6471842591372` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T16): preserve inherited spell-table grants; scope new-catalog ACL guard accurately |
+| Last source commit title | test(C34 T16): apply higher-level wealth d10 only when source requires level 5+ |
 | Files changed relative to main | 62 (53 non-docs; 9 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
