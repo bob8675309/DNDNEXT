@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T15-S01 original census counts 24/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T16-S01 original census counts 25/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,24);
- assert.equal(r.originalMissingCount,7);
+ assert.equal(r.stagedOriginalCount,25);
+ assert.equal(r.originalMissingCount,6);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,27);
+ assert.equal(r.totalStaged,28);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,24);
- assert.equal(truncated.stagedOriginalCount,23);
- assert.equal(truncated.originalMissingCount,8);
+ assert.equal(original.stagedOriginalCount,25);
+ assert.equal(truncated.stagedOriginalCount,24);
+ assert.equal(truncated.originalMissingCount,7);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,24);
- assert.equal(r.originalMissingCount,7);
+ assert.equal(r.stagedOriginalCount,25);
+ assert.equal(r.originalMissingCount,6);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,27);
+ assert.equal(r.totalStaged,28);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
@@ -593,4 +593,36 @@ test("C34-T15-N47 source-qualified original XPHB maneuver UUID cannot be replace
   const s=b.toString("utf8"),from="37457afe-5996-4502-9651-130d25c059e6";
   assert.ok(s.includes(from));return Buffer.from(s.replaceAll(from,"00000000-0000-0000-0000-000000000999"));
  }),/T15 source-identical 12 real original XPHB maneuver IDs\/rows required/);
+});
+
+test("C34-T16-N48 original held Wizard source blob cannot change",()=>{
+ const f="scripts/integration/c34/sources/11_i1e_original_wizard_functions_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  return p===f?Buffer.concat([b,Buffer.from("\n-- injected\n")]):b;
+ }),/T16 original I1-E Wizard function source blob drift/);
+});
+test("C34-T16-N49 original Wizard deferred trigger cannot be bypassed or retimed",()=>{
+ const f="scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));if(p!==f)return b;
+  const s=b.toString("utf8"),from=" AFTER INSERT ON public.character_progression DEFERRABLE INITIALLY DEFERRED";
+  assert.ok(s.includes(from));return Buffer.from(s.replace(from," AFTER UPDATE ON public.character_progression"));
+ }),/T16 original Wizard deferred event\/handler\/timing drift|Timing\/deferral mismatch/);
+});
+test("C34-T16-N50 original Wizard savant chronology body must be exact",()=>{
+ const f="scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));if(p!==f)return b;
+  const s=b.toString("utf8"),from="Savant spellbook selections must be distinct across every acquisition level.";
+  assert.ok(s.includes(from));return Buffer.from(s.replace(from,"Always valid"));
+ }),/T16 original Wizard function body drift/);
+});
+test("C34-T16-N51 Option A Wizard signature candidate cannot reintroduce linked account UPDATE",()=>{
+ const f="scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));if(p!==f)return b;
+  const s=b.toString("utf8"),from="  -- players.sheet mirror; original source remains preserved in source archive.";
+  assert.ok(s.includes(from));return Buffer.from(s.replace(from,"  update public.players p set sheet=v_sheet;"));
+ }),/T16 Option A differs ONLY by original two-line account mirror removal/);
 });

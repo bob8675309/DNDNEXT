@@ -2130,3 +2130,236 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("PASS C34-T15-GREEN06: signed same-nonce race grants exactly 3 source XPHB maneuvers, legacy account, privacy, world-map unchanged");
 console.log("C34 T15 original Battle Master paired signed RED->GREEN PASS: 24/31 original DDL, 5 non-map progression + 2 protected map remain. Original source handlers unchanged, reduced catalog/RLS, no production/browser/recovery acceptance.");
+
+
+// T16 — held #353 source-original Wizard Savant + Signature Spells FINALIZER,
+// plus demonstrated original cross-account legacy players.sheet mirror RED
+// and explicitly non-original Option A character-scoped helper GREEN.
+// All tests run in local-only PG17/GoTrue/PostgREST, not hosted Supabase.
+sqlFile("scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql");
+const t16Ids=[
+ "00000000-0000-0000-0000-000000008811",
+ "00000000-0000-0000-0000-000000008812",
+ "00000000-0000-0000-0000-000000008813",
+ "00000000-0000-0000-0000-000000008814",
+ "00000000-0000-0000-0000-000000008815",
+ "00000000-0000-0000-0000-000000008816",
+ "00000000-0000-0000-0000-000000008817",
+ "00000000-0000-0000-0000-000000008818",
+ "00000000-0000-0000-0000-000000008819"
+];
+const t16SavantNames=[
+ "I1E Ember Pin","I1E Arc Flame","I1E Ember Burst","I1E Arc Wave",
+ "I1E Heat Line","I1E Star Shard","I1E Red Spiral","I1E Dawn Burst","I1E Solar Lance"
+];
+const t16SynthId=n=>"00000000-0000-0000-0000-"+String(16000+n).padStart(12,"0");
+const t16SpellRows=Array.from({length:44},(_,i)=>[
+ t16SynthId(i+1),"T16 Synthetic Wizard Spell "+String(i+1).padStart(2,"0"),
+ i+1<=6?1:i+1<=10?2:3,false
+]);
+const t16Cantrips=[
+ ...t10Spells.slice(0,3),
+ ...[45,46].map(i=>[t16SynthId(i),"T16 Synthetic Wizard Cantrip "+i,0,true])
+];
+const t16Starting=(level)=>[
+ ...t16Cantrips.slice(0,level===20?5:3),
+ ...t16SpellRows.slice(0,level===20?44:10).map((s,i)=>[s[0],s[1],s[2],i<(level===20?22:6)])
+];
+const t16Wizard=(nonce,level=3,options={})=>{
+ const base=t10WizardInput(nonce,t16Starting(level));
+ const groups={},summary=[];
+ const savantGates=level===20?[3,5,7,9,11,13,15,17]:[3];
+ let cursor=0;
+ if(options.savant!==false){
+  for(const gate of savantGates){
+   const count=gate===3?2:1,choices=t16SavantNames.slice(cursor,cursor+count)
+      .map((name,i)=>({name,source:"XPHB",key:t16Ids[cursor+i],
+        spell:{id:t16Ids[cursor+i]}}));
+   cursor+=count;
+   const id="wizard-evocation-savant-"+gate;
+   groups[id]={kind:"spell",sourceFeature:"Evocation Savant",label:"Evocation Savant",
+    subclassName:"Evoker",source:"XPHB",level:gate,count,placement:"spells",selections:choices};
+   for(const x of choices)summary.push({groupId:id,key:x.key,name:x.name,source:"XPHB"});
+  }
+ }
+ if(level===20&&options.signature!==false){
+  const id="wizard-signature-spells";
+  const choices=[2,3].map(i=>({key:t16Ids[i],name:t16SavantNames[i],source:"XPHB",
+    spell:{id:t16Ids[i]}}));
+  groups[id]={kind:"spell",sourceFeature:"Signature Spells",label:"Signature Spells",
+   subclassName:"Evoker",source:"XPHB",level:20,count:2,placement:"spells",selections:choices};
+  for(const x of choices)summary.push({groupId:id,key:x.key,name:x.name,source:"XPHB"});
+ }
+ if(options.duplicateSavant){
+  groups["wizard-evocation-savant-3"].selections[1]={
+    ...groups["wizard-evocation-savant-3"].selections[0]
+  };
+  summary[1]={...summary[0]};
+ }
+ const sheet={
+  ...base.payload.sheet,level,subclassName:"Evoker",subclassSource:"XPHB",
+  classFeatureChoices:groups,classFeatureChoiceSummary:summary,
+  startingEquipmentSelections:{...base.payload.sheet.startingEquipmentSelections,
+   ...(level>=3?{wealthRoll:5}:{})}
+ };
+ return {payload:{...base.payload,name:"T16 genuine signed Wizard "+level+" "+nonce.slice(0,8),sheet},
+  magic:base.magic};
+};
+const t16Create=(actor,req)=>rpc(actor,"create_player_character_v3",{
+ p_payload:req.payload,p_spell_choices:[],p_magic_selections:req.magic
+});
+const t16Owner=await signed("wizard-source-owner");
+const t16Editor=await signed("wizard-linked-coeditor");
+const t16Legacy='{"marker":"T16_OWNER_ACCOUNT_FROZEN","source":"T16_HISTORIC_ACCOUNT"}';
+const t16Other='{"marker":"T16_OTHER_ACCOUNT_FROZEN","source":"T16_OTHER_HISTORY"}';
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t16Owner.id)+
+ ",'T16 historic Wizard owner','"+t16Legacy+"'::jsonb)");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t16Editor.id)+
+ ",'T16 historic linked editor','"+t16Other+"'::jsonb)");
+const t16AccountHash=id=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+quote(id));
+const t16RedHistory=t16AccountHash(t16Owner.id),t16OtherHistory=t16AccountHash(t16Editor.id);
+const t16Before=t16Wizard(randomUUID(),3,{savant:false});
+const t16RedBefore=await t16Create(t16Owner,t16Before);
+assert.ifError(t16RedBefore.error);
+assert.equal(one("public.character_spells","character_id="+quote(t16RedBefore.data)+" AND source_type='class-feature'"),0);
+const t16HistoricalHash={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t16RedBefore.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t16RedBefore.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t16RedBefore.data))
+};
+console.log("PASS C34-T16-RED01: genuine signed XPHB Evoker lvl3 accepted without Savant BEFORE original Wizard finalizer");
+sqlFile("scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.apply_wizard_signature_spell_ids_v1(uuid,jsonb,text,text)'::regprocedure))"),
+ "c6d23dc8eccb824e9199ca027139a7da");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_wizard_final_v1()'::regprocedure))"),
+ "3c71ad65cde45d74bef4ea63f25847ac");
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t16RedBefore.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t16RedBefore.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t16RedBefore.data))
+},t16HistoricalHash);
+console.log("PASS C34-T16-GREEN01: original source finalizer deferred trigger and seven immutable function MD5s installed, 25/31, no historical backfill");
+const t16Three=t16Wizard(randomUUID(),3);
+const t16ThreeResult=await t16Create(t16Owner,t16Three);
+assert.ifError(t16ThreeResult.error);
+const t16ThreeId=t16ThreeResult.data;
+assert.equal(one("public.character_spells","character_id="+quote(t16ThreeId)+
+ " AND source_type='class-feature' AND coalesce((raw_payload->>'forgeSavant')::boolean,false)"),2);
+assert.equal(one("public.character_spells","character_id="+quote(t16ThreeId)+
+ " AND source_type='class' AND coalesce((raw_payload->>'startingMagic')::boolean,false)"),13);
+const t16ThreeSpellHash=t8RowHash("public.character_spells","character_id="+quote(t16ThreeId));
+const t16ThreeRetry=await t16Create(t16Owner,t16Three);
+assert.ifError(t16ThreeRetry.error);assert.equal(t16ThreeRetry.data,t16ThreeId);
+assert.equal(t8RowHash("public.character_spells","character_id="+quote(t16ThreeId)),t16ThreeSpellHash);
+assert.equal(t16AccountHash(t16Owner.id),t16RedHistory);
+assert.equal(t16AccountHash(t16Editor.id),t16OtherHistory);
+console.log("PASS C34-T16-GREEN02: original Savant lvl3 two unique Evocation spellbook grants; replay inert, historical accounts retained");
+const t16RedTwenty=t16Wizard(randomUUID(),20);
+const t16RedTwentyResult=await t16Create(t16Owner,t16RedTwenty);
+assert.ifError(t16RedTwentyResult.error);
+const t16RedTwentyId=t16RedTwentyResult.data;
+assert.equal(one("public.character_spells","character_id="+quote(t16RedTwentyId)+
+ " AND coalesce((raw_payload->>'signatureSpell')::boolean,false)"),2);
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t16Owner.id)),"",
+ "ORIGINAL RED signature writer must overwrite historic account marker");
+assert.equal(sql("SELECT sheet#>>'{signatureSpells,0,name}' FROM public.players WHERE user_id="+quote(t16Owner.id)),
+ "I1E Ember Burst");
+console.log("PASS C34-T16-RED02: source-original signed Wizard lvl20 Signature writer overwrites owner's unrelated legacy account snapshot");
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) "+
+ "VALUES("+quote(t16RedTwentyId)+","+quote(t16Editor.id)+",false,true,false)");
+const t16Signature2=JSON.stringify([t16Ids[2],t16Ids[3]]).replaceAll("'","''");
+sql("SELECT private.apply_wizard_signature_spell_ids_v1("+quote(t16RedTwentyId)+
+ ",'"+t16Signature2+"'::jsonb,'creation','shared_character_forge_player_v2')");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t16Editor.id)),"",
+ "ORIGINAL RED privileged Wizard helper must overwrite coeditor historical snapshot");
+console.log("PASS C34-T16-RED03: source-original Wizard Signature also overwrites a separately signed linked co-editor account");
+const t16PreserveAfterRed={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t16RedTwentyId)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t16RedTwentyId))
+};
+sqlFile("scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql");
+assert.notEqual(sql("SELECT md5(pg_get_functiondef('private.apply_wizard_signature_spell_ids_v1(uuid,jsonb,text,text)'::regprocedure))"),
+ "c6d23dc8eccb824e9199ca027139a7da");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_wizard_final_v1()'::regprocedure))"),
+ "3c71ad65cde45d74bef4ea63f25847ac");
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t16RedTwentyId)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t16RedTwentyId))
+},t16PreserveAfterRed,"T16 helper replacement must not backfill old RED canonical rows");
+console.log("PASS C34-T16-GREEN03: explicitly NON ORIGINAL Wizard Option A helper replaces only legacy mirror, preserves source handlers and existing character rows");
+const t16GreenOwner=await signed("wizard-option-a-owner");
+const t16GreenEditor=await signed("wizard-option-a-linked");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t16GreenOwner.id)+
+ ",'T16 safe Wizard owner','"+t16Legacy+"'::jsonb)");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t16GreenEditor.id)+
+ ",'T16 safe Wizard editor','"+t16Other+"'::jsonb)");
+const t16OwnerBefore=t16AccountHash(t16GreenOwner.id),t16EditorBefore=t16AccountHash(t16GreenEditor.id);
+const t16Twenty=t16Wizard(randomUUID(),20);
+const t16Green=await t16Create(t16GreenOwner,t16Twenty);
+assert.ifError(t16Green.error);
+const t16TwentyId=t16Green.data;
+assert.equal(one("public.character_spells","character_id="+quote(t16TwentyId)+
+ " AND source_type='class-feature' AND coalesce((raw_payload->>'forgeSavant')::boolean,false)"),9);
+assert.equal(one("public.character_spells","character_id="+quote(t16TwentyId)+
+ " AND coalesce((raw_payload->>'signatureSpell')::boolean,false)"),2);
+assert.equal(sql("SELECT sheet#>>'{signatureSpells,0,name}' FROM public.character_sheets "+
+ "WHERE character_id="+quote(t16TwentyId)),"I1E Ember Burst");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id="+quote(t16TwentyId)+
+ " AND coalesce((raw_payload->>'signatureSpell')::boolean,false) AND always_available "+
+ "AND prepared AND uses_max=1 AND uses_remaining=1 AND recharge='short_rest'"),"2");
+assert.equal(t16AccountHash(t16GreenOwner.id),t16OwnerBefore);
+assert.equal(t16AccountHash(t16GreenEditor.id),t16EditorBefore);
+const t16GreenHashes={
+ spells:t8RowHash("public.character_spells","character_id="+quote(t16TwentyId)),
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t16TwentyId)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t16TwentyId))
+};
+const t16Replay=await t16Create(t16GreenOwner,t16Twenty);
+assert.ifError(t16Replay.error);assert.equal(t16Replay.data,t16TwentyId);
+assert.deepEqual({
+ spells:t8RowHash("public.character_spells","character_id="+quote(t16TwentyId)),
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t16TwentyId)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t16TwentyId))
+},t16GreenHashes);
+console.log("PASS C34-T16-GREEN04: real signed lvl20 9 original Savant grants + two canonical Signature spells and short-rest uses; immutable replay, account history unchanged");
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) "+
+ "VALUES("+quote(t16TwentyId)+","+quote(t16GreenEditor.id)+",false,true,false)");
+sql("SELECT private.apply_wizard_signature_spell_ids_v1("+quote(t16TwentyId)+
+ ",'"+t16Signature2+"'::jsonb,'creation','shared_character_forge_player_v2')");
+assert.equal(t16AccountHash(t16GreenOwner.id),t16OwnerBefore);
+assert.equal(t16AccountHash(t16GreenEditor.id),t16EditorBefore);
+console.log("PASS C34-T16-GREEN05: character-scoped Signature re-projection with linked co-editor leaves BOTH historical account sheets unchanged");
+async function t16Reject(spec,regex){
+ const nonce=randomUUID(),req=t16Wizard(nonce,spec.level||3,spec);
+ const prior={
+  grants:grantCounts(),spells:Number(sql("SELECT count(*) FROM public.character_spells")),
+  items:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  owner:t16AccountHash(t16GreenOwner.id),editor:t16AccountHash(t16GreenEditor.id)
+ };
+ const got=await t16Create(t16GreenOwner,req);
+ rejected(got,"original Wizard Savant / Signature must reject invalid source request");
+ assert.match(got.error.message,regex);
+ assert.equal(one("public.characters","creation_request_id="+quote(nonce)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(nonce)),0);
+ assert.deepEqual(grantCounts(),prior.grants);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_spells")),prior.spells);
+ assert.equal(Number(sql("SELECT count(*) FROM public.inventory_items")),prior.items);
+ assert.equal(t16AccountHash(t16GreenOwner.id),prior.owner);
+ assert.equal(t16AccountHash(t16GreenEditor.id),prior.editor);
+}
+await t16Reject({savant:false},/Evocation Savant requires a Forge choice group/);
+await t16Reject({duplicateSavant:true},/contains empty or duplicate selections|Savant spellbook selections must be distinct/);
+await t16Reject({level:20,signature:false},/A level-20 Wizard created in Player Forge requires a Signature Spells choice group/);
+console.log("PASS C34-T16-GREEN06: missing Savant, duplicate and missing level20 Signature reject atomically with nonce/gear/spell/feat/account isolation");
+const t16RaceReq=t16Wizard(randomUUID(),3);
+const t16Race=await Promise.all([t16Create(t16GreenOwner,t16RaceReq),t16Create(t16GreenOwner,t16RaceReq)]);
+for(const rs of t16Race)assert.ifError(rs.error);
+assert.equal(t16Race[0].data,t16Race[1].data);
+assert.equal(one("public.character_spells","character_id="+quote(t16Race[0].data)+
+ " AND source_type='class-feature' AND coalesce((raw_payload->>'forgeSavant')::boolean,false)"),2);
+assert.equal(t16AccountHash(t16GreenOwner.id),t16OwnerBefore);
+assert.equal(t16AccountHash(t16GreenEditor.id),t16EditorBefore);
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("PASS C34-T16-GREEN07: genuine signed Wizard nonce concurrency, GM secret, legacy accounts and protected map unchanged");
+console.log("C34 T16 original Wizard Savant/Signature SOURCE RED + deliberately non-original Option A signature projection GREEN: 25/31 original deferred DDL, four non-map progression + two protected world map remain; reduced synthetic spell/catalog/role data, no production/browser/restore acceptance.");

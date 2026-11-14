@@ -34,7 +34,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",
   "scripts/integration/c34/c34_original_eladrin_season_pg17.sql",
   "scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql",
-  "scripts/integration/c34/c34_original_battle_master_pair_pg17.sql"
+  "scripts/integration/c34/c34_original_battle_master_pair_pg17.sql",
+  "scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -404,6 +405,57 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   assert.ok(t15Adapter.includes("IF n<>25")&&t15Adapter.includes("IF n<>27")&&
     !t15Adapter.includes("update public.players p set sheet="),
     "T15 original pair must not add account-sheet mirroring or map triggers");
+  // T16 source custody: raw original I1-E #353 code/setup SHA; original
+  // seven private bodies and original deferred AFTER INSERT Wizard trigger.
+  const t16Raw=read("scripts/integration/c34/sources/11_i1e_original_wizard_functions_pg17.sql");
+  const t16SetupRaw=read("scripts/integration/c34/sources/12_i1e_original_wizard_setup_pg17.sql");
+  assert.equal(gitBlobSha(t16Raw),"c0322578db9e848b20a476b32681c07e316f0870",
+    "T16 original I1-E Wizard function source blob drift");
+  assert.equal(gitBlobSha(t16SetupRaw),"0b833150367ce01297acf82d750de3f01be66044",
+    "T16 original I1-E Wizard setup source blob drift");
+  const t16Source=t16Raw.toString("utf8"),t16Setup=t16SetupRaw.toString("utf8");
+  const t16OriginalInstaller=read("scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql").toString("utf8");
+  const t16Safe=read("scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql").toString("utf8");
+  for(const name of ["wizard_savant_school_v1","highest_spell_level_from_slots_v1","wizard_spellbook_has_spell_v1",
+    "apply_wizard_signature_spell_ids_v1","materialize_player_forge_wizard_savant_for_character_v1",
+    "materialize_player_forge_wizard_signature_for_character_v1","materialize_player_forge_wizard_final_v1"]){
+    const begin=t16Source.indexOf("CREATE OR REPLACE FUNCTION private."+name+"(");
+    const end=t16Source.indexOf("$function$;",begin);
+    assert.ok(begin>=0&&end>begin,"T16 original Wizard source private function missing "+name);
+    const exact=t16Source.slice(begin,end+"$function$;".length);
+    assert.ok(t16OriginalInstaller.includes(exact),"T16 original Wizard function body drift: "+name);
+    if(name==="apply_wizard_signature_spell_ids_v1"){
+      const mirror="  update public.players p set sheet=v_sheet,updated_at=now()\n"+
+        "  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n";
+      assert.ok(exact.includes(mirror),"T16 exact original legacy account mirror absent");
+      const scope=exact.replace(mirror,"  -- T16 Option A character-scoped projection only: no cross-account legacy\n"+
+        "  -- players.sheet mirror; original source remains preserved in source archive.\n");
+      assert.ok(t16Safe.includes(scope),"T16 Option A differs ONLY by original two-line account mirror removal");
+      assert.ok(!scope.includes("  update public.players p set sheet="),"T16 scoped helper must not mirror accounts");
+    }
+  }
+  const t16TriggerAt=t16Setup.indexOf("CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_wizard_final_v1");
+  const t16TriggerEnd=t16Setup.indexOf("-- Internal helpers",t16TriggerAt);
+  assert.ok(t16TriggerAt>=0&&t16TriggerEnd>t16TriggerAt&&
+    t16OriginalInstaller.includes(t16Setup.slice(t16TriggerAt,t16TriggerEnd)),
+    "T16 original Wizard deferred event/handler/timing drift");
+  for(const h of ["39cb0f3c7041e7d5f63538f03c6abb7f","84ff66ed7dcdeccc6593c05a6d24c4cb",
+    "f902c2d45de3ae7b9c63132117fc99e0","c6d23dc8eccb824e9199ca027139a7da",
+    "49594930f540d308b43ce00461462829","02395e9d544ef6d5d1e6e5436d080294",
+    "3c71ad65cde45d74bef4ea63f25847ac"])
+    assert.ok(t16OriginalInstaller.includes(h),"T16 original Wizard executable PG17 MD5 missing "+h);
+  assert.ok(t16OriginalInstaller.includes("IF n<>27")&&t16OriginalInstaller.includes("IF n<>28")&&
+    t16Safe.includes("position('update public.players' IN lower(d))>0")&&
+    t16Safe.includes("DELIBERATELY NON-ORIGINAL"),
+    "T16 original/Option A writer pre/post fences drift");
+  const t16Cat=read("scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql").toString("utf8");
+  for(const id of ["00000000-0000-0000-0000-000000008803","00000000-0000-0000-0000-000000008813",
+    "00000000-0000-0000-0000-000000008814","00000000-0000-0000-0000-000000016001",
+    "00000000-0000-0000-0000-000000016046"])
+    assert.ok(t16Cat.includes(id),"T16 original/synthetic source test spell specimen ID drift "+id);
+  assert.ok(t16Cat.includes("SYNTHETIC")&&t16Cat.includes("NOT production")&&
+    !t16Cat.includes("DROP VIEW public.spells_catalog_preferred"),
+    "T16 reduced Wizard source must declare synthetic data and preserve T12 view");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -427,11 +479,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,24,"C34 T15 expects 24/31 original DDL, 5 non-map progression+2 world");
- assert.equal(r.originalMissingCount,7);
- assert.equal(r.totalStaged,27);
+ assert.equal(r.stagedOriginalCount,25,"C34 T16 expects 25/31 original DDL, 4 non-map progression+2 world");
+ assert.equal(r.originalMissingCount,6);
+ assert.equal(r.totalStaged,28);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T15: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T16: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
