@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `cc2f7766383ed7769fa9415cdeef0aae2f59c12d` |
+| Exact source commit represented by this archive snapshot | `b8e277e633a06cad04aaf5821e708e7eb5037f9e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(C34 guard): compare actual Artificer declaration using newline escape |
+| Last source commit title | test(C34 T17): retain negative controls against pinned candidate blob |
 | Files changed relative to main | 67 (57 non-docs; 10 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
