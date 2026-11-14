@@ -861,3 +861,47 @@ test("C34-T21-N02 current app candidate has no direct GM/characters read or acti
     .includes("readNonMapNpcProfileCandidate"),"early integrated import: "+live);
  }
 });
+
+
+test("C34-T22-S01 research-only Bootstrap Profile shell uses exactly the signed T21 reader and no map/legacy secret fallback",()=>{
+ const root=path.resolve(dir,"../../..");
+ const js=fs.readFileSync(path.join(root,"components/c34/NonMapNpcProfileResearchShell.jsx"),"utf8");
+ assert.match(js,/readNonMapNpcProfileCandidate/);
+ assert.match(js,/from "react"/);
+ assert.match(js,/btn btn-primary|btn btn-outline-info/);
+ assert.match(js,/Private character backstory|Private Backstory/);
+ assert.match(js,/GM-only dossier/);
+ assert.match(js,/onAuthStateChange/);
+ assert.match(js,/SIGNED_OUT/);
+ assert.match(js,/getClient|auth|getUser|signedEpoch/);
+ assert.doesNotMatch(js,/\.from\(["']characters["']\)/);
+ assert.doesNotMatch(js,/loadCharacterSecrets|service_role|map-icons|tailwind/i);
+ assert.doesNotMatch(js,/get_npc_dossier_admin_v1|select\(["']\*/);
+});
+test("C34-T22-N01 no production route or shared world/town/GM manager imports research-only shell",()=>{
+ const root=path.resolve(dir,"../../..");
+ assert.equal(fs.existsSync(path.join(root,"pages/__c34_t22_probe.jsx")),false);
+ assert.equal(fs.existsSync(path.join(root,"pages/__c34_t22_probe.js")),false);
+ const fixture=fs.readFileSync(path.join(root,"scripts/integration/c34/fixtures/t22_nonmap_next_probe_page.jsx"),"utf8");
+ assert.match(fixture,/NonMapNpcProfileResearchShell/);
+ assert.match(fixture,/Authorized Sheet/);
+ for(const file of ["pages/_app.js","components/MapPageClient.js","components/NpcPanel.js",
+  "pages/npcs.js","pages/town/[id].js","pages/inventory.js",
+  "components/character/CharacterInteractionPanel.js"]){
+  const source=fs.readFileSync(path.join(root,file),"utf8");
+  assert.ok(!source.includes("NonMapNpcProfileResearchShell"),
+   "T22 early production/runtime mount is forbidden: "+file);
+ }
+});
+test("C34-T22-N02 current Next browser can only create temporary local route, never talk to hosted Supabase",()=>{
+ const root=path.resolve(dir,"../../..");
+ const runner=fs.readFileSync(path.join(root,"scripts/integration/c34/test_t22_current_next_browser.mjs"),"utf8");
+ assert.match(runner,/C34_T22_BROWSER_CONFIRM/);
+ assert.match(runner,/DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY/);
+ assert.match(runner,/DNDNEXT_C34_LOCAL_URL/);
+ assert.match(runner,/127\.0\.0\.1:54321/);
+ assert.match(runner,/fs\.copyFileSync\(sourcePage,probe\)/);
+ assert.match(runner,/fs\.unlinkSync\(probe\)/);
+ assert.match(runner,/test_t22_current_next_browser/);
+ assert.doesNotMatch(runner,/SUPABASE_SERVICE_ROLE_KEY|https:\/\/[a-z0-9-]+\.supabase\.co/);
+});

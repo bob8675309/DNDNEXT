@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'scripts/integration/c34/**'
+      - 'components/c34/**'
+      - 'utils/c34/**'
       - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
       - 'scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql'
       - 'sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql'
@@ -179,6 +181,32 @@ jobs:
              DNDNEXT_PDF_VISUAL_LOG_IMAGES=0 \
              node scripts/browser/verify_c33_npc_pdf_visual.mjs)
           echo 'PASS C34-T20-PDF: held #345 original 3-page PDF public/GM/dense content and JPEG previews'
+      # T22 starts the ACTUAL CURRENT #379 Next Pages Router, not held #345.
+      # Only a generated untracked route points to the separate Bootstrap shell;
+      # the runner removes it in a finally block. No _app, town, map, or NPC
+      # manager files are replaced, and no hosted Supabase URLs are accepted.
+      - name: T22 genuine current Next non-map Profile Chromium signed roles (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T22_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t22_probe.jsx
+          node --check scripts/integration/c34/test_t22_current_next_browser.mjs
+          node scripts/integration/c34/test_t22_current_next_browser.mjs
+          test ! -e pages/__c34_t22_probe.jsx
+          echo 'PASS C34-T22 CURRENT-NEXT: real signed local original privacy DB and current-head isolated Bootstrap NPC Profile UI, no map/hosted app'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
