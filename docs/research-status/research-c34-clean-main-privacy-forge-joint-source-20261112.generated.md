@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8c3d859c94e4534a0de5b257462bd4cd08d44188` |
+| Exact source commit represented by this archive snapshot | `f233a8362f920483815ac8e8efaf122df37eddcd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T15): locate original maneuver catalog before original trigger section |
+| Last source commit title | test(C34 T15): seed original T5 Battle Master feature's source-owned maneuver metadata without relaxing authority |
 | Files changed relative to main | 56 (48 non-docs; 8 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
 
 ## Research-branch change inventory versus main
 
