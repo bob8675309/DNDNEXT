@@ -30,7 +30,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql",
   "scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql",
   "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
-  "scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql"
+  "scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",
+  "scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -245,6 +246,36 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     t11Specimen.includes("Astral Fire")&&t11Specimen.includes("AAG")&&
     t11Specimen.includes("XPHB"),
     "T11 source-identified reduced Astral Elf/Astral Fire specimen changed");
+
+  // Source-original migration 67, with original runtime table from migration 44.
+  const t12Original=read("sql/20260809_67_species_replaceable_cantrip_runtime.sql").toString("utf8");
+  const t12Adapter=read("scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql").toString("utf8");
+  const t12Event=[
+    "create constraint trigger character_progression_materialize_species_cantrip_v1",
+    "after insert on public.character_progression",
+    "deferrable initially deferred",
+    "for each row execute function private.materialize_player_forge_species_replaceable_cantrip_v1();"
+  ].join("\n");
+  assert.ok(t12Original.includes(t12Event)&&t12Adapter.includes(t12Event),
+    "T12 exact original deferred cantrip trigger event/handler drift");
+  for(const fingerprint of ["d1264573b17e7569ba75371aa7e912eb",
+    "560088a5e3ad85866b6aa9b10ccfd2db",
+    "f8bf8cdf45cf57953dca333e5f856a84",
+    "7af5408f062f786aa633254a0d5d6365",
+    "a09198d8e12df12371647fccd8479489"])
+   assert.ok(t12Adapter.includes(fingerprint),"T12 original live function MD5 missing: "+fingerprint);
+  const t12Table=read("sql/20260808_44_runtime_feature_choices_spell_mastery.sql").toString("utf8");
+  const t12Start=t12Table.indexOf("create table if not exists public.character_runtime_feature_choices (");
+  const t12End=t12Table.indexOf("revoke all on table public.character_runtime_feature_choices from public,anon,authenticated;",t12Start)+
+     "revoke all on table public.character_runtime_feature_choices from public,anon,authenticated;".length;
+  assert.ok(t12Start>=0&&t12End>t12Start&&t12Adapter.includes(t12Table.slice(t12Start,t12End)),
+     "T12 source-original runtime table/RLS/ACL drift");
+  const t12Species=read("scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql").toString("utf8");
+  for(const evidence of ["5f62b543-f6ac-405f-baa8-1f196190ff35",
+    "c667b8ab-a44e-4c23-a8ea-b03f8953fc18",
+    "6e4e3cc8-ed5f-4f81-8232-600c83beeec8",
+    "bf50a82c-7111-45e1-90a6-cd4c5ab2f462"])
+   assert.ok(t12Species.includes(evidence),"T12 original source-identified species/spell specimen drift: "+evidence);
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -268,11 +299,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,19,"C34 T11 expects 19/31 original DDL; remaining 10 non-map progression +2 world");
- assert.equal(r.originalMissingCount,12);
- assert.equal(r.totalStaged,22);
+ assert.equal(r.stagedOriginalCount,20,"C34 T12 expects 20/31 original DDL, 9 non-map progression+2 world");
+ assert.equal(r.originalMissingCount,11);
+ assert.equal(r.totalStaged,23);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T11: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T12: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }

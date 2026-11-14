@@ -72,7 +72,7 @@ test("C34-N05 no production connection, schema writes or SQL execution in valida
 
 test("C34-S02 all operational original joint fixtures and candidate paths are byte-identical", () => {
   const e=verifyOriginalJointDependencies();
-  assert.equal(e.length,31);
+  assert.equal(e.length,33);
   assert.ok(e.some((x)=>x.file.includes("original_i1c_forge_private_story_nonce_local_auth")));
   assert.ok(e.some((x)=>x.file.endsWith("20261105_inventory_character_owner_constraint_and_dml_review_v1.sql")));
 });
@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T11-S01 original census counts 19/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T12-S01 original census counts 20/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,19);
- assert.equal(r.originalMissingCount,12);
+ assert.equal(r.stagedOriginalCount,20);
+ assert.equal(r.originalMissingCount,11);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,22);
+ assert.equal(r.totalStaged,23);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,19);
- assert.equal(truncated.stagedOriginalCount,18);
- assert.equal(truncated.originalMissingCount,13);
+ assert.equal(original.stagedOriginalCount,20);
+ assert.equal(truncated.stagedOriginalCount,19);
+ assert.equal(truncated.originalMissingCount,12);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,19);
- assert.equal(r.originalMissingCount,12);
+ assert.equal(r.stagedOriginalCount,20);
+ assert.equal(r.originalMissingCount,11);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,22);
+ assert.equal(r.totalStaged,23);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
@@ -401,4 +401,55 @@ test("C34-T11-N27 source-identified species/spell IDs cannot silently change",()
   assert.ok(s.includes(from));
   return Buffer.from(s.replaceAll(from,"00000000-0000-0000-0000-000000000999"));
  }),/T11 source-identified reduced Astral Elf\/Astral Fire specimen changed/);
+});
+
+test("C34-T12-N28 original deferred cantrip event cannot be retargeted",()=>{
+ const f="scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="after insert on public.character_progression";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"after update on public.character_progression"));
+ }),/T12 exact original deferred cantrip trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T12-N29 original trigger deferral cannot become immediate",()=>{
+ const f="scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="deferrable initially deferred";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"not deferrable"));
+ }),/T12 exact original deferred cantrip trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T12-N30 original runtime table RLS must remain source-identical",()=>{
+ const f="scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="alter table public.character_runtime_feature_choices enable row level security;";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"-- accidentally omitted RLS"));
+ }),/T12 source-original runtime table\/RLS\/ACL drift/);
+});
+test("C34-T12-N31 live original private source fingerprint is required",()=>{
+ const f="scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="a09198d8e12df12371647fccd8479489";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replaceAll(from,"00000000000000000000000000000000"));
+ }),/T12 original live function MD5 missing/);
+});
+test("C34-T12-N32 original High Elf cantrip identity cannot silently change",()=>{
+ const f="scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="5f62b543-f6ac-405f-baa8-1f196190ff35";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replaceAll(from,"00000000-0000-0000-0000-000000000999"));
+ }),/T12 original source-identified species\/spell specimen drift/);
 });
