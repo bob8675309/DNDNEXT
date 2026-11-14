@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `cbd02f6ccf404bd3484ea92b60ec5ef2c9df83a6` |
+| Exact source commit represented by this archive snapshot | `4b3d44c1464e356c0b171111cebcc73c94b9ed95` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T14: 22/31 source census and six negative tamper guards for Khoravar Option A |
+| Last source commit title | test(C34 T14): snapshot RED historical row after deliberate second original mirror invocation |
 | Files changed relative to main | 52 (45 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
