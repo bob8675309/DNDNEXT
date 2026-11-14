@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9698801ff1f8e82051f7aa58ffe895e4dd08329b` |
+| Exact source commit represented by this archive snapshot | `9fe79a91b44b34ddd468ba5f1f712824b713b448` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T14 source archive: preserve unchanged original I1-J Khoravar skill/projection fixture |
-| Files changed relative to main | 49 (42 non-docs; 7 docs) |
+| Last source commit title | C34 T14: stage four original source-identified Khoravar skill/tool specimens without rewriting preferred view |
+| Files changed relative to main | 50 (43 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql`
+- `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -38,6 +38,7 @@
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
+- `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
 - `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
 - `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
