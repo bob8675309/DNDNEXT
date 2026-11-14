@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f233a8362f920483815ac8e8efaf122df37eddcd` |
+| Exact source commit represented by this archive snapshot | `1607de9fbcc7d26f1ab7729034517f623daab751` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T15): seed original T5 Battle Master feature's source-owned maneuver metadata without relaxing authority |
+| Last source commit title | test(C34 T15): serialize source-qualified Battle Master choices for original T5 authority plus paired original maneuvers |
 | Files changed relative to main | 56 (48 non-docs; 8 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
