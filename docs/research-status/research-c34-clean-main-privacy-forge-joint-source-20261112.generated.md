@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c5ffa9680fd709b9a73800399803efbeb7d515fa` |
+| Exact source commit represented by this archive snapshot | `cc2f7766383ed7769fa9415cdeef0aae2f59c12d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T17): pin third non-original Artificer summary delta without weakening original source |
+| Last source commit title | fix(C34 guard): compare actual Artificer declaration using newline escape |
 | Files changed relative to main | 67 (57 non-docs; 10 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
