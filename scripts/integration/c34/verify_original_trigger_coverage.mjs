@@ -33,7 +33,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",
   "scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",
   "scripts/integration/c34/c34_original_eladrin_season_pg17.sql",
-  "scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql"
+  "scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql",
+  "scripts/integration/c34/c34_original_battle_master_pair_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -368,6 +369,41 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     assert.ok(t14Catalog.includes(id),"T14 source XPHB skill/tool specimen drift: "+id);
   assert.ok(!t14Catalog.includes("CREATE OR REPLACE VIEW public.character_option_catalog_preferred"),
     "T14 must reuse T5 original preferred option catalog source-precedence view");
+  // T15: source-preserve the PAIR of original Battle Master triggers,
+  // their five pg_get_functiondef bodies and all 12 source-identified maneuvers.
+  const t15Raw=read("scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql");
+  const t15SetupRaw=read("scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql");
+  assert.equal(gitBlobSha(t15Raw),"fbda236e3c1b96ef9a93c44f0a2f99a6cd77adf9",
+    "T15 original I1-F Battle Master function source blob drift");
+  assert.equal(gitBlobSha(t15SetupRaw),"c5ae0b31605d9374b295eee01eefdda0718afb80",
+    "T15 original I1-F Battle Master setup source blob drift");
+  const t15Original=t15Raw.toString("utf8"),t15Setup=t15SetupRaw.toString("utf8");
+  const t15Adapter=read("scripts/integration/c34/c34_original_battle_master_pair_pg17.sql").toString("utf8");
+  for(const name of ["battle_master_maneuver_count_v1","battle_master_maneuver_slot_level_v1",
+    "is_xphb_battle_master_v1","materialize_player_forge_battle_master_maneuvers_v1",
+    "validate_existing_battle_master_maneuvers_v1"]){
+    const start=t15Original.indexOf("CREATE OR REPLACE FUNCTION private."+name+"(");
+    const end=t15Original.indexOf("$function$;",start);
+    assert.ok(start>=0&&end>start,"T15 original Battle Master function missing "+name);
+    assert.ok(t15Adapter.includes(t15Original.slice(start,end+"$function$;".length)),
+      "T15 original Battle Master function body drift: "+name);
+  }
+  const t15Begin=t15Setup.indexOf("CREATE CONSTRAINT TRIGGER character_progression_materialize_battle_master_maneuvers_v1");
+  const t15End=t15Setup.indexOf("-- Internal definer functions",t15Begin);
+  assert.ok(t15Begin>=0&&t15End>t15Begin&&t15Adapter.includes(t15Setup.slice(t15Begin,t15End)),
+    "T15 BOTH original Battle Master deferred trigger events/handlers required");
+  for(const fingerprint of ["32cbfe62f855affe40443da2fc9d20eb","70b3639eb4b6535aab3efbfc80828a0e",
+    "17688ec8bceac3c06d58415de20a544b","daf3fc12e7c30165dca50ca650f9d308",
+    "8bc8a467e95b07e93df833bcfc585e80"])
+    assert.ok(t15Adapter.includes(fingerprint),"T15 original Battle Master MD5 missing "+fingerprint);
+  const t15CatBegin=t15Setup.indexOf("INSERT INTO public.class_feature_option_catalog",t15End);
+  const t15CatEnd=t15Setup.indexOf("\\i scripts/fixtures/i1f_battle_master_original_functions_pg17.sql",t15CatBegin);
+  assert.ok(t15CatBegin>=0&&t15CatEnd>t15CatBegin&&
+    t15Adapter.includes(t15Setup.slice(t15CatBegin,t15CatEnd)),
+    "T15 source-identical 12 real original XPHB maneuver IDs/rows required");
+  assert.ok(t15Adapter.includes("IF n<>25")&&t15Adapter.includes("IF n<>27")&&
+    !t15Adapter.includes("update public.players p set sheet="),
+    "T15 original pair must not add account-sheet mirroring or map triggers");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -391,11 +427,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,22,"C34 T14 expects 22/31 original DDL, 7 non-map progression+2 world");
- assert.equal(r.originalMissingCount,9);
- assert.equal(r.totalStaged,25);
+ assert.equal(r.stagedOriginalCount,24,"C34 T15 expects 24/31 original DDL, 5 non-map progression+2 world");
+ assert.equal(r.originalMissingCount,7);
+ assert.equal(r.totalStaged,27);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T14: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T15: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }

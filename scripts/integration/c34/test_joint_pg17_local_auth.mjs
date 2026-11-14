@@ -1995,3 +1995,123 @@ assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()
 assert.equal(sql("SELECT to_regprocedure('public.configure_character_khoravar_skill_versatility_v1(uuid,text)') IS NULL"),"t");
 console.log("PASS C34-T14-GREEN07: same-nonce real signed concurrency creates one Khoravar skill state; legacy, GM secret and world-map boundaries retained");
 console.log("C34 T14 signed ORIGINAL SOURCE RED + Option A scoped-adapter GREEN PASS: 22/31 original trigger definitions; 7 non-map progression +2 world map original remain. ORIGINAL Khoravar handler/source retained unchanged; projection helper intentionally non-original and needs full cross-system/consumer acceptance before production. HOLD.");
+
+
+// T15 — paired ORIGINAL I1-F Battle Master maneuver materializer + deferred
+// UPDATE validator. Original full source #354, reduced catalog/grant table
+// only in throwaway PostgreSQL17; no browser/hosted/world-map mutations.
+const t15ManeuverNames=[
+ "Ambush","Bait and Switch","Commander's Strike","Commanding Presence",
+ "Disarming Attack","Distracting Strike","Evasive Footwork",
+ "Feinting Attack","Goading Attack","Lunging Attack",
+ "Maneuvering Attack","Menacing Attack"
+];
+const t15Battle=(nonce,choices=null,level=3)=>{
+ const p=makeSubclass(nonce,"Battle Master","XPHB",level);
+ return {...p,name:"T15 source signed Battle Master "+nonce.slice(0,8),
+  sheet:{...p.sheet,classFeatureChoices:choices===null?{}:{
+   "battle-master-choices":{kind:"battle-master-maneuver",
+    subclassName:"Battle Master",selections:choices.map(name=>({name}))}
+  }}
+ };
+};
+const t15RedInput=t15Battle(randomUUID());
+const t15Red=await createSubclass(t15RedInput);
+assert.ifError(t15Red.error);
+const t15RedHash={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t15Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t15Red.data))
+};
+console.log("PASS C34-T15-RED01: real signed level3 Battle Master without required maneuvers created before original materializer");
+sqlFile("scripts/integration/c34/c34_original_battle_master_pair_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_battle_master_maneuvers_v1()'::regprocedure))"),
+ "daf3fc12e7c30165dca50ca650f9d308");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_existing_battle_master_maneuvers_v1()'::regprocedure))"),
+ "8bc8a467e95b07e93df833bcfc585e80");
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),27);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t15Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t15Red.data))
+},t15RedHash,"T15 must never backfill historical RED Battle Master characters");
+console.log("PASS C34-T15-GREEN01: both source-original deferred triggers installed, 24/31, old RED rows unchanged");
+const t15Count=id=>one("public.character_class_option_grant_instances",
+ "character_id="+quote(id)+" AND option_type='battle-master-maneuver'");
+const t15GrantHash=id=>t8RowHash("public.character_class_option_grant_instances","character_id="+quote(id));
+const t15Three=t15Battle(randomUUID(),t15ManeuverNames.slice(0,3));
+const t15ThreeMade=await createSubclass(t15Three);
+assert.ifError(t15ThreeMade.error);
+assert.equal(t15Count(t15ThreeMade.data),3);
+assert.equal(sql("SELECT string_agg(acquired_level::text,',' ORDER BY instance_key) "+
+ "FROM public.character_class_option_grant_instances WHERE character_id="+quote(t15ThreeMade.data)),"3,3,3");
+assert.equal(sql("SELECT count(DISTINCT option_catalog_id) FROM public.character_class_option_grant_instances "+
+ "WHERE character_id="+quote(t15ThreeMade.data)),"3");
+const t15ThreeHash=t15GrantHash(t15ThreeMade.data);
+const t15Replay=await createSubclass(t15Three);
+assert.ifError(t15Replay.error);assert.equal(t15Replay.data,t15ThreeMade.data);
+assert.equal(t15GrantHash(t15ThreeMade.data),t15ThreeHash);
+console.log("PASS C34-T15-GREEN02: source-owned three level3 maneuvers created, distinct XPHB IDs, inert nonce replay");
+const t15Ten=t15Battle(randomUUID(),t15ManeuverNames.slice(0,7),10);
+const t15TenMade=await createSubclass(t15Ten);
+assert.ifError(t15TenMade.error);
+assert.equal(t15Count(t15TenMade.data),7);
+assert.equal(sql("SELECT string_agg(acquired_level::text,',' ORDER BY instance_key) "+
+ "FROM public.character_class_option_grant_instances WHERE character_id="+quote(t15TenMade.data)),"3,3,3,7,7,10,10");
+console.log("PASS C34-T15-GREEN03: true source-qualified Fighter level10 earns seven canonical maneuvers with original 3/7/10 slot levels");
+async function t15Reject(choices,rx){
+ const payload=t15Battle(randomUUID(),choices),prior=grantCounts();
+ const beforeManeuvers=Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances"));
+ const res=await createSubclass(payload);
+ rejected(res,"invalid original Battle Master maneuver choice");
+ assert.match(res.error.message,rx);
+ assert.equal(one("public.characters","creation_request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(payload.creation_request_id)),0);
+ assert.deepEqual(grantCounts(),prior);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances")),beforeManeuvers);
+}
+await t15Reject(t15ManeuverNames.slice(0,2),/requires exactly 3 maneuver choice/);
+await t15Reject(["Ambush","Ambush","Disarming Attack"],/must be distinct/);
+await t15Reject(["Ambush","Disarming Attack","Forged XPHB Maneuver"],/unknown maneuver choice/);
+console.log("PASS C34-T15-GREEN04: original choice count, duplicate and unknown source maneuvers rejected atomically");
+function t15RejectedTransaction(statement,rx){
+ const out=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-qAt"],{
+  env,input:"BEGIN;\n"+statement+"\nCOMMIT;\n",encoding:"utf8",timeout:35000
+ });
+ assert.notEqual(out.status,0,"original Battle Master validator unexpectedly accepted invalid committed mutation");
+ assert.match(out.stderr,rx,"original deferred UPDATE validator did not produce expected rule");
+}
+sql("BEGIN; UPDATE public.character_progression SET level_choices=level_choices||'{\"t15Verified\":true}'::jsonb "+
+ "WHERE character_id="+quote(t15TenMade.data)+"; COMMIT;");
+assert.equal(sql("SELECT level_choices->>'t15Verified' FROM public.character_progression "+
+ "WHERE character_id="+quote(t15TenMade.data)),"true");
+const t15BeforeTamper=t15GrantHash(t15TenMade.data);
+t15RejectedTransaction(
+ "DELETE FROM public.character_class_option_grant_instances WHERE character_id="+quote(t15TenMade.data)+
+ " AND instance_key='battle-master-maneuver-slot-7';\n"+
+ "UPDATE public.character_progression SET level_choices=level_choices||'{\"t15Tamper\":true}'::jsonb "+
+ "WHERE character_id="+quote(t15TenMade.data)+";",
+ /requires 7 normalized maneuver instance/);
+assert.equal(t15GrantHash(t15TenMade.data),t15BeforeTamper);
+assert.equal(sql("SELECT level_choices ? 't15Tamper' FROM public.character_progression "+
+ "WHERE character_id="+quote(t15TenMade.data)),"f");
+t15RejectedTransaction(
+ "UPDATE public.character_progression SET subclass_name='Champion' "+
+ "WHERE character_id="+quote(t15TenMade.data)+";",
+ /non-Battle-Master progression cannot retain/);
+assert.equal(sql("SELECT subclass_name FROM public.character_progression "+
+ "WHERE character_id="+quote(t15TenMade.data)),"Battle Master");
+assert.equal(t15GrantHash(t15TenMade.data),t15BeforeTamper);
+console.log("PASS C34-T15-GREEN05: original paired AFTER UPDATE validator rejects missing normalized grant and subclass switch with true PostgreSQL COMMIT rollback");
+const t15RaceInput=t15Battle(randomUUID(),t15ManeuverNames.slice(0,3));
+const t15Race=await Promise.all([createSubclass(t15RaceInput),createSubclass(t15RaceInput)]);
+for(const res of t15Race)assert.ifError(res.error);
+assert.equal(t15Race[0].data,t15Race[1].data);
+assert.equal(t15Count(t15Race[0].data),3);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(t15RaceInput.creation_request_id)),1);
+assert.equal(sql("SELECT has_table_privilege('authenticated','public.character_class_option_grant_instances','INSERT')"),"f");
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),"ORIGINAL_NONEMPTY");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("PASS C34-T15-GREEN06: signed same-nonce race grants exactly 3 source XPHB maneuvers, legacy account, privacy, world-map unchanged");
+console.log("C34 T15 original Battle Master paired signed RED->GREEN PASS: 24/31 original DDL, 5 non-map progression + 2 protected map remain. Original source handlers unchanged, reduced catalog/RLS, no production/browser/recovery acceptance.");
