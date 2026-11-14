@@ -2632,8 +2632,10 @@ const t18Make=(nonce,level=1,entries=[[1,"Pact of the Blade"]])=>{
   ["warlock-invocation-slot-"+slot,t18Group(slot,name,child??null)]));
  return {payload:{...w.payload,name:"T18 original XPHB Warlock "+nonce.slice(0,8),
   sheet:{...w.payload.sheet,classKey:"warlock",level,
+   // The inherited disposable equipment adapter accepts only package A.
+   // This is not the authentic XPHB Warlock starting-item catalog/wealth parity.
    startingEquipmentSelections:{...w.payload.sheet.startingEquipmentSelections,
-    mode:"package",classOption:"B"},
+    mode:"package",classOption:"A"},
    startingMagicSelections:w.payload.sheet.startingMagicSelections.map(x=>({
     ...x,source_key:"warlock"
    })),sourceChoices
