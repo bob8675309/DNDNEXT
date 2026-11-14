@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T17-S01 original census counts 26/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T18-S01 original census counts 29/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,26);
- assert.equal(r.originalMissingCount,5);
+ assert.equal(r.stagedOriginalCount,29);
+ assert.equal(r.originalMissingCount,2);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,29);
+ assert.equal(r.totalStaged,32);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,26);
- assert.equal(truncated.stagedOriginalCount,25);
- assert.equal(truncated.originalMissingCount,6);
+ assert.equal(original.stagedOriginalCount,29);
+ assert.equal(truncated.stagedOriginalCount,28);
+ assert.equal(truncated.originalMissingCount,3);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,26);
- assert.equal(r.originalMissingCount,5);
+ assert.equal(r.stagedOriginalCount,29);
+ assert.equal(r.originalMissingCount,2);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,29);
+ assert.equal(r.totalStaged,32);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
@@ -668,4 +668,26 @@ test("C34-T17-N56 original Artificer NULL-parent regression must remain correcte
   assert.ok(s.includes(from));
   return Buffer.from(s.replace(from,"if jsonb_typeof(v_sheet->'classFeatureChoices')<>'object' then"));
  }),/T17 derived projection candidate blob drift/);
+});
+
+// T18 source custody: original Warlock fixtures must remain byte-identical,
+// and an invalid after-insert source event can never be counted as accepted.
+test("C34-T18-N57 original Warlock source functions and acquisition are immutable",()=>{
+ const root=path.resolve(dir,"../../..");
+ const fixture="scripts/integration/c34/sources/14_i1g_original_warlock_functions_pg17.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  return file===fixture?Buffer.concat([b,Buffer.from("\n-- warlock-source-tamper")]):b;
+ }),/T18 original held Warlock source drift/);
+});
+test("C34-T18-N58 original Warlock AFTER INSERT acquisition event cannot become UPDATE",()=>{
+ const root=path.resolve(dir,"../../..");
+ const fixture="scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql";
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));if(file!==fixture)return b;
+  const source=b.toString("utf8");
+  const before=" AFTER INSERT ON public.character_progression";
+  assert.ok(source.includes(before));
+  return Buffer.from(source.replace(before," AFTER UPDATE ON public.character_progression"));
+ }),/T18 exact original held AFTER INSERT acquisition DDL drift|Event\/handler|Timing\/deferral mismatch/);
 });
