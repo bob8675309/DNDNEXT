@@ -153,6 +153,12 @@ jobs:
           node --check held345/scripts/browser/verify_c33_creator_backstory_dom.mjs
           (cd held345 && node scripts/browser/verify_c33_creator_backstory_dom.mjs)
           psql -X -v ON_ERROR_STOP=1 -f held345/scripts/fixtures/c33_next_town_route_pg17.sql
+          # Original #345 hardcoded 41820 can collide with unrelated local
+          # runner processes. Reserve a free LOOPBACK port; only its two
+          # transport literals are adapted in this scratch checkout.
+          export C34_T20_TOWN_PORT="$(node -e 'const net=require("node:net");const s=net.createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})')"
+          node scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs town-port
+          node --check held345/scripts/browser/verify_c33_next_town_route.mjs
           (cd held345 && node scripts/browser/verify_c33_next_town_route.mjs)
           echo 'PASS C34-T20: held #345 Chromium and Next browser against same T19 29/31 disposable DB'
       - name: T20 render original #345 public, GM and dense official PDF pages (synthetic data only)

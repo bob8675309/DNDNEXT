@@ -28,6 +28,30 @@ export function adaptOriginalC3BBrowserFixture(raw) {
  assert.ok(result.includes('groupId:"fightingStyle"')&&result.includes('optionType:"feat"'));
  return result;
 }
+
+export const ORIGINAL_C3T_BLOB="d19b134fdb4e4b58833fe339f918c027959eae02";
+export const ORIGINAL_C3T_REL="scripts/browser/verify_c33_next_town_route.mjs";
+export const TOWN_ORIGIN_FROM='const origin="http://127.0.0.1:41820";';
+export const TOWN_PROCESS_FROM='"-p","41820"';
+export function adaptOriginalC3TBrowserPort(raw,port) {
+ const content=Buffer.isBuffer(raw)?raw.toString("utf8"):String(raw);
+ assert.equal(gitBlobSha(content),ORIGINAL_C3T_BLOB,
+  "T20 original #345 Next town browser source drift");
+ const value=String(port);
+ assert.match(value,/^[0-9]{4,5}$/,"T20 local port must be numeric");
+ assert.ok(Number(value)>=1024&&Number(value)<=65535,"T20 invalid local TCP port");
+ assert.equal(content.split(TOWN_ORIGIN_FROM).length-1,1,
+  "T20 original Next town browser localhost origin missing");
+ assert.equal(content.split(TOWN_PROCESS_FROM).length-1,1,
+  "T20 original Next process port missing");
+ const newOrigin='const origin="http://127.0.0.1:'+value+'";';
+ const newProcess='"-p","'+value+'"';
+ const updated=content.replace(TOWN_ORIGIN_FROM,newOrigin).replace(TOWN_PROCESS_FROM,newProcess);
+ assert.equal(updated.replace(newOrigin,TOWN_ORIGIN_FROM).replace(newProcess,TOWN_PROCESS_FROM),content,
+  "T20 may adjust only the two Next localhost port literals");
+ return updated;
+}
+
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
  for(const [key,val] of Object.entries({CI:"true",GITHUB_ACTIONS:"true",
   DNDNEXT_C34_LOCAL_CONFIRM:"DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY",
@@ -37,9 +61,22 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
  assert.equal(path.basename(root),"held345");
  assert.equal(execFileSync("git",["-C",root,"rev-parse","HEAD"],{encoding:"utf8"}).trim(),
   ORIGINAL_HELD_HEAD,"T20 held checkout ref drift");
- const file=path.join(root,ORIGINAL_C3B_REL);
- fs.writeFileSync(file,adaptOriginalC3BBrowserFixture(fs.readFileSync(file)),"utf8");
- assert.equal(execFileSync("git",["-C",root,"diff","--name-only"],{encoding:"utf8"}).trim(),
-  ORIGINAL_C3B_REL,"T20 may edit only the disposable C3B seed script");
- console.log("PASS C34-T20-COMPAT: original #345 C3B source archived; only synthetic local Fighter starting choices adapted");
+ const mode=process.argv[2]||"creator";
+ if(mode==="creator") {
+  const file=path.join(root,ORIGINAL_C3B_REL);
+  fs.writeFileSync(file,adaptOriginalC3BBrowserFixture(fs.readFileSync(file)),"utf8");
+  assert.equal(execFileSync("git",["-C",root,"diff","--name-only"],{encoding:"utf8"}).trim(),
+   ORIGINAL_C3B_REL,"T20 may edit only the disposable C3B seed script");
+  console.log("PASS C34-T20-COMPAT: original #345 C3B source archived; only synthetic local Fighter starting choices adapted");
+ }else if(mode==="town-port"){
+  const target=path.join(root,ORIGINAL_C3T_REL);
+  fs.writeFileSync(target,adaptOriginalC3TBrowserPort(
+    fs.readFileSync(target),process.env.C34_T20_TOWN_PORT),"utf8");
+  const changed=execFileSync("git",["-C",root,"diff","--name-only"],{encoding:"utf8"}).trim();
+  assert.equal(changed,ORIGINAL_C3B_REL+"\n"+ORIGINAL_C3T_REL,
+   "T20 may edit only scratch Fighter seed and Next localhost port");
+  console.log("PASS C34-T20-PORT: original Next browser assertions unchanged; only isolated localhost origin/process port changed");
+ }else{
+  throw new Error("T20 unrecognized safe scratch adaptation mode");
+ }
 }

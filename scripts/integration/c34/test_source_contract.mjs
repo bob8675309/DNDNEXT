@@ -9,7 +9,7 @@ import { auditSources, STAGES, RELEASE_BLOCKERS } from "./validate_source_contra
 import { verifyOriginalJointDependencies, ORIGINAL_JOINT_DEPENDENCIES } from "./validate_joint_fixture_blobs.mjs";
 import { auditTriggerCoverage } from "./verify_original_trigger_coverage.mjs";
 import { auditHeld345InactiveUiCapsule, HELD345_UI_PINS } from "./verify_held345_inactive_ui_capsule.mjs";
-import { adaptOriginalC3BBrowserFixture, ORIGINAL_C3B_BLOB, SYNTHETIC_FROM, SYNTHETIC_TO, gitBlobSha as c3bBlobSha } from "./t20_adapt_held345_browser_fixture.mjs";
+import { adaptOriginalC3BBrowserFixture, adaptOriginalC3TBrowserPort, ORIGINAL_C3B_BLOB, ORIGINAL_C3T_BLOB, SYNTHETIC_FROM, SYNTHETIC_TO, TOWN_ORIGIN_FROM, TOWN_PROCESS_FROM, gitBlobSha as c3bBlobSha } from "./t20_adapt_held345_browser_fixture.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const load = (file) => fs.readFileSync(path.join(dir, "sources", file));
@@ -738,4 +738,24 @@ test("C34-T20-COMPAT-N01 tampered or previously adapted original C3B is rejected
  const original=fs.readFileSync(path.join(root,"scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_creator_backstory_dom.mjs"));
  assert.throws(()=>adaptOriginalC3BBrowserFixture(Buffer.concat([original,Buffer.from("\n// tampered")])),/source drift/);
  assert.throws(()=>adaptOriginalC3BBrowserFixture(adaptOriginalC3BBrowserFixture(original)),/source drift/);
+});
+
+
+test("C34-T20-PORT-S01 original held Next browser source is pinned; localhost port only",()=>{
+ const root=path.resolve(dir,"../../..");
+ const raw=fs.readFileSync(path.join(root,"scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_next_town_route.mjs"));
+ assert.equal(c3bBlobSha(raw),ORIGINAL_C3T_BLOB);
+ const adapted=adaptOriginalC3TBrowserPort(raw,"43211");
+ assert.ok(adapted.includes('const origin="http://127.0.0.1:43211";'));
+ assert.ok(adapted.includes('"-p","43211"'));
+ assert.equal(adapted.replace('const origin="http://127.0.0.1:43211";',TOWN_ORIGIN_FROM)
+  .replace('"-p","43211"',TOWN_PROCESS_FROM),raw.toString("utf8"));
+ assert.ok(adapted.includes("PASS C3T05: original Next town closes privileged Profile"));
+ assert.ok(adapted.includes("PASS C3I05: actual Next inventory signout"));
+});
+test("C34-T20-PORT-N01 changed original Next source or invalid local port is rejected",()=>{
+ const root=path.resolve(dir,"../../..");
+ const raw=fs.readFileSync(path.join(root,"scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_next_town_route.mjs"));
+ assert.throws(()=>adaptOriginalC3TBrowserPort(raw,"0"),/numeric|invalid/);
+ assert.throws(()=>adaptOriginalC3TBrowserPort(Buffer.concat([raw,Buffer.from("\n// unsafe drift")]),"43211"),/source drift/);
 });
