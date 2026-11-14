@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `917d8395e49ce38eeff68b3f9694c1c28306bb1c` |
+| Exact source commit represented by this archive snapshot | `bcabbc2dd61ade0e5747e4dac7217f41471ebf07` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): terminate five verbatim live PG17 function DDL statements in T11 disposable fixture |
+| Last source commit title | docs(c34): record signed T11 AAG species source magic RED→GREEN 19/31 HOLD |
 | Files changed relative to main | 43 (37 non-docs; 6 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql`
+- `docs/ACTIVE_WORK.md`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
