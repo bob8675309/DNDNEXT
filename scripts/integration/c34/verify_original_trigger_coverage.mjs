@@ -32,7 +32,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
   "scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",
   "scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql",
-  "scripts/integration/c34/c34_original_eladrin_season_pg17.sql"
+  "scripts/integration/c34/c34_original_eladrin_season_pg17.sql",
+  "scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -309,6 +310,64 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   assert.ok(t13Adapter.includes("IF n<>23")&&t13Adapter.includes("IF n<>24")&&
     !t13Adapter.includes("CREATE TABLE public.character_runtime_feature_choices"),
     "T13 must reuse T12 original runtime table, not install held I1-I reduced table");
+  // T14 has two deliberately different artifacts: the unchanged held #358
+  // original (including its UNSAFE account mirror) and a separately labeled
+  // Option A candidate (only the helper's account mirror is removed).
+  const t14Raw=read("scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql");
+  assert.equal(gitBlobSha(t14Raw),"d84d149b5bc4ef0e62f69a048ab77620f472a94a",
+    "T14 held #358 original I1-J Khoravar raw source blob drift");
+  const t14Original=t14Raw.toString("utf8");
+  const t14Adapter=read("scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql").toString("utf8");
+  const t14Candidate=read("scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql").toString("utf8");
+  const t14OriginalFunctions=["astral_trance_skill_key_v1","astral_trance_skill_options_v1",
+    "khoravar_skill_versatility_options_v1","resolve_khoravar_skill_versatility_v1",
+    "set_species_runtime_projection_v1","materialize_player_forge_khoravar_skill_versatility_v1"];
+  for(const name of t14OriginalFunctions){
+    const start=t14Original.indexOf("CREATE OR REPLACE FUNCTION private."+name+"(");
+    const end=t14Original.indexOf("$function$;",start);
+    assert.ok(start>=0&&end>start,"T14 original I1-J source function missing: "+name);
+    const exact=t14Original.slice(start,end+"$function$;".length);
+    assert.ok(t14Adapter.includes(exact),"T14 original Khoravar function body drift: "+name);
+    if(name==="set_species_runtime_projection_v1"){
+      const mirror="  update public.players p set sheet=v_sheet,updated_at=now()\n"+
+        "  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);\n";
+      assert.ok(exact.includes(mirror),"T14 original source legacy account writer missing");
+      const scope=exact.replace(mirror,
+        "  -- T14 Option A compatibility: do NOT mirror the character-scoped runtime\n"+
+        "  -- projection to the legacy account-wide players.sheet snapshot.\n");
+      assert.ok(t14Candidate.includes(scope),"T14 Option A helper must differ ONLY by explicit account mirror removal");
+      assert.ok(!scope.includes("  update public.players p set sheet="),
+        "T14 candidate cannot update legacy account sheet");
+    }
+  }
+  const t14Event=[
+    "CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_khoravar_skill_v",
+    " AFTER INSERT ON public.character_progression",
+    " DEFERRABLE INITIALLY DEFERRED FOR EACH ROW",
+    " EXECUTE FUNCTION private.materialize_player_forge_khoravar_skill_versatility_v1();"
+  ].join("\n");
+  assert.ok(t14Original.includes(t14Event)&&t14Adapter.includes(t14Event),
+    "T14 original Khoravar deferred trigger event/handler drift");
+  for(const fingerprint of ["dd8cdd5b47efe99b1cfff9c2bf7635dd",
+    "68dcc3383c6727020331b9391ec8dde4",
+    "08962b553e01fa0c2119b988d33518be",
+    "afc3acbe1313d166105794a4be0ebd41",
+    "1d4240ad22fd1c3d017cc8205518bfc9",
+    "7f6e7d7d99ff79db1372462b4320c21b",
+    "9d5fec42e2aefdd39d8a34adf1548460"])
+    assert.ok(t14Adapter.includes(fingerprint),"T14 original Khoravar source fingerprint missing: "+fingerprint);
+  assert.ok(t14Adapter.includes("IF n<>24")&&t14Adapter.includes("IF n<>25")&&
+    t14Candidate.includes("IF position('update public.players' in lower(v_helper))>0")&&
+    t14Candidate.includes("NOT original helper"),
+    "T14 candidate must be labeled non-original, guard no-mirror and use T13 runtime");
+  const t14Catalog=read("scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql").toString("utf8");
+  for(const id of ["87d46c71-9858-4731-9715-06b2ff387fc5",
+    "9fe003bf-37f4-4432-b864-edab79f32686",
+    "bd914b52-04de-4cf3-a0ca-0200c9930e06",
+    "dbbec469-010d-4915-907e-f5cd220a9f26"])
+    assert.ok(t14Catalog.includes(id),"T14 source XPHB skill/tool specimen drift: "+id);
+  assert.ok(!t14Catalog.includes("CREATE OR REPLACE VIEW public.character_option_catalog_preferred"),
+    "T14 must reuse T5 original preferred option catalog source-precedence view");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -332,11 +391,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,21,"C34 T13 expects 21/31 original DDL, 8 non-map progression+2 world");
- assert.equal(r.originalMissingCount,10);
- assert.equal(r.totalStaged,24);
+ assert.equal(r.stagedOriginalCount,22,"C34 T14 expects 22/31 original DDL, 7 non-map progression+2 world");
+ assert.equal(r.originalMissingCount,9);
+ assert.equal(r.totalStaged,25);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T13: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T14: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }
