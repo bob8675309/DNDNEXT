@@ -565,9 +565,9 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
    "character_progression_validate_player_forge_class_options_v2"])
     assert.ok(t18OriginalG.includes("CREATE CONSTRAINT TRIGGER "+name),
       "T18 original held Warlock safeguard DDL missing "+name);
-  const t18AcqDdl="CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_class_options_v1\\n"+
-   " AFTER INSERT ON public.character_progression\\n"+
-   " DEFERRABLE INITIALLY DEFERRED\\n"+
+  const t18AcqDdl="CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_class_options_v1\n"+
+   " AFTER INSERT ON public.character_progression\n"+
+   " DEFERRABLE INITIALLY DEFERRED\n"+
    " FOR EACH ROW EXECUTE FUNCTION private.validate_and_materialize_player_forge_class_options_v1();";
   assert.ok(t18OriginalA.includes(t18AcqDdl)&&t18Acq.includes(t18AcqDdl),
     "T18 exact original held AFTER INSERT acquisition DDL drift");
