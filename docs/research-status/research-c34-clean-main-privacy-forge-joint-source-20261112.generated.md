@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d4e60ba38198c29a28d2443f224830a94603ae2b` |
+| Exact source commit represented by this archive snapshot | `cebee4dc1a0ddfb60f87e71e01fae3e72ef52848` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T20): run exact original #345 Chromium and Next town/inventory tests after signed T19 |
-| Files changed relative to main | 83 (68 non-docs; 15 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(C34 T20): source-pin C3B and adapt only scratch Fighter seed for T19 original authority |
+| Files changed relative to main | 86 (71 non-docs; 15 docs) |
+| Last source commit | 5 files (5 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,6 +18,10 @@
 ## Latest source commit paths
 
 - `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_creator_backstory_dom.mjs`
+- `scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_next_town_route.mjs`
+- `scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +75,7 @@
 - `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
 - `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
 - `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
-- … 33 more
+- … 36 more
 
 ## Trust and update procedure
 
