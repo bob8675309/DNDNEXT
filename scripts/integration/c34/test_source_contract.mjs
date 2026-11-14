@@ -649,7 +649,7 @@ test("C34-T17-N54 Option A cannot restore the legacy mirror",()=>{
   const s=b.toString("utf8"),from="  -- All source-original validation, canonical sheet projection and locks remain.";
   assert.ok(s.includes(from));return Buffer.from(s.replace(from,
    "  update public.players p set sheet=v_sheet,updated_at=now();"));
- }),/T17 candidate must differ ONLY by explicit NULL-parent correction AND original account mirror removal/);
+ }),/T17 derived projection candidate blob drift/);
 });
 test("C34-T17-N55 original source item and plan UUIDs cannot be invented",()=>{
  const f="scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql",root=path.resolve(dir,"../../..");
@@ -667,5 +667,5 @@ test("C34-T17-N56 original Artificer NULL-parent regression must remain correcte
   const s=b.toString("utf8"),from="if coalesce(jsonb_typeof(v_sheet->'classFeatureChoices'),'')<>'object' then";
   assert.ok(s.includes(from));
   return Buffer.from(s.replace(from,"if jsonb_typeof(v_sheet->'classFeatureChoices')<>'object' then"));
- }),/T17 candidate must differ ONLY by explicit NULL-parent correction AND original account mirror removal/);
+ }),/T17 derived projection candidate blob drift/);
 });
