@@ -5,21 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7c492b4b09f16f04068034c7f2e72177e920442d` |
+| Exact source commit represented by this archive snapshot | `613a69b69b80b8479f4bb84ae8e5a461e985da24` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): preserve signed T17 Artificer acceptance and Warlock next-task handoff |
-| Files changed relative to main | 68 (57 non-docs; 11 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | chore(C34 T18): preserve original Warlock I1G/I1H SQL blobs byte-identically |
+| Files changed relative to main | 72 (61 non-docs; 11 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
+- `scripts/integration/c34/sources/14_i1g_original_warlock_functions_pg17.sql`
+- `scripts/integration/c34/sources/15_i1g_original_warlock_acquisition_pg17.sql`
+- `scripts/integration/c34/sources/16_i1g_original_warlock_safeguard_triggers_pg17.sql`
+- `scripts/integration/c34/sources/17_i1h_original_warlock_joint_install_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
 - `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
 - `scripts/integration/c34/sources/04_private_story_stage3.sql`
-- … 18 more
+- … 22 more
 
 ## Trust and update procedure
 
