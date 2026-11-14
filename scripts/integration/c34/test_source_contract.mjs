@@ -11,6 +11,8 @@ import { auditTriggerCoverage } from "./verify_original_trigger_coverage.mjs";
 import { auditHeld345InactiveUiCapsule, HELD345_UI_PINS } from "./verify_held345_inactive_ui_capsule.mjs";
 import { adaptOriginalC3BBrowserFixture, adaptOriginalC3TBrowserPort, ORIGINAL_C3B_BLOB, ORIGINAL_C3T_BLOB, SYNTHETIC_FROM, SYNTHETIC_TO, TOWN_ORIGIN_FROM, TOWN_PROCESS_FROM, gitBlobSha as c3bBlobSha } from "./t20_adapt_held345_browser_fixture.mjs";
 
+import { readNonMapNpcProfileCandidate, sanitizeNpcPublicProjection, emptyNpcReaderResult } from "../../../utils/c34/readNonMapNpcProfileCandidate.mjs";
+
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const load = (file) => fs.readFileSync(path.join(dir, "sources", file));
 
@@ -758,4 +760,104 @@ test("C34-T20-PORT-N01 changed original Next source or invalid local port is rej
  const raw=fs.readFileSync(path.join(root,"scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_next_town_route.mjs"));
  assert.throws(()=>adaptOriginalC3TBrowserPort(raw,"0"),/numeric|invalid/);
  assert.throws(()=>adaptOriginalC3TBrowserPort(Buffer.concat([raw,Buffer.from("\n// unsafe drift")]),"43211"),/source drift/);
+});
+
+
+// C34 T21 deliberately UNMOUNTED non-map current-app security candidate.
+// Static tests are deterministic and never connect to production/localhost.
+function fakeT21Client({uid="55555555-5555-4555-8555-555555555555",gm=false,
+ editor=false,story=false,authSwitch=false,profile=true}={}){
+ const id="66666666-6666-4666-8666-666666666666";
+ const log=[];let authReads=0;
+ const client={
+  auth:{getUser:async()=>{authReads++;return {data:{user:uid?
+   {id:authSwitch&&authReads>1?"77777777-7777-4777-8777-777777777777":uid}:null},error:null};}},
+  rpc:async(name,args)=>{
+   log.push([name,args]);
+   if(name==="get_npc_profile_visible_v1")return {data:profile?{id,name:"T21 Public Merchant",
+    kind:"merchant",description:"Public description",
+    secret:"SHOULD_NEVER_RETURN_THIS",lore:{background:"Published",
+    secret:"GM_SECRET_BYPASS",traits:"Friendly"}}:null,error:null};
+   if(name==="is_admin")return {data:gm,error:null};
+   if(name==="get_npc_dossier_admin_v1")return {data:gm?{id,secret:"GM_PRIVATE"}:null,
+    error:gm?null:{message:"denied",code:"42501"}};
+   if(name==="get_character_editor_narrative_v1")return {data:editor?{id,
+    motivation:"Authorized editor text"}:null,error:null};
+   if(name==="can_edit_creator_backstory_v1")return {data:story,error:null};
+   throw Error("Unexpected T21 RPC: "+name);
+  },
+  from:(table)=>{
+   log.push(["from",table]);
+   if(!["character_sheets","character_backstory_secrets"].includes(table))
+    throw Error("Unsafe non-map raw table query "+table);
+   return {select:(fields)=>{
+    log.push(["select",table,fields]);
+    if(table==="character_sheets"&&fields!=="sheet")throw Error("broad sheet query");
+    if(table==="character_backstory_secrets"&&fields!=="secret_text")throw Error("broad story query");
+    return {eq:(key,value)=>({maybeSingle:async()=>({data:
+     table==="character_sheets"?{sheet:{name:"canonical"}}:{secret_text:"PRIVATE_CREATOR"},
+     error:null})})};
+   }};
+  }
+ };
+ return {id,client,log};
+}
+test("C34-T21-S01 non-map public Profile strips any legacy secret regardless of reveal flag",async()=>{
+ const f=fakeT21Client();
+ const x=await readNonMapNpcProfileCandidate(f.client,f.id,{withSheet:true,
+  withDossier:true,withPrivateBackstory:true});
+ assert.equal(x.status,"ok");
+ assert.equal(x.profile.name,"T21 Public Merchant");
+ assert.equal(x.profile.lore.background,"Published");
+ assert.ok(!JSON.stringify(x).includes("GM_SECRET_BYPASS"));
+ assert.ok(!JSON.stringify(x).includes("SHOULD_NEVER_RETURN_THIS"));
+ assert.equal(x.sheet,null);assert.equal(x.dossier,null);assert.equal(x.privateBackstory,null);
+ assert.equal(x.capabilities.canPrint,false);
+ assert.equal(f.log.filter(a=>a[0]==="from").length,0);
+ assert.ok(!f.log.some(a=>a[0]==="get_npc_dossier_admin_v1"));
+});
+test("C34-T21-S02 true GM/editor/creator privileges use only stage1–3 server RPCs",async()=>{
+ const f=fakeT21Client({gm:true,editor:true,story:true});
+ const x=await readNonMapNpcProfileCandidate(f.client,f.id,{withDossier:true,
+  withSheet:true,withPrivateBackstory:true});
+ assert.equal(x.status,"ok");assert.equal(x.dossier.secret,"GM_PRIVATE");
+ assert.equal(x.sheet.name,"canonical");assert.equal(x.privateBackstory,"PRIVATE_CREATOR");
+ assert.deepEqual(x.capabilities,{isGM:true,canPrint:true,canEdit:true,canEditBackstory:true});
+ assert.deepEqual(f.log.filter(a=>a[0]==="from").map(a=>a[1]),
+  ["character_sheets","character_backstory_secrets"]);
+ assert.deepEqual(f.log.filter(a=>a[0]==="select").map(a=>a[2]),["sheet","secret_text"]);
+});
+test("C34-T21-N01 anonymous, malformed/missing Profile and account switch fail closed",async()=>{
+ const anon=fakeT21Client({uid:null});
+ assert.equal((await readNonMapNpcProfileCandidate(anon.client,anon.id,
+  {withDossier:true,withSheet:true,withPrivateBackstory:true})).status,"unauthenticated");
+ assert.equal(anon.log.length,0);
+ const fake=fakeT21Client({gm:true,editor:true,story:true});
+ assert.equal((await readNonMapNpcProfileCandidate(fake.client,"not-uuid",
+  {withDossier:true})).status,"invalid-id");
+ assert.equal(fake.log.length,0);
+ const missing=fakeT21Client({profile:false,gm:true,editor:true});
+ const absent=await readNonMapNpcProfileCandidate(missing.client,missing.id,
+  {withDossier:true,withSheet:true});
+ assert.equal(absent.status,"unavailable");assert.equal(absent.dossier,null);
+ const switched=fakeT21Client({gm:true,editor:true,story:true,authSwitch:true});
+ const result=await readNonMapNpcProfileCandidate(switched.client,switched.id,
+  {withDossier:true,withSheet:true,withPrivateBackstory:true});
+ assert.deepEqual(result,emptyNpcReaderResult("session-changed"));
+});
+test("C34-T21-N02 current app candidate has no direct GM/characters read or active map mount",()=>{
+ const root=path.resolve(dir,"../../..");
+ const candidate=fs.readFileSync(path.join(root,
+  "utils/c34/readNonMapNpcProfileCandidate.mjs"),"utf8");
+ assert.doesNotMatch(candidate,/\.from\(["']characters["']\)/);
+ assert.doesNotMatch(candidate,/loadCharacterSecrets|service_role|NEXT_PUBLIC_SUPABASE_SERVICE/i);
+ assert.match(candidate,/get_npc_profile_visible_v1/);
+ assert.match(candidate,/get_npc_dossier_admin_v1/);
+ assert.match(candidate,/get_character_editor_narrative_v1/);
+ assert.match(candidate,/can_edit_creator_backstory_v1/);
+ for(const live of ["components/MapPageClient.js","pages/_app.js",
+  "components/NpcPanel.js","pages/npcs.js","pages/inventory.js","pages/town/[id].js"]){
+  assert.ok(!fs.readFileSync(path.join(root,live),"utf8")
+    .includes("readNonMapNpcProfileCandidate"),"early integrated import: "+live);
+ }
 });

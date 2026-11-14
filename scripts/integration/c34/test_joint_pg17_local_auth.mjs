@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
+import { readNonMapNpcProfileCandidate } from "../../../utils/c34/readNonMapNpcProfileCandidate.mjs";
 
 const env = process.env;
 for (const [key,value] of Object.entries({
@@ -2930,3 +2931,75 @@ await t19RejectCreation("private-Story-length",t19Oversized,"X".repeat(16001),
 console.log("PASS C34-T19-GREEN06: forged GM-only payload and invalid Story length reject atomically after all 29 non-map triggers, no grants/gear/nonce/account leak");
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("C34 T19 original #345 stage1–3 privacy + original #324/#351 nonce + 29/31 original non-map DDL co-resident signed role/rollback PASS; RED and T1–T18 preserved. NO browser/production migration.");
+
+
+// T21 — Current-app NON-ORIGINAL secure Profile reader, not mounted anywhere.
+// Prove it uses existing original P1.3 stage1–3 signed authorization with
+// 29/31 protected-map-free original DDL and full T1–T20 inherited suite.
+// The historical #345 JSX/Next Chromium run remains a separate original proof.
+const t21Options={withSheet:true,withDossier:true,withPrivateBackstory:true};
+const t21Outsider=await readNonMapNpcProfileCandidate(
+ t19Outsider.client,characterId,t21Options);
+assert.equal(t21Outsider.status,"ok");
+assert.equal(t21Outsider.profile?.id,characterId);
+assert.equal(t21Outsider.profile?.name,"C34 synthetic original inventory NPC");
+assert.equal(t21Outsider.sheet,null);
+assert.equal(t21Outsider.dossier,null);
+assert.equal(t21Outsider.privateBackstory,null);
+assert.equal(t21Outsider.capabilities.canPrint,false);
+assert.equal(t21Outsider.capabilities.canEditBackstory,false);
+assert.ok(!JSON.stringify(t21Outsider).includes("C34_GM_SECRET_STAYS_PRIVATE"));
+console.log("PASS C34-T21-GREEN01: new unmounted current-app reader exposes only signed original player-safe NPC profile, no GM secret, Sheet, or Story");
+
+const t21Coeditor=await readNonMapNpcProfileCandidate(
+ t19Coeditor.client,t19Id,t21Options);
+assert.equal(t21Coeditor.status,"ok");
+assert.equal(t21Coeditor.profile?.id,t19Id);
+assert.ok(t21Coeditor.sheet && typeof t21Coeditor.sheet==="object");
+assert.equal(t21Coeditor.capabilities.canPrint,true);
+assert.equal(t21Coeditor.capabilities.canEdit,true);
+assert.equal(t21Coeditor.capabilities.canEditBackstory,false);
+assert.equal(t21Coeditor.privateBackstory,null);
+assert.equal(t21Coeditor.dossier,null);
+assert.ok(!JSON.stringify(t21Coeditor.profile).includes(t19Secret));
+console.log("PASS C34-T21-GREEN02: genuine signed coeditor can canonical Sheet/Print but not original creator Story or GM dossier through new current-app reader");
+
+for(const [actor,label] of [[t19Inventory,"inventory-only"],[t19Convert,"convert-only"]]){
+ const r=await readNonMapNpcProfileCandidate(actor.client,t19Id,t21Options);
+ assert.equal(r.status,"ok","T21 source Profile should remain available: "+label);
+ assert.equal(r.sheet,null);
+ assert.equal(r.dossier,null);
+ assert.equal(r.privateBackstory,null);
+ assert.equal(r.capabilities.canEdit,false);
+ assert.equal(r.capabilities.canPrint,false);
+}
+const t21Revoked=await readNonMapNpcProfileCandidate(
+ t19Creator.client,t19Id,t21Options);
+assert.equal(t21Revoked.status,"ok");
+assert.equal(t21Revoked.privateBackstory,null);
+assert.equal(t21Revoked.capabilities.canEditBackstory,false);
+assert.equal(t21Revoked.capabilities.canPrint,false);
+console.log("PASS C34-T21-GREEN03: inventory, conversion-only and revoked original creator cannot escalate through read helper");
+
+const t21GM=await readNonMapNpcProfileCandidate(admin.client,characterId,t21Options);
+assert.equal(t21GM.status,"ok");
+assert.equal(t21GM.dossier?.secret,"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(t21GM.capabilities.isGM,true);
+assert.ok(!JSON.stringify(t21GM.profile).includes("C34_GM_SECRET_STAYS_PRIVATE"));
+const t21GMStory=await readNonMapNpcProfileCandidate(admin.client,t19Id,
+ {withPrivateBackstory:true});
+assert.equal(t21GMStory.status,"ok");
+assert.equal(t21GMStory.privateBackstory,t19NewText);
+assert.equal(t21GMStory.capabilities.canEditBackstory,true);
+const t21Anonymous=await readNonMapNpcProfileCandidate(makeClient(),
+ characterId,t21Options);
+assert.equal(t21Anonymous.status,"unauthenticated");
+assert.equal(t21Anonymous.profile,null);
+assert.equal(t21Anonymous.dossier,null);
+console.log("PASS C34-T21-GREEN04: signed GM receives guarded dossier and author Story independently; public profile remains scrubbed and anonymous is closed");
+
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' "+
+ "AND c.relname IN ('character_progression','character_sheets','characters','inventory_items')")),32);
+console.log("C34 T21 unmounted current-app candidate signed role acceptance PASS with original #345 stage1–3 and 29/31 source-original non-map DDL; current UI unmodified, no production migration.");
