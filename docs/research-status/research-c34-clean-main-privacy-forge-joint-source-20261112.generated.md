@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b8e277e633a06cad04aaf5821e708e7eb5037f9e` |
+| Exact source commit represented by this archive snapshot | `7c492b4b09f16f04068034c7f2e72177e920442d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T17): retain negative controls against pinned candidate blob |
-| Files changed relative to main | 67 (57 non-docs; 10 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34): preserve signed T17 Artificer acceptance and Warlock next-task handoff |
+| Files changed relative to main | 68 (57 non-docs; 11 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -31,6 +33,7 @@
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
+- `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -70,8 +73,7 @@
 - `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
 - `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
 - `scripts/integration/c34/sources/04_private_story_stage3.sql`
-- `scripts/integration/c34/sources/05_inventory_constraint_rls.sql`
-- … 17 more
+- … 18 more
 
 ## Trust and update procedure
 
