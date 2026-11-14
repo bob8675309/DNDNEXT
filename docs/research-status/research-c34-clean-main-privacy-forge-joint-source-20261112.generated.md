@@ -5,21 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `427134ab659d09f2e0b0880dc4f02b28278c993c` |
+| Exact source commit represented by this archive snapshot | `f380f98b4b2f9b7111f21aae30fd4baa9fc8b7d2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T20): avoid occupied localhost port in original Next town browser scratch run |
-| Files changed relative to main | 87 (72 non-docs; 15 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34 T20): preserve signed original NPC browser/Next/PDF acceptance and no-loss-work handoff |
+| Files changed relative to main | 88 (72 non-docs; 16 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs`
-- `scripts/integration/c34/test_source_contract.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -38,6 +38,7 @@
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
 - `docs/research/C34_T19_PRIVACY_29_ORIGINAL_SIGNED_2026-11-14.md`
+- `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -72,8 +73,7 @@
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 - `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
 - `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
-- `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
-- … 37 more
+- … 38 more
 
 ## Trust and update procedure
 
