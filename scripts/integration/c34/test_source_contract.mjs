@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T12-S01 original census counts 20/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T13-S01 original census counts 21/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,20);
- assert.equal(r.originalMissingCount,11);
+ assert.equal(r.stagedOriginalCount,21);
+ assert.equal(r.originalMissingCount,10);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,23);
+ assert.equal(r.totalStaged,24);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,20);
- assert.equal(truncated.stagedOriginalCount,19);
- assert.equal(truncated.originalMissingCount,12);
+ assert.equal(original.stagedOriginalCount,21);
+ assert.equal(truncated.stagedOriginalCount,20);
+ assert.equal(truncated.originalMissingCount,11);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,20);
- assert.equal(r.originalMissingCount,11);
+ assert.equal(r.stagedOriginalCount,21);
+ assert.equal(r.originalMissingCount,10);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,23);
+ assert.equal(r.totalStaged,24);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
