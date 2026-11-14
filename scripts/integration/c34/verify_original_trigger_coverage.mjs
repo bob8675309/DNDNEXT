@@ -35,7 +35,8 @@ export const sourceFixturePaths=Object.freeze([
   "scripts/integration/c34/c34_original_eladrin_season_pg17.sql",
   "scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql",
   "scripts/integration/c34/c34_original_battle_master_pair_pg17.sql",
-  "scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql"
+  "scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql",
+  "scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -456,6 +457,64 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   assert.ok(t16Cat.includes("SYNTHETIC")&&/\b(?:NO|NOT) production\b/i.test(t16Cat)&&
     !t16Cat.includes("DROP VIEW public.spells_catalog_preferred"),
     "T16 reduced Wizard source must declare synthetic data and preserve T12 view");
+  // T17 original held #360 Artificer source retained unchanged, including
+  // BOTH its inherited NULL-parent projection and legacy account mirror bugs.
+  // Candidate is deliberately non-original: ONLY account mirror removed;
+  // original null-parent condition remains a separate unaccepted source defect.
+  const t17Raw=read("scripts/integration/c34/sources/13_i1l_original_artificer_plans_pg17.sql");
+  assert.equal(gitBlobSha(t17Raw),"975d92fa5fef8f77e4fb690921ebba84113dfa41",
+    "T17 original I1-L Artificer full source blob drift");
+  const t17Source=t17Raw.toString("utf8");
+  const t17Installer=read("scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql").toString("utf8");
+  const t17Candidate=read("scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql").toString("utf8");
+  for(const name of ["artificer_plan_count_v1","artificer_plan_slot_level_v1",
+    "artificer_plan_item_is_eligible_v1","validate_artificer_plan_choice_v1",
+    "sync_character_artificer_plan_projection_v1","materialize_player_forge_artificer_plans_v1"]){
+    const begin=t17Source.indexOf("CREATE OR REPLACE FUNCTION private."+name+"(");
+    const end=t17Source.indexOf("$function$;",begin);
+    assert.ok(begin>=0&&end>begin,"T17 original Artificer private source missing "+name);
+    const exact=t17Source.slice(begin,end+"$function$;".length);
+    assert.ok(t17Installer.includes(exact),"T17 original Artificer function body drift "+name);
+    if(name==="sync_character_artificer_plan_projection_v1"){
+      const mirror="  update public.players p set sheet=v_sheet,updated_at=now()\n"+
+        "  where p.user_id in(\n"+
+        "    select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id\n"+
+        "  );\n";
+      assert.ok(exact.includes(mirror),"T17 original Artificer account mirror missing");
+      const scoped=exact.replace(mirror,
+        "  -- T17 Option A scoped projection: account-wide players.sheet mirror REMOVED.\n"+
+        "  -- All source-original validation, canonical sheet projection and locks remain.\n");
+      assert.ok(t17Candidate.includes(scoped),"T17 Option A projection must differ ONLY by original legacy mirror removal");
+      assert.ok(scoped.includes("if jsonb_typeof(v_sheet->'classFeatureChoices')<>'object' then"),
+        "T17 original NULL-parent defect cannot be silently changed in Option A diff");
+      assert.ok(!scoped.includes("  update public.players p set sheet="),
+        "T17 non-original candidate must freeze historical accounts");
+    }
+  }
+  const t17Trigger="CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_artificer_plans_\n"+
+    " AFTER INSERT ON public.character_progression DEFERRABLE INITIALLY DEFERRED\n"+
+    " FOR EACH ROW EXECUTE FUNCTION private.materialize_player_forge_artificer_plans_v1();";
+  assert.ok(t17Source.includes(t17Trigger)&&t17Installer.includes(t17Trigger),
+    "T17 source-original Artificer deferred trigger event/handler drift");
+  for(const md5 of ["3b2a115e3059fcfac280d90a788bc9b9","4797ebbbbc9888aa02771b0de6afcf30",
+    "483bd056efd89e769cdefe97f1c80e62","42730b6b8cc5fb57c55799f2b4396bf7",
+    "5ebf572db01143e9b523c7dba0d43ad5","67766989a466b82f170b5e00f9154e24"])
+    assert.ok(t17Installer.includes(md5),"T17 original source MD5 absent "+md5);
+  for(const id of ["46ea4181-2a9c-4f4e-b886-e246b462ed44",
+    "bee85784-f6cd-416d-9c0d-cb9f6fbdadaf",
+    "c3e113c1-8f41-4028-9ca5-2f123c321818",
+    "f38fac21-028d-4314-a170-f1b171a9ed75",
+    "cdd0e441-d773-4d01-90a4-c3e3e3e13b76",
+    "f8897bf9-5bb5-4e4f-8280-ad2a2e941112",
+    "eda4194f-7d01-44e4-a78c-79f29b7a83e2",
+    "8adeb0df-1434-41f3-8702-1e1e3e0b5da7",
+    "d0f8d472-b20f-402b-8405-b65a4330d348"])
+    assert.ok(t17Installer.includes(id)&&t17Source.includes(id),"T17 original Artificer source/class/item UUID drift "+id);
+  assert.ok(t17Installer.includes("IF n<>28")&&t17Installer.includes("IF n<>29")&&
+    t17Candidate.includes("position('update public.players' in d)>0")&&
+    t17Candidate.includes("NON-ORIGINAL")&&
+    t17Installer.includes("TEST-ONLY Artificer level2 starting-magic specimen"),
+    "T17 original+adapted EFA source custody/preflight/synthetic warning drift");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -479,11 +538,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,25,"C34 T16 expects 25/31 original DDL, 4 non-map progression+2 world");
- assert.equal(r.originalMissingCount,6);
- assert.equal(r.totalStaged,28);
+ assert.equal(r.stagedOriginalCount,26,"C34 T17 expects 26/31 original DDL, 3 Warlock non-map progression+2 world");
+ assert.equal(r.originalMissingCount,5);
+ assert.equal(r.totalStaged,29);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T16: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T17: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }

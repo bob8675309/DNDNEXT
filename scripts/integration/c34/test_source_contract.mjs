@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T16-S01 original census counts 25/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T17-S01 original census counts 26/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,25);
- assert.equal(r.originalMissingCount,6);
+ assert.equal(r.stagedOriginalCount,26);
+ assert.equal(r.originalMissingCount,5);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,28);
+ assert.equal(r.totalStaged,29);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,25);
- assert.equal(truncated.stagedOriginalCount,24);
- assert.equal(truncated.originalMissingCount,7);
+ assert.equal(original.stagedOriginalCount,26);
+ assert.equal(truncated.stagedOriginalCount,25);
+ assert.equal(truncated.originalMissingCount,6);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,25);
- assert.equal(r.originalMissingCount,6);
+ assert.equal(r.stagedOriginalCount,26);
+ assert.equal(r.originalMissingCount,5);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,28);
+ assert.equal(r.totalStaged,29);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
@@ -625,4 +625,37 @@ test("C34-T16-N51 Option A Wizard signature candidate cannot reintroduce linked 
   const s=b.toString("utf8"),from="  -- players.sheet mirror; original source remains preserved in source archive.";
   assert.ok(s.includes(from));return Buffer.from(s.replace(from,"  update public.players p set sheet=v_sheet;"));
  }),/T16 Option A differs ONLY by original two-line account mirror removal/);
+});
+
+test("C34-T17-N52 original Artificer source blob is immutable",()=>{
+ const f="scripts/integration/c34/sources/13_i1l_original_artificer_plans_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  return p===f?Buffer.concat([b,Buffer.from("\n-- source tamper\n")]):b;
+ }),/T17 original I1-L Artificer full source blob drift/);
+});
+test("C34-T17-N53 original Artificer trigger event stays deferred AFTER INSERT",()=>{
+ const f="scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));if(p!==f)return b;
+  const s=b.toString("utf8"),from=" AFTER INSERT ON public.character_progression DEFERRABLE INITIALLY DEFERRED";
+  assert.ok(s.includes(from));return Buffer.from(s.replace(from," AFTER UPDATE ON public.character_progression"));
+ }),/T17 source-original Artificer deferred trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T17-N54 Option A cannot restore the legacy mirror",()=>{
+ const f="scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));if(p!==f)return b;
+  const s=b.toString("utf8"),from="  -- All source-original validation, canonical sheet projection and locks remain.";
+  assert.ok(s.includes(from));return Buffer.from(s.replace(from,
+   "  update public.players p set sheet=v_sheet,updated_at=now();"));
+ }),/T17 Option A projection must differ ONLY by original legacy mirror removal/);
+});
+test("C34-T17-N55 original source item and plan UUIDs cannot be invented",()=>{
+ const f="scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));if(p!==f)return b;
+  const s=b.toString("utf8"),from="8adeb0df-1434-41f3-8702-1e1e3e0b5da7";
+  assert.ok(s.includes(from));return Buffer.from(s.replaceAll(from,"00000000-0000-0000-0000-000000000999"));
+ }),/T17 original Artificer source\/class\/item UUID drift/);
 });
