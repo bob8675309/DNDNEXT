@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `97584bc276f511e8ce1c741a51582464055ebc8f` |
+| Exact source commit represented by this archive snapshot | `b9d199877104b323429ab8d950c00229e369a432` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): capture original T12 High Elf/Khoravar cantrip runtime source in disposable-only fixtures |
+| Last source commit title | test(c34): T12 source-original cantrip 20/31 coverage and fail-closed negative fixtures |
 | Files changed relative to main | 45 (39 non-docs; 6 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,9 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql`
-- `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
