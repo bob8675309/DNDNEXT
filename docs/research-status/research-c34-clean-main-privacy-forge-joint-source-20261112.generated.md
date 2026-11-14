@@ -5,19 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0a998b3f6c58c2ec37c6307998fa14b172698b38` |
+| Exact source commit represented by this archive snapshot | `7ca48e4df828c64fbbf3f56037bb2344e5bc4a90` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T14): use source-valid Elf as non-Khoravar gate (Human requires Skillful) |
-| Files changed relative to main | 52 (45 non-docs; 7 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34 T14): exact signed original Khoravar mirror RED, Option A scoped GREEN, 22/31 HELD |
+| Files changed relative to main | 53 (45 non-docs; 8 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
@@ -28,6 +31,7 @@
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
+- `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -70,8 +74,7 @@
 - `scripts/integration/c34/validate_source_contract.mjs`
 - `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 - `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
-- `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
-- … 2 more
+- … 3 more
 
 ## Trust and update procedure
 
