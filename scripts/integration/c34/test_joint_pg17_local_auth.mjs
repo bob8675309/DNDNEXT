@@ -1787,3 +1787,207 @@ assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()
 assert.equal(sql("SELECT to_regprocedure('public.configure_character_eladrin_season_v1(uuid,text)') IS NULL"),"t");
 console.log("PASS C34-T13-GREEN05: simultaneous real signed nonce creates one season state; protected map, GM secret and rest-RPC release boundary intact");
 console.log("C34 T13 signed RED->GREEN PASS: 21/31 original trigger definitions; 8 non-map progression +2 world-map originals still held. Eladrin initial season only, NOT long-rest replacement, full browser, source catalogs, Option A 34 writers or production acceptance. DRAFT HOLD.");
+
+
+// T14: Preserve and exercise the ORIGINAL I1-J Khoravar materializer plus
+// original unsafe cross-account mirror for genuine signed RED. Then install
+// an EXPLICITLY NON-ORIGINAL Option A helper candidate. The unmodified
+// materializer/trigger/source resolver and exact original blob remain archived.
+sqlFile("scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql");
+const t14Skill="skill:acrobatics",t14Tool="tool:bd914b52-04de-4cf3-a0ca-0200c9930e06";
+const t14Group=(keys)=>({
+ placement:"training",ownerType:"species-runtime",ownerKey:"khoravar-skill-versatility",
+ label:"Skill Versatility",source:"EFA",level:1,
+ metadata:{family:"khoravar-skill-versatility",cadence:"long-rest",runtimeInitial:true},
+ fields:{proficiency:{kind:"proficiency",count:1,required:true,
+  selections:keys.map(key=>({key,value:key,name:key,source:"EFA"}))}}
+});
+const t14Khoravar=(nonce,keys=[t14Skill],species="Khoravar",source="EFA")=>{
+ const base=t12Khoravar(nonce,"wis");
+ const sheet={...base.sheet,species,meta:{...base.sheet.meta,speciesKey:species,speciesSource:source}};
+ if(species!=="Khoravar")sheet.sourceChoices={};
+ else sheet.sourceChoices={...base.sheet.sourceChoices};
+ if(keys!==null)sheet.sourceChoices["species-runtime-khoravar-skill-versatility"]=t14Group(keys);
+ return {...base,name:"T14 signed "+species+" proficiency "+nonce.slice(0,8),sheet};
+};
+const t14Create=(actor,payload)=>rpc(actor,"create_player_character_v3",{
+ p_payload:payload,p_spell_choices:[],p_magic_selections:[]
+});
+const t14OptionKeys=()=>JSON.parse(sql("SELECT private.khoravar_skill_versatility_options_v1()::text"))
+  .map(x=>x.key).sort();
+const t14ExpectedKeys=[
+ "skill:acrobatics","skill:arcana",
+ "tool:bd914b52-04de-4cf3-a0ca-0200c9930e06",
+ "tool:dbbec469-010d-4915-907e-f5cd220a9f26"
+].sort();
+// RED source installation stage: the 7 original bodies are present,
+// including the original account-level mirror helper.
+sqlFile("scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql");
+assert.deepEqual(t14OptionKeys(),t14ExpectedKeys);
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.set_species_runtime_projection_v1(uuid,text,jsonb)'::regprocedure))"),
+ "7f6e7d7d99ff79db1372462b4320c21b");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_khoravar_skill_versatility_v1()'::regprocedure))"),
+ "9d5fec42e2aefdd39d8a34adf1548460");
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),25);
+const t14Legacy=await signed("t14-original-mirror-red");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+
+ quote(t14Legacy.id)+",'T14 original account contamination witness',"+
+ "'{\"source\":\"HISTORIC_ACCOUNT_FROZEN\",\"marker\":\"t14-witness\"}'::jsonb)");
+const t14RedPayload=t14Khoravar(randomUUID(),[t14Skill]);
+const t14Red=await t14Create(t14Legacy,t14RedPayload);
+assert.ifError(t14Red.error);
+assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t14Red.data)+
+ " AND feature_key='khoravar-skill-versatility'"),1);
+assert.equal(sql("SELECT sheet#>>'{runtimeProficiencies,khoravarSkillVersatility,proficiency,key}' "+
+ "FROM public.players WHERE user_id="+quote(t14Legacy.id)),t14Skill,
+ "SOURCE RED: original helper unexpectedly did not mirror character to legacy account");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t14Legacy.id)),"",
+ "SOURCE RED: original helper unexpectedly preserved historical account marker");
+const t14RedRuntimeHash=t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t14Red.data));
+const t14RedSheetHash=t8RowHash("public.character_sheets","character_id="+quote(t14Red.data));
+console.log("PASS C34-T14-RED01: real signed original Khoravar source helper overwrites historical players.sheet, losing unrelated account marker; 22/31 original triggers");
+// RED shows original helper's second hazard: a linked co-editor is also mirrored
+// by the original SECURITY DEFINER helper, regardless of character ownership.
+const t14Witness=await signed("t14-cross-user-mirror-red");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+
+ quote(t14Witness.id)+",'T14 coeditor historical snapshot',"+
+ "'{\"marker\":\"coeditor-account-history\"}'::jsonb)");
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) "+
+ "VALUES("+quote(t14Red.data)+","+quote(t14Witness.id)+",false,true,false)");
+const t14SavedState=sql("SELECT state::text FROM public.character_runtime_feature_choices WHERE "+
+ "character_id="+quote(t14Red.data)+" AND feature_key='khoravar-skill-versatility'");
+sql("SELECT private.set_species_runtime_projection_v1("+quote(t14Red.data)+
+ ",'khoravarSkillVersatility','"+t14SavedState.replaceAll("'","''")+"'::jsonb)");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t14Witness.id)),"");
+assert.equal(sql("SELECT sheet#>>'{runtimeProficiencies,khoravarSkillVersatility,proficiency,key}' "+
+ "FROM public.players WHERE user_id="+quote(t14Witness.id)),t14Skill);
+console.log("PASS C34-T14-RED02: unchanged source-original helper also overwrites another linked actor's historical account sheet");
+// Scope-aware helper replacement candidate explicitly diverges from original;
+// the held original SQL source/MD5 remains archived and separately audited.
+sqlFile("scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql");
+assert.notEqual(sql("SELECT md5(pg_get_functiondef('private.set_species_runtime_projection_v1(uuid,text,jsonb)'::regprocedure))"),
+ "7f6e7d7d99ff79db1372462b4320c21b");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_khoravar_skill_versatility_v1()'::regprocedure))"),
+ "9d5fec42e2aefdd39d8a34adf1548460");
+assert.equal(t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t14Red.data)),
+ t14RedRuntimeHash,"compatibility installer must NOT rewrite RED runtime rows");
+assert.equal(t8RowHash("public.character_sheets","character_id="+quote(t14Red.data)),
+ t14RedSheetHash,"compatibility installer must NOT rewrite RED character rows");
+console.log("PASS C34-T14-GREEN01: source-original Khoravar handler retained, explicit NEW scoped-only helper activated, no backfill");
+// Signed skill and tool creation retain canonical character rows, but not legacy mirror.
+const t14SafeOwner=await signed("t14-option-a-owner");
+const t14SafeEditor=await signed("t14-option-a-coeditor");
+const t14SafeHistory='{\"source\":\"T14_CANONICAL_ACCOUNT_HISTORY\",\"marker\":\"owner-frozen\"}';
+const t14EditorHistory='{\"source\":\"T14_OTHER_ACCOUNT_HISTORY\",\"marker\":\"coeditor-frozen\"}';
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+
+ quote(t14SafeOwner.id)+",'T14 safe canonical owner','"+t14SafeHistory+"'::jsonb)");
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+
+ quote(t14SafeEditor.id)+",'T14 safe linked editor','"+t14EditorHistory+"'::jsonb)");
+const t14AccountHash=id=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+quote(id));
+const t14AccountBefore=t14AccountHash(t14SafeOwner.id);
+const t14EditorBefore=t14AccountHash(t14SafeEditor.id);
+const t14SkillInput=t14Khoravar(randomUUID(),[t14Skill]);
+const t14SkillResult=await t14Create(t14SafeOwner,t14SkillInput);
+assert.ifError(t14SkillResult.error);
+const t14SkillId=t14SkillResult.data;
+const t14RuntimeKey=id=>sql("SELECT state#>>'{proficiency,key}' "+
+ "FROM public.character_runtime_feature_choices WHERE character_id="+quote(id)+
+ " AND feature_key='khoravar-skill-versatility'");
+const t14SheetKey=id=>sql("SELECT sheet#>>'{runtimeProficiencies,khoravarSkillVersatility,proficiency,key}' "+
+ "FROM public.character_sheets WHERE character_id="+quote(id));
+assert.equal(t14RuntimeKey(t14SkillId),t14Skill);
+assert.equal(t14SheetKey(t14SkillId),t14Skill);
+assert.equal(t14AccountHash(t14SafeOwner.id),t14AccountBefore);
+assert.equal(t14AccountHash(t14SafeEditor.id),t14EditorBefore);
+assert.equal(sql("SELECT source||':'||cadence FROM public.character_runtime_feature_choices "+
+ "WHERE character_id="+quote(t14SkillId)+" AND feature_key='khoravar-skill-versatility'"),"EFA:long_rest");
+const t14OriginalHash={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t14SkillId)),
+ runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t14SkillId)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t14SkillId)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t14SkillId)),
+ feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(t14SkillId))
+};
+const t14Replay=await t14Create(t14SafeOwner,t14SkillInput);
+assert.ifError(t14Replay.error);
+assert.equal(t14Replay.data,t14SkillId);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t14SkillId)),
+ runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t14SkillId)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t14SkillId)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t14SkillId)),
+ feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(t14SkillId))
+},t14OriginalHash);
+console.log("PASS C34-T14-GREEN02: original skill materializer + Option A projection writes only canonical character sheet, immutable nonce preserves all state");
+const t14ToolInput=t14Khoravar(randomUUID(),[t14Tool]);
+const t14ToolResult=await t14Create(t14SafeOwner,t14ToolInput);
+assert.ifError(t14ToolResult.error);
+const t14ToolId=t14ToolResult.data;
+assert.equal(t14RuntimeKey(t14ToolId),t14Tool);
+assert.equal(t14SheetKey(t14ToolId),t14Tool);
+assert.equal(sql("SELECT state#>>'{proficiency,metadata,itemKey}' "+
+ "FROM public.character_runtime_feature_choices WHERE character_id="+quote(t14ToolId)),"Alchemist's Supplies|XPHB");
+assert.equal(t14RuntimeKey(t14SkillId),t14Skill,"the original first Khoravar must retain its skill");
+assert.equal(t14AccountHash(t14SafeOwner.id),t14AccountBefore);
+console.log("PASS C34-T14-GREEN03: real source XPHB tool and independent second character preserve original skill and legacy account snapshot");
+// Permission-boundary proof: unrelated co-editor account must remain unchanged
+// even when a legitimate service-role runtime projection runs on the shared actor.
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) "+
+ "VALUES("+quote(t14SkillId)+","+quote(t14SafeEditor.id)+",false,true,false)");
+const t14SafeState=sql("SELECT state::text FROM public.character_runtime_feature_choices WHERE "+
+ "character_id="+quote(t14SkillId)+" AND feature_key='khoravar-skill-versatility'");
+sql("SELECT private.set_species_runtime_projection_v1("+quote(t14SkillId)+
+ ",'khoravarSkillVersatility','"+t14SafeState.replaceAll("'","''")+"'::jsonb)");
+assert.equal(t14SheetKey(t14SkillId),t14Skill);
+assert.equal(t14AccountHash(t14SafeOwner.id),t14AccountBefore);
+assert.equal(t14AccountHash(t14SafeEditor.id),t14EditorBefore);
+console.log("PASS C34-T14-GREEN04: canonical projection with linked edit permission leaves BOTH historical account snapshots unchanged");
+async function t14Reject(keys,rx){
+ const p=t14Khoravar(randomUUID(),keys);
+ const before={
+  totals:grantCounts(),
+  spells:Number(sql("SELECT count(*) FROM public.character_spells")),
+  runtime:Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices")),
+  owner:t14AccountHash(t14SafeOwner.id),
+  editor:t14AccountHash(t14SafeEditor.id)
+ };
+ const res=await t14Create(t14SafeOwner,p);
+ rejected(res,"invalid original Khoravar source proficiency");
+ assert.match(res.error.message,rx);
+ assert.equal(one("public.characters","creation_request_id="+quote(p.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(p.creation_request_id)),0);
+ assert.deepEqual(grantCounts(),before.totals);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_spells")),before.spells);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices")),before.runtime);
+ assert.equal(t14AccountHash(t14SafeOwner.id),before.owner);
+ assert.equal(t14AccountHash(t14SafeEditor.id),before.editor);
+}
+await t14Reject(null,/Khoravar Skill Versatility references an invalid skill or tool/);
+await t14Reject([],/Khoravar Skill Versatility requires exactly one skill or tool proficiency/);
+await t14Reject([t14Skill,t14Tool],/Khoravar Skill Versatility requires exactly one skill or tool proficiency/);
+await t14Reject(["skill:astrology"],/Khoravar Skill Versatility references an invalid skill or tool/);
+await t14Reject(["tool:00000000-0000-0000-0000-000000000999"],/Khoravar Skill Versatility references an invalid skill or tool/);
+console.log("PASS C34-T14-GREEN05: five original source-invalid skill/tool negative cases atomically roll back character, nonce, spells, feat, equipment, runtime and legacy snapshots");
+const t14Human=await t14Create(t14SafeOwner,t14Khoravar(randomUUID(),null,"Human","XPHB"));
+assert.ifError(t14Human.error);
+assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t14Human.data)),0);
+console.log("PASS C34-T14-GREEN06: non-Khoravar source never acquires a Khoravar proficiency");
+const t14ConcurrentInput=t14Khoravar(randomUUID(),[t14Tool]);
+const t14Race=await Promise.all([
+ t14Create(t14SafeOwner,t14ConcurrentInput),t14Create(t14SafeOwner,t14ConcurrentInput)
+]);
+for(const item of t14Race)assert.ifError(item.error);
+assert.equal(t14Race[0].data,t14Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t14ConcurrentInput.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(t14ConcurrentInput.creation_request_id)),1);
+assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t14Race[0].data)+
+ " AND feature_key='khoravar-skill-versatility'"),1);
+assert.equal(t14AccountHash(t14SafeOwner.id),t14AccountBefore);
+assert.equal(t14AccountHash(t14SafeEditor.id),t14EditorBefore);
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+assert.equal(sql("SELECT to_regprocedure('public.configure_character_khoravar_skill_versatility_v1(uuid,text)') IS NULL"),"t");
+console.log("PASS C34-T14-GREEN07: same-nonce real signed concurrency creates one Khoravar skill state; legacy, GM secret and world-map boundaries retained");
+console.log("C34 T14 signed ORIGINAL SOURCE RED + Option A scoped-adapter GREEN PASS: 22/31 original trigger definitions; 7 non-map progression +2 world map original remain. ORIGINAL Khoravar handler/source retained unchanged; projection helper intentionally non-original and needs full cross-system/consumer acceptance before production. HOLD.");
