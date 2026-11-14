@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d39f5401ae75776e02038fd58636760666cc43c8` |
+| Exact source commit represented by this archive snapshot | `74423edf541db2c8545218199bdbbb336a1e9f9d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | chore(C34 preserve): archive four exact original #345 NPC Profile UI blobs, inactive |
-| Files changed relative to main | 80 (67 non-docs; 13 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit title | test(C34 preservation): pin four inactive #345 Profile source blobs and block premature UI mounting |
+| Files changed relative to main | 81 (68 non-docs; 13 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/preserved/held345/components/CreatorBackstoryPanel.js`
-- `scripts/integration/c34/preserved/held345/components/GlobalNpcProfileOverlay.js`
-- `scripts/integration/c34/preserved/held345/styles/npc-profile-centered.css`
-- `scripts/integration/c34/preserved/held345/utils/npcProfileOverlay.js`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/verify_held345_inactive_ui_capsule.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +72,7 @@
 - `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
-- … 30 more
+- … 31 more
 
 ## Trust and update procedure
 
