@@ -467,6 +467,7 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   const t17Source=t17Raw.toString("utf8");
   const t17Installer=read("scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql").toString("utf8");
   const t17Candidate=read("scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql").toString("utf8");
+  const t17Catalog=read("scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql").toString("utf8");
   for(const name of ["artificer_plan_count_v1","artificer_plan_slot_level_v1",
     "artificer_plan_item_is_eligible_v1","validate_artificer_plan_choice_v1",
     "sync_character_artificer_plan_projection_v1","materialize_player_forge_artificer_plans_v1"]){
@@ -509,11 +510,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "eda4194f-7d01-44e4-a78c-79f29b7a83e2",
     "8adeb0df-1434-41f3-8702-1e1e3e0b5da7",
     "d0f8d472-b20f-402b-8405-b65a4330d348"])
-    assert.ok(t17Installer.includes(id)&&t17Source.includes(id),"T17 original Artificer source/class/item UUID drift "+id);
+    assert.ok(t17Catalog.includes(id)&&t17Source.includes(id),"T17 original Artificer source/class/item UUID drift "+id);
   assert.ok(t17Installer.includes("IF n<>28")&&t17Installer.includes("IF n<>29")&&
     t17Candidate.includes("position('update public.players' in d)>0")&&
     t17Candidate.includes("NON-ORIGINAL")&&
-    t17Installer.includes("TEST-ONLY Artificer level2 starting-magic specimen"),
+    t17Catalog.includes("TEST-ONLY Artificer level2 starting-magic specimen"),
     "T17 original+adapted EFA source custody/preflight/synthetic warning drift");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");

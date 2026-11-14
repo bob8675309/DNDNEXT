@@ -652,7 +652,7 @@ test("C34-T17-N54 Option A cannot restore the legacy mirror",()=>{
  }),/T17 Option A projection must differ ONLY by original legacy mirror removal/);
 });
 test("C34-T17-N55 original source item and plan UUIDs cannot be invented",()=>{
- const f="scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql",root=path.resolve(dir,"../../..");
+ const f="scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql",root=path.resolve(dir,"../../..");
  assert.throws(()=>auditTriggerCoverage(p=>{
   const b=fs.readFileSync(path.join(root,p));if(p!==f)return b;
   const s=b.toString("utf8"),from="8adeb0df-1434-41f3-8702-1e1e3e0b5da7";
