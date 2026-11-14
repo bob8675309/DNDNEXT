@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `af2a71069542d6b89a0f63cb6bcc037349457650` |
+| Exact source commit represented by this archive snapshot | `427134ab659d09f2e0b0880dc4f02b28278c993c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T20): run original #345 synthetic PDF visual and dense overflow QA after signed Chromium |
+| Last source commit title | test(C34 T20): avoid occupied localhost port in original Next town browser scratch run |
 | Files changed relative to main | 87 (72 non-docs; 15 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,7 +18,8 @@
 ## Latest source commit paths
 
 - `.github/workflows/validate-c34-joint-local-auth.yml`
-- `scripts/integration/c34/preserved/held345/scripts/browser/verify_c33_npc_pdf_visual.mjs`
+- `scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
