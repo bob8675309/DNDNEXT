@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `351f570de59fe9007bc9d784e7354ebca4bb5b6d` |
+| Exact source commit represented by this archive snapshot | `c35b75c04b3201119836d45d30fe4a2e3f892cb7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T13: pin unchanged original Eladrin source fixture from held I1-I |
-| Files changed relative to main | 46 (40 non-docs; 6 docs) |
+| Last source commit title | C34 T13: stage original Eladrin season trigger in disposable T12 schema |
+| Files changed relative to main | 47 (41 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
+- `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -38,6 +38,7 @@
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
+- `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
 - `scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql`
 - `scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql`
