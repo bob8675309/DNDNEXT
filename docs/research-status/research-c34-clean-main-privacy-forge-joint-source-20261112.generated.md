@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6dbe9ed2d14ec2d121fb983fd521dcf2492238d2` |
+| Exact source commit represented by this archive snapshot | `8493665ed6d66d16f623ba7bc247d472597eb6fd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T18): exercise three original Warlock triggers with genuine signed RED/GREEN and preserved T1–T17 |
+| Last source commit title | test(C34 T18): source-hash original three Warlock DDL and advance static census to 29/31 |
 | Files changed relative to main | 74 (63 non-docs; 11 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
