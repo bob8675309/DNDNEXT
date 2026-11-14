@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `613a69b69b80b8479f4bb84ae8e5a461e985da24` |
+| Exact source commit represented by this archive snapshot | `5f2319f7926bc91787cb04a2589d82a8b52fa265` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | chore(C34 T18): preserve original Warlock I1G/I1H SQL blobs byte-identically |
-| Files changed relative to main | 72 (61 non-docs; 11 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit title | test(C34 T18): stage exact XPHB Warlock source data and all three original deferred handlers in disposable PG17 |
+| Files changed relative to main | 74 (63 non-docs; 11 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/sources/14_i1g_original_warlock_functions_pg17.sql`
-- `scripts/integration/c34/sources/15_i1g_original_warlock_acquisition_pg17.sql`
-- `scripts/integration/c34/sources/16_i1g_original_warlock_safeguard_triggers_pg17.sql`
-- `scripts/integration/c34/sources/17_i1h_original_warlock_joint_install_pg17.sql`
+- `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
+- `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -62,19 +60,19 @@
 - `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
+- `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
 - `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql`
 - `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
+- `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
 - `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
 - `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
 - `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
-- `scripts/integration/c34/sources/03_npc_dossier_stage2.sql`
-- `scripts/integration/c34/sources/04_private_story_stage3.sql`
-- … 22 more
+- … 24 more
 
 ## Trust and update procedure
 
