@@ -453,3 +453,51 @@ test("C34-T12-N32 original High Elf cantrip identity cannot silently change",()=
   return Buffer.from(s.replaceAll(from,"00000000-0000-0000-0000-000000000999"));
  }),/T12 original source-identified species\/spell specimen drift/);
 });
+
+test("C34-T13-N33 held Eladrin original fixture SHA must remain exact",()=>{
+ const file="scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  return p===file?Buffer.concat([b,Buffer.from("\n-- tampered\n")]):b;
+ }),/T13 held #357 original Eladrin fixture SHA drift/);
+});
+test("C34-T13-N34 original MPMM Eladrin trigger event cannot change",()=>{
+ const file="scripts/integration/c34/c34_original_eladrin_season_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from=" AFTER INSERT ON public.character_progression";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from," AFTER UPDATE ON public.character_progression"));
+ }),/T13 original Eladrin deferred trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T13-N35 original deferred Eladrin trigger must not become immediate",()=>{
+ const file="scripts/integration/c34/c34_original_eladrin_season_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from=" DEFERRABLE INITIALLY DEFERRED";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from," NOT DEFERRABLE"));
+ }),/T13 original Eladrin deferred trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T13-N36 original Eladrin projection body cannot be substituted",()=>{
+ const file="scripts/integration/c34/c34_original_eladrin_season_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from="'{runtimeFeatures,eladrinSeason}'";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"'{runtimeFeatures,inventedSeason}'"));
+ }),/T13 original Eladrin function body drift/);
+});
+test("C34-T13-N37 original Eladrin live source MD5 pin required",()=>{
+ const file="scripts/integration/c34/c34_original_eladrin_season_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(p=>{
+  const b=fs.readFileSync(path.join(root,p));
+  if(p!==file)return b;
+  const s=b.toString("utf8"),from="b866a8dff88bbfe6fb2c4f6d4c102fee";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replaceAll(from,"00000000000000000000000000000000"));
+ }),/T13 original Eladrin live function MD5 missing/);
+});
