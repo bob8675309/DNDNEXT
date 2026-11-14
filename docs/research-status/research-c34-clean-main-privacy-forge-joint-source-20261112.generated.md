@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `466324c8355b169669a4bfe68345ecc0ff86cb8e` |
+| Exact source commit represented by this archive snapshot | `5676b3d76ee7281e374b435a51b5598dc30ba63b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T13: signed Eladrin RED/GREEN seasonal creation, rollback and concurrency regression |
+| Last source commit title | C34 T13: negative tamper cases for Eladrin source, projection and deferred trigger |
 | Files changed relative to main | 47 (41 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
