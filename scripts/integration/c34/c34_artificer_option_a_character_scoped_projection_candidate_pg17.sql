@@ -2,10 +2,11 @@
 -- Original held #360 six source bodies and deferred DDL preserved unchanged.
 -- Original private.sync_character_artificer_plan_projection_v1 MD5
 -- 5ebf572db01143e9b523c7dba0d43ad5.
--- This candidate ONLY removes the cross-account legacy UPDATE; it does NOT
--- silently correct the original NULL-parent conditional (tracked separately).
--- The canonical authenticated Forge serializer supplies classFeatureChoices={}:
--- do not confuse this bounded signed path with generic legacy-sheet repair.
+-- TWO deliberate, explicitly NON-ORIGINAL changes: (1) NULL-safe creation
+-- of missing classFeatureChoices parent (required by real signed C34 RED),
+-- (2) remove the cross-account legacy players.sheet UPDATE. All six original
+-- functions, source identifiers and deferred trigger remain preserved raw.
+-- Neither correction is a production migration or full writer/reader acceptance.
 \set ON_ERROR_STOP on
 DO $t17_safe_pre$
 BEGIN
@@ -63,7 +64,7 @@ begin
     'normalizedAuthority',true
   );
 
-  if jsonb_typeof(v_sheet->'classFeatureChoices')<>'object' then
+  if coalesce(jsonb_typeof(v_sheet->'classFeatureChoices'),'')<>'object' then
     v_sheet:=jsonb_set(v_sheet,'{classFeatureChoices}','{}'::jsonb,true);
   end if;
   v_sheet:=jsonb_set(v_sheet,'{classFeatureChoices,artificer-magic-item-plans}',v_group,true);
@@ -79,10 +80,11 @@ DO $t17_safe_post$
 DECLARE d text;
 BEGIN
  d:=lower(pg_get_functiondef('private.sync_character_artificer_plan_projection_v1(uuid)'::regprocedure));
- IF position('update public.players' in d)>0
+ IF position('coalesce(jsonb_typeof(' in d)=0
+ OR position('update public.players' in d)>0
  OR md5(d)='5ebf572db01143e9b523c7dba0d43ad5'
  OR md5(pg_get_functiondef('private.materialize_player_forge_artificer_plans_v1()'::regprocedure))<>'67766989a466b82f170b5e00f9154e24'
  OR has_function_privilege('authenticated','private.sync_character_artificer_plan_projection_v1(uuid)','EXECUTE')
- THEN RAISE EXCEPTION 'T17 Option A account-mirror removal or original handler drift'; END IF;
+ THEN RAISE EXCEPTION 'T17 NULL-parent and Option A account-mirror compatibility or original handler drift'; END IF;
 END $t17_safe_post$;
-\echo 'PASS C34 T17 explicit non-original Artificer Option A helper, no players.sheet mirror (local only)'
+\echo 'PASS C34 T17 explicit NON-ORIGINAL Artificer NULL-parent + Option A no-mirror helper (local only)'

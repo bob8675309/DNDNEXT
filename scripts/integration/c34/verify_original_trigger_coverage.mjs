@@ -459,8 +459,8 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "T16 reduced Wizard source must declare synthetic data and preserve T12 view");
   // T17 original held #360 Artificer source retained unchanged, including
   // BOTH its inherited NULL-parent projection and legacy account mirror bugs.
-  // Candidate is deliberately non-original: ONLY account mirror removed;
-  // original null-parent condition remains a separate unaccepted source defect.
+  // Candidate is deliberately non-original: TWO precisely audited changes:
+  // NULL-safe parent initialization and removal of old cross-account mirror.
   const t17Raw=read("scripts/integration/c34/sources/13_i1l_original_artificer_plans_pg17.sql");
   assert.equal(gitBlobSha(t17Raw),"975d92fa5fef8f77e4fb690921ebba84113dfa41",
     "T17 original I1-L Artificer full source blob drift");
@@ -485,9 +485,13 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
       const scoped=exact.replace(mirror,
         "  -- T17 Option A scoped projection: account-wide players.sheet mirror REMOVED.\n"+
         "  -- All source-original validation, canonical sheet projection and locks remain.\n");
-      assert.ok(t17Candidate.includes(scoped),"T17 Option A projection must differ ONLY by original legacy mirror removal");
-      assert.ok(scoped.includes("if jsonb_typeof(v_sheet->'classFeatureChoices')<>'object' then"),
-        "T17 original NULL-parent defect cannot be silently changed in Option A diff");
+      const parentFrom="if jsonb_typeof(v_sheet->'classFeatureChoices')<>'object' then";
+      const parentTo="if coalesce(jsonb_typeof(v_sheet->'classFeatureChoices'),'')<>'object' then";
+      assert.ok(scoped.includes(parentFrom),"T17 original NULL-parent projection condition missing");
+      const corrected=scoped.replace(parentFrom,parentTo);
+      assert.ok(t17Candidate.includes(corrected),
+        "T17 candidate must differ ONLY by explicit NULL-parent correction AND original account mirror removal");
+      assert.ok(!corrected.includes(parentFrom),"T17 NULL-parent correction not applied");
       assert.ok(!scoped.includes("  update public.players p set sheet="),
         "T17 non-original candidate must freeze historical accounts");
     }
@@ -512,6 +516,7 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "d0f8d472-b20f-402b-8405-b65a4330d348"])
     assert.ok(t17Catalog.includes(id)&&t17Source.includes(id),"T17 original Artificer source/class/item UUID drift "+id);
   assert.ok(t17Installer.includes("IF n<>28")&&t17Installer.includes("IF n<>29")&&
+    t17Candidate.includes("position('coalesce(jsonb_typeof(' in d)=0")&&
     t17Candidate.includes("position('update public.players' in d)>0")&&
     t17Candidate.includes("NON-ORIGINAL")&&
     t17Catalog.includes("TEST-ONLY Artificer level2 starting-magic specimen"),

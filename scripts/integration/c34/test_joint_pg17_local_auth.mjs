@@ -2452,10 +2452,13 @@ console.log("PASS C34-T17-GREEN01: all six source-original Artificer private fun
 const t17Original=await t17Create(t17RedOwner,t17Art(randomUUID()));
 assert.ifError(t17Original.error);
 assert.equal(t17GrantCount(t17Original.data),4);
-assert.equal(t17Projection(t17Original.data),"4");
+assert.equal(t17Projection(t17Original.data),"",
+ "ORIGINAL SOURCE RED: Artificer plan projector must fail to create missing classFeatureChoices parent");
+assert.equal(sql("SELECT sheet->'classFeatureChoices' IS NULL FROM public.character_sheets "+
+ "WHERE character_id="+quote(t17Original.data)),"t");
 assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+quote(t17RedOwner.id)),"",
  "ORIGINAL RED Artificer mirror unexpectedly preserved historical account marker");
-console.log("PASS C34-T17-RED02: genuine source-original Artificer grants four plans but overwrites creator's frozen historical account sheet");
+console.log("PASS C34-T17-RED02: genuine source-original Artificer creates 4 grants but FAILS NULL-parent projection and overwrites creator's historical account");
 sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) "+
  "VALUES("+quote(t17Original.data)+","+quote(t17RedEditor.id)+",false,true,false)");
 sql("SELECT private.sync_character_artificer_plan_projection_v1("+quote(t17Original.data)+")");
@@ -2475,7 +2478,7 @@ assert.deepEqual({
  sheet:t8RowHash("public.character_sheets","character_id="+quote(t17Original.data)),
  grants:t17GrantsHash(t17Original.data)
 },t17RedAfter,"new Artificer Option A candidate must not rewrite RED historic rows");
-console.log("PASS C34-T17-GREEN02: explicitly NON-ORIGINAL scoped Artificer projection activated; original materializer retains exact source body");
+console.log("PASS C34-T17-GREEN02: explicitly NON-ORIGINAL NULL-parent plus scoped Option A Artificer projector activated; original materializer retains exact source body");
 const t17SafeOwner=await signed("artificer-option-a-owner");
 const t17SafeEditor=await signed("artificer-option-a-coeditor");
 sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t17SafeOwner.id)+
