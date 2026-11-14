@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1e2b630e09fb4e2f8e1ec50ec5431164ab52c333` |
+| Exact source commit represented by this archive snapshot | `2cf0846790a04d0c45f38ba1b0960e6f6b29d8ef` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T17): signed original Artificer RED, scoped Option A GREEN, canonical plans, rollback and concurrent nonce |
+| Last source commit title | test(C34 T17): demonstrate original Artificer missing JSON parent RED, audit two explicit non-original compatibility fixes |
 | Files changed relative to main | 67 (57 non-docs; 10 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,10 @@
 
 ## Latest source commit paths
 
+- `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
