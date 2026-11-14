@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f687879871ecb684cf3a3f98e991b956ef04fea5` |
+| Exact source commit represented by this archive snapshot | `111ebce28263f941a0a9bb7b7aea0e06b5466e62` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(C34 T18): fill only missing verified XPHB Eldritch Blast damage fields in disposable catalog |
-| Files changed relative to main | 74 (63 non-docs; 11 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34 T18): preserve signed Warlock acceptance, original hashes, and no-loss-work next task |
+| Files changed relative to main | 75 (63 non-docs; 12 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -32,6 +34,7 @@
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
+- `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -70,8 +73,7 @@
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
-- `scripts/integration/c34/sources/02_npc_profile_stage1.sql`
-- … 24 more
+- … 25 more
 
 ## Trust and update procedure
 
