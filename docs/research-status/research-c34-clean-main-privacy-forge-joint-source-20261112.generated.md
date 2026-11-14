@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c35b75c04b3201119836d45d30fe4a2e3f892cb7` |
+| Exact source commit represented by this archive snapshot | `de73b13bd40f6bfcc151c0fa88d9d95dd1752a8b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T13: stage original Eladrin season trigger in disposable T12 schema |
+| Last source commit title | C34 T13: source-pin original Eladrin materializer and audit 21 of 31 original triggers |
 | Files changed relative to main | 47 (41 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
