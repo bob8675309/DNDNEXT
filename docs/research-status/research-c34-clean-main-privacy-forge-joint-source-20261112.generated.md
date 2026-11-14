@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b26469861b0fbe23846e67f7ce3a65ffa7a7225c` |
+| Exact source commit represented by this archive snapshot | `1d6fba0abc7b38273a40c21de4cd24241740612e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T18): assert original Warlock 29/31 census, source tamper and acquisition timing negatives |
+| Last source commit title | fix(C34 T18): decode original deferred Warlock DDL line breaks exactly in source guard |
 | Files changed relative to main | 74 (63 non-docs; 11 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
