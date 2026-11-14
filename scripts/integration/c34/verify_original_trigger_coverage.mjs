@@ -396,7 +396,7 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "17688ec8bceac3c06d58415de20a544b","daf3fc12e7c30165dca50ca650f9d308",
     "8bc8a467e95b07e93df833bcfc585e80"])
     assert.ok(t15Adapter.includes(fingerprint),"T15 original Battle Master MD5 missing "+fingerprint);
-  const t15CatBegin=t15Setup.indexOf("INSERT INTO public.class_feature_option_catalog",t15End);
+  const t15CatBegin=t15Setup.indexOf("INSERT INTO public.class_feature_option_catalog");
   const t15CatEnd=t15Setup.indexOf("\\i scripts/fixtures/i1f_battle_master_original_functions_pg17.sql",t15CatBegin);
   assert.ok(t15CatBegin>=0&&t15CatEnd>t15CatBegin&&
     t15Adapter.includes(t15Setup.slice(t15CatBegin,t15CatEnd)),
