@@ -86,16 +86,16 @@ test("C34-N06 a tampered signed original fixture fails the same raw Git blob tes
   }), /signed fixture\/source drift/);
 });
 
-test("C34-T10-S01 original census counts 18/31 plus held 2 privacy and 1 creator seed", () => {
+test("C34-T11-S01 original census counts 19/31 plus held 2 privacy and 1 creator seed", () => {
  const r=auditTriggerCoverage();
  assert.equal(r.originalTotal,31);
  assert.deepEqual(r.originalByTable,{
    character_progression:19,character_sheets:4,characters:6,inventory_items:2
  });
- assert.equal(r.stagedOriginalCount,18);
- assert.equal(r.originalMissingCount,13);
+ assert.equal(r.stagedOriginalCount,19);
+ assert.equal(r.originalMissingCount,12);
  assert.equal(r.proposedPrivacyCount,2);
- assert.equal(r.totalStaged,21);
+ assert.equal(r.totalStaged,22);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
  assert.ok(!r.originalStaged.includes("characters_capture_creator_at_insert_v1"));
@@ -125,9 +125,9 @@ test("C34-T2-N02 removing an original trigger from staged DDL reduces accepted c
    assert.notEqual(changed,raw.toString("utf8"));
    return Buffer.from(changed,"utf8");
  });
- assert.equal(original.stagedOriginalCount,18);
- assert.equal(truncated.stagedOriginalCount,17);
- assert.equal(truncated.originalMissingCount,14);
+ assert.equal(original.stagedOriginalCount,19);
+ assert.equal(truncated.stagedOriginalCount,18);
+ assert.equal(truncated.originalMissingCount,13);
 });
 
 test("C34-T4-N03 changing original Fighter subclass BEFORE INSERT into AFTER INSERT fails closed", () => {
@@ -225,11 +225,11 @@ test("C34-T7-N09 creator seed cannot trust attribution from another transaction"
 
 test("C34-T7-N10 trusted creator seed is not a new uncounted original", () => {
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,18);
- assert.equal(r.originalMissingCount,13);
+ assert.equal(r.stagedOriginalCount,19);
+ assert.equal(r.originalMissingCount,12);
  assert.equal(r.proposedPrivacyCount,2);
  assert.equal(r.proposedCreatorSeedCount,1);
- assert.equal(r.totalStaged,21);
+ assert.equal(r.totalStaged,22);
  assert.equal(r.downstreamGrantTriggerCount,5);
 });
 
@@ -350,4 +350,55 @@ test("C34-T10-N22 source-identified Wizard 2024 spell catalog tamper fails close
   const raw=fs.readFileSync(path.join(root,file));
   return file===f?Buffer.concat([raw,Buffer.from("\n-- altered Wizard source\n")]):raw;
  }),/T10 source-identified 2024 Wizard specimen drift/);
+});
+
+test("C34-T11-N23 original source-magic trigger must remain deferred",()=>{
+ const f="scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="DEFERRABLE INITIALLY DEFERRED FOR EACH ROW";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"NOT DEFERRABLE FOR EACH ROW"));
+ }),/T11 original source-magic deferred trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T11-N24 original source-magic materializer body cannot drift",()=>{
+ const f="scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="Forge sourceChoices must be an object.";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from,"C34 permissive source magic bypass"));
+ }),/T11 source-original species\/feat magic handler body drifted/);
+});
+test("C34-T11-N25 original source-magic event/handler cannot be retargeted",()=>{
+ const f="scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from=" AFTER INSERT ON public.character_progression";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replace(from," AFTER UPDATE ON public.character_progression"));
+ }),/T11 original source-magic deferred trigger event\/handler drift|Timing\/deferral mismatch/);
+});
+test("C34-T11-N26 original source-magic helper MD5 checks cannot be dropped",()=>{
+ const f="scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="c9bc6081a43c52c44c1cf192886456df";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replaceAll(from,"00000000000000000000000000000000"));
+ }),/T11 exact PG17 helper\/handler MD5 missing/);
+});
+test("C34-T11-N27 source-identified species/spell IDs cannot silently change",()=>{
+ const f="scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql",root=path.resolve(dir,"../../..");
+ assert.throws(()=>auditTriggerCoverage(file=>{
+  const b=fs.readFileSync(path.join(root,file));
+  if(file!==f)return b;
+  const s=b.toString("utf8"),from="b466a340-f327-43e8-a4fe-c641f5fba2db";
+  assert.ok(s.includes(from));
+  return Buffer.from(s.replaceAll(from,"00000000-0000-0000-0000-000000000999"));
+ }),/T11 source-identified reduced Astral Elf\/Astral Fire specimen changed/);
 });

@@ -29,7 +29,8 @@ export const sourceFixturePaths=Object.freeze([
   "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
   "scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql",
   "scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql",
-  "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql"
+  "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
+  "scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql"
 ]);
 export const heldPrivacyNames=Object.freeze([
   "characters_capture_creator_at_insert_v1",
@@ -212,6 +213,38 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
   assert.ok(t10Fixture.includes("\\i scripts/fixtures/forge_starting_spells_original_pg17.sql")&&
     t10Fixture.includes("'6870e810de909209c44aecd02f5c72e2'"),
     "T10 original live pg_get_functiondef MD5 and import required");
+
+  // T11 must use the exact held #324 pg_get_functiondef body (not merely the
+  // original handler name), five real PG17 helper MD5 locks, and its original
+  // AFTER INSERT DEFERRABLE INITIALLY DEFERRED timing.
+  const t11Original=read("scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql").toString("utf8");
+  const t11Staged=read("scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql").toString("utf8");
+  const t11Begin=t11Original.indexOf("CREATE OR REPLACE FUNCTION private.materialize_player_forge_source_magic_v1()");
+  const t11End=t11Original.indexOf("$function$;",t11Begin)+"$function$;".length;
+  assert.ok(t11Begin>=0&&t11End>t11Begin,"T11 original source-magic handler unavailable");
+  assert.ok(t11Staged.includes(t11Original.slice(t11Begin,t11End)),
+    "T11 source-original species/feat magic handler body drifted");
+  const t11Event=[
+    "CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_source_magic_v1",
+    " AFTER INSERT ON public.character_progression",
+    " DEFERRABLE INITIALLY DEFERRED FOR EACH ROW",
+    " EXECUTE FUNCTION private.materialize_player_forge_source_magic_v1();"
+  ].join("\n");
+  assert.ok(t11Staged.includes(t11Event),"T11 original source-magic deferred trigger event/handler drift");
+  for(const md5 of [
+    "3dce158c3dfe14ff6776855b1ead5022",
+    "deb38940c6249808a39aeb2380e09c16",
+    "c6770a82adc7ee3b79151262474b7aed",
+    "c9bc6081a43c52c44c1cf192886456df",
+    "2a880d642809146678bd391304d9777c",
+    "4c35eaab8dff7d3d15b64ed71881d4a6"
+  ])assert.ok(t11Staged.includes(md5),"T11 exact PG17 helper/handler MD5 missing: "+md5);
+  const t11Specimen=read("scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql").toString("utf8");
+  assert.ok(t11Specimen.includes("8975a0f7-11b5-473b-99ab-f0daca25fb7d")&&
+    t11Specimen.includes("b466a340-f327-43e8-a4fe-c641f5fba2db")&&
+    t11Specimen.includes("Astral Fire")&&t11Specimen.includes("AAG")&&
+    t11Specimen.includes("XPHB"),
+    "T11 source-identified reduced Astral Elf/Astral Fire specimen changed");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
   for(const x of newHeld)assert.ok(!records.some(y=>y.name===x),"Do not count held privacy trigger as original");
@@ -235,11 +268,11 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const r=auditTriggerCoverage();
- assert.equal(r.stagedOriginalCount,18,"C34 T10 expects 18/31 original DDL, not complete parity");
- assert.equal(r.originalMissingCount,13);
- assert.equal(r.totalStaged,21);
+ assert.equal(r.stagedOriginalCount,19,"C34 T11 expects 19/31 original DDL; remaining 10 non-map progression +2 world");
+ assert.equal(r.originalMissingCount,12);
+ assert.equal(r.totalStaged,22);
  assert.equal(r.proposedCreatorSeedCount,1);
  assert.equal(r.downstreamGrantTriggerCount,5);
- console.log("PASS C34-31CENSUS T10: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
+ console.log("PASS C34-31CENSUS T11: "+r.stagedOriginalCount+"/31 original trigger DDL + "+r.proposedPrivacyCount+
    " held NPC privacy triggers + "+r.proposedCreatorSeedCount+" held verified creator seed; "+r.originalMissingCount+" originals not staged. DDL is not full behavioral acceptance.");
 }

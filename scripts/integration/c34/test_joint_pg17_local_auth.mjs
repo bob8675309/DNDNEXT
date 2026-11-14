@@ -1381,3 +1381,138 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("PASS C34-T10-GREEN07: no-magic Fighter, creator/feat provenance, historical account sheet, GM secrecy, world-map guard retained");
 console.log("C34 T10 SIGNED RED->GREEN PASS: 18/31 original DDL +2 held privacy +1 creator seed +5 downstream grants; 11 non-map progression/2 protected world movement originals missing. Reduced XPHB view/9 source-qualified spells not full production catalogue. HOLD main/production.");
+
+// T11: SOURCE-ORIGINAL AAG Astral Elf/Astral Fire spell routing.
+// All T1–T10 genuine signed Auth and negative tests completed beforehand.
+// Use live-read-only AAG species option/trait and 2024 XPHB Sacred Flame IDs,
+// not an invented species/feat granting function.
+sqlFile("scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql");
+const t11SpeciesId="8975a0f7-11b5-473b-99ab-f0daca25fb7d";
+const t11SacredFlame="b466a340-f327-43e8-a4fe-c641f5fba2db";
+const t11Astral=(nonce,overrides={})=>{
+ const base=sourceAuthority(nonce);
+ const group={
+  placement:"spells",ownerType:"species",ownerKey:t11SpeciesId,label:"Astral Fire",
+  fields:{astralFireSpell:{kind:"spell",selections:[{value:t11SacredFlame}]}}
+ };
+ const result={
+  ...base,name:"T11 signed AAG source "+nonce.slice(0,8),
+  sheet:{...base.sheet,species:"Astral Elf",
+   meta:{...base.sheet.meta,speciesKey:"Astral Elf",speciesSource:"AAG"},
+   abilities:{int:{score:12},wis:{score:14},cha:{score:18}},
+   sourceChoices:{astralFire:{...group,...overrides}}
+  }
+ };
+ return result;
+};
+const t11RedPayload=t11Astral(randomUUID());
+const t11Red=await createSubclass(t11RedPayload);
+assert.ifError(t11Red.error);
+assert.equal(one("public.character_spells","character_id="+quote(t11Red.data)),0,
+ "before original T11, signed AAG Astral Fire cantrip is absent despite valid sourceChoices");
+assert.equal(sql("SELECT sheet#>>'{sourceChoices,astralFire,ownerKey}' FROM public.character_sheets WHERE character_id="+quote(t11Red.data)),t11SpeciesId);
+const t11RedHashes={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t11Red.data)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t11Red.data)),
+ spell:t8RowHash("public.character_spells","character_id="+quote(t11Red.data))
+};
+console.log("PASS C34-T11-RED01: genuine signed AAG Astral Fire character created without canonical species spell before source-original materializer");
+sqlFile("scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_source_magic_v1()'::regprocedure))"),
+ "4c35eaab8dff7d3d15b64ed71881d4a6");
+assert.equal(one("pg_trigger","tgname='character_progression_materialize_player_forge_source_magic_v1' AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),22);
+assert.equal(sql("SELECT has_function_privilege('anon','private.materialize_player_forge_source_magic_v1()','EXECUTE')"),"f");
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t11Red.data)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t11Red.data)),
+ spell:t8RowHash("public.character_spells","character_id="+quote(t11Red.data))
+},t11RedHashes,"T11 installation is prospective only; no historical source-magic spell backfill");
+console.log("PASS C34-T11-GREEN01: unchanged original function and five helper fingerprints, deferred event, 19/31 original and no historical backfill");
+const t11GoodPayload=t11Astral(randomUUID());
+const t11Good=await createSubclass(t11GoodPayload);
+assert.ifError(t11Good.error);
+assert.equal(one("public.character_spells","character_id="+quote(t11Good.data)+
+ " AND spell_id="+quote(t11SacredFlame)+" AND source_type='species' "+
+ "AND source_key='astralFire' AND source_label='Astral Fire' "+
+ "AND known AND prepared AND always_available AND casting_stat='cha'"),1);
+assert.equal(sql("SELECT raw_payload->>'sourceOwner' FROM public.character_spells "+
+ "WHERE character_id="+quote(t11Good.data)+" AND spell_id="+quote(t11SacredFlame)),"species");
+assert.equal(sql("SELECT raw_payload->>'sourceOptionId' FROM public.character_spells "+
+ "WHERE character_id="+quote(t11Good.data)+" AND spell_id="+quote(t11SacredFlame)),t11SpeciesId);
+assert.equal(sql("SELECT raw_payload->>'grantedAtLevel' FROM public.character_spells "+
+ "WHERE character_id="+quote(t11Good.data)+" AND spell_id="+quote(t11SacredFlame)),"1");
+assert.equal(sql("SELECT raw_payload->>'automaticCastingAbility' FROM public.character_spells "+
+ "WHERE character_id="+quote(t11Good.data)+" AND spell_id="+quote(t11SacredFlame)),"true");
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(t11Good.data)),1);
+const t11Hashes={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t11Good.data)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t11Good.data)),
+ spell:t8RowHash("public.character_spells","character_id="+quote(t11Good.data)),
+ feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(t11Good.data)),
+ gear:t8RowHash("public.inventory_items","owner_type='character' AND owner_id="+quote(t11Good.data))
+};
+console.log("PASS C34-T11-GREEN02: genuine signed AAG Astral Elf grants XPHB Sacred Flame from species, CHA auto ability, canonical owner and provenance");
+const t11Replay=await createSubclass(t11GoodPayload);
+assert.ifError(t11Replay.error);
+assert.equal(t11Replay.data,t11Good.data);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t11Good.data)),
+ prog:t8RowHash("public.character_progression","character_id="+quote(t11Good.data)),
+ spell:t8RowHash("public.character_spells","character_id="+quote(t11Good.data)),
+ feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(t11Good.data)),
+ gear:t8RowHash("public.inventory_items","owner_type='character' AND owner_id="+quote(t11Good.data))
+},t11Hashes);
+console.log("PASS C34-T11-GREEN03: same signed nonce source-magic replay is inert across canonical spell, feat, sheet, gear");
+async function t11Reject(transform,message){
+ const nonce=randomUUID(),p=t11Astral(nonce),prev={
+  grants:grantCounts(),chars:Number(sql("SELECT count(*) FROM public.characters")),
+  spells:Number(sql("SELECT count(*) FROM public.character_spells")),
+  items:Number(sql("SELECT count(*) FROM public.inventory_items"))
+ };
+ transform(p);
+ const res=await createSubclass(p);
+ rejected(res,"T11 source-original species magic ownership/choice validation");
+ assert.match(res.error.message,message);
+ assert.equal(one("public.characters","creation_request_id="+quote(nonce)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(nonce)),0);
+ assert.equal(Number(sql("SELECT count(*) FROM public.characters")),prev.chars);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_spells")),prev.spells);
+ assert.equal(Number(sql("SELECT count(*) FROM public.inventory_items")),prev.items);
+ assert.deepEqual(grantCounts(),prev.grants);
+}
+await t11Reject(p=>{p.sheet.sourceChoices.astralFire.ownerKey="00000000-0000-0000-0000-000000000999";},
+ /Species source magic does not reference a canonical species/);
+await t11Reject(p=>{p.sheet.meta.speciesSource="MPMM";},
+ /Species source magic does not match the selected species/);
+console.log("PASS C34-T11-GREEN04: forged species owner or wrong AAG/MPMM source fail deferred and rollback all grants");
+await t11Reject(p=>{p.sheet.sourceChoices.astralFire.label="Imaginary Astral Feature";},
+ /Species source magic feature Imaginary Astral Feature was not found/);
+await t11Reject(p=>{p.sheet.sourceChoices.astralFire.fields.astralFireSpell.selections=[{value:t8Fire}];},
+ /Fire Bolt is not granted by species feature Astral Fire/);
+console.log("PASS C34-T11-GREEN05: forged feature identity and nontrait Wizard cantrip fail closed without character/nonce/feat/spell/gear residue");
+await t11Reject(p=>{p.sheet.sourceChoices.astralFire.fields.astralFireSpell.selections=[];},
+ /Species feature Astral Fire requires exactly 1 spell choice\(s\)/);
+await t11Reject(p=>{p.sheet.sourceChoices=[];},
+ /Forge sourceChoices must be an object/);
+console.log("PASS C34-T11-GREEN06: original exact species cantrip choice count and structured JSON shapes reject malformed signed source input");
+const t11ConcurrentPayload=t11Astral(randomUUID());
+const t11Race=await Promise.all([createSubclass(t11ConcurrentPayload),createSubclass(t11ConcurrentPayload)]);
+for(const rr of t11Race)assert.ifError(rr.error);
+assert.equal(t11Race[0].data,t11Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t11ConcurrentPayload.creation_request_id)),1);
+assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(t11ConcurrentPayload.creation_request_id)),1);
+assert.equal(one("public.character_spells","character_id="+quote(t11Race[0].data)+" AND source_type='species'"),1);
+console.log("PASS C34-T11-GREEN07: real parallel JWT same-nonce Astral Elf grants exactly one species cantrip");
+const t11Fighter=await createSubclass(sourceAuthority(randomUUID()));
+assert.ifError(t11Fighter.error);
+assert.equal(one("public.character_spells","character_id="+quote(t11Fighter.data)),0);
+assert.equal(one("public.character_option_grant_instances","character_id="+quote(t11Fighter.data)),1);
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id="+quote(t11Fighter.data)),holder.id);
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),"ORIGINAL_NONEMPTY");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("PASS C34-T11-GREEN08: no-source Fighter, feat/creator provenance, private GM, historical sheets, and world-map boundary retained");
+console.log("C34 T11 SIGNED RED->GREEN PASS: 19/31 original DDL +2 held privacy +1 creator seed +5 grant-side hooks; 10 non-map progression/2 protected world originals missing. Only AAG Astral Fire species path tested (not full species/feat catalog or 2024 browser), HOLD main/production.");
