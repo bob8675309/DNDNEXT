@@ -5,19 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0b0480ead4c5cf548d8fc3fc8cb55af3fd41c387` |
+| Exact source commit represented by this archive snapshot | `5fe462141533702d8e7d99196c5ba76f422237b9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T15): supply original valid higher-level d10 wealth result in level10 signed Battle Master specimen |
-| Files changed relative to main | 56 (48 non-docs; 8 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34 T15): signed original paired Battle Master 24/31, exact five-workflow receipts, HOLD |
+| Files changed relative to main | 57 (48 non-docs; 9 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 
 ## Research-branch change inventory versus main
 
@@ -29,6 +32,7 @@
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
+- `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -70,8 +74,7 @@
 - `scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql`
 - `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 - `scripts/integration/c34/test_source_contract.mjs`
-- `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
-- … 6 more
+- … 7 more
 
 ## Trust and update procedure
 
