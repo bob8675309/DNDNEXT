@@ -459,8 +459,9 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     "T16 reduced Wizard source must declare synthetic data and preserve T12 view");
   // T17 original held #360 Artificer source retained unchanged, including
   // BOTH its inherited NULL-parent projection and legacy account mirror bugs.
-  // Candidate is deliberately non-original: TWO precisely audited changes:
-  // NULL-safe parent initialization and removal of old cross-account mirror.
+  // Candidate is deliberately non-original: THREE precisely audited changes:
+  // NULL-safe parent, removal of the account mirror and matching original
+  // Forge class-feature summary for the derived Artificer plan group.
   const t17Raw=read("scripts/integration/c34/sources/13_i1l_original_artificer_plans_pg17.sql");
   assert.equal(gitBlobSha(t17Raw),"975d92fa5fef8f77e4fb690921ebba84113dfa41",
     "T17 original I1-L Artificer full source blob drift");
@@ -489,8 +490,29 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
       const parentTo="if coalesce(jsonb_typeof(v_sheet->'classFeatureChoices'),'')<>'object' then";
       assert.ok(scoped.includes(parentFrom),"T17 original NULL-parent projection condition missing");
       const corrected=scoped.replace(parentFrom,parentTo);
-      assert.ok(t17Candidate.includes(corrected),
-        "T17 candidate must differ ONLY by explicit NULL-parent correction AND original account mirror removal");
+      // The extra Artificer summary edit must be pinned byte-for-byte, not
+      // silently treated as original code or as an unchecked fixture change.
+      assert.equal(gitBlobSha(Buffer.from(t17Candidate)),
+        "43eb13a2fd7e1d08b9003926f54eec44e9b7c60d",
+        "T17 derived projection candidate blob drift");
+      const summaryStart=t17Candidate.indexOf("  -- T17 deliberate Option A compatibility: source-original deferred Forge");
+      const summaryEnd=t17Candidate.indexOf(
+        "  update public.character_sheets set sheet=v_sheet,updated_at=now()",summaryStart);
+      assert.ok(summaryStart>=0&&summaryEnd>summaryStart,
+        "T17 class choice summary derivation missing");
+      const summaryDelta=t17Candidate.slice(summaryStart,summaryEnd);
+      assert.ok(summaryDelta.includes("jsonb_array_elements(v_selections)")&&
+        summaryDelta.includes("v_sheet:=jsonb_set(v_sheet,'{classFeatureChoiceSummary}'"),
+        "T17 summary must derive from original source-owned grants");
+      const functionStart=t17Candidate.indexOf(
+        "CREATE OR REPLACE FUNCTION private.sync_character_artificer_plan_projection_v1(");
+      const functionEnd=t17Candidate.indexOf("$function$;",functionStart);
+      assert.ok(functionStart>=0&&functionEnd>functionStart,
+        "T17 candidate projection function missing");
+      const actualFunction=t17Candidate.slice(functionStart,functionEnd+"$function$;".length);
+      assert.equal(actualFunction.replace("  v_choice_summary jsonb;\\n","").replace(summaryDelta,""),
+        corrected,
+        "T17 candidate can only differ from original by NULL-parent, mirror removal and pinned summary parity");
       assert.ok(!corrected.includes(parentFrom),"T17 NULL-parent correction not applied");
       assert.ok(!scoped.includes("  update public.players p set sheet="),
         "T17 non-original candidate must freeze historical accounts");
