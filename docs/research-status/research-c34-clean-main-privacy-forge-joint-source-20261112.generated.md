@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5a183c8e981233d73938f7298289c970f831877a` |
+| Exact source commit represented by this archive snapshot | `7f1157eca1e72fe22386e802f7af2b4ad89c51c1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T17): derive reduced Artificer Replicate Magic Item feature metadata from six original EFA plan names |
+| Last source commit title | fix(C34 T17): keep derived Artificer choice summary in sync with source authority |
 | Files changed relative to main | 67 (57 non-docs; 10 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
@@ -17,8 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
