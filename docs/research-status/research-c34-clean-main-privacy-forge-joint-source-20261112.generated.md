@@ -5,21 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f380f98b4b2f9b7111f21aae30fd4baa9fc8b7d2` |
+| Exact source commit represented by this archive snapshot | `60b1b43b44e7f79fc35c5c450565569099ffe61f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34 T20): preserve signed original NPC browser/Next/PDF acceptance and no-loss-work handoff |
-| Files changed relative to main | 88 (72 non-docs; 16 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | feat(C34 T21 research): stage unmounted non-map source-authorized NPC Profile reader |
+| Files changed relative to main | 89 (73 non-docs; 16 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `utils/c34/readNonMapNpcProfileCandidate.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 - `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
 - `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
-- … 38 more
+- … 39 more
 
 ## Trust and update procedure
 
