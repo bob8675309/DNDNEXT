@@ -2758,3 +2758,175 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("PASS C34-T18-GREEN06: concurrent same nonce creates one source-owned Warlock, 3 Invocation grants, unchanged privacy and no world-map trigger");
 console.log("C34 T18 Warlock 29/31 original non-map DDL in disposable signed PG17; two owner-protected world-map triggers excluded. Source-provenance catalogs RED/GREEN only, NOT production parity or release.");
+
+
+// T19 — source-original #345 P1.3 stages 1→3 were installed by unchanged
+// signed I1C *before* T1. This is a genuine post-T18 signed coexistence
+// acceptance, NOT a second migration or a runtime/browser replacement.
+// All 29 original non-map triggers remain enabled. No world map objects touched.
+const t19SourceMd5=(name)=>sql("SELECT md5(pg_get_functiondef('"+name+"'::regprocedure))");
+for(const routine of [
+ "public.get_npc_profile_visible_v1(uuid)",
+ "public.get_npc_dossier_admin_v1(uuid)",
+ "public.get_character_editor_narrative_v1(uuid)",
+ "public.can_edit_creator_backstory_v1(uuid)",
+ "public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)",
+ "private.can_access_creator_backstory_v1(uuid)"
+]) assert.match(t19SourceMd5(routine),/^[a-f0-9]{32}$/,"T19 original stage1–3 function missing "+routine);
+for(const tab of ["private.character_creator_attribution","public.character_backstory_secrets",
+ "public.character_public_secret_revelations"])
+ assert.equal(sql("SELECT to_regclass('"+tab+"') IS NOT NULL"),"t","T19 original privacy relation missing "+tab);
+assert.equal(sql("SELECT has_column_privilege('authenticated','public.characters','background','SELECT')"),"f");
+assert.equal(sql("SELECT has_column_privilege('authenticated','public.characters','motivation','SELECT')"),"f");
+assert.equal(sql("SELECT has_function_privilege('anon','public.get_npc_dossier_admin_v1(uuid)','EXECUTE')"),"f");
+assert.equal(sql("SELECT has_function_privilege('authenticated','public.get_npc_dossier_admin_v1(uuid)','EXECUTE')"),"t");
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' "+
+ "AND c.relname IN ('character_progression','character_sheets','characters','inventory_items')")),32);
+console.log("PASS C34-T19-GREEN01: unmodified #345 privacy stage1/2/3 readers, creator RLS, Admin-only functions and 29/31 original DDL all coexist after T18");
+
+const t19Creator=await signed("t19-source-creator");
+const t19Coeditor=await signed("t19-source-coeditor");
+const t19Inventory=await signed("t19-inventory-only");
+const t19Convert=await signed("t19-convert-only");
+const t19Outsider=await signed("t19-outsider");
+const t19Nonce=randomUUID(),t19Payload=sourceAuthority(t19Nonce);
+const t19Secret="C34_T19_AUTHORED_PRIVATE_HISTORY_NOT_GM";
+const t19Acct='{"marker":"C34_T19_HISTORIC_OWNER_UNCHANGED","source":"ORIGINAL_NONEMPTY"}';
+sql("INSERT INTO public.players(user_id,name,sheet) VALUES("+quote(t19Creator.id)+
+ ",'T19 preserved historical owner','"+t19Acct+"'::jsonb)");
+const t19AccountHash=()=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+quote(t19Creator.id));
+const t19Frozen=t19AccountHash();
+const t19Created=await rpc(t19Creator,"create_player_character_with_private_backstory_v1",{
+ p_payload:t19Payload,p_spell_choices:[],p_magic_selections:[],
+ p_private_backstory:t19Secret
+});
+assert.ifError(t19Created.error);
+assert.match(t19Created.data,/^[0-9a-f-]{36}$/i);
+const t19Id=t19Created.data;
+assert.equal(one("public.character_sheets","character_id="+quote(t19Id)),1);
+assert.equal(one("public.character_backstory_secrets","character_id="+quote(t19Id)),1);
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id="+quote(t19Id)),t19Creator.id);
+assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id="+quote(t19Id)),t19Secret);
+assert.equal(sql("SELECT coalesce(secret,'<NULL>') FROM public.characters WHERE id="+quote(t19Id)),"<NULL>");
+assert.equal(t19AccountHash(),t19Frozen);
+const t19Repeat=await rpc(t19Creator,"create_player_character_with_private_backstory_v1",{
+ p_payload:t19Payload,p_spell_choices:[],p_magic_selections:[],
+ p_private_backstory:t19Secret
+});
+assert.ifError(t19Repeat.error);
+assert.equal(t19Repeat.data,t19Id);
+assert.equal(one("public.character_backstory_secrets","character_id="+quote(t19Id)),1);
+console.log("PASS C34-T19-GREEN02: original signed v3+private Story creates one immutable original creator, canonical Sheet, unchanged historical account and nonce replay after 29 original DDL");
+
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES("+
+ quote(t19Id)+","+quote(t19Coeditor.id)+",true,false,false),("+
+ quote(t19Id)+","+quote(t19Inventory.id)+",false,true,false),("+
+ quote(t19Id)+","+quote(t19Convert.id)+",false,false,true)");
+const t19Cap=async actor=>rpc(actor,"can_edit_creator_backstory_v1",{p_character_id:t19Id});
+for(const [actor,allowed,label] of [
+ [t19Creator,true,"creator"],[t19Coeditor,false,"coeditor"],
+ [t19Inventory,false,"inventory-only"],[t19Convert,false,"convert-only"],
+ [t19Outsider,false,"outsider"],[admin,true,"GM"]
+]){
+ const cap=await t19Cap(actor);assert.ifError(cap.error);
+ assert.equal(cap.data,allowed,"T19 original creator-private access: "+label);
+ const rows=await actor.client.from("character_backstory_secrets").select("secret_text").eq("character_id",t19Id);
+ assert.ifError(rows.error);
+ assert.equal(rows.data.length,allowed?1:0,"T19 original Story RLS: "+label);
+ if(allowed)assert.equal(rows.data[0].secret_text,t19Secret);
+}
+const t19AnCap=await rpc({client:makeClient()},"can_edit_creator_backstory_v1",{p_character_id:t19Id});
+assert.ok(t19AnCap.error,"T19 anonymous must not call creator-private capability");
+const t19AnonStory=await makeClient().from("character_backstory_secrets").select("secret_text").eq("character_id",t19Id);
+assert.ok(t19AnonStory.error||t19AnonStory.data?.length===0);
+console.log("PASS C34-T19-GREEN03: original private Story capability and RLS separate creator+GM from coeditor, inventory-only, convert-only, outsider and anonymous");
+
+const t19CanSheet=await t19Coeditor.client.from("character_sheets").select("sheet").eq("character_id",t19Id);
+assert.ifError(t19CanSheet.error);assert.equal(t19CanSheet.data.length,1);
+for(const [actor,label] of [[t19Inventory,"inventory-only"],[t19Convert,"convert-only"],[t19Outsider,"outsider"]]){
+ const rows=await actor.client.from("character_sheets").select("sheet").eq("character_id",t19Id);
+ assert.ifError(rows.error);
+ assert.equal(rows.data.length,0,"T19 canonical Sheet leaked to "+label);
+}
+const t19EditorNarrative=await rpc(t19Coeditor,"get_character_editor_narrative_v1",{p_character_id:t19Id});
+assert.ifError(t19EditorNarrative.error);assert.equal(t19EditorNarrative.data?.id,t19Id);
+for(const [actor,label] of [[t19Inventory,"inventory-only"],[t19Convert,"convert-only"],[t19Outsider,"outsider"]]){
+ const x=await rpc(actor,"get_character_editor_narrative_v1",{p_character_id:t19Id});
+ assert.ifError(x.error);assert.equal(x.data,null,"T19 denied editor narrative leaked to "+label);
+}
+const t19Dossier=await rpc(admin,"get_npc_dossier_admin_v1",{p_character_id:characterId});
+assert.ifError(t19Dossier.error);
+assert.equal(t19Dossier.data?.secret,"C34_GM_SECRET_STAYS_PRIVATE");
+for(const [actor,label] of [[t19Creator,"creator"],[t19Coeditor,"coeditor"],[t19Inventory,"inventory-only"],[t19Outsider,"outsider"]]){
+ const x=await rpc(actor,"get_npc_dossier_admin_v1",{p_character_id:characterId});
+ rejected(x,"T19 nonGM dossier denied: "+label,"42501");
+ const y=await actor.client.from("characters").select("background,motivation").eq("id",characterId);
+ assert.ok(y.error,"T19 role-wide private column ACL must deny "+label);
+}
+const t19Visible=await rpc(t19Outsider,"get_npc_profile_visible_v1",{p_character_id:characterId});
+assert.ifError(t19Visible.error);
+assert.equal(t19Visible.data?.id,characterId);
+assert.ok(!JSON.stringify(t19Visible.data).includes("C34_GM_SECRET_STAYS_PRIVATE"));
+console.log("PASS C34-T19-GREEN04: source-original canonical Sheet/editor narrative, role-wide private-column ACL, GM dossier, allowlisted outsider Profile stay separated after T18");
+
+const t19NewText="C34_T19_EXPLICIT_CREATOR_EDIT";
+const t19Save=await t19Creator.client.from("character_backstory_secrets").update({
+ secret_text:t19NewText
+}).eq("character_id",t19Id).select("secret_text").single();
+assert.ifError(t19Save.error);assert.equal(t19Save.data.secret_text,t19NewText);
+const t19Coedit=await t19Coeditor.client.from("character_backstory_secrets")
+ .update({secret_text:"T19 forged coeditor private edit"}).eq("character_id",t19Id)
+ .select("character_id");
+assert.ok(t19Coedit.error||t19Coedit.data?.length===0);
+sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id="+
+ quote(t19Id)+" AND user_id="+quote(t19Creator.id));
+const t19Revoked=await t19Cap(t19Creator);assert.ifError(t19Revoked.error);assert.equal(t19Revoked.data,false);
+const t19RevokedStory=await t19Creator.client.from("character_backstory_secrets")
+ .select("secret_text").eq("character_id",t19Id);
+assert.ifError(t19RevokedStory.error);assert.equal(t19RevokedStory.data.length,0);
+const t19RevokeWrite=await t19Creator.client.from("character_backstory_secrets")
+ .update({secret_text:"T19 forbidden revoked creator write"}).eq("character_id",t19Id)
+ .select("character_id");
+assert.ok(t19RevokeWrite.error||t19RevokeWrite.data?.length===0);
+const t19GmAfter=await admin.client.from("character_backstory_secrets").select("secret_text").eq("character_id",t19Id).single();
+assert.ifError(t19GmAfter.error);assert.equal(t19GmAfter.data.secret_text,t19NewText);
+assert.equal(t19AccountHash(),t19Frozen);
+console.log("PASS C34-T19-GREEN05: original creator Story edit, coeditor denial, real permission revoke, GM retained access and historical owner snapshot freeze");
+
+async function t19RejectCreation(label,payload,story,expectedMessage){
+ const totalsBefore={
+  characters:Number(sql("SELECT count(*) FROM public.characters")),
+  sheets:Number(sql("SELECT count(*) FROM public.character_sheets")),
+  story:Number(sql("SELECT count(*) FROM public.character_backstory_secrets")),
+  nonce:Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1")),
+  items:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  grants:Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances"))
+ };
+ const out=await rpc(t19Creator,"create_player_character_with_private_backstory_v1",{
+  p_payload:payload,p_spell_choices:[],p_magic_selections:[],p_private_backstory:story
+ });
+ rejected(out,"T19 source-original creation negative: "+label);
+ assert.match(out.error.message,expectedMessage);
+ assert.equal(one("public.characters","creation_request_id="+quote(payload.creation_request_id)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(payload.creation_request_id)),0);
+ assert.deepEqual({
+  characters:Number(sql("SELECT count(*) FROM public.characters")),
+  sheets:Number(sql("SELECT count(*) FROM public.character_sheets")),
+  story:Number(sql("SELECT count(*) FROM public.character_backstory_secrets")),
+  nonce:Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1")),
+  items:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  grants:Number(sql("SELECT count(*) FROM public.character_class_option_grant_instances"))
+ },totalsBefore,"T19 atomic creation negative leaked canonical data: "+label);
+ assert.equal(t19AccountHash(),t19Frozen);
+}
+const t19Forged=sourceAuthority(randomUUID());
+t19Forged.secret="T19_NON_GM_MUST_NOT_WRITE_GM_SECRET";
+await t19RejectCreation("GM-secret-payload",t19Forged,"T19 forged personal Story",
+ /GM Secret cannot be supplied/i);
+const t19Oversized=sourceAuthority(randomUUID());
+await t19RejectCreation("private-Story-length",t19Oversized,"X".repeat(16001),
+ /value too long|character_backstory_secrets|check constraint|length|Story/i);
+console.log("PASS C34-T19-GREEN06: forged GM-only payload and invalid Story length reject atomically after all 29 non-map triggers, no grants/gear/nonce/account leak");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+console.log("C34 T19 original #345 stage1–3 privacy + original #324/#351 nonce + 29/31 original non-map DDL co-resident signed role/rollback PASS; RED and T1–T18 preserved. NO browser/production migration.");
