@@ -1516,3 +1516,151 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characte
 assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
 console.log("PASS C34-T11-GREEN08: no-source Fighter, feat/creator provenance, private GM, historical sheets, and world-map boundary retained");
 console.log("C34 T11 SIGNED RED->GREEN PASS: 19/31 original DDL +2 held privacy +1 creator seed +5 grant-side hooks; 10 non-map progression/2 protected world originals missing. Only AAG Astral Fire species path tested (not full species/feat catalog or 2024 browser), HOLD main/production.");
+
+
+// T12 — original source-fixed High Elf / Khoravar replaceable cantrip
+// AFTER INSERT, DEFERRABLE INITIALLY DEFERRED. Test only initial grant:
+// production Long Rest, active encounter and public replacement RPC remain
+// independently held until their complete original security graph is installed.
+sqlFile("scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql");
+const t12Prestidigitation="5f62b543-f6ac-405f-baa8-1f196190ff35";
+const t12Friends="c667b8ab-a44e-4c23-a8ea-b03f8953fc18";
+const t12High=(nonce,stat="int",lineage="High Elf")=>{
+ const p=sourceAuthority(nonce);
+ return {...p,name:"T12 signed XPHB Elf "+nonce.slice(0,8),
+  sheet:{...p.sheet,species:"Elf",meta:{...p.sheet.meta,speciesKey:"Elf",speciesSource:"XPHB"},
+   sourceChoices:{elvenLineage:{
+    placement:"species",ownerType:"species",source:"XPHB",label:"Elven Lineage",
+    fields:{lineage:{kind:"enum",selections:[{label:lineage,value:"high-elf"}]},
+     "spellcasting-ability":{kind:"ability",selections:stat?[{value:stat}]:[]}}
+   }}
+  }
+ };
+};
+const t12Khoravar=(nonce,stat="wis")=>{
+ const p=sourceAuthority(nonce);
+ return {...p,name:"T12 signed EFA Khoravar "+nonce.slice(0,8),
+  sheet:{...p.sheet,species:"Khoravar",meta:{...p.sheet.meta,speciesKey:"Khoravar",speciesSource:"EFA"},
+   sourceChoices:{feyGift:{
+    placement:"species",ownerType:"species",source:"EFA",label:"Fey Gift",
+    fields:{"feature-ability":{kind:"ability",selections:stat?[{value:stat}]:[]}}
+   }}
+  }
+ };
+};
+const t12RedPayload=t12High(randomUUID());
+const t12Red=await createSubclass(t12RedPayload);
+assert.ifError(t12Red.error);
+assert.equal(one("public.character_spells","character_id="+quote(t12Red.data)),0);
+assert.equal(sql("SELECT sheet#>>'{sourceChoices,elvenLineage,fields,spellcasting-ability,selections,0,value}' FROM public.character_sheets WHERE character_id="+quote(t12Red.data)),"int");
+const t12RedHashes={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t12Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t12Red.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t12Red.data))
+};
+console.log("PASS C34-T12-RED01: genuine signed XPHB High Elf accepts permanent INT with zero fixed Prestidigitation before original trigger");
+sqlFile("scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_species_replaceable_cantrip_v1()'::regprocedure))"),
+ "a09198d8e12df12371647fccd8479489");
+assert.equal(one("pg_trigger","tgname='character_progression_materialize_species_cantrip_v1' AND NOT tgisinternal AND tgenabled='O'"),1);
+assert.equal(Number(sql("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "+
+ "WHERE NOT t.tgisinternal AND t.tgenabled='O' AND c.relname IN "+
+ "('character_progression','character_sheets','characters','inventory_items')")),23);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t12Red.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t12Red.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t12Red.data))
+},t12RedHashes);
+assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t12Red.data)),0);
+console.log("PASS C34-T12-GREEN01: original MD5/timing/20 of 31 co-residence; RED historical rows untouched, no backfill");
+const t12HighPayload=t12High(randomUUID());
+const t12Good=await createSubclass(t12HighPayload);
+assert.ifError(t12Good.error);
+assert.equal(one("public.character_spells","character_id="+quote(t12Good.data)+
+ " AND spell_id="+quote(t12Prestidigitation)+
+ " AND source_type='species' AND source_key='high-elf-lineage-cantrip' AND casting_stat='int' "+
+ "AND known AND prepared AND always_available"),1);
+assert.equal(one("public.character_spells","character_id="+quote(t12Good.data)+" AND source_type='species'"),1,
+ "T11 source materializer must not duplicate original T12 High Elf cantrip");
+assert.equal(sql("SELECT state->>'spellId' FROM public.character_runtime_feature_choices WHERE character_id="+quote(t12Good.data)),
+ t12Prestidigitation);
+assert.equal(sql("SELECT state->>'castingStat' FROM public.character_runtime_feature_choices WHERE character_id="+quote(t12Good.data)),"int");
+assert.equal(sql("SELECT cadence FROM public.character_runtime_feature_choices WHERE character_id="+quote(t12Good.data)),"long_rest");
+assert.equal(sql("SELECT sheet#>>'{runtimeFeatures,speciesReplaceableCantrip,cantripName}' FROM public.character_sheets WHERE character_id="+quote(t12Good.data)),"Prestidigitation");
+assert.equal(sql("SELECT sheet#>>'{sourceChoices,elvenLineage,fields,spellcasting-ability,selections,0,value}' FROM public.character_sheets WHERE character_id="+quote(t12Good.data)),"int");
+console.log("PASS C34-T12-GREEN02: true signed XPHB High Elf gets exactly one Prestidigitation, permanent INT, original runtime choice and sheet projection");
+const t12Hashes={
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t12Good.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t12Good.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t12Good.data)),
+ runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t12Good.data)),
+ feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(t12Good.data))
+};
+const t12Replay=await createSubclass(t12HighPayload);
+assert.ifError(t12Replay.error);
+assert.equal(t12Replay.data,t12Good.data);
+assert.deepEqual({
+ sheet:t8RowHash("public.character_sheets","character_id="+quote(t12Good.data)),
+ progression:t8RowHash("public.character_progression","character_id="+quote(t12Good.data)),
+ spells:t8RowHash("public.character_spells","character_id="+quote(t12Good.data)),
+ runtime:t8RowHash("public.character_runtime_feature_choices","character_id="+quote(t12Good.data)),
+ feat:t8RowHash("public.character_option_grant_instances","character_id="+quote(t12Good.data))
+},t12Hashes);
+console.log("PASS C34-T12-GREEN03: signed immutable nonce replay leaves species spell/runtime and original sheet/feat/character hashes unchanged");
+const t12K=await createSubclass(t12Khoravar(randomUUID()));
+assert.ifError(t12K.error);
+assert.equal(one("public.character_spells","character_id="+quote(t12K.data)+
+ " AND spell_id="+quote(t12Friends)+" AND source_type='species' "+
+ "AND source_key='khoravar-fey-gift-cantrip' AND casting_stat='wis'"),1);
+assert.equal(one("public.character_spells","character_id="+quote(t12K.data)+" AND source_type='species'"),1);
+assert.equal(sql("SELECT state->>'source' FROM public.character_runtime_feature_choices WHERE character_id="+quote(t12K.data)),"EFA");
+assert.equal(sql("SELECT sheet#>>'{runtimeFeatures,speciesReplaceableCantrip,cantripName}' FROM public.character_sheets WHERE character_id="+quote(t12K.data)),"Friends");
+console.log("PASS C34-T12-GREEN04: real signed EFA Khoravar creates one Friends initial grant with permanent WIS");
+async function t12Reject(payload,pattern){
+ const nonce=payload.creation_request_id;
+ const before={
+  character:Number(sql("SELECT count(*) FROM public.characters")),
+  spells:Number(sql("SELECT count(*) FROM public.character_spells")),
+  runtime:Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices")),
+  inventory:Number(sql("SELECT count(*) FROM public.inventory_items")),
+  grants:grantCounts()
+ };
+ const res=await createSubclass(payload);
+ rejected(res,"original T12 missing casting ability");
+ assert.match(res.error.message,pattern);
+ assert.equal(one("public.characters","creation_request_id="+quote(nonce)),0);
+ assert.equal(one("private.player_creation_intent_reservations_v1","request_id="+quote(nonce)),0);
+ assert.equal(Number(sql("SELECT count(*) FROM public.characters")),before.character);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_spells")),before.spells);
+ assert.equal(Number(sql("SELECT count(*) FROM public.character_runtime_feature_choices")),before.runtime);
+ assert.equal(Number(sql("SELECT count(*) FROM public.inventory_items")),before.inventory);
+ assert.deepEqual(grantCounts(),before.grants);
+}
+await t12Reject(t12High(randomUUID(),null),/requires a permanent Intelligence, Wisdom, or Charisma spellcasting-ability choice/);
+await t12Reject(t12Khoravar(randomUUID(),null),/requires a permanent Intelligence, Wisdom, or Charisma spellcasting-ability choice/);
+console.log("PASS C34-T12-GREEN05: missing permanent High Elf and Khoravar spellcasting stat atomically rolls back actor/nonce/runtime/feat/gear");
+const t12Wood=await createSubclass(t12High(randomUUID(),"int","Wood Elf"));
+assert.ifError(t12Wood.error);
+assert.equal(one("public.character_spells","character_id="+quote(t12Wood.data)),0);
+assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t12Wood.data)),0);
+console.log("PASS C34-T12-GREEN06: different Elf lineage acquires no phantom High Elf fixed cantrip or runtime record");
+const t12AAG=await createSubclass(t11Astral(randomUUID()));
+assert.ifError(t12AAG.error);
+assert.equal(one("public.character_spells","character_id="+quote(t12AAG.data)+" AND source_key='astralFire'"),1);
+assert.equal(one("public.character_spells","character_id="+quote(t12AAG.data)),1);
+assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t12AAG.data)),0);
+console.log("PASS C34-T12-GREEN07: co-resident T11 Astral Fire grants exactly one source-owned Sacred Flame with no unrelated T12 runtime choice");
+const t12RacePayload=t12High(randomUUID());
+const t12Race=await Promise.all([createSubclass(t12RacePayload),createSubclass(t12RacePayload)]);
+for(const res of t12Race)assert.ifError(res.error);
+assert.equal(t12Race[0].data,t12Race[1].data);
+assert.equal(one("public.characters","creation_request_id="+quote(t12RacePayload.creation_request_id)),1);
+assert.equal(one("public.character_spells","character_id="+quote(t12Race[0].data)+" AND source_key='high-elf-lineage-cantrip'"),1);
+assert.equal(one("public.character_runtime_feature_choices","character_id="+quote(t12Race[0].data)+" AND feature_key='high-elf-lineage-cantrip'"),1);
+assert.equal(sql("SELECT sheet->>'source' FROM public.players WHERE user_id="+quote(holder.id)),"ORIGINAL_NONEMPTY");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id="+quote(characterId)),"C34_GM_SECRET_STAYS_PRIVATE");
+assert.equal(sql("SELECT to_regprocedure('public._force_depart_on_route_assign()') IS NULL"),"t");
+assert.equal(sql("SELECT to_regprocedure('public.configure_character_species_replaceable_cantrip_v1(uuid,uuid)') IS NULL"),"t",
+ "T12 does NOT claim independently untested rest/encounter/role-authorized replacement RPC");
+console.log("PASS C34-T12-GREEN08: real parallel signed nonce only one actor/spell/runtime; GM secret, legacy sheet, protected world map and RPC boundary preserved");
+console.log("C34 T12 SIGNED RED->GREEN PASS: 20/31 source-original triggers (progression 10/19, sheets 4/4, characters 4/6, inventory 2/2); 9 non-map progression +2 protected world original missing; High Elf/Khoravar initial cantrip only, Long Rest RPC/browser untested. DRAFT HOLD.");
