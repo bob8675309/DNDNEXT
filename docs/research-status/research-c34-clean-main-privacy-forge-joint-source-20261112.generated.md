@@ -5,23 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `90e0ba62508ba900028faf9b42e2c942af72dc06` |
+| Exact source commit represented by this archive snapshot | `1702b70d91d9ab6fbc4039922a7e6274efa430c0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T22): stage isolated Bootstrap Profile shell and genuine current Next signed Chromium acceptance |
-| Files changed relative to main | 93 (76 non-docs; 17 docs) |
-| Last source commit | 5 files (5 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34 T22): record real current-Next signed NPC Profile browser PASS and release holds |
+| Files changed relative to main | 94 (76 non-docs; 18 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `components/c34/NonMapNpcProfileResearchShell.jsx`
-- `scripts/integration/c34/fixtures/t22_nonmap_next_probe_page.jsx`
-- `scripts/integration/c34/test_source_contract.mjs`
-- `scripts/integration/c34/test_t22_current_next_browser.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -43,6 +41,7 @@
 - `docs/research/C34_T19_PRIVACY_29_ORIGINAL_SIGNED_2026-11-14.md`
 - `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
 - `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
+- `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -74,8 +73,7 @@
 - `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql`
 - `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
-- `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
-- … 43 more
+- … 44 more
 
 ## Trust and update procedure
 
