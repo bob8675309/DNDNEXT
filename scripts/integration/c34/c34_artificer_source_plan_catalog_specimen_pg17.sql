@@ -68,6 +68,28 @@ INSERT INTO public.items_catalog(id,item_key,item_name,item_type,item_rarity,pay
  ('d0f8d472-b20f-402b-8405-b65a4330d348','Potion of Comprehension|XDMG','Potion of Comprehension','Potions & Poisons','common','{"source":"XDMG","type":"P|XPHB"}'::jsonb);
 
 
+-- T17 DISPOSABLE TEST-ONLY Forge feature owner. Original T5 source authority
+-- reads class_feature_catalog metadata after original Artificer projection.
+-- T15/T16's reduced local feature rows have no Artificer Replicate Magic Item
+-- metadata; derive six option names from preserved original EFA source rows.
+-- The synthetic FEATURE ROW UUID below is NOT a claim of live catalog identity.
+INSERT INTO public.class_feature_catalog
+(id,feature_key,feature_type,name,source,class_key,class_name,class_source,level,raw_payload)
+SELECT '00000000-0000-0000-0000-000000017001'::uuid,
+ 'c34-test-artificer-efa-replicate-magic-item-2','class','Replicate Magic Item',
+ 'EFA','artificer','Artificer','EFA',2,
+ jsonb_build_object('sourceOriginalPlanNames',jsonb_agg(o.name ORDER BY o.name))
+FROM public.class_feature_option_catalog o
+WHERE o.option_type='artificer-plan' AND o.source='EFA'
+ AND lower(o.class_key)='artificer'
+HAVING count(*)=6;
+DO $t17_feature_metadata$
+BEGIN
+ IF (SELECT jsonb_array_length(f.raw_payload->'sourceOriginalPlanNames')
+     FROM public.class_feature_catalog f WHERE f.feature_key='c34-test-artificer-efa-replicate-magic-item-2')<>6
+ THEN RAISE EXCEPTION 'T17 original T5 Artificer feature owner must resolve exactly six EFA source plan names'; END IF;
+END $t17_feature_metadata$;
+
 -- All source-owned row IDs above come unchanged from held #360; these
 -- local XPHB/EFA preferred-class and level2 starting-magic parameters do not
 -- prove production source catalog parity.

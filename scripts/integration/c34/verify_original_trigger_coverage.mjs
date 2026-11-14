@@ -519,7 +519,9 @@ export function auditTriggerCoverage(read=(file)=>fs.readFileSync(path.join(root
     t17Candidate.includes("position('coalesce(jsonb_typeof(' in d)=0")&&
     t17Candidate.includes("position('update public.players' in d)>0")&&
     t17Candidate.includes("NON-ORIGINAL")&&
-    t17Catalog.includes("TEST-ONLY Artificer level2 starting-magic specimen"),
+    t17Catalog.includes("TEST-ONLY Artificer level2 starting-magic specimen")&&
+    t17Catalog.includes("sourceOriginalPlanNames',jsonb_agg(o.name ORDER BY o.name)")&&
+    t17Catalog.includes("synthetic FEATURE ROW UUID"),
     "T17 original+adapted EFA source custody/preflight/synthetic warning drift");
   const newHeld=heldPrivacyNames.filter(x=>byName.has(x));
   assert.equal(newHeld.length,2,"Both staged NPC privacy triggers must remain distinct");
