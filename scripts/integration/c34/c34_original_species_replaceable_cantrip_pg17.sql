@@ -51,6 +51,12 @@ create index if not exists character_runtime_feature_choices_feature_idx
 alter table public.character_runtime_feature_choices enable row level security;
 revoke all on table public.character_runtime_feature_choices from public,anon,authenticated;
 
+-- The original runtime trigger explicitly inserts created_at. The
+-- previously reduced J00 character_spells fixture lacked this live PG17 column.
+-- Exact live type/default: timestamptz NOT NULL DEFAULT now(); local only.
+ALTER TABLE public.character_spells
+ ADD COLUMN created_at timestamptz NOT NULL DEFAULT now();
+
 -- Reduced TEST-ONLY preferred spell view: live view has 47 source columns.
 -- No attempt to call this projection complete production catalog parity.
 CREATE VIEW public.spells_catalog_preferred AS
