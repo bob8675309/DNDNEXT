@@ -5,24 +5,18 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8680853a1f761b148e126775a16f608d874061d5` |
+| Exact source commit represented by this archive snapshot | `8c3d859c94e4534a0de5b257462bd4cd08d44188` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34 T15): original paired Battle Master 2024 grants+validator in signed disposable PG17 |
+| Last source commit title | test(C34 T15): locate original maneuver catalog before original trigger section |
 | Files changed relative to main | 56 (48 non-docs; 8 docs) |
-| Last source commit | 7 files (6 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
-- `scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql`
-- `scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql`
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
-- `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
