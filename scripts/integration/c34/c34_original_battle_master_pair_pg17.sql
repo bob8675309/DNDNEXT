@@ -80,6 +80,30 @@ INSERT INTO public.class_feature_option_catalog
  ('689feabb-37c2-4d7e-830a-6e28ecc5a615','optional-feature:maneuvering-attack|XPHB','battle-master-maneuver','Maneuvering Attack','XPHB','fighter'),
  ('59ccbe6c-ccc7-4aab-b363-e20721915f88','optional-feature:menacing-attack|XPHB','battle-master-maneuver','Menacing Attack','XPHB','fighter');
 
+
+-- T15 reduced-source compatibility: the original C34 T5 class-feature
+-- authority validator also reads the actual subclass feature RAW PAYLOAD to
+-- check that a selected maneuver appears in its source-owned metadata.
+-- T4's deliberately reduced Fighter feature had no maneuver text; populate it
+-- ONLY from the twelve original source-qualified I1-F option rows above.
+-- No source function is reimplemented and no ability checks are bypassed.
+UPDATE public.class_feature_catalog f
+SET raw_payload=jsonb_build_object('source','XPHB','maneuverNames',(
+ SELECT jsonb_agg(o.name ORDER BY o.name)
+ FROM public.class_feature_option_catalog o
+ WHERE o.source='XPHB' AND o.class_key='fighter'
+ AND o.option_type='battle-master-maneuver'))
+WHERE f.class_key='fighter' AND f.class_source='XPHB'
+  AND f.subclass_name='Battle Master' AND f.feature_type='subclass' AND f.level=3;
+DO $t15_feature_check$
+BEGIN
+ IF (SELECT jsonb_array_length(f.raw_payload->'maneuverNames')
+    FROM public.class_feature_catalog f WHERE f.class_key='fighter'
+      AND f.class_source='XPHB' AND f.subclass_name='Battle Master'
+      AND f.feature_type='subclass' AND f.level=3)<>12
+ THEN RAISE EXCEPTION 'T15 original T5 subclass feature requires 12 source-derived maneuver names'; END IF;
+END $t15_feature_check$;
+
 CREATE OR REPLACE FUNCTION private.battle_master_maneuver_count_v1(p_level integer)
  RETURNS integer
  LANGUAGE sql
