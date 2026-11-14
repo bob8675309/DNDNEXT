@@ -2200,7 +2200,7 @@ const t16Wizard=(nonce,level=3,options={})=>{
   ...base.payload.sheet,level,subclassName:"Evoker",subclassSource:"XPHB",
   classFeatureChoices:groups,classFeatureChoiceSummary:summary,
   startingEquipmentSelections:{...base.payload.sheet.startingEquipmentSelections,
-   ...(level>=3?{wealthRoll:5}:{})}
+   ...(level>=5?{wealthRoll:5}:{})}
  };
  return {payload:{...base.payload,name:"T16 genuine signed Wizard "+level+" "+nonce.slice(0,8),sheet},
   magic:base.magic};
