@@ -84,7 +84,7 @@ begin
   end loop;
   return v_best_key;
 end;
-$function$
+$function$;
 
 
 -- LIVE PG17 ORIGINAL MD5 c6770a82adc7ee3b79151262474b7aed
@@ -128,7 +128,7 @@ begin
   end if;
   return null;
 end;
-$function$
+$function$;
 
 
 -- LIVE PG17 ORIGINAL MD5 c9bc6081a43c52c44c1cf192886456df
@@ -152,7 +152,7 @@ begin
   v_value := v_match[1];
   return case v_value when 'one' then 1 when 'two' then 2 when 'three' then 3 when 'four' then 4 else greatest(1, v_value::integer) end;
 end;
-$function$
+$function$;
 
 
 -- LIVE PG17 ORIGINAL MD5 deb38940c6249808a39aeb2380e09c16
@@ -167,7 +167,7 @@ AS $function$
     from regexp_matches(coalesce(p_trait::text,''), E'\\{@spell\\s+([^}|]+)', 'gi') as match
     where private.normalize_player_choice_name_v1(match[1]) = private.normalize_player_choice_name_v1(p_spell_name)
   );
-$function$
+$function$;
 
 
 -- LIVE PG17 ORIGINAL MD5 2a880d642809146678bd391304d9777c
@@ -202,7 +202,7 @@ begin
       raw_payload=excluded.raw_payload,
       updated_at=now();
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION private.materialize_player_forge_source_magic_v1()
