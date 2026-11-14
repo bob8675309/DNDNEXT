@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7f1157eca1e72fe22386e802f7af2b4ad89c51c1` |
+| Exact source commit represented by this archive snapshot | `c5ffa9680fd709b9a73800399803efbeb7d515fa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(C34 T17): keep derived Artificer choice summary in sync with source authority |
+| Last source commit title | test(C34 T17): pin third non-original Artificer summary delta without weakening original source |
 | Files changed relative to main | 67 (57 non-docs; 10 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
