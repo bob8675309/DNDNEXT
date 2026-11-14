@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4608477319d756257e1b59a2c999d2d16c8bd757` |
+| Exact source commit represented by this archive snapshot | `cbd02f6ccf404bd3484ea92b60ec5ef2c9df83a6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T14: prove original Khoravar source blob/handler identity and explicit no-mirror Option A adapter |
+| Last source commit title | C34 T14: 22/31 source census and six negative tamper guards for Khoravar Option A |
 | Files changed relative to main | 52 (45 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
