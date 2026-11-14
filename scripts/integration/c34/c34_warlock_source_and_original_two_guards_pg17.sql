@@ -42,6 +42,8 @@ INSERT INTO public.class_level_progression(class_id,class_level,xp_threshold,pro
 UPDATE public.class_level_progression SET cantrips_known=2,spells_known=0
  WHERE class_id='6792abd0-1fd9-44fb-ae4c-56c307ab791a'::uuid
  AND class_level IN(1,2);
+-- Existing verified spell IDs from prior source fixtures remain untouched
+-- on conflict. Do NOT overwrite source rows to make tests pass.
 -- Original acquisition/UPDATE guard reads spell attack/range fields not yet in
 -- the T17 synthetic catalog; extend only the disposable table.
 ALTER TABLE public.spells_catalog
@@ -53,7 +55,8 @@ INSERT INTO public.spells_catalog
  attack_type,range_unit,range_distance)
 VALUES
 ('47d3fd14-695b-4d54-a3fb-9c210ed59952','Eldritch Blast',0,ARRAY['Warlock'],'XPHB','Evocation',ARRAY['force'],'1d10','Ranged Spell Attack','feet',120),
-('27d42a4f-4fbc-44c2-8f8c-e8d68978ef98','Poison Spray',0,ARRAY['Artificer','Druid','Sorcerer','Warlock','Wizard'],'XPHB','Necromancy',ARRAY['poison'],'1d12','Ranged Spell Attack','feet',30);
+('27d42a4f-4fbc-44c2-8f8c-e8d68978ef98','Poison Spray',0,ARRAY['Artificer','Druid','Sorcerer','Warlock','Wizard'],'XPHB','Necromancy',ARRAY['poison'],'1d12','Ranged Spell Attack','feet',30)
+ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.class_feature_option_catalog
 (id,option_key,option_type,name,source,class_key,repeatable,prerequisites,choice_schema)
 VALUES
