@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c5b68da2e9e0c1572161c128a92d7e1fa18a7258` |
+| Exact source commit represented by this archive snapshot | `ec3d0f6c28d27c2ca2ed68c414c34abc8d372c06` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T14: explicit non-original Option A helper candidate removes legacy account-wide sheet overwrite |
+| Last source commit title | C34 T14: source-original Khoravar signed legacy mirror RED and character-scoped Option A GREEN suite |
 | Files changed relative to main | 52 (45 non-docs; 7 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
