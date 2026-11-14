@@ -2019,6 +2019,11 @@ const t15Battle=(nonce,choices=null,level=3)=>{
  }};
  return {...p,name:"T15 source signed Battle Master "+nonce.slice(0,8),
   sheet:{...p.sheet,classFeatureChoices:sourceGroup,
+   // The original 2024 higher-level wealth validator requires a genuine
+   // d10 result for this source-authentic level10 signed test specimen.
+   ...(level>=10?{startingEquipmentSelections:{
+    ...p.sheet.startingEquipmentSelections,wealthRoll:5
+   }}:{}),
    classFeatureChoiceSummary:choices===null?[]:selections.map(x=>({
     groupId:"battle-master-choices",key:"",name:x.name,source:"XPHB"
    }))
