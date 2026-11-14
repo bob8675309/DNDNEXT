@@ -5,22 +5,26 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5fe462141533702d8e7d99196c5ba76f422237b9` |
+| Exact source commit represented by this archive snapshot | `d299fc8aff87f01a818ebc80b68720c6d47ac927` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34 T15): signed original paired Battle Master 24/31, exact five-workflow receipts, HOLD |
-| Files changed relative to main | 57 (48 non-docs; 9 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | test(C34 T16): original Wizard Savant/Signature mirror RED and scoped Option A GREEN with signed PG17 |
+| Files changed relative to main | 62 (53 non-docs; 9 docs) |
+| Last source commit | 8 files (8 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
+- `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
+- `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
+- `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
+- `scripts/integration/c34/sources/11_i1e_original_wizard_functions_pg17.sql`
+- `scripts/integration/c34/sources/12_i1e_original_wizard_setup_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -57,9 +61,12 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
+- `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql`
 - `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
+- `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
+- `scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql`
 - `scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql`
 - `scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs`
 - `scripts/integration/c34/sources/01_forge_immutable_intent.sql`
@@ -71,10 +78,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql`
 - `scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql`
-- `scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql`
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
-- `scripts/integration/c34/test_source_contract.mjs`
-- … 7 more
+- … 12 more
 
 ## Trust and update procedure
 
