@@ -89,6 +89,67 @@ jobs:
             -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
           node scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs
           node scripts/integration/c34/test_joint_pg17_local_auth.mjs
+      # T20 uses the full original #345 app in a SECOND local checkout.
+      # Never import these archived UI files into #379 or touch production.
+      - name: Checkout original #345 browser app at pinned historical commit
+        uses: actions/checkout@v4
+        with:
+          ref: 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          path: held345
+          persist-credentials: false
+      - name: Pin actual held #345 browser source before any test
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C held345 rev-parse HEAD)" = 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          while read -r src expected_sha; do
+            test "$(git -C held345 hash-object "$src")" = "$expected_sha" || {
+              echo "T20 original #345 source changed: $src" >&2; exit 1;
+            }
+          done <<'SOURCEPINS'
+          components/GlobalNpcProfileOverlay.js a0e133a7c2446cba3f8c672a1df78f6a5aa73763
+          utils/npcProfileOverlay.js 3d809c47a9aaae18d0e7e5ec6500199a9266baac
+          components/CreatorBackstoryPanel.js 23b0e86aab7a80b7243365ba107c1d37a5ec5812
+          styles/npc-profile-centered.css 150eb9ad78aeba268be955e63c8451e3c0ed0e14
+          scripts/browser/verify_c33_creator_backstory_dom.mjs 7b3a813d11d4b9e0fcd1ba8aef9d4e8463f58aa4
+          scripts/browser/verify_c33_next_town_route.mjs d19b134fdb4e4b58833fe339f918c027959eae02
+          scripts/fixtures/c33_next_town_route_pg17.sql 0d3f1b261b7600944121c9be6f808fa190e8dddc
+          SOURCEPINS
+          node --check held345/scripts/browser/verify_c33_creator_backstory_dom.mjs
+          node --check held345/scripts/browser/verify_c33_next_town_route.mjs
+          echo 'PASS C34-T20-SOURCE: original #345 browser tree and sources pinned'
+      - name: Install held app and local-only Chromium tooling separately
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd held345 && npm ci --ignore-scripts --no-audit --no-fund)
+          mkdir -p "$RUNNER_TEMP/c34-t20-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/c34-t20-browser-tools" \
+            --no-save --package-lock=false --no-audit --no-fund --no-progress \
+            esbuild@0.25.12 playwright-core@1.56.1
+      - name: T20 original #345 Chromium creator/Profile/PDF and real Next town/inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1C_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$(git -C held345 rev-parse HEAD)" = 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM=DISPOSABLE_LOCAL_GOTRUE_ONLY
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_ANON_KEY="$ANON_KEY"
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME" || { echo 'Local Chromium missing; no remote fallback' >&2; exit 1; }
+          (cd held345 && node scripts/browser/verify_c33_creator_backstory_dom.mjs)
+          psql -X -v ON_ERROR_STOP=1 -f held345/scripts/fixtures/c33_next_town_route_pg17.sql
+          (cd held345 && node scripts/browser/verify_c33_next_town_route.mjs)
+          echo 'PASS C34-T20: held #345 Chromium and Next browser against same T19 29/31 disposable DB'
       - name: Discard local databases and credentials
         if: always()
         run: |
