@@ -5,21 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a886c4340bae77e25750244ee8fff061e4127783` |
+| Exact source commit represented by this archive snapshot | `351f570de59fe9007bc9d784e7354ebca4bb5b6d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): T12 exact-head signed High Elf/Khoravar original 20/31 HOLD handoff |
-| Files changed relative to main | 45 (39 non-docs; 6 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | C34 T13: pin unchanged original Eladrin source fixture from held I1-I |
+| Files changed relative to main | 46 (40 non-docs; 6 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -59,6 +57,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/sources/04_private_story_stage3.sql`
 - `scripts/integration/c34/sources/05_inventory_constraint_rls.sql`
 - `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
+- `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
 - `scripts/integration/c34/test_source_contract.mjs`
 - `scripts/integration/c34/validate_joint_fixture_blobs.mjs`
