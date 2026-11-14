@@ -1,0 +1,44 @@
+# C34 T15 — paired original XPHB Battle Master maneuver grants and deferred validation (signed, HOLD)
+
+**Date:** November 13, 2026, America/Chicago (GitHub Actions completed November 14 UTC). **Research-only draft** [PR #379](https://github.com/bob8675309/DNDNEXT/pull/379), branch `research/c34-clean-main-privacy-forge-joint-source-20261112`, **exact tested executable SHA** `0b0480ead4c5cf548d8fc3fc8cb55af3fd41c387`. No `main` merge, hosted Supabase SQL/RLS/Storage, Vercel deploy, protected world-map changes, paid-agent calls or original PR closures.
+
+## Original source and dependencies
+
+- Held original [I1-F #354](https://github.com/bob8675309/DNDNEXT/pull/354) source fixtures preserved **byte-for-byte** under `scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql`, Git blob **`fbda236e3c1b96ef9a93c44f0a2f99a6cd77adf9`**, and `scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql`, Git blob **`c5ae0b31605d9374b295eee01eefdda0718afb80`**.
+- Five original `pg_get_functiondef` bodies staged **unchanged** via `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`, each runtime MD5-pinned: `battle_master_maneuver_count_v1(integer)` `32cbfe62f855affe40443da2fc9d20eb`; `battle_master_maneuver_slot_level_v1(integer)` `70b3639eb4b6535aab3efbfc80828a0e`; `is_xphb_battle_master_v1(uuid,text,text)` `17688ec8bceac3c06d58415de20a544b`; `materialize_player_forge_battle_master_maneuvers_v1()` `daf3fc12e7c30165dca50ca650f9d308`; `validate_existing_battle_master_maneuvers_v1()` `8bc8a467e95b07e93df833bcfc585e80`.
+- Exact source trigger pair installed together in disposable PG17:
+  1. `character_progression_materialize_battle_master_maneuvers_v1` **AFTER INSERT DEFERRABLE INITIALLY DEFERRED**;
+  2. `character_progression_validate_battle_master_maneuvers_v1` **AFTER UPDATE OF class_id,subclass_name,subclass_source,class_level,level_choices DEFERRABLE INITIALLY DEFERRED**.
+- Existing T4 source-original Fighter subclass/source identity and level-3 catalog reused. Only reduced-test Fighter level 10 progression added. The source-authentic **12 XPHB maneuver UUID/name/source records** from held I1-F are preserved unchanged, inside reduced **disposable-only** `class_feature_option_catalog` and `character_class_option_grant_instances` table shapes, RLS-on and direct browser DML revoked. They are NOT production table schema replacements.
+- Important cross-handler compatibility: original T5 Forge authority validator is also present. Its source helper validates a selected class option against the **subclass feature's source-owned metadata**, but the earlier reduced T4 feature row lacked maneuver names. The T15 local adapter populates the **existing source-identified Battle Master feature row's test-only `raw_payload`** using the names from those exact 12 XPHB option rows; **no original validator or materializer function is weakened or modified**. New signed payload includes the source-feature, count, available level, selections and exactly matching canonical class-feature-choice summary expected by unchanged original T5. Level-10 signed fixture includes a valid `wealthRoll:5` d10 result required by existing original higher-level starting-equipment rules.
+- Source census verifies both trigger DDLs and source function bodies against preserved blobs and source option UUIDs. Four additional fail-closed source/negative cases N44–N47 cover original body alteration, loss/retiming of either paired trigger, and altered maneuver identity. **56/56** source/static/negative checks PASS.
+
+## Exact genuine JWT/PostgREST + PostgreSQL 17 RED/GREEN
+
+**RED:** Signed original `create_player_character_v3` accepts a source-qualified XPHB Fighter Battle Master level 3 with no maneuver selections before original T15 source triggers are installed. The original pre-trigger character and canonical sheet/progression hashes remain unchanged after installing both triggers; **no historical backfill**.
+
+**GREEN:**
+- Genuine signed level-3 Battle Master creation materializes **three** unique original XPHB maneuver grants with `acquired_level=3,3,3`, source-qualified canonical IDs, and inert identical-nonce replay.
+- Genuine signed level-10 Battle Master creation materializes **seven** distinct XPHB maneuver grants with exact original slot levels **3,3,3,7,7,10,10**. This validates acquisition as well as the source-original slot-level helper.
+- Two maneuvers instead of three, duplicate selection and invented XPHB maneuver selection fail the **joint original T5+T15 source authority/choice graph** with full rollback of actor, nonce, grants, inventory and protected state. Where original T5 rejects an invalid or duplicate choice first, do **not** misattribute that specific error to T15's materializer.
+- For valid level 10, an ordinary `level_choices` update passes. A real PostgreSQL BEGIN/COMMIT transaction **deleting a normalized maneuver grant** and then updating progression fails by the original deferred validator; both grant deletion and progression change roll back. An attempted subclass switch retaining Battle Master grants likewise rejects and rolls back. These are local privileged stress transactions, **not evidence of client-authorized arbitrary progression edits**.
+- Two real concurrent signed same-nonce level-3 creations yield **one** character, nonce and exactly three canonical maneuver grants. Authenticated direct table INSERT remains revoked. Nonempty historical legacy `players.sheet`, GM secret, protected world-map trigger exclusion and all previous **T1–T14** signed creation/privacy/nonce/inventory/feat/spell/Khoravar tests remain intact.
+
+### Five source-code-HEAD CI receipts — all SUCCESS
+
+Verified at `0b0480ead4c5cf548d8fc3fc8cb55af3fd41c387`:
+- [Full real signed PG17/GoTrue/PostgREST #43562771308](https://github.com/bob8675309/DNDNEXT/actions/runs/43562771308).
+- [Original source integrity, negative fixtures 56/56 #43562771343](https://github.com/bob8675309/DNDNEXT/actions/runs/43562771343).
+- [Tactical original spell preservation #43562771360](https://github.com/bob8675309/DNDNEXT/actions/runs/43562771360).
+- [Class browser polish #43562771305](https://github.com/bob8675309/DNDNEXT/actions/runs/43562771305).
+- [Handoff registry #43562771357](https://github.com/bob8675309/DNDNEXT/actions/runs/43562771357).
+
+Two previous signed attempts at this slice failed while preserving original source: (1) the first C34 T15 signed payload omitted source-owned Battle Master feature metadata / count / summary required by original T5, which **correctly rejected Ambush** before T15; the local reduced feature metadata and serialized payload were corrected from the 12 preserved source IDs. (2) the signed level-10 specimen omitted an original Forge d10 higher-level starting wealth result; the fixture was corrected with valid `wealthRoll:5`. Source/static audit stayed green. No production/source handler rewrite was made.
+
+## Exact 31-trigger ledger and open release gates
+
+**24 of the original 31 live trigger DDLs co-resident in disposable PG17**: progression **14/19**, character sheets 4/4, characters 4/6, inventory 2/2. **Seven original triggers remain**: five other non-world-map progression (**Wizard finalizer, Artificer plans, Warlock acquisition and two safeguards**) plus two expressly owner-protected world-map movement/rest/camp triggers that remain excluded. Two held NPC privacy triggers, one held verified creator-seed and five original downstream grant-side hooks are separate from the original 31.
+
+This is **not** comprehensive production source parity: T14's shared Khoravar projection helper is deliberately **non-original** for Option A, the local T15 class-feature and maneuver grants table/option subsets are **reduced**, complete spell/class catalogs, all original PR source/consumer parity, after-rest access, real browser role/permission matrix, **22 untested legacy account-sheet writers**, independent restored PG17 dump + all **340 Storage objects**, migration/rollback rehearsal and owner release go/no-go remain open. Never touch protected world-map triggers without separate owner discussion. The hourly DNDNext Safe Development scheduled task remains **paused**.
+
+**Next one bounded source-dependency step:** audit original held [#353 Wizard finalizer](https://github.com/bob8675309/DNDNEXT/pull/353) `private.apply_wizard_signature_spell_ids_v1` and original sheet/account projection helpers for another legacy `UPDATE public.players.sheet` conflict with approved Option A; determine a source-custodial RED→GREEN compatibility approach before importing its handler. If insufficiently bounded, choose an independent source-safe non-map trigger (Artificer) after dependency analysis. Do not equate a disposable signed fixture with production deployment.

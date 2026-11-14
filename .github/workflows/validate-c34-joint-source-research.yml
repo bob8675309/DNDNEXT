@@ -1,0 +1,41 @@
+name: C34 exact-source integration research (no database, no deploy)
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/**'
+      - '.github/workflows/validate-c34-joint-source-research.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout current PR head (research only)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Assert exact original source blobs and block release
+        run: |
+          node scripts/integration/c34/validate_source_contract.mjs --json
+          node scripts/integration/c34/validate_joint_fixture_blobs.mjs
+          node scripts/integration/c34/verify_original_trigger_coverage.mjs
+      - name: Run static and negative regression tests
+        run: node --test scripts/integration/c34/test_source_contract.mjs
+      - name: Assert this research cannot pass as a release candidate
+        shell: bash
+        run: |
+          if node scripts/integration/c34/validate_source_contract.mjs --release > /tmp/c34-release-negative.log 2>&1; then
+            echo "ERROR: release gate unexpectedly accepted research-only SQL"
+            exit 1
+          fi
+          grep -q 'RELEASE BLOCKED' /tmp/c34-release-negative.log
+          echo "PASS: C34 release attempt rejected; no SQL executed."
