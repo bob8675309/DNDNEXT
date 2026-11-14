@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a5a776ac1d0bd97905fe2426dc8029c710b1e105` |
+| Exact source commit represented by this archive snapshot | `3531e40ba8ce066fcd1c9c1680dbf2bb630cbe71` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): capture source-original T11 helper and Astral Elf specimen fixtures for signed research |
+| Last source commit title | test(c34): T11 source-original Astral Elf species magic signed RED→GREEN and 19/31 census |
 | Files changed relative to main | 43 (37 non-docs; 6 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,9 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql`
-- `scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql`
+- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
+- `scripts/integration/c34/test_source_contract.mjs`
+- `scripts/integration/c34/verify_original_trigger_coverage.mjs`
 
 ## Research-branch change inventory versus main
 
