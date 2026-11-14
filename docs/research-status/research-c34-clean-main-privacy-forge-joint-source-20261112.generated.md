@@ -5,22 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `46a697b92d590f1169420c12589809dba8de61b0` |
+| Exact source commit represented by this archive snapshot | `4c575a14a33dadd476e34f5096bec94a44ae61de` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34 T16): signed Wizard original mirror RED / Option A GREEN, 25/31 source DDL, release HOLD |
-| Files changed relative to main | 63 (53 non-docs; 10 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | test(C34 T17): archive original EFA Artificer six-function source; stage original mirror RED and scoped Option A candidate |
+| Files changed relative to main | 66 (56 non-docs; 10 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
+- `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
+- `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
+- `scripts/integration/c34/sources/13_i1l_original_artificer_plans_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -41,11 +40,13 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
+- `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
+- `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
 - `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
 - `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
@@ -72,9 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/sources/04_private_story_stage3.sql`
 - `scripts/integration/c34/sources/05_inventory_constraint_rls.sql`
 - `scripts/integration/c34/sources/06_story_complete_nonce_i1c.sql`
-- `scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql`
-- `scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql`
-- … 13 more
+- … 16 more
 
 ## Trust and update procedure
 
