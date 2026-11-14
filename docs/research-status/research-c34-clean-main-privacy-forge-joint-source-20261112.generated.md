@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5676b3d76ee7281e374b435a51b5598dc30ba63b` |
+| Exact source commit represented by this archive snapshot | `9d6db1c078d964aa1e3bc8d552b798bd72ee8248` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 T13: negative tamper cases for Eladrin source, projection and deferred trigger |
+| Last source commit title | C34 T13: update inherited census assertions for 21/31 while retaining negative fixture behavior |
 | Files changed relative to main | 47 (41 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
