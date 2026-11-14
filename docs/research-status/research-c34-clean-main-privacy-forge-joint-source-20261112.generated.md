@@ -5,21 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `60b1b43b44e7f79fc35c5c450565569099ffe61f` |
+| Exact source commit represented by this archive snapshot | `930d96c1eb8bb70c90a0edcc44dfb5e63c4c3e4d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | feat(C34 T21 research): stage unmounted non-map source-authorized NPC Profile reader |
-| Files changed relative to main | 89 (73 non-docs; 16 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34 T21): preserve original security source comparison and exact signed current-app reader proof |
+| Files changed relative to main | 90 (73 non-docs; 17 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_joint_pg17_local_auth.mjs`
-- `scripts/integration/c34/test_source_contract.mjs`
-- `utils/c34/readNonMapNpcProfileCandidate.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -39,6 +39,7 @@
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
 - `docs/research/C34_T19_PRIVACY_29_ORIGINAL_SIGNED_2026-11-14.md`
 - `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
+- `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -72,8 +73,7 @@
 - `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
 - `scripts/integration/c34/c34_three_original_sprite_mog_levelup_triggers_pg17.sql`
 - `scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql`
-- `scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql`
-- … 39 more
+- … 40 more
 
 ## Trust and update procedure
 
