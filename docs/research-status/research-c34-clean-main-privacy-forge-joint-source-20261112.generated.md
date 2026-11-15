@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `417dd516e279524193b6a6d60f772181423b268d` |
+| Exact source commit represented by this archive snapshot | `5a0c73aec5eaf7f8eada0e3ab485512a7dfdcf62` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): label failed wallet read as unavailable instead of falsely displaying 0 gp |
+| Last source commit title | test(c34): signed buyer committed plus wallet_get 503 must show success warning and unavailable GP |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
+- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
