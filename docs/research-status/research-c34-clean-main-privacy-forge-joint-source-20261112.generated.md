@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c57839661d02d3a06b633ac2d53bbb3b8eed35e3` |
+| Exact source commit represented by this archive snapshot | `3b3c3afb6ad39f0922926eeeaed41c74e5e98372` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add exact original merchant purchase RED after successful RPC and failed wallet refresh |
+| Last source commit title | test(c34): correct literal original-handleBuy extraction regex and dynamic function newline |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
