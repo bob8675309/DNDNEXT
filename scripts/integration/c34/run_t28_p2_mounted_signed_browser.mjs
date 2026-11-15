@@ -147,6 +147,12 @@ export async function runT28P2MountedCommerceSignedBrowser({
 
   // Execute SOURCE-ORIGINAL real production buy_from_merchant SQL in scratch.
   await shop().getByRole("button",{name:/Buy for 12 gp/}).first().click();
+  // Wait for the original merchant transaction and guarded storefront refresh
+  // to complete before reading the independently mounted wallet pane.
+  await page.waitForFunction(label=>
+   document.querySelector('[data-testid="t28p2-mounted-shop"]')?.textContent
+    ?.includes("Purchased "+label),
+   stockLabel,{timeout:18000});
   // The external wallet pane is a separately mounted hook, so its live balance
   // is refreshed explicitly after the merchant's own guarded wallet refresh.
   await page.getByTestId("t28p2-wallet-refresh").click();
