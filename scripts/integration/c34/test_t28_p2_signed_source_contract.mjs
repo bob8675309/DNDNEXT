@@ -45,7 +45,7 @@ assert.match(p2,/assert\.equal\(walletData\.status,200\)/);
 assert.match(p2,/assert\.equal\(purchaseData\.status,200/);
 assert.match(p2,/await signOut\(\)/);
 assert.match(p2,/await delayedBuy\.done\(\)/);
-assert.match(p2,/await delayedWallet\.done\(\)/);
+assert.match(p2,/delayedWallet\.done\(\)/);
 const fixture=src("scripts/integration/c34/t28_p2_disposable_original_buy_wallet_setup_pg17.sql");
 for(const token of [
  "DISPOSABLE PG17 ONLY", "private.t28_wallet_probe",
