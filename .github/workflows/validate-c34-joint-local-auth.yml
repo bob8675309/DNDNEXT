@@ -265,6 +265,34 @@ jobs:
           test ! -e pages/__c34_t25_probe.jsx
           echo 'PASS C34-T25 derived CURRENT manager first signed browser acceptance; NO active route cutover'
 
+      # T26 uses the exact T25 current-manager source with a scratch-only,
+      # source-authenticated non-map Profile overlay. The actual ORIGINAL
+      # MerchantPanel and MerchantStorefrontView execute in the signed browser.
+      # Original protected shared NpcPanel and world map are NEVER modified.
+      - name: T26 real current merchant Profile-Shop-Profile and signed PostgREST races (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T26_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          command -v pdftotext
+          test ! -e pages/__c34_t26_probe.jsx
+          node --check scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs
+          node scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs
+          test ! -e pages/__c34_t26_probe.jsx
+          echo 'PASS C34-T26 real current MerchantPanel with original current Next manager, no active route cutover'
+
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
