@@ -32,7 +32,7 @@ for(const token of [
 const p2=src("scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs");
 for(const token of [
  "T28-P2-MOUNT", "T28-P2-LATE", "T28-P2-TARGET", "T28-P2-SET",
- "T28-P2-BUY:", "T28-P2-BUY-LATE", "T28-P2-ROLES",
+ "T28-P2-BUY:", "T28-P2-BUY-LATE", "T28-P2-ROLES", "T28-P2-EDITOR-INVENTORY",
  "route.fetch()", "route.fulfill({response:upstream})",
  "window.__sb.auth.signOut()", "insufficient", "wallet_set",
  "buy_from_merchant", "pg", "stockId"
@@ -75,7 +75,7 @@ for(const token of [
  "assert.ok(!fs.existsSync(p2Probe)",
  "forge_original_merchant_buy_source_pg17.sql",
  "1dbe8c24c4c718396d7256f6f7465354",
- "T28-P2-SETUP", "p2AnonBuy",
+ "T28-P2-SETUP", "p2AnonWallet", "p2AnonBuy",
  "C34_T26_BROWSER_CONFIRM", "DNDNEXT_C34_LOCAL_CONFIRM",
  "PASS T26-C03 original live manager Print Sheet generates true safe 3-page PDF",
  "PASS T26-C06 real local permission revocation"
