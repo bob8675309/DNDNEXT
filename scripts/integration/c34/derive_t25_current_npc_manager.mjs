@@ -75,17 +75,18 @@ function guardManagerLoader(state, start, end, clearMethod, mode = "roster") {
   assert.ok(segment.startsWith(start));
   segment = segment.replace(start, start +
     "\n    const requestActor = actorRef.current;" +
+    "\n    const requestEpoch = rosterEpochRef.current;" +
     "\n    if (!requestActor) { " + clearMethod + "; return; }");
   if (mode === "roster" || mode === "map-icons") {
     const marker = "    const { data, error } = res;";
     assert.equal(segment.split(marker).length - 1, 1, "T25 read response anchor drift " + start);
     segment = segment.replace(marker, marker +
-      "\n    if (actorRef.current !== requestActor) return;");
+      "\n    if (actorRef.current !== requestActor || rosterEpochRef.current !== requestEpoch) return;");
   } else {
     const marker = "    if (!res.error)";
     assert.equal(segment.split(marker).length - 1, 1, "T25 list response anchor drift " + start);
     segment = segment.replace(marker,
-      "    if (actorRef.current !== requestActor) return;\n" + marker);
+      "    if (actorRef.current !== requestActor || rosterEpochRef.current !== requestEpoch) return;\n" + marker);
   }
   state.text = state.text.slice(0, first) + segment + state.text.slice(last);
   state.edits.push("actor-bound and immediately cleared read " + start.trim());
@@ -105,7 +106,7 @@ export function deriveT25CurrentManager(source) {
     '  const [charPerm, setCharPerm] = useState(null);\n' +
     '  const [selectedPrivate, setSelectedPrivate] = useState(null);\n' +
     '  const [permissionEpoch, setPermissionEpoch] = useState(0);\n' +
-    '  const actorRef = useRef(null);',
+    '  const actorRef = useRef(null);\n  const rosterEpochRef = useRef(0);',
     "add selected-actor private-state boundary");
   replaceOnce(state,
     '  const [sheetCacheReady, setSheetCacheReady] = useState(false);',
@@ -178,7 +179,7 @@ export function deriveT25CurrentManager(source) {
       "      loadNpcs(), loadMerchants(), loadMerchantProfiles(),",
       "      loadPlayers(), loadLocations(), loadMapIcons()",
       "    ]);",
-      "  }, [userId,loadNpcs,loadMerchants,loadMerchantProfiles,loadPlayers,loadLocations,loadMapIcons]);",
+      "  }, [userId,permissionEpoch,loadNpcs,loadMerchants,loadMerchantProfiles,loadPlayers,loadLocations,loadMapIcons]);",
       "",
       "  /* ------------------- roster merge ------------------- */"
     ].join("\n"),
@@ -210,6 +211,7 @@ export function deriveT25CurrentManager(source) {
     '      equipmentRequestRef.current += 1;',
     '      notesRequestRef.current += 1;',
     '      setSelectedPrivate(null); setCharPerm(null); setIsAdmin(false);',
+    '      rosterEpochRef.current += 1;',
     '      setNpcs([]); setMerchants([]); setMerchantProfiles(new Map());',
     '      setPlayers([]); setLocations([]); setMapIcons([]);',
 
@@ -235,6 +237,7 @@ export function deriveT25CurrentManager(source) {
     '      actorRef.current = actor;',
     '      setUserId(actor); setIsAdmin(false); setCharPerm(null);',
     '      setSelectedPrivate(null); sheetCacheRef.current.clear();',
+    '      rosterEpochRef.current += 1;',
     '      setNpcs([]); setMerchants([]); setMerchantProfiles(new Map());',
     '      setPlayers([]); setLocations([]); setMapIcons([]);',
 
@@ -281,6 +284,11 @@ export function deriveT25CurrentManager(source) {
     '',
     '  const refreshManagerPermissions = () => {',
     '    setSelectedPrivate(null); setCharPerm(null);',
+    '    rosterEpochRef.current += 1;',
+    '    setNpcs([]); setMerchants([]); setMerchantProfiles(new Map());',
+    '    setPlayers([]); setLocations([]); setMapIcons([]);',
+    '    setIsAdmin(false);',
+    '    void loadAuth();',
     '    sheetCacheRef.current.clear(); sheetRequestRef.current += 1;',
     '    notesRequestRef.current += 1; equipmentRequestRef.current += 1;',
     '    setSheet(null); setSheetDraft({}); setSheetEditMode(false);',
