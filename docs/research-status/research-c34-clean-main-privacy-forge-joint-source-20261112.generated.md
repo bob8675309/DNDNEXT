@@ -5,28 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c644e2ad3a968da226988f30a01b39e5379893f9` |
+| Exact source commit represented by this archive snapshot | `ec85796daec8712291d71e7329e2cfe80837c87e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T28 P1 real signed persistent nonmap stock+wallet late-response race |
+| Last source commit title | fix(c34): remove accidental scratch SQL fixture source duplication caught by T28 CI |
 | Files changed relative to main | 126 (101 non-docs; 25 docs) |
-| Last source commit | 10 files (7 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `.github/workflows/validate-c34-joint-source-research.yml`
-- `components/c34/T28NonMapPersistentResearchProbe.jsx`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
-- `scripts/integration/c34/derive_t28_persistent_probe.mjs`
-- `scripts/integration/c34/run_t28_persistent_signed_browser.mjs`
 - `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
-- `scripts/integration/c34/test_t28_persistent_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
