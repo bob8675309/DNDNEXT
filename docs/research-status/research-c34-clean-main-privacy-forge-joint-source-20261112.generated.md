@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b4938a919591089533b1a88f789fe390ff0f5021` |
+| Exact source commit represented by this archive snapshot | `5bb5d339cb85fb4de47706a7227cce1afe9d573b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): correct T25 source gate regex syntax to explicit literal checks |
+| Last source commit title | fix(c34): exact current NPC printProfile matcher before stripping GM secret |
 | Files changed relative to main | 104 (84 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
