@@ -57,6 +57,13 @@ jobs:
           node --check utils/c34/actorRequestEpochCandidate.mjs
           node --check scripts/integration/c34/test_t28_actor_epoch_candidate.mjs
           node --test scripts/integration/c34/test_t28_actor_epoch_candidate.mjs
+      - name: T28-P1 original persistent signed shop-wallet race source/negative contracts
+        run: |
+          node --check scripts/integration/c34/derive_t28_persistent_probe.mjs
+          node --check scripts/integration/c34/run_t28_persistent_signed_browser.mjs
+          node --check scripts/integration/c34/test_t28_persistent_source_contract.mjs
+          node --check scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs
+          node --test scripts/integration/c34/test_t28_persistent_source_contract.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
