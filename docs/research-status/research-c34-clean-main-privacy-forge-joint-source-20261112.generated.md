@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `73dbcc73149a112b7ed10a060ed1befa86931bb4` |
+| Exact source commit represented by this archive snapshot | `143d193226a428ec76f60aeb6dce026412417880` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record source-derived merchant/hook variants and untested mutation/Strict Mode limitations |
+| Last source commit title | docs(c34): append guarded original-source P2 variants and explicitly outstanding signed tests |
 | Files changed relative to main | 132 (106 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
