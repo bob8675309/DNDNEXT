@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4ac3abea480efa0b4d90a5c17d0b0d949999e1c5` |
+| Exact source commit represented by this archive snapshot | `a4d5cd9bd6f27d07fddb9ef16c4d3539ba38cc25` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T27 exact shared consumer rollback matrix and signed late stock logout |
+| Last source commit title | ci(c34): run T27 source and signed local stock race on owner research pushes |
 | Files changed relative to main | 118 (95 non-docs; 23 docs) |
-| Last source commit | 7 files (4 non-docs; 3 authored docs) |
+| Last source commit | 4 files (2 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -21,9 +21,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
-- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
-- `scripts/integration/c34/test_t27_consumer_source.mjs`
 
 ## Research-branch change inventory versus main
 
