@@ -68,7 +68,8 @@ assert.match(t28,/await route\.fulfill\(\{response:upstream\}\)/);
 assert.match(t28,/assert\.equal\(stockData\.status,200\)/);
 assert.match(t28,/assert\.equal\(walletData\.status,200\)/);
 assert.match(t28,/await logout\(\)/);
-assert.doesNotMatch(t28,/service_role|NEXT_PUBLIC_.*SERVICE|https:\/\//);
+// Denying a service_role URL is safe and required; forbid an actual secret key or hosted endpoint instead.
+assert.doesNotMatch(t28,/NEXT_PUBLIC_.*SERVICE|https:\/\/|service_role\s*:\s*["\x27]/);
 
 for(const p of [
  "pages/npcs.js","pages/map.js","pages/town/[id].js","pages/inventory.js",
