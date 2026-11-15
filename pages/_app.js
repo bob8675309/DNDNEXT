@@ -53,12 +53,14 @@ import "../styles/character-sheet-actions.css";
 import "../styles/character-class-workspace.css";
 import "../styles/profile-catalogue-workspace.css";
 import "../styles/character-forge-subclass-tarot-layout.css";
+import "../styles/npc-profile-centered.css";
 import AppNavbar from "../components/AppNavbar";
 import SiteVisitTracker from "../components/SiteVisitTracker";
 import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import CharacterSheetSpellDetailsBridge from "../components/CharacterSheetSpellDetailsBridge";
 import PlayerCharacterProfilePanel from "../components/PlayerCharacterProfilePanel";
+import GlobalNpcProfileOverlay from "../components/GlobalNpcProfileOverlay";
 import ProfilePanelDragController from "../components/ProfilePanelDragController";
 import TacticalCharacterResourceBridge from "../components/TacticalCharacterResourceBridge";
 import TacticalCoreActionGuide from "../components/TacticalCoreActionGuide";
@@ -87,6 +89,7 @@ export default function App({ Component, pageProps }) {
       <TacticalCoreActionGuide />
       <TacticalAttackResultPanel />
       <PlayerCharacterProfilePanel />
+      <GlobalNpcProfileOverlay />
       <GlobalRuleReferenceDock />
       <AdminBuildBadge />
     </>
