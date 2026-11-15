@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7611f55c888af12622e0519cd5139264459a962b` |
+| Exact source commit represented by this archive snapshot | `7705842f7eb99b0fce9ced940276ab91e749fa9b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T26 exact-original merchant shop, actor isolation and protected map source negatives |
+| Last source commit title | ci(c34): run T26 real merchant source compatibility and protected-map negatives |
 | Files changed relative to main | 109 (88 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t26_merchant_shop_source.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
