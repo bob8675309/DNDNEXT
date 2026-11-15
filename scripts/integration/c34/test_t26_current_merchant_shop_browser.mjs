@@ -537,6 +537,16 @@ try {
  const p2Result=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-q","-f",p2Fixture],
   {cwd:root,env,encoding:"utf8",timeout:25000});
  assert.equal(p2Result.status,0,"T28-P2 local wallet/role setup failed "+p2Result.stderr?.slice(-1000));
+ // Earlier source-exact equipment materializer already created user_id-only
+ // player_wallets. Fail here if disposable P2 did not add the buyer columns,
+ // instead of attributing a later missing-column error to the original RPC.
+ const walletColumns=sql("SELECT count(*) FROM information_schema.columns "+
+  "WHERE table_schema='public' AND table_name='player_wallets' "+
+  "AND ((column_name='gp' AND data_type='numeric') OR "+
+  "(column_name='updated_at' AND data_type='timestamp with time zone'))");
+ assert.equal(walletColumns,"2",
+  "T28-P2 must upgrade preexisting scratch player_wallets with numeric gp and timestamptz updated_at");
+ console.log("PASS T28-P2-WALLET-SCHEMA: source-original user_id-only materializer upgraded locally for original purchase");
  sql("INSERT INTO public.player_wallets(user_id,gp) VALUES("+
   q(users.GM.id)+",79),("+q(users.OUTSIDER.id)+",0)");
  const sourceOriginalBuy="scripts/fixtures/forge_original_merchant_buy_source_pg17.sql";
