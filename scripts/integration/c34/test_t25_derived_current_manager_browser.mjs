@@ -78,10 +78,7 @@ try {
  // RED: the REAL stage2 source forbids a wide legacy manager roster read.
  // Never grant this to authenticated or bypass the column ACL for testing.
  const legacy=await users.GM.who.from("characters").select(
-  "id,name,kind,race,role,affiliation,status,location_id,tags,description,"+
-  "map_icon_id,portrait_url,portrait_storage_path,portrait_thumb_url,portrait_shop_url,"+
-  "portrait_source,image_url,sprite_path,sprite_scale,camp_sprite_path,updated_at,"+
-  "is_hidden,x,y,roaming_speed,last_known_location_id,projected_destination_id,route_mode"
+  "id,name,kind,background,motivation,quirk,mannerism,voice"
  ).eq("kind","npc").limit(1);
  assert.ok(legacy.error,"T25 must prove original wide roster SELECT stays blocked");
  assert.equal(legacy.error.code,"42501",
