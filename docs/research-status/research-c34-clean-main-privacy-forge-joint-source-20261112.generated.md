@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d6164373c0fe0028fc6c9872fbd72e7c6af621fc` |
+| Exact source commit represented by this archive snapshot | `8b347ef34210d65d2962b7ef9f9fcd5d11586aeb` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): protect legacy town/default and world-map separation during signed nonmap browser suite |
+| Last source commit title | test(c34): prove town preview consists of exactly two reversible edits to original town component |
 | Files changed relative to main | 140 (114 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
 
 ## Research-branch change inventory versus main
 
