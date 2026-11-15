@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f26568b6c69b88da296d12e0400cecd99f9e326d` |
+| Exact source commit represented by this archive snapshot | `376097492a8cd227aa4ba44781dbd8fb8d35f688` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append wallet-set return isolation fix, signed readiness and pending P2 exact-head acceptance |
+| Last source commit title | fix(c34): hide previous selected wallet GP synchronously during React target prop transition |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `utils/c34/useWalletT28P2Research.js`
 
 ## Research-branch change inventory versus main
 
