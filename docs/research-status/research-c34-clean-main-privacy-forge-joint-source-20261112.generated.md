@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fe3c6e26da5bce8a58c33f9e286e280d428374e6` |
+| Exact source commit represented by this archive snapshot | `cbfee11e2c7cbf9b8b6cb390f92a6e834d4a8cf0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): enforce exact original-buy source, P1-before-P2 signed suite and scratch-only cleanup |
+| Last source commit title | test(c34): match P2 awaited Promise.all wallet delivery without false-negative static assertion |
 | Files changed relative to main | 137 (111 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
