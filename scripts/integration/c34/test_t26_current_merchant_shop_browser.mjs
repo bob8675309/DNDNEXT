@@ -561,6 +561,8 @@ try {
  }
  assert.ifError(p2GmWallet.error);
  assert.equal(Number(p2GmWallet.data),79);
+ const p2AnonWallet=await client().rpc("wallet_get",{p_user:null});
+ assert.ok(p2AnonWallet.error,"T28-P2 wallet_get must still deny anonymous users");
  const p2AnonBuy=await client().rpc("buy_from_merchant",{
   p_merchant_id:merchant,p_stock_uuid:stockId,p_qty:1
  });
