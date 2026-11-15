@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f752e78ba3f4e063b1dbe664e326e6f7d0ccbe23` |
+| Exact source commit represented by this archive snapshot | `02045b0e25a31736f6ecfc38752f2f7408df5b5f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): prove P2 wallet PostgREST reload via GM authorized cross-target read |
+| Last source commit title | docs(c34): describe P2 source-original purchase signed harness and exact unaccepted CI gate |
 | Files changed relative to main | 137 (111 non-docs; 26 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
