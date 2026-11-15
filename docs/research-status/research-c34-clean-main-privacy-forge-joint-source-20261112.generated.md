@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `11339ee3fbc71a03328d03ce7abbd2d63525322c` |
+| Exact source commit represented by this archive snapshot | `9990b6be66a25a886767380b3040b58643815be1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): verify opt-in guarded town merchant branch with byte-locked world map and legacy default |
+| Last source commit title | ci(c34): validate opt-in town storefront with original world map and default path pinned |
 | Files changed relative to main | 140 (114 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
