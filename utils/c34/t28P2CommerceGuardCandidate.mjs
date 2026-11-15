@@ -103,7 +103,13 @@ export function createT28P2CommerceGuardCandidate({
       let current = false;
       scope.settle(ticket, () => {
         if (seq === walletReadSeq && targetAtEpoch === targetEpoch &&
-            targetAtStart === targetUserId) { onError(error); current = true; }
+            targetAtStart === targetUserId) {
+          // An authoritative current-wallet read failed. The previously
+          // displayed GP must not look current after that failure.
+          onWallet(null);
+          onError(error);
+          current = true;
+        }
       });
       return {committed:false,error,current};
     }
