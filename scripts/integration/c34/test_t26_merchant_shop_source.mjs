@@ -18,6 +18,9 @@ test("T26-S01 all original source blobs pinned, no mounted scratch path",()=>{
  assert.match(output,/CharacterSheetPanel/);
  assert.match(output,/storeHref=/);
  assert.match(output,/onOpenProfile=/);
+ assert.match(output,/data-testid="t26-open-public-profile"/);
+ assert.match(output,/userId && selectedPrivateResult\?\.profile/);
+ assert.match(output,/setProfilePanelOpen\(false\);/);
  assert.match(output,/onOpenStore=/);
  assert.match(output,/focusRaw/);
  assert.doesNotMatch(output,/import NpcPanel from "\.\.\/components\/character\/CharacterInteractionPanel"/);
