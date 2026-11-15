@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4a3d6d079d23d8d81af5d9db9b3cbd89ecb4a0fa` |
+| Exact source commit represented by this archive snapshot | `f3ed0f9fa00c849e8e237afe6d9ad0a11d860f9e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): replace manual owner-only CI blocker with automatic isolated branch workflow |
+| Last source commit title | docs(c34): log simplified automatic branch CI, no owner action or live security changes |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
