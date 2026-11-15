@@ -20,7 +20,11 @@ export default function useWalletT28P2Research(userId) {
         return Number.isFinite(data) ? Number(data) : 0;
       },
       onStock: () => {},
-      onWallet: value => { lastCommittedGp.current = value; setGp(value); },
+      onWallet: value => {
+        lastCommittedGp.current = value;
+        setGp(value);
+        if (value !== null) setErr("");
+      },
       onError: error => setErr(String(error?.message || "Failed to load wallet."))
     });
   if (!guardRef.current) guardRef.current = createGuard();
