@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `53c31cf487a73b1c13a9d885e62ec4ffc7671800` |
+| Exact source commit represented by this archive snapshot | `9b013b76df7ded71c7b5a4724e903a57bfc73445` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-lock synchronous wallet and merchant render-scope privacy, R04 target prop regression |
-| Files changed relative to main | 138 (112 non-docs; 26 docs) |
+| Last source commit title | ci(c34): add inert owner-edit marker to trigger held branch signed local test without main workflow |
+| Files changed relative to main | 139 (113 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`
+- `scripts/integration/c34/T28_P2_OWNER_CI_TRIGGER.txt`
 
 ## Research-branch change inventory versus main
 
@@ -65,13 +65,13 @@
 - `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
+- `scripts/integration/c34/T28_P2_OWNER_CI_TRIGGER.txt`
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
-- `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 88 more
+- … 89 more
 
 ## Trust and update procedure
 
