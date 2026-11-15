@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4dcef4a14478174af6cf308f69dd7cbc9b17e462` |
+| Exact source commit represented by this archive snapshot | `37e27405ef9090a2b95e559e33d59f6e8baf7cb2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): T26 genuine signed current Next merchant storefront plus actor/selection race suite |
+| Last source commit title | research(c34): T26 allow public Profile entry without privileged sheet in disposable manager |
 | Files changed relative to main | 110 (89 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/derive_t26_current_merchant_shop.mjs`
 
 ## Research-branch change inventory versus main
 
