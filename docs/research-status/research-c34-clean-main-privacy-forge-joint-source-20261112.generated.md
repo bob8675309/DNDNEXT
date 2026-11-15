@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c7d847dc9efb680cca630a10a65e01d1e5c898da` |
+| Exact source commit represented by this archive snapshot | `e4f0a83695268f2d286850b5fed1aa66e6a3d10e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T25 disposable signed current-manager Next browser, merchant and true PDF smoke |
+| Last source commit title | ci(c34): T25 run signed disposable current Next manager and true PDF smoke after T24 |
 | Files changed relative to main | 105 (85 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
