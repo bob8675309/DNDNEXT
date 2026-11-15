@@ -146,8 +146,18 @@ export async function runT28P2MountedCommerceSignedBrowser({
   assert.equal(inspect("SELECT gp FROM public.player_wallets WHERE user_id="+q(users.GM.id)),"66");
   console.log("PASS T28-P2-SET: synthetic local Admin wallet_set 66, guarded real signed refresh, database reconciled");
 
+  // Exercise TWO genuine DOM Buy clicks in one browser task before React's
+  // busyId render can be relied on. The synchronous purchase ref must send
+  // ONE source-original RPC and debit exactly once.
   // Execute SOURCE-ORIGINAL real production buy_from_merchant SQL in scratch.
-  await shop().getByRole("button",{name:/Buy for 12 gp/}).first().click();
+  await page.evaluate(() => {
+    const root = document.querySelector('[data-testid="t28p2-mounted-shop"]');
+    const button = [...(root?.querySelectorAll("button") || [])]
+      .find(node => (node.textContent || "").includes("Buy for 12 gp"));
+    if (!button || button.disabled) throw Error("Buy for 12 gp unavailable before double-click");
+    button.click();
+    button.click();
+  });
   // Wait for the original merchant transaction and guarded storefront refresh
   // to complete before reading the independently mounted wallet pane.
   await page.waitForFunction(label=>
@@ -162,6 +172,7 @@ export async function runT28P2MountedCommerceSignedBrowser({
   assert.equal(inspect("SELECT qty FROM public.character_stock WHERE id="+q(stockId)),"2");
   assert.equal(inspect("SELECT count(*) FROM public.inventory_items WHERE user_id="+q(users.GM.id)),"1");
   console.log("PASS T28-P2-BUY: source-original buy_from_merchant atomic debit, stock qty and inventory row 66→54");
+  console.log("PASS T28-P2-BUY-DOUBLE: two immediate DOM Buy clicks yield exactly one 12-GP debit and one inventory row");
 
   // A second genuinely accepted buy is held AFTER the server commits but
   // BEFORE the original-source-derived MerchantPanel receives success.
