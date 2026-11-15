@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0ef5b1637da8ce038a06f60028803c845c228c21` |
+| Exact source commit represented by this archive snapshot | `f54cd75e2f0c3e5a83960728a0b536800d574b2a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): set T24 signed non-map manager handoff and next bounded task |
+| Last source commit title | docs(c34): append immutable T24 signed manager/PDF CI receipt |
 | Files changed relative to main | 102 (82 non-docs; 20 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
