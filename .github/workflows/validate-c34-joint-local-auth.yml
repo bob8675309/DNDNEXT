@@ -53,6 +53,8 @@ jobs:
           node --check scripts/integration/c34/test_joint_pg17_local_auth.mjs
           node --test scripts/integration/c34/test_source_contract.mjs
           node --test scripts/integration/c34/test_t23_nonmap_npc_manager_candidate.mjs
+          node --check scripts/integration/c34/test_t24_current_next_manager_browser.mjs
+          node --test scripts/integration/c34/test_t24_source_contract.mjs
       - name: Install lockfile-pinned application dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Prepare disposable Supabase PostgreSQL 17 and GoTrue project
@@ -208,6 +210,34 @@ jobs:
           node scripts/integration/c34/test_t22_current_next_browser.mjs
           test ! -e pages/__c34_t22_probe.jsx
           echo 'PASS C34-T22 CURRENT-NEXT: real signed local original privacy DB and current-head isolated Bootstrap NPC Profile UI, no map/hosted app'
+
+      # T24 runs on the same disposable, signed original stage1–3 PG17,
+      # after T22. It uses a second temporary localhost-only current Next
+      # route, unchanged _app and the ORIGINAL current three-page PDF renderer.
+      # It is not the mounted NPC manager; no production route is committed.
+      - name: T24 genuine current Next non-map NPC manager roles, revocation, race and true PDF (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T24_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          command -v pdftotext
+          test ! -e pages/__c34_t24_probe.jsx
+          node scripts/integration/c34/test_t24_current_next_manager_browser.mjs
+          test ! -e pages/__c34_t24_probe.jsx
+          echo 'PASS C34-T24 CURRENT-NEXT: local real signed manager, revocation, race and original 3-page PDF, no active route'
+
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
