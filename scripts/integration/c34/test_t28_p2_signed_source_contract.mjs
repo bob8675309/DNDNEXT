@@ -90,7 +90,10 @@ for(const token of [
 const workflow=src(".github/workflows/validate-c34-joint-local-auth.yml");
 assert.match(workflow,/C34_T26_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY/);
 assert.match(workflow,/test_t26_current_merchant_shop_browser\.mjs/);
-assert.match(workflow,/github\.actor == 'bob8675309'/);
+// C34 executes only disposable local PG17 and now runs on ordinary pushes to
+// the held research branch. Never require a manual owner nonce to exercise CI.
+assert.doesNotMatch(workflow,/github\.actor == 'bob8675309'/);
+assert.match(workflow,/refs\/heads\/research\/c34-clean-main-privacy-forge-joint-source-20261112/);
 assert.match(workflow,/push:/);
 assert.match(workflow,/'scripts\/integration\/c34\/\*\*'/);
 const trigger=src("scripts/integration/c34/T28_P2_OWNER_CI_TRIGGER.txt");
