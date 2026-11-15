@@ -18,7 +18,7 @@ const short=(v)=>String(v??"");
 const validId=(v)=>typeof v==="string"&&/^[0-9a-f-]{36}$/i.test(v);
 
 export default function NonMapNpcManagerResearchShell({
-  client, characterId, onAuthorizedPrint
+  client, characterId, onAuthorizedPrint, onClearSensitive
 }) {
   const [actor,setActor]=useState(null);
   const [epoch,setEpoch]=useState(0);
@@ -30,8 +30,12 @@ export default function NonMapNpcManagerResearchShell({
   const generation=useRef(0);
   const actorRef=useRef(null);
   const selectedRef=useRef(characterId||"");
+  const onClearRef=useRef(onClearSensitive);
+  onClearRef.current=onClearSensitive;
 
   const clear=useCallback(()=>{
+    // Invalidate previously generated PDF bytes on selection, auth and role refresh.
+    if(typeof onClearRef.current==="function")onClearRef.current();
     generation.current+=1;
     setState(BLANK());
     setBusy(false);
