@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `30789987aa8efabf5d3069f92399ac8b07a8784d` |
+| Exact source commit represented by this archive snapshot | `b90e4e22596e613811ac0ed26871fcd7ac4d182c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append render-boundary privacy and owner-only Actions trigger handoff |
+| Last source commit title | ci(c34): allow research-branch pushes to run disposable signed local PG17 suite without owner nonce |
 | Files changed relative to main | 139 (113 non-docs; 26 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
