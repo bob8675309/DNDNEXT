@@ -100,7 +100,7 @@ for(const token of [
  "assert.ok(!fs.existsSync(p2Probe)",
  "forge_original_merchant_buy_source_pg17.sql",
  "1dbe8c24c4c718396d7256f6f7465354",
- "T28-P2-SETUP", "p2BuyerReady", "Stock not found", "p2WalletSetReady", "p2AnonWalletSet", "p2AnonWallet", "p2AnonBuy",
+ "T28-P2-WALLET-SCHEMA", "T28-P2-SETUP", "p2BuyerReady", "Stock not found", "p2WalletSetReady", "p2AnonWalletSet", "p2AnonWallet", "p2AnonBuy",
  "C34_T26_BROWSER_CONFIRM", "DNDNEXT_C34_LOCAL_CONFIRM",
  "PASS T26-C03 original live manager Print Sheet generates true safe 3-page PDF",
  "PASS T26-C06 real local permission revocation"
