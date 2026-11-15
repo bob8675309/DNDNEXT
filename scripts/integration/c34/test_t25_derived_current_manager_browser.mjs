@@ -192,7 +192,22 @@ try {
   }));
   throw error;
  }
+ await page.locator('[data-testid="t25-selected-character"]').waitFor({state:"visible",timeout:30000});
+ assert.equal(await page.getByTestId("t25-selected-character").getAttribute("data-character-id"),npc,
+  "Focus route must select requested NPC ID, never whichever roster completes first");
+ try {
  await page.getByText("T25 APPROVED PUBLIC DESCRIPTION").first().waitFor({timeout:30000});
+ } catch(error){
+  const state=await page.evaluate(async(id)=>{
+   const auth=await window.__sb.auth.getUser();
+   const profile=await window.__sb.rpc("get_npc_profile_visible_v1",{p_character_id:id});
+   return {userId:auth.data?.user?.id||null,status:profile.error?.code||"ok",
+    profileId:profile.data?.id||null,description:profile.data?.description||null,
+    visibleText:document.body.innerText.slice(0,3000)};
+  },npc);
+  console.error("T25-DIAG-C02-DESCRIPTION",JSON.stringify({state,pageErrors:errors}));
+  throw error;
+ }
  assert.ok((await body()).includes("T25 Probe NPC"));
  try {
   await page.getByText("T25 PUBLIC BACKGROUND",{exact:true}).first().waitFor({timeout:30000});
