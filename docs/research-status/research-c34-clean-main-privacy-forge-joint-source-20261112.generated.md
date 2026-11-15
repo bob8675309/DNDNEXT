@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8ff3a42b2d892a41cad25def0637cdab73f1622c` |
+| Exact source commit represented by this archive snapshot | `be4669150d5e5bd4ef7dfba007599d801dd91d31` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): add nonmap T28-P2 scoped stock and selected-wallet target guard |
-| Files changed relative to main | 127 (102 non-docs; 25 docs) |
+| Last source commit title | test(c34): T28-P2 seven nonmap merchant and selected-wallet stale response regressions |
+| Files changed relative to main | 128 (103 non-docs; 25 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/t28P2CommerceGuardCandidate.mjs`
+- `scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
 - `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
-- … 77 more
+- … 78 more
 
 ## Trust and update procedure
 
