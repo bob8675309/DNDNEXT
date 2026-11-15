@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `992f3f6dd7cdd4e7d1774e2162e1e08c5b7ee63f` |
+| Exact source commit represented by this archive snapshot | `0b6d9df500cbf2c56a6f0df9215da0a1af498388` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): advance active T26 signed original shop and actor race green; next T27 source consumer audit |
+| Last source commit title | docs(c34): append exact signed T26 full shop and actor/race receipt with T27 next task |
 | Files changed relative to main | 111 (89 non-docs; 22 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
