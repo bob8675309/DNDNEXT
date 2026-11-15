@@ -28,7 +28,19 @@ export function deriveT26CurrentMerchantShop() {
  const before='import NpcPanel from "../components/character/CharacterInteractionPanel";';
  const after='import NpcPanel from "../components/c34/NonMapMerchantShopResearchPanel";';
  assert.equal(manager.split(before).length-1,1,"T26 exact overlay import source drift");
- const output=manager.replace(before,after).replace(
+ const sourceOnlyProfileButton = '<div className="h5 mb-1">{selected.name}</div>';
+ assert.equal(manager.split(sourceOnlyProfileButton).length-1,1,
+  "T26 selected merchant header source drift");
+ const allowlistedProfileButton = sourceOnlyProfileButton + `
+                  {userId && selectedPrivateResult?.profile ? (
+                    <button type="button" className="btn btn-sm btn-outline-info"
+                      data-testid="t26-open-public-profile"
+                      onClick={() => { setProfilePanelInitialView("profile"); setProfilePanelOpen(true); }}>
+                      Open Profile
+                    </button>
+                  ) : null}`;
+ const output=manager.replace(before,after)
+  .replace(sourceOnlyProfileButton,allowlistedProfileButton).replace(
   "// C34 T25 generated from current",
   "// C34 T26 SCRATCH SHOP WRAPPER (real original MerchantPanel): derived from current"
  );
