@@ -185,7 +185,26 @@ try {
  }
  await page.getByText("T25 APPROVED PUBLIC DESCRIPTION").first().waitFor({timeout:30000});
  assert.ok((await body()).includes("T25 Probe NPC"));
- assert.ok((await body()).includes("T25 PUBLIC BACKGROUND"));
+ try {
+  await page.getByText("T25 PUBLIC BACKGROUND",{exact:true}).first().waitFor({timeout:30000});
+ } catch(error){
+  const probe=await page.evaluate(async(id)=>{
+   const user=await window.__sb.auth.getUser();
+   const profile=await window.__sb.rpc("get_npc_profile_visible_v1",{p_character_id:id});
+   const gm=await window.__sb.rpc("get_npc_dossier_admin_v1",{p_character_id:id});
+   return {
+    actorPresent:!!user?.data?.user,
+    profileStatus:profile.error?.code||"ok",
+    profileId:profile.data?.id||null,
+    profileBackground:profile.data?.lore?.background||null,
+    gmStatus:gm.error?.code||"ok",
+    gmId:gm.data?.id||null,
+    visibleText:document.body.innerText.slice(0,3500),
+   };
+  },npc);
+  console.error("T25-DIAG-BACKGROUND",JSON.stringify({probe,pageErrors:errors}));
+  throw error;
+ }
  console.log("PASS T25-C02 original deep-link and GM selected Profile load without page-wide sheet cache");
  await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000});
  await page.getByRole("button",{name:"Print Sheet"}).click();
