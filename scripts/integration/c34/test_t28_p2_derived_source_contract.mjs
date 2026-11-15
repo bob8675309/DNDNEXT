@@ -80,4 +80,4 @@ assert.doesNotMatch(wallet,/setGp\(Number\.isFinite\(data\).*\)/,
  "source-derived wallet may not reintroduce unchecked original response commit");
 assert.ok(originalMerchant.includes('p_merchant_id: merchant.id'));
 assert.ok(originalWallet.includes('p_user: userId || null'));
-console.log("PASS T28-P2-SOURCE: original merchant/wallet blobs pinned; isolated source-derived guarded candidate; no active product/map imports; purchase preserved but UNTESTED");
+console.log("PASS T28-P2-SOURCE: original merchant/wallet blobs pinned; buyer handler original RED / guarded GREEN unit; no active product/map imports; signed buyer transaction UNVERIFIED");
