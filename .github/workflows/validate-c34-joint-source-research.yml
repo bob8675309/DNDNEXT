@@ -5,6 +5,12 @@ on:
     paths:
       - 'scripts/integration/c34/**'
       - '.github/workflows/validate-c34-joint-source-research.yml'
+  push:
+    branches:
+      - 'research/c34-clean-main-privacy-forge-joint-source-20261112'
+    paths:
+      - 'scripts/integration/c34/**'
+      - '.github/workflows/validate-c34-joint-source-research.yml'
   workflow_dispatch:
 
 permissions:

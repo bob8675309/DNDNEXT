@@ -15,6 +15,12 @@ on:
       - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
       - 'sql/candidates/20261109_player_story_complete_intent_i1c_research.sql'
       - '.github/workflows/validate-c34-joint-local-auth.yml'
+  push:
+    branches:
+      - 'research/c34-clean-main-privacy-forge-joint-source-20261112'
+    paths:
+      - 'scripts/integration/c34/**'
+      - '.github/workflows/validate-c34-joint-local-auth.yml'
   workflow_dispatch:
 
 permissions:
@@ -22,7 +28,7 @@ permissions:
 
 jobs:
   signed-real-original-research:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112' && github.actor == 'bob8675309')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
