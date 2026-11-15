@@ -24,3 +24,13 @@ The original `utils/useWallet.js` also takes an optional `userId`: an authorized
 4. Preserve original T1–T28-P1 regression and three-page official PDF, verify temporary scratch route cleanup, and record exact executable SHA/workflow outcomes before any owner-reviewed main-merge plan.
 
 **Hold:** original `components/MerchantPanel.js`, `utils/useWallet.js`, protected `components/MapPageClient.js`, active map/town/manager routes, hosted Supabase, wallet balance, and merchant stock are unchanged by this increment. #379 remains open. Encrypted independent database+340 Storage restore, full original Forge/legacy writer cutover and production role/browser gates remain separate.
+
+## Follow-on P2 candidate: original component-shaped isolation (source-only, NOT signed)
+
+The second research increment additionally introduces:
+
+- `utils/c34/useWalletT28P2Research.js`: an **unmounted** React hook retaining original `useWallet(userId)` return fields and the actual `wallet_get`/`wallet_set` call shapes; auth-event cancellation, selected `userId` ticketing and stale `set()` response rejection added. This is research adaptation, **not an exact original Git blob**, unlike the untouched actual production hook.
+- `components/c34/MerchantPanelT28P2Research.jsx`: an **unmounted** complete source-derived copy of the original MerchantPanel (original business/admin controls retained), with relocated imports, guarded original `character_stock` reads and checks preventing old signed purchase responses from setting UI notice after actor/merchant changes. It does not cancel a server-accepted purchase and must NOT be interpreted as a transaction atomicity fix. No active map, town, NPC panel or inventory route imports this copy.
+- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`: offline static original blob pins, candidate source expectations, protected route non-import and no checked-in temporary P2 route. The original C34 Node source workflow includes this step, but **a static marker test is not JSX compilation, current browser acceptance or signed RPC proof**.
+
+**New risks still open:** full merchant admin mutation operations (restock/dump/route/saved settings) have not received the same asynchronous epoch audit; role changes without an Auth event require explicit permission invalidation; React Strict Mode lifecycle/mount tests and complete GM/outsider/admin, buyer purchase/GP and wallet-set source-real tests are mandatory before any production import. The original source's default `presentation="map"` is retained in the research copy for compatibility; it is NEVER mounted on the world map. Existing original C34 T28-P1 real signed lifecycle remains the valid earlier tier.
