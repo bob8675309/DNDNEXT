@@ -15,7 +15,7 @@ export const ORIGINAL_COMMERCE=Object.freeze({
  "components/MapPageClient.js":"61f8738da2ca3d8635b5a413bfdc18c094228a0a"
 });
 const uuid=s=>{assert.match(s,/^[a-f0-9-]{36}$/i);return s};
-export function deriveT28P2MountedRoute(firstMerchant,secondMerchant){
+export function deriveT28P2MountedRoute(firstMerchant,secondMerchant,alternateWalletUserId){
  for(const [p,id] of Object.entries(ORIGINAL_COMMERCE))
   assert.equal(sha(file(p)),id,"T28-P2 original production blob drift "+p);
  assert.ok(!existsSync(path.join(root,T28_P2_TEMP_ROUTE)),
@@ -25,17 +25,17 @@ export function deriveT28P2MountedRoute(firstMerchant,secondMerchant){
  assert.match(probe,/useWalletT28P2Research/);
  assert.match(probe,/onAuthStateChange/);
  assert.doesNotMatch(probe,/service_role|MapPageClient|pages\/map/);
- const a=uuid(firstMerchant),b=uuid(secondMerchant);
+ const a=uuid(firstMerchant),b=uuid(secondMerchant),otherWallet=uuid(alternateWalletUserId);
  assert.notEqual(a,b);
  return "// AUTO-GENERATED NON-MAP T28-P2 DISPOSABLE NEXT ROUTE. NEVER COMMIT.\n"+
   'import CommerceProbe from "../components/c34/T28P2MountedCommerceProbe";\n'+
   "export default function T28P2ResearchRoute(){\n"+
   " const first={id:"+JSON.stringify(a)+',name:"T26 Probe Merchant",kind:"merchant",storefront_enabled:true};\n'+
   " const second={id:"+JSON.stringify(b)+',name:"T28 Other Merchant",kind:"merchant",storefront_enabled:true};\n'+
-  " return <CommerceProbe merchant={first} alternateMerchant={second}/>;\n}\n";
+  " return <CommerceProbe merchant={first} alternateMerchant={second} alternateWalletUserId={"+JSON.stringify(otherWallet)+"}/>;\n}\n";
 }
-export function writeT28P2MountedRoute(firstMerchant,secondMerchant){
- const output=deriveT28P2MountedRoute(firstMerchant,secondMerchant);
+export function writeT28P2MountedRoute(firstMerchant,secondMerchant,alternateWalletUserId){
+ const output=deriveT28P2MountedRoute(firstMerchant,secondMerchant,alternateWalletUserId);
  writeFileSync(path.join(root,T28_P2_TEMP_ROUTE),output,{flag:"wx"});
  return output;
 }
