@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b6e6f30ec1fa1a6f672f233c841e7f762b7667ee` |
+| Exact source commit represented by this archive snapshot | `637ecb1781d18c1c31f4c257803a688adf49e06d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): assert local original player_wallets schema upgrade before seeding or buyer RPC |
+| Last source commit title | test(c34): require signed local preflight confirmation of original materializer wallet schema upgrade |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
