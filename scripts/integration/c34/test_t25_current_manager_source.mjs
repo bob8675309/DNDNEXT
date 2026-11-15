@@ -47,6 +47,11 @@ test("T25-04 no bulk secrets, narrative rosters or speculative page-wide sheet c
  assert.equal((block.match(/\.select\(C34_T25_PUBLIC_ROSTER_FIELDS\)/g)||[]).length,3,
   "NPC, merchant roster and merchant profiles must all select the same narrow projection");
  assert.match(output,/const C34_T25_PUBLIC_ROSTER_FIELDS = "id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url";/);
+ assert.match(output,/selectedPrivate\?\.result\?\.profile/);
+ assert.match(output,/profile\.kind\) !== String\(row\.type\)/);
+ assert.match(output,/\.\.\.row, \.\.\.profile, id: row\.id, type: row\.type, kind: row\.kind/);
+ assert.doesNotMatch(output,/\.\.\.selectedPrivate\?\.result\?\.dossier/);
+
  assert.doesNotMatch(block,/\.select\(\s*\[/,
   "A legacy multi-column SELECT must not survive T25");
 
