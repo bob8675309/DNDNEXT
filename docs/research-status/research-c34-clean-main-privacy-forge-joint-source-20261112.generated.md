@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0ad347c40392f6d27d4d1f16083571daaa59edd4` |
+| Exact source commit represented by this archive snapshot | `7bdd0f81552ec41eb5ff85a1a8ebdb407f20626f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): current P2 component-derived source status and signed browser hold |
+| Last source commit title | docs(c34): final P2 source blob parity and pending signed acceptance handoff |
 | Files changed relative to main | 132 (106 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
