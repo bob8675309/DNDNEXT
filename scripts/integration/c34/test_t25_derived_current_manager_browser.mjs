@@ -65,9 +65,27 @@ async function createCharacter(gm,kind,name,secret){
  return result.data;
 }
 
+// Source-qualified scratch schema compatibility for ORIGINAL current pages/npcs.js.
+// The prior signed fixtures intentionally omit many world-position/UI columns.
+// Add only nullable columns in the disposable local DB, after all T1–T24 tests.
+// No RLS policy, grants, trigger, function, production SQL or map behavior altered.
+function addCurrentManagerLocalColumns(){
+ for(const [name,type] of [
+  ["map_icon_id","uuid"],["camp_sprite_path","text"],
+  ["x","double precision"],["y","double precision"],
+  ["roaming_speed","double precision"],
+  ["projected_destination_id","bigint"],
+  ["route_mode","text"]
+ ]){
+  sql("ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS "+name+" "+type);
+ }
+ console.log("PASS T25-FIXTURE: current-manager nullable legacy presentation columns installed in DISPOSABLE PG17");
+}
+
 let server=null,browser=null,serverLog="";
 fs.mkdirSync(pdfDir,{recursive:true});
 try {
+ addCurrentManagerLocalColumns();
  const users={};
  for(const name of ["GM","COEDITOR","INVONLY","OUTSIDER"])
   users[name]=await createRole(name.toLowerCase());
