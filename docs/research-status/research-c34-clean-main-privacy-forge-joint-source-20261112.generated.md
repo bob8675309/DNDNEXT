@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f4f68a2012a24f1ef74019b32df4be18fa71862d` |
+| Exact source commit represented by this archive snapshot | `f752e78ba3f4e063b1dbe664e326e6f7d0ccbe23` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): avoid pre-commit wallet refresh race; wait for original merchant purchase notice |
+| Last source commit title | test(c34): prove P2 wallet PostgREST reload via GM authorized cross-target read |
 | Files changed relative to main | 137 (111 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
+- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
 
 ## Research-branch change inventory versus main
 
