@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `484b1bff6bec70cd4b4c0ff42d676992a37c8eae` |
+| Exact source commit represented by this archive snapshot | `10e43437c3defc9862f1afa7cf4695a91dc93cc3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): reinstantiate disposed wallet guard on React Strict Mode effect remount |
+| Last source commit title | fix(c34): Strict Mode merchant guard reset and clear stale purchase UI on auth/shop switch |
 | Files changed relative to main | 132 (106 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/useWalletT28P2Research.js`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 
 ## Research-branch change inventory versus main
 
