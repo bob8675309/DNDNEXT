@@ -317,7 +317,7 @@ export function deriveT25CurrentManager(source) {
     "    ? safeStr(details.background) : safeStr(selectedPrivateResult?.profile?.lore?.background || \"\");",
     "remove unsafe roster and sheet background fallback");
   replaceOnce(state,
-    "    background: backgroundText,\n    motivation: safeStr(details?.motivation || selected?.motivation),\n    quirk: safeStr(details?.quirk || selected?.quirk),\n    mannerism: safeStr(details?.mannerism || selected?.mannerism),\n    voice: safeStr(details?.voice || selected?.voice),\n    secret: isAdmin ? safeStr(details?.secret || selected?.secret) : \"\",",
+    "    background: backgroundText,\n    motivation: safeStr(details?.motivation || selected?.motivation),\n    quirk: safeStr(details?.quirk || selected?.quirk),\n    mannerism: safeStr(details?.mannerism || selected?.mannerism),\n    voice: safeStr(details?.voice || selected?.voice),\n    secret: safeStr(details?.secret || selected?.secret),",
     "    background: safeStr(selectedPrivateResult?.profile?.lore?.background || \"\"),\n" +
     "    motivation: \"\", quirk: \"\", mannerism: \"\", voice: \"\", secret: \"\",",
     "public PDF profile excludes elevated lore and GM secret");
