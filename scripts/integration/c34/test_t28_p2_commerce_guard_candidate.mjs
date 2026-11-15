@@ -94,7 +94,16 @@ latest(pendingWallets).resolve(0);
 assert.equal((await outsiderWallet).committed,true);
 assert.equal(latest(balances),0);
 
-// (7) Disposal silences old requests without issuing React state setters.
+// (7) Current-actor denied read is surfaced and reported as current, not left loading.
+guard.selectMerchant("m2");
+const denied=guard.loadStock();
+latest(pendingStocks).reject(new Error("current RLS denied"));
+const deniedResult=await denied;
+assert.equal(deniedResult.committed,false);
+assert.equal(deniedResult.current,true);
+assert.match(String(errors.at(-1)?.message),/current RLS denied/);
+
+// (8) Disposal silences old requests without issuing React state setters.
 guard.selectMerchant("m2");
 const pending=guard.loadStock();
 const previous=rows.length;
@@ -105,4 +114,4 @@ assert.equal(rows.length,previous);
 assert.equal((await guard.loadWallet()).committed,false);
 assert.equal(guard.snapshot().stopped,true);
 
-console.log("PASS T28-P2-UNIT: 7 scoped cases; logout, same-user relogin, merchant switch, selected wallet target, latest wins, actor errors, dispose");
+console.log("PASS T28-P2-UNIT: 8 scoped cases; logout, same-user relogin, merchant switch, selected wallet target, latest wins, actor errors, current denial, dispose");
