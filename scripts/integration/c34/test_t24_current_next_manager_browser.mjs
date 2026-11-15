@@ -235,12 +235,16 @@ try{
 
  await logout();await login("COEDITOR");
  await page.getByRole("button",{name:"Print role-safe PDF"}).waitFor();
+ await page.getByRole("button",{name:"Print role-safe PDF"}).click();
+ await page.locator('[data-testid="t24-pdf-status"]').getByText("public-ready").waitFor({timeout:30000});
+ assert.ok((await api("getPdfBytes"))?.length>1000,"Expected authorized PDF before revocation");
  sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id="+q(npcId)+
      " AND user_id="+q(roles.COEDITOR.id));
  await page.getByRole("button",{name:"Refresh permissions"}).click();
  await page.getByRole("heading",{name:"T24 Profile NPC"}).waitFor();
  await page.locator('[data-testid="t24-rights"]').getByText(/Edit: false/).waitFor();
  assert.equal(await has('button:has-text("Print role-safe PDF")'),false);
+ assert.equal(await api("getPdfBytes"),null,"Revoked role retained generated PDF after explicit refresh");
  assert.equal(await has('[data-testid="t24-editor-background"]'),false);
  await noSecrets();
  console.log("PASS C34-T24-B05: real DB permission revocation + manager refresh immediately denies editor/print");
