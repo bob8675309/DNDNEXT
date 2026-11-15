@@ -343,6 +343,26 @@ export function deriveT25CurrentManager(source) {
     "          Refresh permissions\n" +
     "        </button>",
     "explicit revocation refresh surface");
+  replaceOnce(state,
+    "                    ) : (\n                    <CharacterSheetPanel",
+    "                    ) : !selectedPrivateResult?.capabilities?.canPrint ? (\n" +
+    "                      <div className=\"p-3\" data-testid=\"t25-sheet-restricted\">\n" +
+    "                        The selected character sheet requires authorization.\n" +
+    "                        {selectedCharPerm.can_inventory && inventoryHref ? (\n" +
+    "                          <a href={inventoryHref} className=\"btn btn-sm btn-outline-light ms-2\">Open inventory</a>\n" +
+    "                        ) : null}\n" +
+    "                      </div>\n" +
+    "                    ) : (\n                    <CharacterSheetPanel",
+    "deny unauthorized sheet/print while preserving inventory-only link");
+  replaceOnce(state,
+    "                    {!sheetLoading && !sheetLoadError ? (",
+    "                    {!sheetLoading && !sheetLoadError && selectedPrivateResult?.capabilities?.canPrint ? (",
+    "no unauthenticated or stale raw sheet JSON surface");
+  replaceOnce(state,
+    "                        if (!selected) return;\n\n                        const updated_at = new Date().toISOString();",
+    "                        if (!selected || !canEditCharacter || !selectedPrivateResult?.capabilities?.canEdit) return;\n\n" +
+    "                        const updated_at = new Date().toISOString();",
+    "sheet and private narrative writes require current server authorization");
   assert.ok(!state.text.includes("charPerm?."),
     "T25 refuses any unbound permission consumers");
   assert.ok(state.text.includes("readNonMapNpcProfileCandidate(supabase, id"),
