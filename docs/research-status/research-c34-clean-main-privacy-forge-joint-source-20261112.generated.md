@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6c8b318e158a34913a33b3d1e4a8607c0830f962` |
+| Exact source commit represented by this archive snapshot | `de6a175d907312d48601354f10e7865ce5fc890a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): upgrade preexisting scratch wallet table with gp and updated_at before original buy |
+| Last source commit title | test(c34): pin source-original user_id-only wallet fixture and ordered disposable schema upgrade |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/t28_p2_disposable_original_buy_wallet_setup_pg17.sql`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
