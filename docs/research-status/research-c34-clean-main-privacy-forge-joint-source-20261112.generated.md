@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a46c45646583c0f8fcd4bbb81361aeef5dff8913` |
+| Exact source commit represented by this archive snapshot | `4a485fd8c71147fab11b4bfea28fc8d137488697` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): keep T24 roster-driven selection synchronized with owning page |
+| Last source commit title | test(c34): sync manager roster click with disposable Next page selection |
 | Files changed relative to main | 101 (82 non-docs; 19 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/NonMapNpcManagerResearchShell.jsx`
+- `scripts/integration/c34/fixtures/t24_nonmap_manager_next_probe_page.jsx`
 
 ## Research-branch change inventory versus main
 
