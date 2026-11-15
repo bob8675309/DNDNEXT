@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dab5110dbec66c78cdaa5b86cfd4faf13b4b3ab8` |
+| Exact source commit represented by this archive snapshot | `c55ad182eea98b5554eacd0b72c5bd7ad6593072` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append opt-in town-only merchant integration, exact rollback and pending signed acceptance |
+| Last source commit title | fix(c34): preserve confirmed merchant purchase success when follow-up wallet balance refresh fails |
 | Files changed relative to main | 140 (114 non-docs; 26 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 
 ## Research-branch change inventory versus main
 
