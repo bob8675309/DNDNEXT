@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5bb5d339cb85fb4de47706a7227cce1afe9d573b` |
+| Exact source commit represented by this archive snapshot | `c7d847dc9efb680cca630a10a65e01d1e5c898da` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): exact current NPC printProfile matcher before stripping GM secret |
-| Files changed relative to main | 104 (84 non-docs; 20 docs) |
+| Last source commit title | test(c34): T25 disposable signed current-manager Next browser, merchant and true PDF smoke |
+| Files changed relative to main | 105 (85 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
+- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
-- … 54 more
+- … 55 more
 
 ## Trust and update procedure
 
