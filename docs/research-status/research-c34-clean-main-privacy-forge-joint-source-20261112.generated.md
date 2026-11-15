@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `be4669150d5e5bd4ef7dfba007599d801dd91d31` |
+| Exact source commit represented by this archive snapshot | `707d4808b743e5413b488c1dfef273e139bc8dcd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T28-P2 seven nonmap merchant and selected-wallet stale response regressions |
+| Last source commit title | test(c34): ensure disposal test holds an actual pending authenticated merchant request |
 | Files changed relative to main | 128 (103 non-docs; 25 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
