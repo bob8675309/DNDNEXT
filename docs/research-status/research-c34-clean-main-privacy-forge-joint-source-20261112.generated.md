@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `514a347b8e46e8ffcfba67e73d0f06c2d98c9b1f` |
+| Exact source commit represented by this archive snapshot | `5606557e636bb420a15b436a43a5dd2641f0de0c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | security(c34): T25 fail-closed sheet/print and save plus inventory-only navigation |
+| Last source commit title | test(c34): deny outsider and revoked editor actual manager Print Sheet |
 | Files changed relative to main | 105 (85 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
+- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
 
 ## Research-branch change inventory versus main
 
