@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9bb9c0f0c39def212eb9e70d5bccc493d0c538ac` |
+| Exact source commit represented by this archive snapshot | `f16320ad8c706c650d14864be0f5c8402b5e87f0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): T25 record signed ACL RED/GREEN, PDF C01-C03, merchant and deep-link race evidence |
+| Last source commit title | docs(c34): close T25 signed current manager C01-C06 and exact-source CI with production hold |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
