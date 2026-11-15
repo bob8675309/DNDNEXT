@@ -392,9 +392,17 @@ export default function MerchantPanel({
       if (res.error) throw res.error;
       if (!samePurchaseScope()) return;
 
-      await Promise.all([fetchStock(), refreshWallet()]);
+      // The buyer RPC is the transaction boundary: a refresh failure must not
+      // turn a committed purchase into a misleading "Purchase failed" notice.
+      // Both refreshes remain best-effort and scoped to the current actor/shop.
+      const refreshed = await Promise.allSettled([fetchStock(), refreshWallet()]);
       if (!samePurchaseScope()) return;
-      setNotice({ kind: "success", message: "Purchased " + card.item_name + " for " + card._price_gp + " gp. It has been added to your inventory." });
+      const balanceRefreshFailed = refreshed[1].status === "rejected";
+      setNotice({
+        kind: "success",
+        message: "Purchased " + card.item_name + " for " + card._price_gp + " gp. It has been added to your inventory." +
+          (balanceRefreshFailed ? " Your balance could not be refreshed; please refresh it before buying again." : ""),
+      });
     } catch (e) {
       console.error(e);
       const msg = e.message || "Purchase failed";
