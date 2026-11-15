@@ -5,24 +5,25 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `bb6bcc423ec690af856da23c867c44602570c651` |
+| Exact source commit represented by this archive snapshot | `a788dd26ee196b28533280d06ad2f30cdf83e7e8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append final T25 C01–C06 signed green handoff and bounded next task |
-| Files changed relative to main | 106 (85 non-docs; 21 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research(c34): T26 safe non-map Profile adapter mounts original merchant storefront only in scratch |
+| Files changed relative to main | 107 (86 non-docs; 21 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `components/c34/NonMapMerchantShopResearchPanel.jsx`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
+- `components/c34/NonMapMerchantShopResearchPanel.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
 - `components/c34/NonMapNpcProfileResearchShell.jsx`
 - `docs/ACTIVE_WORK.md`
@@ -70,8 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
-- `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
-- … 56 more
+- … 57 more
 
 ## Trust and update procedure
 
