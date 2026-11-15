@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f72df9ddc19676e5212568f39e2936b4be1d56ad` |
+| Exact source commit represented by this archive snapshot | `5baa05443669fc30e995508119549fc3e136117a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | security(c34): T26 scratch auth switch closes previous merchant Profile overlay |
+| Last source commit title | test(c34): T26 guard public Profile entry and stale panel closure on actor changes |
 | Files changed relative to main | 110 (89 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t26_current_merchant_shop.mjs`
+- `scripts/integration/c34/test_t26_merchant_shop_source.mjs`
 
 ## Research-branch change inventory versus main
 
