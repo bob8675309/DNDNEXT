@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e5a2b9f92e127f1b6e545ae71dc2874aa1c0b593` |
+| Exact source commit represented by this archive snapshot | `75323ad8f106040d2dc8e20d4c64716ab97f24dd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): fail closed on P2 temp route and run signed-source checks before full local PG17 browser |
+| Last source commit title | test(c34): add signed coeditor and inventory-only merchant and wallet isolation |
 | Files changed relative to main | 137 (111 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
