@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5244b953c19e3c0ac7acccfe7889c248d3ff865b` |
+| Exact source commit represented by this archive snapshot | `60cca3ab21dbecf45016f819fdb7a1ce8d8585d1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): run T24 signed current-app manager and true PDF browser acceptance |
+| Last source commit title | fix(c34): point T24 runner at actual isolated manager fixture |
 | Files changed relative to main | 101 (82 non-docs; 19 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t24_current_next_manager_browser.mjs`
 
 ## Research-branch change inventory versus main
 
