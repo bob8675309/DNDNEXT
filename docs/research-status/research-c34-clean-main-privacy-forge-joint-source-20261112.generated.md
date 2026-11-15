@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a788dd26ee196b28533280d06ad2f30cdf83e7e8` |
+| Exact source commit represented by this archive snapshot | `75f5c5253d7f35e3527f3030c5161a514c16345e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): T26 safe non-map Profile adapter mounts original merchant storefront only in scratch |
-| Files changed relative to main | 107 (86 non-docs; 21 docs) |
+| Last source commit title | research(c34): T26 source-locked disposable current manager plus original merchant shop adapter |
+| Files changed relative to main | 108 (87 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/NonMapMerchantShopResearchPanel.jsx`
+- `scripts/integration/c34/derive_t26_current_merchant_shop.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
-- … 57 more
+- … 58 more
 
 ## Trust and update procedure
 
