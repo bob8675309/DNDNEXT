@@ -107,9 +107,10 @@ export default function useWalletT28P2Research(userId) {
     if (start.actorId === end.actorId && start.actorEpoch === end.actorEpoch &&
         start.targetEpoch === end.targetEpoch && start.targetUserId === end.targetUserId &&
         !end.stopped && !error) {
-      const nextGp = Number.isFinite(data) ? Number(data) : null;
-      lastCommittedGp.current = nextGp;
-      setGp(nextGp);
+      // Re-read the authoritative balance instead of committing a possibly
+      // out-of-order wallet_set response over a newer wallet_get/other edit.
+      // A failed refresh leaves the completed server write result unchanged.
+      try { await refresh(); } catch { /* read error already surfaced by guard */ }
     }
     return {data,error};
   };
