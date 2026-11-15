@@ -77,3 +77,18 @@ The research branch now includes **an actual non-map mounted component/browser t
 **Safe owner action prepared:** `scripts/integration/c34/T28_P2_OWNER_CI_TRIGGER.txt` is a non-executable research-only marker. The repository owner can open that exact file ON `research/c34-clean-main-privacy-forge-joint-source-20261112`, use GitHub web **Edit**, change `REQUEST_NONCE: not-yet-owner-triggered` to `REQUEST_NONCE: owner-run-1`, and commit directly to the SAME research branch. This changes no code, SQL, map or production. A push by `bob8675309` affecting `scripts/integration/c34/**` matches the signed workflow; ask the owner for the resulting Actions run URL (the GitHub connector's current SHA workflow-run wrapper only returns PR-triggered runs, so it may not list this owner **push** run). Read the run's jobs and logs by its numeric run ID. No secrets needed.
 
 **Current evidence:** The exact signed-source contract was executed with JS filesystem/SHA adapters over **18 current GitHub-returned files** including the trigger file, full signed workflow, source-original buy fixture and no-product-import paths, and passed. The actual commit's full GitHub Actions Node22, local PG17, GoTrue, PostgREST, current Next JSX, Chromium, wallet_set and original buyer acceptance remain **NOT OBSERVED**. Never interpret owner-trigger creation or source-only passing as P2 signed acceptance. Original T28-P1 signed green remains separate.
+
+
+## Fifth increment — opt-in real town UI integration (feature OFF by default)
+
+The guarded T28-P2 merchant and wallet are now selectable **only in the existing `components/TownSheet.js` town marketplace modal**, behind an explicit compile-time flag:
+
+```
+NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP=1
+```
+
+With the flag absent, empty or any other value, `TownSheet` continues to render the **unchanged original `MerchantPanel`**. The test branch keeps the existing dynamic import, `presentation="town"`, `isAdmin`, town location and modal close handler. When enabled, the same modal passes the same props to `components/c34/MerchantPanelT28P2Research.jsx` (which itself uses the guarded research wallet). **No world-map page/MapPageClient, NPC profile, inventory page, SQL, shared `MerchantPanel` or shared `useWallet` source is changed.** This does not automatically enable the candidate in any deployment.
+
+A new `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs` checks both explicit feature flag and legacy default, matching merchant modal props, active path segregation, original merchant/wallet/map Git blobs, and **exact reversibility**: stripping only the two opt-in changes in `TownSheet.js` reconstructs the entire old `TownSheet.js` blob `5399097e48f548956807cd93476fefe03e4dee28`. This contract was independently run against actual branch and main GitHub-fetched file contents and passed. Both C34 source-only and local signed workflow scripts now run that test.
+
+**Evidence boundary:** source-level integration PASS; real town marketplace Chromium/browser, JSX compilation, payment wallet and signed PG17 tests still not independently observed; do not enable production flag, merge #379 or label release-ready based on this source check. If local preview is wanted later, set the flag in a disposable preview/development environment and restart/rebuild Next before testing the town route. Existing world map must retain original unguarded storefront until independently discussed.
