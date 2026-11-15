@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e71429bfef43ed3b9bf1f4f288bdd0a96fc499cc` |
+| Exact source commit represented by this archive snapshot | `c60f29bea432cb3db46f3bd7bbfeb0ba7e308197` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): prevent one-frame previous merchant stock rendering on prop/actor switch |
+| Last source commit title | test(c34): assert no old GP in render-before-effect target switch against actual derived hook |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
+- `scripts/integration/c34/test_t28_p2_wallet_set_stale_unit.mjs`
 
 ## Research-branch change inventory versus main
 
