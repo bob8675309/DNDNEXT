@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e4f0a83695268f2d286850b5fed1aa66e6a3d10e` |
+| Exact source commit represented by this archive snapshot | `4cc0a3c3b160aaa1403f6cd9c686268bddef2bb9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): T25 run signed disposable current Next manager and true PDF smoke after T24 |
+| Last source commit title | test(c34): await actual Next app Supabase client hydration before signing in |
 | Files changed relative to main | 105 (85 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
 
 ## Research-branch change inventory versus main
 
