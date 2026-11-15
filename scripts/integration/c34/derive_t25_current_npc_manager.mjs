@@ -50,6 +50,14 @@ function changeRoster(state, start, end, kind) {
       '    const rows = (data || []).map(row => projectNonMapManagerRosterRow(row, "npc")).filter(Boolean);',
       '    setNpcs(rows);'
     ].join("\n"));
+  } else if (kind === "merchant") {
+    // The current page orders merchants again by name at roster merge, so
+    // ordering this direct SQL read by the T24 signed-approved name field is
+    // UI-equivalent and avoids relying on revoked/non-granted updated_at.
+    const older = '.order("updated_at", { ascending: false });';
+    assert.equal(piece.split(older).length - 1, 1,
+      "T25 merchant sort source drift");
+    piece = piece.replace(older, '.order("name", { ascending: true });');
   } else if (kind === "merchant-profile") {
     const old = /    let secretById = new Map\(\);[\s\S]*?    setMerchantProfiles\(m\);/;
     assert.match(piece, old);
