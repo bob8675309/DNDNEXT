@@ -44,7 +44,7 @@ function WalletPane({targetId}) {
     </button>
   </section>;
 }
-export default function T28P2MountedCommerceProbe({merchant,alternateMerchant}) {
+export default function T28P2MountedCommerceProbe({merchant,alternateMerchant,alternateWalletUserId}) {
   const [actor,setActor]=useState(null);
   const [ready,setReady]=useState(false);
   const [selected,setSelected]=useState(merchant);
@@ -80,7 +80,7 @@ export default function T28P2MountedCommerceProbe({merchant,alternateMerchant}) 
     <button type="button" data-testid="t28p2-select-wallet-self"
       onClick={()=>setWalletTarget(null)}>Wallet owner self</button>
     <button type="button" data-testid="t28p2-select-wallet-other"
-      onClick={()=>setWalletTarget(walletTarget===null?"00000000-0000-4000-8000-000000000099":null)}>
+      onClick={()=>setWalletTarget(walletTarget===null?alternateWalletUserId:null)}>
       Change selected wallet target
     </button>
     <WalletPane targetId={walletTarget} />
