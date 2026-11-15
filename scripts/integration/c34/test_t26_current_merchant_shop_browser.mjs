@@ -571,6 +571,41 @@ try {
  }
  assert.ifError(p2AdminTarget.error);
  assert.equal(Number(p2AdminTarget.data),0);
+ // Fail closed until PostgREST has discovered the EXACT installed original
+ // buyer RPC. A missing function (PGRST202) must not masquerade as an
+ // anonymous-denial PASS or lead to a misleading UI transaction failure.
+ let p2BuyerReady=null;
+ for(let attempts=0;attempts<20;attempts++){
+  p2BuyerReady=await users.GM.who.rpc("buy_from_merchant",{
+   p_merchant_id:merchant,p_stock_uuid:randomUUID(),p_qty:1
+  });
+  if(p2BuyerReady.error &&
+      /Stock not found/i.test(p2BuyerReady.error.message||""))break;
+  if(p2BuyerReady.data!==null&&!p2BuyerReady.error){
+   throw Error("T28-P2 unexpected purchase success for non-existent stock");
+  }
+  await new Promise(done=>setTimeout(done,300));
+ }
+ assert.ok(p2BuyerReady.error && /Stock not found/i.test(p2BuyerReady.error.message||""),
+  "T28-P2 original buyer RPC was not truly exposed in PostgREST: "+
+   String(p2BuyerReady.error?.message||p2BuyerReady.data));
+ let p2WalletSetReady=null;
+ for(let attempts=0;attempts<20;attempts++){
+  p2WalletSetReady=await users.GM.who.rpc("wallet_set",{
+   p_user:users.GM.id,p_amount:79
+  });
+  if(!p2WalletSetReady.error)break;
+  await new Promise(done=>setTimeout(done,300));
+ }
+ assert.ifError(p2WalletSetReady.error);
+ assert.equal(Number(p2WalletSetReady.data),79,
+  "T28-P2 synthetic Admin wallet_set was not exposed in signed PostgREST");
+ const p2AnonWalletSet=await client().rpc("wallet_set",{
+  p_user:users.GM.id,p_amount:999
+ });
+ assert.ok(p2AnonWalletSet.error,"T28-P2 wallet_set must deny anonymous clients");
+ assert.equal(p2AnonWalletSet.error.code,"42501",
+  "T28-P2 anonymous wallet_set must fail authorization, not missing-function error");
  const p2AnonWallet=await client().rpc("wallet_get",{p_user:null});
  assert.ok(p2AnonWallet.error,"T28-P2 wallet_get must still deny anonymous users");
  const p2AnonBuy=await client().rpc("buy_from_merchant",{
