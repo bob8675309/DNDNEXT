@@ -13,6 +13,20 @@ const beginning=original.indexOf("  async function handleBuy(card) {");
 const ending=original.indexOf("  // Paste helper",beginning);
 assert.ok(beginning>=0 && ending>beginning,"source-derived buy function moved");
 const functionBody=original.slice(beginning,ending);
+// Preserve an independently executed ORIGINAL RED: the unchanged merchant's
+// own handleBuy reports a failed purchase after the server accepted payment
+// when only its follow-up wallet read rejects. No browser/DB mutation here.
+const untouchedSource=readFileSync(path.join(root,"components/MerchantPanel.js"),"utf8");
+const untouchedStart=untouchedSource.indexOf("  async function handleBuy(card) {");
+const untouchedEnd=untouchedSource.indexOf("  // Paste helper",untouchedStart);
+assert.ok(untouchedStart>=0 && untouchedEnd>untouchedStart);
+const untouchedHandler=untouchedSource.slice(untouchedStart,untouchedEnd);
+assert.match(untouchedHandler,/await Promise\\.all\\(\\[fetchStock\\(\\), refreshWallet\\(\\)\\]\\)/);
+const originalBuy=new Function(
+ "uid","setBusyId","setErr","setNotice","supabase","merchant",
+ "fetchStock","refreshWallet","console",untouchedHandler+"\\nreturn handleBuy;"
+);
+
 assert.match(functionBody,/supabase\.rpc\("buy_from_merchant"/);
 assert.match(functionBody,/await Promise\.allSettled\(\[fetchStock\(\), refreshWallet\(\)\]\)/);
 assert.doesNotMatch(functionBody,/await Promise\.all\(\[fetchStock\(\), refreshWallet\(\)\]\)/);
@@ -34,6 +48,19 @@ const make=({buyer=()=>Promise.resolve({data:1,error:null}),stock=async()=>{},
  );
  return {handleBuy,session,notices,errors,busy,rpc};
 };
+
+// Original source RED: RPC succeeded, follow-up wallet_get fails, but original
+// UI incorrectly says the purchase failed. This is an expected negative baseline.
+{
+ const notices=[];
+ const buy=originalBuy("gm",()=>{},()=>{},v=>notices.push(v),
+  {rpc:async()=>({data:1,error:null})},{id:"merchant-1"},
+  async()=>{},async()=>{throw Error("temporary wallet_get failure")},{error:()=>{}});
+ await buy(card);
+ assert.equal(notices.at(-1)?.kind,"error","original source negative drift");
+ assert.match(notices.at(-1)?.message,/temporary wallet_get failure/);
+ console.log("PASS T28-P2-BUY-ORIGINAL-RED: original accepted buyer falsely reports failure after wallet refresh error");
+}
 
 // (R01) Original buyer succeeds but wallet re-read fails: NOT a failed purchase.
 {
