@@ -52,6 +52,11 @@ jobs:
         run: |
           node --check scripts/integration/c34/test_t27_consumer_source.mjs
           node --test scripts/integration/c34/test_t27_consumer_source.mjs
+      - name: T28 non-map actor/merchant wallet-vs-stock epoch P0 source and deterministic RED/GREEN negatives
+        run: |
+          node --check utils/c34/actorRequestEpochCandidate.mjs
+          node --check scripts/integration/c34/test_t28_actor_epoch_candidate.mjs
+          node --test scripts/integration/c34/test_t28_actor_epoch_candidate.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
