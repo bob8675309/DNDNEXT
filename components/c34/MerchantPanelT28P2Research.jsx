@@ -15,6 +15,8 @@ import { campaignLootEligible, merchantRarityBucket, merchantThemeAllowsItem } f
 
 import { createT28P2CommerceGuardCandidate } from "../../utils/c34/t28P2CommerceGuardCandidate.mjs";
 
+const EMPTY_VISIBLE_STOCK = Object.freeze([]);
+
 const MERCHANT_THEME_CHOICES = [
   { value: "general", label: "General Goods" },
   { value: "alchemy", label: "Alchemy" },
@@ -317,7 +319,13 @@ export default function MerchantPanel({
     };
   }
 
-  const cards = useMemo(() => stock.map(normalizeRow), [stock]);
+  // Merchant prop switches render before the previous stock-clearing effect.
+  // Never render old merchant/actor rows beneath the newly selected merchant.
+  const stockScope = stockGuardRef.current.snapshot();
+  const stockMatches = Boolean(stockScope.actorId && stockScope.actorId === uid &&
+    stockScope.merchantId === (merchant?.id || null) && !stockScope.stopped);
+  const visibleStock = stockMatches ? stock : EMPTY_VISIBLE_STOCK;
+  const cards = useMemo(() => visibleStock.map(normalizeRow), [visibleStock]);
   const categories = useMemo(() => {
     const values = Array.from(new Set(cards.map((card) => card.item_type || "Other").filter(Boolean)));
     return ["All", ...values.sort((a, b) => String(a).localeCompare(String(b)))];
