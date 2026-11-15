@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b28944453333703de3512595328ce9266371b6e7` |
+| Exact source commit represented by this archive snapshot | `1c16f0ec5ae4841061fc64becc62d26d13d82291` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T25 signed stage2 ACL RED wide denial and GREEN narrow roster, no DB grant/schema changes |
+| Last source commit title | test(c34): pin all T25 rosters to source-proven nine-column ACL-safe projection |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
+- `scripts/integration/c34/test_t25_current_manager_source.mjs`
 
 ## Research-branch change inventory versus main
 
