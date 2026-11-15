@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `81b6d6bccc460ac6cfcde7e9f448ec0d14cd440c` |
+| Exact source commit represented by this archive snapshot | `4a3d6d079d23d8d81af5d9db9b3cbd89ecb4a0fa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | chore(c34): remove unnecessary owner-only manual CI trigger file |
+| Last source commit title | docs(c34): replace manual owner-only CI blocker with automatic isolated branch workflow |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/T28_P2_OWNER_CI_TRIGGER.txt`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
