@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ec85796daec8712291d71e7329e2cfe80837c87e` |
+| Exact source commit represented by this archive snapshot | `a0bb5a0990a1a4c5edb25a1aee2245a985e5dbf5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): remove accidental scratch SQL fixture source duplication caught by T28 CI |
+| Last source commit title | test(c34): distinguish blocked service_role URL from actual T28 secret use |
 | Files changed relative to main | 126 (101 non-docs; 25 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `scripts/integration/c34/test_t28_persistent_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
