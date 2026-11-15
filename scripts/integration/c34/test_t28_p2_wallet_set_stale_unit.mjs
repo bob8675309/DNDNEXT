@@ -69,10 +69,10 @@ const factory=vm.runInNewContext(
  {useState,useRef,useMemo,useEffect,supabase,createT28P2CommerceGuardCandidate,Error,Number,String,Boolean}
 );
 let hook=null;
-function render(target=null){
+function render(target=null,flushEffects=true){
  sidx=ridx=eidx=0;
  hook=factory(target);
- for(const eff of effects){
+ if(flushEffects)for(const eff of effects){
   if(eff?.run){eff.run=false;eff.cleanup=eff.fn()}
  }
  return hook;
@@ -117,6 +117,13 @@ await settle();
 render("player-A");
 await settle();
 const targetASet=hook.set(999);
+// React renders the new wallet before useEffect clears prior committed GP.
+// This assertion fails with the earlier state-only guard, which briefly
+// displayed target-A GP while the target-B prop was already selected.
+const beforeEffect=render("player-B",false);
+assert.equal(beforeEffect.gp,null,"target-B pre-effect render showed target-A balance");
+assert.equal(beforeEffect.loading,true,"target-B must show loading while not yet scoped");
+console.log("PASS T28-P2-SET-R04: target-prop switch never renders previous target GP, even before useEffect");
 render("player-B");
 await settle();
 acceptSet(999);
@@ -138,4 +145,4 @@ console.log("PASS T28-P2-SET-R03: authorized current wallet_set returns data and
 
 for(const e of effects)if(typeof e?.cleanup==="function")e.cleanup();
 assert.equal(authListener,null);
-console.log("PASS T28-P2-SET-UNIT: isolated real hook source tested for logout, selected target and current wallet data");
+console.log("PASS T28-P2-SET-UNIT: isolated real hook source tested for logout, selected target, render-before-effect privacy and current wallet data");
