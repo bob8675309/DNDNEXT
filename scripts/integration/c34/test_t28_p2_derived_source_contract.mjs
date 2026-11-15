@@ -56,6 +56,14 @@ for(const token of [
  "scope.capture(\"stock\")", "scope.capture(\"wallet\")",
  "scope.settle(ticket", "selectWalletTarget", "dispose"
 ]) assert.ok(guard.includes(token),"T28-P2 helper missing: "+token);
+assert.match(panel,/const stockMatches = Boolean\(stockScope\.actorId/);
+assert.match(panel,/const visibleStock = stockMatches \? stock : EMPTY_VISIBLE_STOCK/);
+assert.match(wallet,/const activeTargetMatches = guardRef\.current\.snapshot\(\)\.targetUserId === selectedTargetId/);
+assert.match(wallet,/const visibleGp = activeTargetMatches \? gp : null/);
+assert.match(wallet,/return \{uid,gp:visibleGp,loading:visibleLoading,err,label,refresh,set\}/);
+const hookRegression=src("scripts/integration/c34/test_t28_p2_wallet_set_stale_unit.mjs");
+assert.match(hookRegression,/render\("player-B",false\)/);
+assert.match(hookRegression,/PASS T28-P2-SET-R04/);
 assert.doesNotMatch(panel,/setStock\(data\s*\|\|\s*\[\]\)/,
  "source-derived merchant may not reintroduce unchecked original response commit");
 assert.doesNotMatch(wallet,/setGp\(Number\.isFinite\(data\).*\)/,
