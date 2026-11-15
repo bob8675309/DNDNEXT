@@ -79,6 +79,9 @@ function addCurrentManagerLocalColumns(){
  ]){
   sql("ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS "+name+" "+type);
  }
+ // Original setup sends this notification after its own DDL. Match that
+ // transport contract for new *disposable-only* compatibility columns.
+ sql("NOTIFY pgrst, 'reload schema'");
  console.log("PASS T25-FIXTURE: current-manager nullable legacy presentation columns installed in DISPOSABLE PG17");
 }
 
@@ -90,6 +93,23 @@ try {
  for(const name of ["GM","COEDITOR","INVONLY","OUTSIDER"])
   users[name]=await createRole(name.toLowerCase());
  sql("INSERT INTO private.test_admins(id) VALUES("+q(users.GM.id)+")");
+ // Verify the actual wide PostgREST field set instead of a misleading
+ // id/name-only query. This runs as the signed test GM, not postgres/service_role.
+ let wideResult=null;
+ for(let i=0;i<15;i++){
+  wideResult=await users.GM.who.from("characters").select(
+   "id,name,kind,race,role,affiliation,status,location_id,tags,description,"+
+   "map_icon_id,portrait_url,portrait_storage_path,portrait_thumb_url,portrait_shop_url,"+
+   "portrait_source,image_url,sprite_path,sprite_scale,camp_sprite_path,updated_at,"+
+   "is_hidden,x,y,roaming_speed,last_known_location_id,projected_destination_id,route_mode"
+  ).eq("kind","npc").limit(1);
+  if(!wideResult.error)break;
+  if(i===14)break;
+  await new Promise(done=>setTimeout(done,350));
+ }
+ assert.ifError(wideResult.error);
+ console.log("PASS T25-FIXTURE-WIDE: signed GM current real roster SELECT public-safe columns without ACL or schema-cache failure");
+
  const secret="T25_GM_SECRET_NEVER_PUBLIC";
  const npc=await createCharacter(users.GM,"npc","T25 Probe NPC",secret);
  const merchant=await createCharacter(users.GM,"merchant","T25 Probe Merchant","T25_MERCHANT_SECRET");
