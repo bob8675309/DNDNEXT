@@ -1,0 +1,214 @@
+/*
+ * NPC / merchant Profile-first presentation, v1.
+ * This affects presentation only: no map sprites, motion, pathing, encounter
+ * authority, grants, RLS or character sheet source changes.
+ *
+ * On the world map, retain the existing Bootstrap offcanvas instance and its
+ * lifecycle/deep-link callbacks. Only reframe its visible panel as a centered
+ * dialog. Town and global profile entry points share the same visual geometry.
+ */
+
+/* Keep Bootstrap's offcanvas close/show lifecycle, but give the NPC panel the
+   composition of the broad character Profile, centered above the map. */
+@media (min-width: 769px) {
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered {
+    --bs-offcanvas-width: min(1260px, calc(100vw - 40px));
+    box-sizing: border-box;
+    position: fixed;
+    top: max(68px, 7vh) !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    width: min(1260px, calc(100vw - 40px)) !important;
+    max-width: min(1260px, calc(100vw - 40px)) !important;
+    height: min(850px, calc(100dvh - max(68px, 7vh) - 18px)) !important;
+    max-height: calc(100dvh - max(68px, 7vh) - 18px) !important;
+    border: 1px solid rgba(198, 172, 235, 0.3) !important;
+    border-radius: 18px !important;
+    background: rgba(7, 6, 15, 0.985) !important;
+    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.76) !important;
+    transform: translate(-50%, -140vh) !important;
+    transition: transform 220ms ease-in-out !important;
+    overflow: hidden;
+  }
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered.show,
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered.showing {
+    transform: translate(-50%, 0) !important;
+  }
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered.hiding {
+    transform: translate(-50%, -140vh) !important;
+  }
+}
+
+#npcPanel.map-npc-profile-centered .offcanvas-body {
+  box-sizing: border-box;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: rgba(7, 6, 15, 0.985);
+}
+
+#npcPanel.map-npc-profile-centered .npc-panel-inner {
+  height: 100%;
+  min-height: 0;
+}
+
+#npcPanel.map-npc-profile-centered .npc-panel-body {
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+#npcPanel.map-npc-profile-centered .npc-portrait {
+  max-height: min(74dvh, 720px);
+}
+
+/* Bootstrap creates the backdrop only for the map NPC Profile. Scope elevation
+   to the period while that particular offcanvas is shown so location/route
+   offcanvas stacking and the 2600+ Admin drawers stay unchanged. */
+body:has(#npcPanel.map-npc-profile-centered.show) .offcanvas-backdrop.show,
+body:has(#npcPanel.map-npc-profile-centered.showing) .offcanvas-backdrop.show {
+  z-index: 2440 !important;
+  --bs-backdrop-opacity: 0.62;
+  background-color: #080710;
+}
+
+/* Town and inventory share the Profile geometry, without inheriting changes
+   to the NPC management page or the persistent player character window. */
+.town-profile-sidepanel-backdrop {
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 70px 18px 18px !important;
+  background: rgba(5, 4, 12, 0.66) !important;
+}
+
+.town-profile-sidepanel {
+  box-sizing: border-box;
+  width: min(1260px, calc(100vw - 36px)) !important;
+  max-width: min(1260px, calc(100vw - 36px)) !important;
+  height: min(850px, calc(100dvh - 88px)) !important;
+  max-height: calc(100dvh - 88px) !important;
+  min-height: 0;
+  margin: 0 auto !important;
+  align-self: center !important;
+  border: 1px solid rgba(198, 172, 235, 0.3) !important;
+  border-radius: 18px !important;
+  overflow: hidden;
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.76) !important;
+}
+
+/* Shared reusable host for NPC Profile requests from Inventory and other
+   pages. The NPC management page explicitly does not use this host. */
+.app-npc-profile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4760;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 70px 18px 18px;
+  background: rgba(5, 4, 12, 0.67);
+}
+
+.app-npc-profile-shell {
+  width: min(1260px, calc(100vw - 36px));
+  height: min(850px, calc(100dvh - 88px));
+  max-width: 100%;
+  max-height: calc(100dvh - 88px);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(198, 172, 235, 0.3);
+  border-radius: 18px;
+  background: rgba(7, 6, 15, 0.985);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.76);
+  color: #f6f0ff;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-npc-profile-shell:focus {
+  outline: none;
+}
+
+.app-npc-profile-shell .npc-panel-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-npc-profile-shell .npc-panel-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.app-npc-profile-shell .npc-portrait {
+  max-height: min(74dvh, 720px);
+}
+
+.app-npc-profile-status {
+  padding: clamp(16px, 3vw, 40px);
+  font-size: 0.98rem;
+}
+
+/* Match the responsive single-column player profile feel on small screens,
+   rather than leaving a narrow, horizontally overflowing desktop drawer. */
+@media (max-width: 768px) {
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered {
+    top: 56px !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(100dvh - 56px) !important;
+    max-height: calc(100dvh - 56px) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    transform: translateY(110%) !important;
+    transition: transform 220ms ease-in-out !important;
+  }
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered.show,
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered.showing {
+    transform: translateY(0) !important;
+  }
+  #npcPanel.offcanvas.offcanvas-end.loc-panel.map-npc-profile-centered.hiding {
+    transform: translateY(110%) !important;
+  }
+
+  .town-profile-sidepanel-backdrop,
+  .app-npc-profile-backdrop {
+    inset: 0;
+    align-items: stretch !important;
+    padding: 56px 0 0 !important;
+  }
+
+  .town-profile-sidepanel,
+  .app-npc-profile-shell {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(100dvh - 56px) !important;
+    max-height: calc(100dvh - 56px) !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    align-self: stretch !important;
+  }
+
+  .app-npc-profile-shell .npc-panel-body {
+    display: block !important;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #npcPanel.map-npc-profile-centered {
+    transition: none !important;
+  }
+}
