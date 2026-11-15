@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `08f16e7a986966ee29e6dc926b89fc1827757563` |
+| Exact source commit represented by this archive snapshot | `c47c3938dd4fd56c20934b361b2f6913e0030ae9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): lock same-scope merchant purchase synchronously to prevent rapid double Buy RPCs |
+| Last source commit title | test(c34): execute real guarded buy handler rapid double-click and merchant-switch lock regressions |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
+- `scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs`
 
 ## Research-branch change inventory versus main
 
