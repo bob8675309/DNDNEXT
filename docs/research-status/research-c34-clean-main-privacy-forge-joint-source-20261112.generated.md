@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `de3ad4a69fc79d7a92b8304779c0ac563561a51a` |
+| Exact source commit represented by this archive snapshot | `c3db093a4b185c63295a8583ff705f44c9bd9c4e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): use current merchant ref in persistent auth listener instead of stale mounted merchant |
+| Last source commit title | fix(c34): report current-request errors without propagating stale actor errors |
 | Files changed relative to main | 131 (105 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
+- `utils/c34/t28P2CommerceGuardCandidate.mjs`
 
 ## Research-branch change inventory versus main
 
