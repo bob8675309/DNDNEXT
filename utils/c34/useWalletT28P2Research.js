@@ -12,8 +12,7 @@ export default function useWalletT28P2Research(userId) {
   const [err, setErr] = useState("");
   const lastCommittedGp = useRef(null);
   const guardRef = useRef(null);
-  if (!guardRef.current) {
-    guardRef.current = createT28P2CommerceGuardCandidate({
+  const createGuard = () => createT28P2CommerceGuardCandidate({
       readStock: async () => [],
       readWallet: async target => {
         const {data,error} = await supabase.rpc("wallet_get",{p_user:target||null});
@@ -24,13 +23,16 @@ export default function useWalletT28P2Research(userId) {
       onWallet: value => { lastCommittedGp.current = value; setGp(value); },
       onError: error => setErr(String(error?.message || "Failed to load wallet."))
     });
-  }
-  const guard = guardRef.current;
+  if (!guardRef.current) guardRef.current = createGuard();
   // Keep the selector current before an imperative refresh() can observe it.
   const userIdRef = useRef(userId || null);
   userIdRef.current = userId || null;
 
   useEffect(() => {
+    // Strict Mode effect cleanup/setup reuses the mounted React ref; replace
+    // an invalidated guard before subscribing again.
+    if (guardRef.current?.snapshot().stopped) guardRef.current = createGuard();
+    const guard = guardRef.current;
     let live = true;
     let authEventSeen = false;
     const handleAuth = (event, session) => {
@@ -76,9 +78,10 @@ export default function useWalletT28P2Research(userId) {
       data?.subscription?.unsubscribe();
       guard.dispose();
     };
-  }, [guard]);
+  }, []);
 
   useEffect(() => {
+    const guard = guardRef.current;
     guard.selectWalletTarget(userId || null);
     if (!guard.snapshot().actorId) return;
     setErr("");
@@ -88,15 +91,17 @@ export default function useWalletT28P2Research(userId) {
       if (live && result.committed) setLoading(false);
     });
     return () => {live = false};
-  }, [guard,userId]);
+  }, [userId]);
 
   const refresh = async () => {
+    const guard = guardRef.current;
     guard.selectWalletTarget(userIdRef.current);
     const result = await guard.loadWallet();
     if (result.error && result.current && !guard.snapshot().stopped) throw result.error;
     return result.committed ? lastCommittedGp.current : null;
   };
   const set = async amount => {
+    const guard = guardRef.current;
     guard.selectWalletTarget(userIdRef.current);
     const start = guard.snapshot();
     if (!start.actorId) return {data:null,error:new Error("Sign in to edit wallet")};
