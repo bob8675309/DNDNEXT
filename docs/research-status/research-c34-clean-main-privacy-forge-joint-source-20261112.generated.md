@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a0bb5a0990a1a4c5edb25a1aee2245a985e5dbf5` |
+| Exact source commit represented by this archive snapshot | `5b43c09a3f8d833f7ce258cb74c3f67fcfa005cd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): distinguish blocked service_role URL from actual T28 secret use |
+| Last source commit title | docs(c34): close T28 P1 genuine signed persistent stock-wallet research with exact receipts |
 | Files changed relative to main | 126 (101 non-docs; 25 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_persistent_source_contract.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
