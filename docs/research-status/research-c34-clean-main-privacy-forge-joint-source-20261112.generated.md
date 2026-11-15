@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2de527cb48959a943e413d5326dcac3be8c9a01e` |
+| Exact source commit represented by this archive snapshot | `9bb9c0f0c39def212eb9e70d5bccc493d0c538ac` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): regression guard for NPC/merchant independent deep-link race |
+| Last source commit title | docs(c34): T25 record signed ACL RED/GREEN, PDF C01-C03, merchant and deep-link race evidence |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_current_manager_source.mjs`
+- `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
