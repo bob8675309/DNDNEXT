@@ -299,6 +299,8 @@ jobs:
           node --check scripts/integration/c34/derive_t28_p2_mounted_probe.mjs
           node --check scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs
           node --check scripts/integration/c34/test_t28_p2_signed_source_contract.mjs
+          node --check scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
+          node scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
           node scripts/integration/c34/test_t28_p2_signed_source_contract.mjs
           node --check scripts/integration/c34/derive_t28_persistent_probe.mjs
           node --check scripts/integration/c34/run_t28_persistent_signed_browser.mjs
