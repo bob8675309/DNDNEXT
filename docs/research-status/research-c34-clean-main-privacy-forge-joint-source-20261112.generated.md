@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8322bfce49b1755f5ec961a8ab1b79ed6ddcd351` |
+| Exact source commit represented by this archive snapshot | `5b2e0be0a9dab9c58a2ebb6211385c33ca344f2c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): T25 selected-only signed reader and actor-bound manager session guards |
+| Last source commit title | research(c34): T25 preserve manager UI while binding narrative, sheet, print, edit and store rights |
 | Files changed relative to main | 103 (83 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
