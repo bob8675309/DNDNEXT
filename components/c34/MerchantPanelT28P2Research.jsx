@@ -106,7 +106,7 @@ export default function MerchantPanel({
       else if (merchantIdRef.current) {
         setLoading(true);
         void guard.loadStock().then(result => {
-          if (active && result.committed) setLoading(false);
+          if (active && (result.committed || result.current)) setLoading(false);
         });
       }
     };
@@ -225,7 +225,7 @@ export default function MerchantPanel({
     setLoading(true);
     setErr("");
     const result = await guard.loadStock();
-    if (result.committed || result.reason) setLoading(false);
+    if (result.committed || result.current || result.reason) setLoading(false);
   }, [merchant?.id]);
 
   useEffect(() => {
