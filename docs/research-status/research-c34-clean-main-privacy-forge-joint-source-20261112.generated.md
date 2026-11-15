@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b9e63ce53ba7ea95de7c8f392ca63e8755f3e43a` |
+| Exact source commit represented by this archive snapshot | `9837a185d68043eb9524f7c5274e1b8c672f3002` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): preserve NPC deep-link identity while merchant roster resolves asynchronously |
+| Last source commit title | test(c34): require exact NPC focus ID and diagnose selected Profile absence |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
+- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
 
 ## Research-branch change inventory versus main
 
