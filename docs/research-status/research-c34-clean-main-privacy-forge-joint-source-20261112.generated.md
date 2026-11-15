@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9990b6be66a25a886767380b3040b58643815be1` |
+| Exact source commit represented by this archive snapshot | `d6164373c0fe0028fc6c9872fbd72e7c6af621fc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): validate opt-in town storefront with original world map and default path pinned |
+| Last source commit title | ci(c34): protect legacy town/default and world-map separation during signed nonmap browser suite |
 | Files changed relative to main | 140 (114 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
