@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a4d5cd9bd6f27d07fddb9ef16c4d3539ba38cc25` |
+| Exact source commit represented by this archive snapshot | `95263d7387ecd2db00f218bb19c5f5eef54ee5e5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): run T27 source and signed local stock race on owner research pushes |
+| Last source commit title | docs(c34): close T27 exact signed stock-logout race and preserve T28 next |
 | Files changed relative to main | 118 (95 non-docs; 23 docs) |
-| Last source commit | 4 files (2 non-docs; 2 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `.github/workflows/validate-c34-joint-source-research.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
