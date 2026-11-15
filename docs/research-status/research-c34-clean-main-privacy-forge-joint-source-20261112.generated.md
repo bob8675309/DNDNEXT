@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f99f893f64527155db0953c4fc452026cddb762f` |
+| Exact source commit represented by this archive snapshot | `5eb78013a72ad1a08c99023701b093c61eb9d0fa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): verify original buyer committed purchase remains success when stock refresh fails |
+| Last source commit title | test(c34): lock cleared stock after refresh error and original RED plus six guarded buyer cases |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs`
+- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
