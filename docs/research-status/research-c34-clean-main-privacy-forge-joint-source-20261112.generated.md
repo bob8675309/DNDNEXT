@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8347a1b9d5233100803c51d52cbad812f3c5eed7` |
+| Exact source commit represented by this archive snapshot | `51c0976f656ffde113d20b87fa1c48acbe0e4dea` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): suppress stale wallet_set return data after logout/target switch; clear current read errors |
-| Files changed relative to main | 137 (111 non-docs; 26 docs) |
+| Last source commit title | test(c34): run real derived wallet hook with deferred wallet_set and stale response negatives |
+| Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/useWalletT28P2Research.js`
+- `scripts/integration/c34/test_t28_p2_wallet_set_stale_unit.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 87 more
+- … 88 more
 
 ## Trust and update procedure
 
