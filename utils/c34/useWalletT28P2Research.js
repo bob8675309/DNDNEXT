@@ -131,14 +131,21 @@ export default function useWalletT28P2Research(userId) {
     return {data,error};
   };
 
+  // A new selected-wallet prop is visible to React BEFORE useEffect can clear
+  // the previous account's GP. Guard the render itself against one-frame
+  // target A -> target B flashes, not only async response commits.
+  const selectedTargetId = userId || null;
+  const activeTargetMatches = guardRef.current.snapshot().targetUserId === selectedTargetId;
+  const visibleGp = activeTargetMatches ? gp : null;
+  const visibleLoading = loading || !activeTargetMatches;
   const label = useMemo(() => {
-    if (gp == null) return "GP: …";
-    if (Number(gp) === -1) return "GP: ∞";
-    const n = Number(gp);
+    if (visibleGp == null) return "GP: …";
+    if (Number(visibleGp) === -1) return "GP: ∞";
+    const n = Number(visibleGp);
     if (!Number.isFinite(n)) return "GP: 0";
     const s = String(n);
     return "GP: "+(s.endsWith(".0") ? s.slice(0,-2) : s);
-  },[gp]);
+  },[visibleGp]);
 
-  return {uid,gp,loading,err,label,refresh,set};
+  return {uid,gp:visibleGp,loading:visibleLoading,err,label,refresh,set};
 }
