@@ -21,10 +21,10 @@ const untouchedStart=untouchedSource.indexOf("  async function handleBuy(card) {
 const untouchedEnd=untouchedSource.indexOf("  // Paste helper",untouchedStart);
 assert.ok(untouchedStart>=0 && untouchedEnd>untouchedStart);
 const untouchedHandler=untouchedSource.slice(untouchedStart,untouchedEnd);
-assert.match(untouchedHandler,/await Promise\\.all\\(\\[fetchStock\\(\\), refreshWallet\\(\\)\\]\\)/);
+assert.match(untouchedHandler,/await Promise\.all\(\[fetchStock\(\), refreshWallet\(\)\]\)/);
 const originalBuy=new Function(
  "uid","setBusyId","setErr","setNotice","supabase","merchant",
- "fetchStock","refreshWallet","console",untouchedHandler+"\\nreturn handleBuy;"
+ "fetchStock","refreshWallet","console",untouchedHandler+"\nreturn handleBuy;"
 );
 
 assert.match(functionBody,/supabase\.rpc\("buy_from_merchant"/);
