@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `be75bcf7468a9fb6d5fd46ac4bd05a3130997730` |
+| Exact source commit represented by this archive snapshot | `6c8b318e158a34913a33b3d1e4a8607c0830f962` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append rapid Buy duplicate RPC lock, real handler R07/R08 and signed ledger pending |
+| Last source commit title | fix(c34): upgrade preexisting scratch wallet table with gp and updated_at before original buy |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/t28_p2_disposable_original_buy_wallet_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
