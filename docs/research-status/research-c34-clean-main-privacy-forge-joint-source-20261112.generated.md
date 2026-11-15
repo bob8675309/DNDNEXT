@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2e36470ead4b3673cadb7c01f6d6be7a96bb563c` |
+| Exact source commit represented by this archive snapshot | `81c5cc0db4ee84f14a06518939763d8919f1a7e9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | security(c34): invalidate same-actor stale roster responses on explicit permission refresh |
+| Last source commit title | test(c34): same actor role refresh invalidates every pending roster transport |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
+- `scripts/integration/c34/test_t25_current_manager_source.mjs`
 
 ## Research-branch change inventory versus main
 
