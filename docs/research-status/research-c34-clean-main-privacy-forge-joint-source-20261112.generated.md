@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c55ad182eea98b5554eacd0b72c5bd7ad6593072` |
+| Exact source commit represented by this archive snapshot | `6568d0194bcbfb8cb940eeb3e0bfce5aa4b30dab` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): preserve confirmed merchant purchase success when follow-up wallet balance refresh fails |
-| Files changed relative to main | 140 (114 non-docs; 26 docs) |
+| Last source commit title | test(c34): execute original-derived merchant buy handler with wallet refresh rejection and actor/shop races |
+| Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
+- `scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
-- … 90 more
+- … 91 more
 
 ## Trust and update procedure
 
