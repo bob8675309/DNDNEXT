@@ -170,6 +170,8 @@ try {
  console.log("PASS T25-C04 merchant roster switch clears NPC secret and retains original manager controls");
  await logout();await login("OUTSIDER");
  await page.getByText("T25 Probe NPC",{exact:true}).first().waitFor();
+ await page.getByTestId("t25-sheet-restricted").waitFor();
+ assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0,"Outsider retained Print Sheet");
  assert.ok(!(await body()).includes(secret),"Outsider saw prior GM dossier");
  assert.ok(!(await body()).includes("T25 PRIVATE MOTIVATION"));
  console.log("PASS T25-C05 GM-to-outsider signed account switch denies private narrative");
@@ -179,7 +181,8 @@ try {
  sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id="+q(npc)+
   " AND user_id="+q(users.COEDITOR.id));
  await page.getByTestId("t25-refresh-permissions").click();
- await page.waitForTimeout(700);
+ await page.getByTestId("t25-sheet-restricted").waitFor({timeout:30000});
+ assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0,"Revoked editor retained Print Sheet");
  assert.ok(!(await body()).includes(secret),"Revoked editor saw GM secret");
  console.log("PASS T25-C06 real local permission revocation and explicit refresh clear elevated manager data");
  assert.deepEqual(offsite,[],"T25 attempted an offsite Supabase request");
