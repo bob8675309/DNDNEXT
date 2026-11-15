@@ -147,6 +147,9 @@ export async function runT28P2MountedCommerceSignedBrowser({
 
   // Execute SOURCE-ORIGINAL real production buy_from_merchant SQL in scratch.
   await shop().getByRole("button",{name:/Buy for 12 gp/}).first().click();
+  // The external wallet pane is a separately mounted hook, so its live balance
+  // is refreshed explicitly after the merchant's own guarded wallet refresh.
+  await page.getByTestId("t28p2-wallet-refresh").click();
   await waitValue(54);
   assert.equal(inspect("SELECT gp FROM public.player_wallets WHERE user_id="+q(users.GM.id)),"54");
   assert.equal(inspect("SELECT qty FROM public.character_stock WHERE id="+q(stockId)),"2");
