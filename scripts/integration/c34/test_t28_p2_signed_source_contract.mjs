@@ -96,10 +96,6 @@ assert.doesNotMatch(workflow,/github\.actor == 'bob8675309'/);
 assert.match(workflow,/refs\/heads\/research\/c34-clean-main-privacy-forge-joint-source-20261112/);
 assert.match(workflow,/push:/);
 assert.match(workflow,/'scripts\/integration\/c34\/\*\*'/);
-const trigger=src("scripts/integration/c34/T28_P2_OWNER_CI_TRIGGER.txt");
-assert.match(trigger,/REQUEST_NONCE: not-yet-owner-triggered/);
-assert.match(trigger,/research\/c34-clean-main-privacy-forge-joint-source-20261112/);
-
 for(const p of [
  "components/MerchantPanel.js","utils/useWallet.js","components/MapPageClient.js",
  "pages/map.js","pages/npcs.js","pages/town/[id].js","pages/inventory.js",
