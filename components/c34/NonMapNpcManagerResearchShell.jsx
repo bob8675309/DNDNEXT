@@ -18,7 +18,7 @@ const short=(v)=>String(v??"");
 const validId=(v)=>typeof v==="string"&&/^[0-9a-f-]{36}$/i.test(v);
 
 export default function NonMapNpcManagerResearchShell({
-  client, characterId, onAuthorizedPrint, onClearSensitive
+  client, characterId, onAuthorizedPrint, onClearSensitive, onSelectionChange
 }) {
   const [actor,setActor]=useState(null);
   const [epoch,setEpoch]=useState(0);
@@ -47,7 +47,8 @@ export default function NonMapNpcManagerResearchShell({
     selectedRef.current=next;
     clear();
     setSelectedId(next);
-  },[clear]);
+    if(typeof onSelectionChange==="function")onSelectionChange(next);
+  },[clear,onSelectionChange]);
 
   const refresh=useCallback(()=>{
     clear();
