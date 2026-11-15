@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4d04213cb4bfc5ab55cb79ca01e282ec16d0daab` |
+| Exact source commit represented by this archive snapshot | `e0de9592d7aa512e98eed5d501a530ede561befd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): route new chats to merged continuity gate and unchanged T27 |
-| Files changed relative to main | 111 (89 non-docs; 22 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | docs(c34): source-lock shell-fixed full open-PR publisher and preserve T27 |
+| Files changed relative to main | 116 (94 non-docs; 22 docs) |
+| Last source commit | 4 files (2 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,14 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/research-docs-maintenance.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `scripts/agents/validate_research_docs_maintainer.mjs`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
@@ -49,6 +52,10 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
+- `scripts/agents/project_health.mjs`
+- `scripts/agents/render_open_pr_index.mjs`
+- `scripts/agents/validate_open_pr_index.mjs`
+- `scripts/agents/validate_research_docs_maintainer.mjs`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
@@ -67,12 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
 - `scripts/integration/c34/c34_original_feat_grant_materializer_pg17.sql`
 - `scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql`
-- `scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql`
-- `scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql`
-- `scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql`
-- `scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql`
-- `scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql`
-- … 61 more
+- … 66 more
 
 ## Trust and update procedure
 
