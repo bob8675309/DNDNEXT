@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f54cd75e2f0c3e5a83960728a0b536800d574b2a` |
+| Exact source commit represented by this archive snapshot | `9355a135f2fc255a09a9c0530db982dfd958a623` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append immutable T24 signed manager/PDF CI receipt |
-| Files changed relative to main | 102 (82 non-docs; 20 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research(c34): T25 source-lock original NPC manager and derive privacy-safe scratch foundation |
+| Files changed relative to main | 103 (83 non-docs; 20 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
-- … 52 more
+- … 53 more
 
 ## Trust and update procedure
 
