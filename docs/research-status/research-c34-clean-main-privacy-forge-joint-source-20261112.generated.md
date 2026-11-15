@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f21b2a6b959b900b626336ba397cae7fac896167` |
+| Exact source commit represented by this archive snapshot | `9820fd714e3bf6b1709320404d6477f435d77616` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): supply actual signed outsider account as P2 alternate wallet target |
+| Last source commit title | test(c34): accept PostgREST permission masking but verify anon wallet_set never changes PG balance |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
