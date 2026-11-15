@@ -72,6 +72,7 @@ export default function T24DisposableManagerPage(){
     <NonMapNpcManagerResearchShell client={supabase}
       key={selected||"none"} characterId={selected}
       onAuthorizedPrint={onAuthorizedPrint}
+      onSelectionChange={id=>setSelected(id)}
       onClearSensitive={()=>{
         window.__C34_T24_PDF__=null;
         setPdfStatus("idle");
