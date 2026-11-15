@@ -359,6 +359,70 @@ try {
   "Merchant storefront survived signed user logout");
  console.log("PASS T26-R02: GM logout drops original shop stock and selected Profile");
 
+ // T27-R01 — REAL signed character_stock GET is fetched from local PostgREST,
+ // then deliberately held at the browser route while GM signs out. A normal
+ // shop reload after logout is NOT an equivalent test: the response must
+ // have actually been issued while authenticated and arrive AFTER SIGNED_OUT.
+ // This tests the unchanged original MerchantPanel through the scratch-only
+ // auth-clearing adapter. It does not prove the live shared/map Profile safe.
+ await login("GM");
+ await page.locator(".npc-roster-list").getByRole("button",{name:/T26 Probe Merchant/}).click();
+ await page.getByTestId("t26-open-public-profile").click();
+ await page.getByTestId("t26-safe-merchant-profile").waitFor({timeout:30000});
+ let stockHeld=false,stockFetch=null,stockDeliveryError=null;
+ let releaseHeldStock=()=>{},signalStockDelivered=()=>{};
+ const stockGate=new Promise(resolve=>{releaseHeldStock=resolve});
+ const stockDelivered=new Promise(resolve=>{signalStockDelivered=resolve});
+ await page.route("**/rest/v1/character_stock*",async rt=>{
+  let url=null;
+  try{url=new URL(rt.request().url())}catch{}
+  const scopedStock=url?.searchParams.get("character_id")==="eq."+merchant;
+  if(stockHeld||rt.request().method()!=="GET"||!scopedStock){
+   try{await rt.continue()}catch{}
+   return;
+  }
+  stockHeld=true;
+  try{
+   const upstream=await rt.fetch();
+   const upstreamRows=await upstream.json();
+   stockFetch={status:upstream.status(),rows:upstreamRows};
+   // A delivered, already-authorized response is the actual race subject.
+   // Its bytes must not reach the renderer until after auth becomes null.
+   await stockGate;
+   await rt.fulfill({response:upstream});
+  }catch(cause){
+   stockDeliveryError=String(cause);
+  }finally{signalStockDelivered()}
+ });
+ await page.getByRole("button",{name:"Let me browse your wares."}).click();
+ await page.getByTestId("t26-real-merchant-shop").waitFor({timeout:30000});
+ for(let t=0;t<100&&!stockFetch;t++)await page.waitForTimeout(100);
+ assert.ok(stockHeld,"T27 did not intercept original signed GET character_stock request");
+ assert.equal(stockFetch?.status,200,"T27 held original stock GET was not authorized by real local PostgREST");
+ assert.ok(Array.isArray(stockFetch?.rows)&&stockFetch.rows.some(item=>item.display_name===stockLabel),
+  "T27 must hold the actual signed merchant shelf bytes, not a mocked or empty response");
+ assert.equal(await actualStock.getByRole("option",{name:new RegExp(stockLabel)}).count(),0,
+  "T27 merchant stock rendered before the deliberately held response");
+ await logout();
+ await page.getByTestId("t26-real-merchant-shop").waitFor({state:"detached",timeout:15000});
+ assert.equal(await page.getByRole("listbox",{name:"Merchant stock"}).count(),0,
+  "T27 actor logout must unmount the shop BEFORE old stock is delivered");
+ releaseHeldStock();
+ await Promise.race([
+  stockDelivered,
+  new Promise((_,reject)=>setTimeout(()=>reject(Error("T27 timed out delivering held stock AFTER signout")),15000))
+ ]);
+ await page.unroute("**/rest/v1/character_stock*");
+ assert.equal(stockDeliveryError,null,"T27 held PostgREST stock fulfillment failed: "+stockDeliveryError);
+ await page.waitForTimeout(450);
+ assert.equal(await page.getByTestId("t26-real-merchant-shop").count(),0,
+  "T27 old signed response recreated the GM's shop after logout");
+ assert.equal(await page.getByRole("listbox",{name:"Merchant stock"}).count(),0,
+  "T27 late stock bytes reached an unauthenticated shop");
+ assert.equal(await page.getByText(stockLabel,{exact:true}).count(),0,
+  "T27 delayed GM shelf item leaked into a post-logout DOM");
+ console.log("PASS T27-R01: REAL signed local character_stock GET bytes held, GM signs out, late response delivered, shop and stock remain destroyed");
+
  await login("OUTSIDER");
  await page.getByText("T26 Probe NPC",{exact:true}).first().waitFor();
  await page.getByTestId("t25-sheet-restricted").waitFor();
