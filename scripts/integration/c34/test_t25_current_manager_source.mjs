@@ -77,6 +77,11 @@ test("T25-06 all three rosters plus ancillary lists are actor-bound and stale-re
   output.indexOf("  /* ------------------- roster merge ------------------- */"));
  assert.equal((readerBlock.match(/const requestActor = actorRef\.current/g)||[]).length,6);
  assert.equal((readerBlock.match(/actorRef\.current !== requestActor/g)||[]).length,6);
+ assert.equal((readerBlock.match(/rosterEpochRef\.current !== requestEpoch/g)||[]).length,6);
+ assert.equal((readerBlock.match(/const requestEpoch = rosterEpochRef\.current/g)||[]).length,6);
+ assert.match(output,/rosterEpochRef\.current \+= 1/);
+ assert.match(output,/setIsAdmin\(false\);\s*void loadAuth\(\);/);
+
  assert.match(output,/setNpcs\(\[\]\); setMerchants\(\[\]\); setMerchantProfiles\(new Map\(\)\);/);
  assert.match(output,/if \(!userId\) return;\s*void Promise\.all/);
 });
