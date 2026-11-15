@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `376097492a8cd227aa4ba44781dbd8fb8d35f688` |
+| Exact source commit represented by this archive snapshot | `e71429bfef43ed3b9bf1f4f288bdd0a96fc499cc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): hide previous selected wallet GP synchronously during React target prop transition |
+| Last source commit title | fix(c34): prevent one-frame previous merchant stock rendering on prop/actor switch |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/useWalletT28P2Research.js`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 
 ## Research-branch change inventory versus main
 
