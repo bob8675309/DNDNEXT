@@ -14,6 +14,8 @@ import { PDFDocument } from "pdf-lib";
 import { deriveT26CurrentMerchantShop,T26_TEMP_ROUTE } from "./derive_t26_current_merchant_shop.mjs";
 import { writeT28PersistentRoute,T28_P1_TEMP_ROUTE } from "./derive_t28_persistent_probe.mjs";
 import { runT28NonMapPersistentSignedBrowser } from "./run_t28_persistent_signed_browser.mjs";
+import {writeT28P2MountedRoute,T28_P2_TEMP_ROUTE} from "./derive_t28_p2_mounted_probe.mjs";
+import {runT28P2MountedCommerceSignedBrowser} from "./run_t28_p2_mounted_signed_browser.mjs";
 
 const env=process.env;
 for(const [key,expected] of Object.entries({
@@ -29,7 +31,9 @@ assert.ok(env.C33_BROWSER_CHROME&&path.isAbsolute(env.C33_BROWSER_CHROME));
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const probe=path.join(root,T26_TEMP_ROUTE);
 const t28Probe=path.join(root,T28_P1_TEMP_ROUTE);
+const p2Probe=path.join(root,T28_P2_TEMP_ROUTE);
 assert.ok(!fs.existsSync(t28Probe),"T28 refuses overwriting tracked/preexisting route");
+assert.ok(!fs.existsSync(p2Probe),"T28-P2 refuses overwriting tracked/preexisting route");
 const pdfDir=path.join(env.RUNNER_TEMP||"/tmp","c34-t25-pdf-"+randomUUID());
 assert.ok(!fs.existsSync(probe),"T26 refuses overwriting a tracked or preexisting route");
 const require=createRequire(path.join(env.C33_BROWSER_TOOL_ROOT,"t25-playwright-anchor.cjs"));
@@ -203,6 +207,7 @@ try {
  assert.ok(edits.length>=12);
  fs.writeFileSync(probe,output,{flag:"wx"});
  writeT28PersistentRoute(merchant,alternateMerchant);
+ writeT28P2MountedRoute(merchant,alternateMerchant);
  const nextPort=await freePort(),origin="http://127.0.0.1:"+nextPort;
  const nextBin=path.join(root,"node_modules/next/dist/bin/next");
  assert.ok(fs.existsSync(nextBin),"T26 needs npm ci and pinned Next.js");
@@ -524,6 +529,50 @@ try {
    expectedGmGp:gmGp,offsite,errors
  });
  console.log("PASS T28-P1 real signed persistent NONMAP original RED and guarded GREEN");
+
+ // P2 begins ONLY AFTER all unchanged P1 browser/role/stock/persistent tests.
+ // Its wallet tables/role RPCs are synthetic; the buying RPC is loaded FROM
+ // THE EXISTING EXACT ORIGINAL DnDWeb source, not invented or regenerated.
+ const p2Fixture="scripts/integration/c34/t28_p2_disposable_original_buy_wallet_setup_pg17.sql";
+ const p2Result=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-q","-f",p2Fixture],
+  {cwd:root,env,encoding:"utf8",timeout:25000});
+ assert.equal(p2Result.status,0,"T28-P2 local wallet/role setup failed "+p2Result.stderr?.slice(-1000));
+ sql("INSERT INTO public.player_wallets(user_id,gp) VALUES("+
+  q(users.GM.id)+",79),("+q(users.OUTSIDER.id)+",0)");
+ const sourceOriginalBuy="scripts/fixtures/forge_original_merchant_buy_source_pg17.sql";
+ assert.ok(fs.existsSync(path.join(root,sourceOriginalBuy)));
+ const p2OriginalBuy=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-q","-f",sourceOriginalBuy],
+  {cwd:root,env,encoding:"utf8",timeout:25000});
+ assert.equal(p2OriginalBuy.status,0,"T28-P2 ORIGINAL merchant-buy SQL install failed "+
+  p2OriginalBuy.stderr?.slice(-1000));
+ assert.equal(sql("SELECT md5(pg_get_functiondef('public.buy_from_merchant(uuid,uuid,integer)'::regprocedure))"),
+  "1dbe8c24c4c718396d7256f6f7465354",
+  "T28-P2 MUST install byte-grounded ORIGINAL merchant-buy function");
+ sql("REVOKE ALL ON FUNCTION public.buy_from_merchant(uuid,uuid,integer) FROM PUBLIC,anon,authenticated; "+
+  "GRANT EXECUTE ON FUNCTION public.buy_from_merchant(uuid,uuid,integer) TO authenticated; "+
+  "NOTIFY pgrst, 'reload schema'");
+ // Probe real signed available RPCs before browser. Auth roles and buyer
+ // cannot obtain wallets/commerce data through anonymous direct table grants.
+ let p2GmWallet;
+ for(let attempts=0;attempts<20;attempts++){
+  p2GmWallet=await users.GM.who.rpc("wallet_get",{p_user:null});
+  if(!p2GmWallet.error)break;
+  await new Promise(done=>setTimeout(done,300));
+ }
+ assert.ifError(p2GmWallet.error);
+ assert.equal(Number(p2GmWallet.data),79);
+ const p2AnonBuy=await client().rpc("buy_from_merchant",{
+  p_merchant_id:merchant,p_stock_uuid:stockId,p_qty:1
+ });
+ assert.ok(p2AnonBuy.error,"T28-P2 original buy RPC must deny anon");
+ assert.equal(sql("SELECT qty FROM public.character_stock WHERE id="+q(stockId)),"3");
+ console.log("PASS T28-P2-SETUP: source-original merchant-buy SHA/MD5, signed stock/wallet, anonymous denial, local-only schema");
+ await runT28P2MountedCommerceSignedBrowser({
+   context,origin,localUrl:env.DNDNEXT_C34_LOCAL_URL,
+   users,merchant,alternateMerchant,stockId,stockLabel,alternateStockLabel,
+   offsite,errors,inspect:sql
+ });
+ console.log("PASS T28-P2-MOUNTED: genuine signed original buy and guarded nonmap wallet/shop browser suite");
  assert.deepEqual(offsite,[],"T26/T28 attempted offsite Supabase requests");
  assert.deepEqual(errors,[],"T26 browser exceptions "+errors.join("; "));
  console.log("T26 original merchant storefront and actor/character race signed browser PASS; production unchanged.");
@@ -532,7 +581,9 @@ try {
  if(server?.pid){try{process.kill(-server.pid,"SIGTERM")}catch{server.kill("SIGTERM")}}
  try{fs.unlinkSync(probe)}catch{}
  try{fs.unlinkSync(t28Probe)}catch{}
+ try{fs.unlinkSync(p2Probe)}catch{}
  fs.rmSync(pdfDir,{recursive:true,force:true});
  assert.ok(!fs.existsSync(probe),"T26 must remove disposable Next route in finally");
  assert.ok(!fs.existsSync(t28Probe),"T28 must remove persistent disposable route in finally");
+ assert.ok(!fs.existsSync(p2Probe),"T28-P2 must remove mounted disposable route in finally");
 }
