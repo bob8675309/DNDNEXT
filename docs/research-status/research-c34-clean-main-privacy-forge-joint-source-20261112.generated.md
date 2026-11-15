@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3ccf8172425bbb08b92d6d880080e349afe76e7a` |
+| Exact source commit represented by this archive snapshot | `dab5110dbec66c78cdaa5b86cfd4faf13b4b3ab8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): mark disabled-by-default town merchant candidate integrated in research branch; world map untouched |
+| Last source commit title | docs(c34): append opt-in town-only merchant integration, exact rollback and pending signed acceptance |
 | Files changed relative to main | 140 (114 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
