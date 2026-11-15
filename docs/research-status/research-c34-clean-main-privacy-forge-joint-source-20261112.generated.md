@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f16320ad8c706c650d14864be0f5c8402b5e87f0` |
+| Exact source commit represented by this archive snapshot | `39d454ba03158162e320beb11a32e37e8d99ed5a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): close T25 signed current manager C01-C06 and exact-source CI with production hold |
+| Last source commit title | docs(c34): set active task to bounded real merchant shop after T25 signed manager PASS |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
