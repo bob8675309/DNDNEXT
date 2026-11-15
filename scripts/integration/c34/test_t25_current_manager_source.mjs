@@ -44,6 +44,12 @@ test("T25-04 no bulk secrets, narrative rosters or speculative page-wide sheet c
   output.indexOf("  /* ------------------- roster merge ------------------- */"));
  assert.doesNotMatch(block,/["'](?:background|motivation|quirk|mannerism|voice)["']/);
  assert.match(block,/projectNonMapManagerRosterRow/);
+ assert.equal((block.match(/\.select\(C34_T25_PUBLIC_ROSTER_FIELDS\)/g)||[]).length,3,
+  "NPC, merchant roster and merchant profiles must all select the same narrow projection");
+ assert.match(output,/const C34_T25_PUBLIC_ROSTER_FIELDS = "id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url";/);
+ assert.doesNotMatch(block,/\.select\(\s*\[/,
+  "A legacy multi-column SELECT must not survive T25");
+
 });
 test("T25-05 actor, character, permissions and PDF must fail closed",()=>{
  const {output}=deriveT25CurrentManager(original);
