@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7e9c5d6474288cd1680a340bb4a319b775c272ce` |
+| Exact source commit represented by this archive snapshot | `0b974e703d7881d5fa4c57862e40154ccafee91f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): reconcile accepted wallet_set through latest guarded server balance read |
+| Last source commit title | test(c34): cover guarded current authorization errors as distinct from stale rejects |
 | Files changed relative to main | 132 (106 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/useWalletT28P2Research.js`
+- `scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs`
 
 ## Research-branch change inventory versus main
 
