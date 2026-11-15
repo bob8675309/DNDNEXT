@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `26c2a5bf18b6959640bde5c2ae15ea964e229b18` |
+| Exact source commit represented by this archive snapshot | `17abf908c8a9da488d3b487144191f32dadc2229` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T28 nonmap actor epochs for stock vs wallet source-only race candidates |
+| Last source commit title | docs(c34): T28 P0 seven source races PASS, preserve signed T1-T27 and 42-PR archive |
 | Files changed relative to main | 121 (97 non-docs; 24 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
-- `scripts/integration/c34/test_t28_actor_epoch_candidate.mjs`
-- `utils/c34/actorRequestEpochCandidate.mjs`
 
 ## Research-branch change inventory versus main
 
