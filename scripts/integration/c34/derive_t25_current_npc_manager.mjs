@@ -206,6 +206,28 @@ export function deriveT25CurrentManager(source) {
     '  // Resolve the selected character\'s map icon record (for showing next to the name).',
     "bind selected rights and narrative to actor and character");
 
+  // Source-locked deep-link race fix: the old source selects roster[0] if
+  // the first (NPC or merchant) list finishes before the requested target.
+  // A syntactically valid focus is intentional even while its roster is
+  // loading. Do not silently switch the selected actor to a merchant.
+  replaceOnce(state,
+    '        const exists = roster.find((r) => r.type === type && String(r.id) === String(id));\n' +
+    '        if (exists) {\n' +
+    '          selectCharacterKey(keyOf(type, id));\n' +
+    '          return;\n' +
+    '        }',
+    '        if ((type === "npc" || type === "merchant") &&\n' +
+    '            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {\n' +
+    '          // Keep the deep-linked ID selected until its safe roster resolves.\n' +
+    '          selectCharacterKey(keyOf(type, id));\n' +
+    '          return;\n' +
+    '        }',
+    "preserve valid focus intent across independent NPC/merchant roster races");
+  replaceOnce(state,
+    '                    <div className="h5 mb-1">{selected.name}</div>',
+    '                    <div className="h5 mb-1" data-testid="t25-selected-character" data-character-id={selected.id}>{selected.name}</div>',
+    "expose selected identity for disposable authenticated browser assertion");
+
   // All sensitive detail/sheet reads below are from the selected server-authorized
   // T21 reader. No manager-wide sheet read or raw private-column fallback.
   const nextAuth = [
