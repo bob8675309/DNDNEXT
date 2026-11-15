@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8f202ef3871ec4f2aec025ca411d24d7c62d167a` |
+| Exact source commit represented by this archive snapshot | `5f1704185a73c0188f4627b03eb07c2107b98014` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin signed original buy and wallet-set PostgREST readiness handshake before mounted cases |
+| Last source commit title | test(c34): target real local outsider wallet rather than nonexistent placeholder UUID |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
+- `components/c34/T28P2MountedCommerceProbe.jsx`
 
 ## Research-branch change inventory versus main
 
