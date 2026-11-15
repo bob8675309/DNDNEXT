@@ -261,8 +261,13 @@ try{
  assert.ok(gmPrivatePdf.includes(gmSecret),"Authorized GM PDF lost original GM Secret");
  console.log("PASS C34-T24-B06: signed GM dossier and two true 3-page PDFs; public copy private-safe, explicit GM copy includes Secret");
 
- await choose(merchantId);
+ await page.locator('[data-testid="t24-roster-status"]').getByText("Roster: ok").waitFor();
+ const merchantButton=page.getByRole("navigation",{name:"NPC and merchant roster"})
+   .getByRole("button",{name:"T24 Profile Merchant"});
+ await merchantButton.waitFor();
+ await merchantButton.click();
  await page.getByRole("heading",{name:"T24 Profile Merchant"}).waitFor();
+ assert.equal(await api("getPdfBytes"),null,"Roster click retained previous selected NPC GM PDF");
  assert.equal(await has('[data-testid="t24-merchant-profile"]'),true);
  assert.ok(!(await body()).includes(gmSecret),"Previously selected NPC secret persisted into merchant");
  await page.getByText("T24_MERCHANT_PRIVATE",{exact:true}).waitFor();
