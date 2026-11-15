@@ -2,6 +2,18 @@
 // T28-P2 candidate is NOT imported by production; offline behavior regression only.
 import assert from "node:assert/strict";
 import { createT28P2CommerceGuardCandidate } from "../../../utils/c34/t28P2CommerceGuardCandidate.mjs";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
+const file=p=>readFileSync(path.join(root,p),"utf8");
+const blob=s=>createHash("sha1").update("blob "+Buffer.byteLength(s)+"\0"+s).digest("hex");
+assert.equal(blob(file("components/MerchantPanel.js")),"22e4d0810603bc0322904573cb5fe0c14bad1f88");
+assert.equal(blob(file("utils/useWallet.js")),"f34b99f1d6eee66420d57bdcefdc6d3427092e25");
+for (const p of ["pages/map.js","components/MapPageClient.js","pages/npcs.js","pages/town/[id].js","pages/inventory.js","components/NpcPanel.js","components/MerchantPanel.js","utils/useWallet.js"]) {
+  assert.ok(!file(p).includes("t28P2CommerceGuardCandidate"),"P2 candidate must not enter product route: "+p);
+}
 const deferred = () => {
   let resolve, reject;
   const promise = new Promise((yes,no)=>{resolve=yes; reject=no});
