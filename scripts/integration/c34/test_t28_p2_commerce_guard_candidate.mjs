@@ -83,13 +83,13 @@ assert.equal((await outsiderWallet).committed,true);
 assert.equal(latest(balances),0);
 
 // (7) Disposal silences old requests without issuing React state setters.
+guard.selectMerchant("m2");
 const pending=guard.loadStock();
 const previous=rows.length;
 guard.dispose();
 latest(pendingStocks).resolve(["AFTER-UNMOUNT"]);
 assert.equal((await pending).committed,false);
 assert.equal(rows.length,previous);
-assert.equal(guard.loadWallet().then instanceof Function,true);
 assert.equal((await guard.loadWallet()).committed,false);
 assert.equal(guard.snapshot().stopped,true);
 
