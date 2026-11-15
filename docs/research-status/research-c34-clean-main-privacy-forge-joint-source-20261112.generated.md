@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `333a854395d5023a3fcd379978df92196267be8b` |
+| Exact source commit represented by this archive snapshot | `4c665d26f630e183abc57711e58f72a0da7af4b6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): distinguish verified original-buyer handler RED/GREEN from unverified signed database transaction |
+| Last source commit title | fix(c34): clear stale shop stock after current stock fetch error and preserve purchase success with refresh warning |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 
 ## Research-branch change inventory versus main
 
