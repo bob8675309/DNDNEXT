@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `34fb6a54413f348ce9ce30ef5850618c6d2af46f` |
+| Exact source commit represented by this archive snapshot | `085e8695ee83f01d5b77e6508f855c526ec28b1d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): prioritize corrected local wallet schema and actual signed buyer run as next gate |
+| Last source commit title | docs(c34): append proof of preexisting wallet schema collision and local-only PG17 fix |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
