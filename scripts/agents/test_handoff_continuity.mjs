@@ -92,12 +92,32 @@ for (const term of [
   'PR_CREATED_AT: ${{ github.event.pull_request.created_at }}',
   'test "$(git rev-parse refs/remotes/origin/continuity-pr-base)" = "$PR_BASE_SHA"',
   'persist-credentials: false', 'contents: read',
+  'The base can advance independently of this PR.',
 ]) assert.ok(wf.includes(term), 'Missing trusted-workflow safety contract: ' + term);
 for (const unsafe of [
   'ref: ${{ github.event.pull_request.base.sha }}',
   'ref: ${{ github.event.pull_request.head.sha }}',
+  'test "$(git rev-parse refs/remotes/origin/continuity-pr-base)" = "$PR_BASE_SHA"',
   'contents: write',
   'secrets.SUPABASE', 'secrets.VERCEL', 'secrets.OPENAI',
 ]) assert.ok(!wf.includes(unsafe), 'Unsafe trusted-workflow configuration: '+unsafe);
 
+// A PR's event base SHA is an older ancestor after the target base advances.
+{
+  const { cwd, base } = fixture();
+  try {
+    git(cwd, 'checkout', 'main');
+    write(cwd, 'docs/README.md', 'new main docs\\n');
+    const advancedMain = commit(cwd, 'base branch advanced independently');
+    assert.notEqual(advancedMain, base);
+    git(cwd, 'checkout', 'research/test');
+    write(cwd, 'components/NpcPanel.js', 'new source\\n');
+    write(cwd, 'docs/ACTIVE_WORK.md', 'Next PR action\\n');
+    appendFileSync(join(cwd, 'docs/HANDOFF_LOG.md'), receipt);
+    commit(cwd, 'source with valid recorded older PR base');
+    const result = audit(cwd, base);
+    assert.equal(result.code, 0, 'Event-base older than current base must not fail: '+result.output);
+    console.log('PASS stale event-base SHA is valid after unrelated main advancement');
+  } finally { rmSync(cwd, { recursive: true, force: true }); }
+}
 console.log('PASS all continuity behavioral and trusted-workflow contract fixtures');

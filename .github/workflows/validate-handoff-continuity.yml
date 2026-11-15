@@ -68,7 +68,10 @@ jobs:
           [[ "$PR_BASE_SHA" =~ ^[a-f0-9]{40}$ ]]
           [[ "$PR_BASE_REF" =~ ^[A-Za-z0-9._/-]+$ ]] && [[ "$PR_BASE_REF" != *'..'* ]]
           git fetch --no-tags origin "+refs/heads/$PR_BASE_REF:refs/remotes/origin/continuity-pr-base"
-          test "$(git rev-parse refs/remotes/origin/continuity-pr-base)" = "$PR_BASE_SHA"
+          # The event PR base SHA is a historical commit snapshot, NOT necessarily
+          # the branch's current tip. The base can advance independently of this PR.
+          # The read-only Node checker compares exact event base/head Git history.
+          # Never reject merely because current base tip != event-time base SHA.
           git fetch --no-tags origin "+refs/pull/$PR_NUMBER/head:refs/remotes/origin/continuity-pr-head"
           test "$(git rev-parse refs/remotes/origin/continuity-pr-head)" = "$PR_HEAD_SHA"
       - name: Verify authored docs, append-only log and latest source chronology
