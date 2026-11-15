@@ -126,4 +126,15 @@ const make=({buyer=()=>Promise.resolve({data:1,error:null}),stock=async()=>{},
  assert.doesNotMatch(c.notices.at(-1)?.message,/could not be refreshed/);
  console.log("PASS T28-P2-BUY-R05: normal buyer success retains original success message");
 }
+// (R06) Buyer committed; CURRENT stock fetch rejected. Never claim the
+// purchase failed or leave an apparently up-to-date shelf without warning.
+{
+ const c=make({stock:async()=>({committed:false,current:true,error:Error("stock unavailable")})});
+ await c.handleBuy(card);
+ assert.equal(c.rpc.length,1);
+ assert.equal(c.notices.at(-1)?.kind,"success");
+ assert.match(c.notices.at(-1)?.message,/Stock could not be refreshed/);
+ assert.ok(!c.notices.some(n=>n?.kind==="error"));
+ console.log("PASS T28-P2-BUY-R06: committed purchase survives stock read error with clear retry warning");
+}
 console.log("PASS T28-P2-BUY-UNIT: derived original-buyer handler distinguishes committed transactions from display refresh");
