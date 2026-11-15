@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5b2e0be0a9dab9c58a2ebb6211385c33ca344f2c` |
+| Exact source commit represented by this archive snapshot | `10f59b038f90cc3efe5c0756674e8679fc4bc96b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): T25 preserve manager UI while binding narrative, sheet, print, edit and store rights |
-| Files changed relative to main | 103 (83 non-docs; 20 docs) |
+| Last source commit title | test(c34): T25 source-locked privacy and full-manager preservation negative tests |
+| Files changed relative to main | 104 (84 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
+- `scripts/integration/c34/test_t25_current_manager_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
-- … 53 more
+- … 54 more
 
 ## Trust and update procedure
 
