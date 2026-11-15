@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9b013b76df7ded71c7b5a4724e903a57bfc73445` |
+| Exact source commit represented by this archive snapshot | `962583e0c17422829269c52d38c249a3bc14fa1e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): add inert owner-edit marker to trigger held branch signed local test without main workflow |
+| Last source commit title | test(c34): source-lock owner push-only local signed CI trigger and inert research marker |
 | Files changed relative to main | 139 (113 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/T28_P2_OWNER_CI_TRIGGER.txt`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
