@@ -1038,7 +1038,7 @@ export default function MerchantPanel({
       showPreviewHeader={false}
       previewMetrics={[
         { label: "Available", value: selectedCard?._qty ?? 0 },
-        { label: "Your wallet", value: walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp" },
+        { label: "Your wallet", value: walletLoading ? "…" : gp == null ? "Unavailable" : gp === -1 ? "∞ gp" : gp + " gp" },
       ]}
       actionLabel={selectedCard ? (busyId === selectedCard.id ? "Purchasing…" : selectedCard._qty <= 0 ? "Sold out" : "Buy for " + selectedCard._price_gp + " gp") : ""}
       actionDisabled={!selectedCard || busyId === selectedCard?.id || selectedCard?._qty <= 0}
