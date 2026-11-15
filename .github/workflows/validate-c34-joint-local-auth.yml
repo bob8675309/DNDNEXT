@@ -52,6 +52,7 @@ jobs:
           node --check scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs
           node --check scripts/integration/c34/test_joint_pg17_local_auth.mjs
           node --test scripts/integration/c34/test_source_contract.mjs
+          node --test scripts/integration/c34/test_t23_nonmap_npc_manager_candidate.mjs
       - name: Install lockfile-pinned application dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Prepare disposable Supabase PostgreSQL 17 and GoTrue project
