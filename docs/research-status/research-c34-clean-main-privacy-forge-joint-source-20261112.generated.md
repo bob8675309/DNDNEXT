@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e3cc91e065e2744b52e80a5ab822e9f82fd3cd09` |
+| Exact source commit represented by this archive snapshot | `0ef5b1637da8ce038a06f60028803c845c228c21` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record exact green T24 signed manager/real PDF tests and release HOLD |
+| Last source commit title | docs(c34): set T24 signed non-map manager handoff and next bounded task |
 | Files changed relative to main | 102 (82 non-docs; 20 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
