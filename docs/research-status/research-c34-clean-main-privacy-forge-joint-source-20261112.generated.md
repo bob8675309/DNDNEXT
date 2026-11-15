@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2b7a9438e8c62c13c1c35a43b83c717ad16b890f` |
+| Exact source commit represented by this archive snapshot | `0d9aec0e027808519f889ee59ec8cd7656afbc10` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): verify committed merchant RPC success is not mislabeled when wallet display refresh fails |
+| Last source commit title | test(c34): lock successful server debit semantics separately from post-purchase refresh failures |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
