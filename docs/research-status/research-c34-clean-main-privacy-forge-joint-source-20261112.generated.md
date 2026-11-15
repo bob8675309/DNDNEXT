@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0e91c4ce4559147233487ee8995dbd9881b8ecee` |
+| Exact source commit represented by this archive snapshot | `84728ef0ab6671a8b02b4b74a70856112f627d04` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): capture real selected-NPC timeout actor, public roster and Next diagnostics |
+| Last source commit title | test(c34): supply current NPC roster nullable columns in disposable PG17 fixture only |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
