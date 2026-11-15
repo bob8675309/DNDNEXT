@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `75323ad8f106040d2dc8e20d4c64716ab97f24dd` |
+| Exact source commit represented by this archive snapshot | `2e5b79f1432d09d50dc587df651e891f2b2a898a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add signed coeditor and inventory-only merchant and wallet isolation |
+| Last source commit title | test(c34): require P2 signed coeditor/inventory roles and anon wallet denial in source contract |
 | Files changed relative to main | 137 (111 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
