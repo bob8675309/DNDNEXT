@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { validResearchRef, renderBranchStatus, GENERATED_PATH } from "./research_docs_maintainer.mjs";
 for(const x of ["research/foo","research/forge-2026","agent/safe/deep","agent/agent_1"])assert.equal(validResearchRef(x),true,x);
 for(const x of ["main","docs/test","research/../../main","research//bad","agent/.x","research/x;rm","refs/heads/research/x"])assert.equal(validResearchRef(x),false,x);
@@ -57,3 +58,20 @@ for (const token of ["gh api --paginate", "pulls?state=open&per_page=100",
 for(const forbidden of ["schedule:", "pull_request_target:", "SUPABASE_SERVICE_ROLE_KEY", "VERCEL_TOKEN", "openai/codex-action"])
   assert.ok(!completeIndexWorkflow.includes(forbidden),"Publisher must remain free/owner-push scoped: "+forbidden);
 console.log("PASS no-cost paginated complete open-PR metadata snapshot, atomic archive and no secrets/runtime");
+
+const publishMarker="      - name: Publish source snapshot into separate docs archive branch only";
+const stepAt=completeIndexWorkflow.indexOf(publishMarker);
+assert.ok(stepAt>=0,"Missing archive publication step");
+const runMarker="        run: |\\n".replace("\\n","\n");
+const startAt=completeIndexWorkflow.indexOf(runMarker,stepAt);
+assert.ok(startAt>=0,"Missing archive publisher shell body");
+const publishBody=completeIndexWorkflow.slice(startAt+runMarker.length).split("\n")
+  .map(line=>line.startsWith("          ")?line.slice(10):line).join("\n");
+const syntax=spawnSync("bash",["-n"],{input:publishBody,encoding:"utf8"});
+assert.equal(syntax.status,0,"Archive publishing bash syntax INVALID: "+syntax.stderr);
+const duplicateQuote=publishBody.replace(
+  /openprs_old="\$\(gh api ([^\n]*?)\)"/,
+  (_whole,inside)=>'openprs_old="$(gh api '+inside+')""');
+const red=spawnSync("bash",["-n"],{input:duplicateQuote,encoding:"utf8"});
+assert.notEqual(red.status,0,"Regression: invalid trailing archive quote must fail bash -n");
+console.log("PASS publisher real shell-body bash -n and intentional malformed-quote negative");

@@ -122,7 +122,7 @@ jobs:
           snapshot="docs/research-status/$safe_name.generated.md"
           old_content="$(gh api "repos/$GITHUB_REPOSITORY/contents/$snapshot?ref=$archive_branch" --jq .content 2>/dev/null || true)"
           health_old="$(gh api "repos/$GITHUB_REPOSITORY/contents/docs/PROJECT_HEALTH.generated.md?ref=$archive_branch" --jq .content 2>/dev/null || true)"
-          openprs_old="$(gh api "repos/$GITHUB_REPOSITORY/contents/docs/OPEN_PRS.generated.md?ref=$archive_branch" --jq .content 2>/dev/null || true)""
+          openprs_old="$(gh api "repos/$GITHUB_REPOSITORY/contents/docs/OPEN_PRS.generated.md?ref=$archive_branch" --jq .content 2>/dev/null || true)"
           if [[ -n "$old_content" && -n "$health_old" && -n "$openprs_old" ]] &&
              printf '%s' "$old_content" | base64 -d | cmp -s - "$output" &&
              printf '%s' "$health_old" | base64 -d | cmp -s - "$health" &&
