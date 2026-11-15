@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ebce92d804ca87cdb0c32d7d82a6e16834462a96` |
+| Exact source commit represented by this archive snapshot | `f72df9ddc19676e5212568f39e2936b4be1d56ad` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T26 signed outsider public Profile, PostgREST stock refresh and logout-safe browser flow |
+| Last source commit title | security(c34): T26 scratch auth switch closes previous merchant Profile overlay |
 | Files changed relative to main | 110 (89 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `scripts/integration/c34/derive_t26_current_merchant_shop.mjs`
 
 ## Research-branch change inventory versus main
 
