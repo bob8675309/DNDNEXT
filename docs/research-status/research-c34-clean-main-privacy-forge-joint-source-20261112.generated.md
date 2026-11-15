@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `17abf908c8a9da488d3b487144191f32dadc2229` |
+| Exact source commit represented by this archive snapshot | `c644e2ad3a968da226988f30a01b39e5379893f9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): T28 P0 seven source races PASS, preserve signed T1-T27 and 42-PR archive |
-| Files changed relative to main | 121 (97 non-docs; 24 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): T28 P1 real signed persistent nonmap stock+wallet late-response race |
+| Files changed relative to main | 126 (101 non-docs; 25 docs) |
+| Last source commit | 10 files (7 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,16 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-joint-source-research.yml`
+- `components/c34/T28NonMapPersistentResearchProbe.jsx`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
+- `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
+- `scripts/integration/c34/derive_t28_persistent_probe.mjs`
+- `scripts/integration/c34/run_t28_persistent_signed_browser.mjs`
+- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `scripts/integration/c34/test_t28_persistent_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -29,6 +36,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
 - `components/c34/NonMapNpcProfileResearchShell.jsx`
+- `components/c34/T28NonMapPersistentResearchProbe.jsx`
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
@@ -51,6 +59,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
 - `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
+- `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/agents/project_health.mjs`
@@ -71,9 +80,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
 - `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
-- `scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql`
-- `scripts/integration/c34/c34_original_eladrin_season_pg17.sql`
-- … 71 more
+- … 76 more
 
 ## Trust and update procedure
 
