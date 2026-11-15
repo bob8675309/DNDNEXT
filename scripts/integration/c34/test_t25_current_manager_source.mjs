@@ -44,6 +44,9 @@ test("T25-04 no bulk secrets, narrative rosters or speculative page-wide sheet c
   output.indexOf("  /* ------------------- roster merge ------------------- */"));
  assert.doesNotMatch(block,/["'](?:background|motivation|quirk|mannerism|voice)["']/);
  assert.match(block,/projectNonMapManagerRosterRow/);
+ assert.match(block,/\.eq\("kind", "merchant"\)\s*\.order\("name", \{ ascending: true \}\)/);
+ assert.doesNotMatch(block,/\.order\("updated_at", \{ ascending: false \}\)/,
+  "Merchant must not order by a column outside the T24 signed ACL");
  assert.equal((block.match(/\.select\(C34_T25_PUBLIC_ROSTER_FIELDS\)/g)||[]).length,3,
   "NPC, merchant roster and merchant profiles must all select the same narrow projection");
  assert.match(output,/const C34_T25_PUBLIC_ROSTER_FIELDS = "id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url";/);
