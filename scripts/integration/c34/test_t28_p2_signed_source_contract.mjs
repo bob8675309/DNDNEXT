@@ -71,6 +71,19 @@ for(const token of [
  assert.ok(fixture.includes(token),"P2 disposable role fixture missing "+token);
 }
 assert.match(fixture,/REVOKE ALL ON TABLE public\.player_wallets,public\.inventory_items,public\.player_recipes/);
+
+// The earlier C34 original materializer creates user_id-only player_wallets.
+// CREATE TABLE IF NOT EXISTS in P2 cannot supply missing columns. The local
+// schema adaptation must precede original wallet RPC/merchant buyer installation.
+const materializer=src("scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql");
+assert.match(materializer,/CREATE TABLE public\.player_wallets\(user_id uuid PRIMARY KEY\);/);
+const walletCreate=fixture.indexOf("CREATE TABLE IF NOT EXISTS public.player_wallets");
+const walletUpgrade=fixture.indexOf("ALTER TABLE public.player_wallets");
+const walletGet=fixture.indexOf("CREATE OR REPLACE FUNCTION public.wallet_get");
+assert.ok(walletCreate>=0&&walletUpgrade>walletCreate&&walletGet>walletUpgrade,
+ "P2 must add gp/updated_at to EXISTING scratch player_wallets before RPCs");
+assert.match(fixture,/ALTER TABLE public\.player_wallets\s+ADD COLUMN IF NOT EXISTS gp numeric NOT NULL DEFAULT 0,\s+ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now\(\);/);
+
 assert.match(fixture,/IF to_regprocedure\('public\.wallet_set\(uuid,numeric\)'\) IS NOT NULL/);
 assert.match(fixture,/OR to_regprocedure\('public\.buy_from_merchant\(uuid,uuid,integer\)'\) IS NOT NULL/);
 const original=src("scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs");
