@@ -66,7 +66,16 @@ test("T25-05 actor, character, permissions and PDF must fail closed",()=>{
  assert.match(output,/selectedPrivateResult\?\.capabilities\?\.canEdit/);
  assert.doesNotMatch(output,/charPerm\?\.(can_edit|can_inventory|can_convert)/);
 });
-test("T25-06 original map and other production mounts do not import scratch transform",()=>{
+test("T25-06 all three rosters plus ancillary lists are actor-bound and stale-response safe",()=>{
+ const {output}=deriveT25CurrentManager(original);
+ const readerBlock=output.slice(output.indexOf("  const loadPlayers = "),
+  output.indexOf("  /* ------------------- roster merge ------------------- */"));
+ assert.equal((readerBlock.match(/const requestActor = actorRef\.current/g)||[]).length,6);
+ assert.equal((readerBlock.match(/actorRef\.current !== requestActor/g)||[]).length,6);
+ assert.match(output,/setNpcs\(\[\]\); setMerchants\(\[\]\); setMerchantProfiles\(new Map\(\)\);/);
+ assert.match(output,/if \(!userId\) return;\s*void Promise\.all/);
+});
+test("T25-07 original map and other production mounts do not import scratch transform",()=>{
  for(const p of ["pages/_app.js","components/MapPageClient.js",
   "pages/inventory.js","pages/town/[id].js","components/NpcPanel.js"]){
    const source=read(p);
