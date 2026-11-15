@@ -58,6 +58,16 @@ for(const token of [
 ]) assert.ok(guard.includes(token),"T28-P2 helper missing: "+token);
 assert.match(panel,/const stockMatches = Boolean\(stockScope\.actorId/);
 assert.match(panel,/const visibleStock = stockMatches \? stock : EMPTY_VISIBLE_STOCK/);
+
+assert.match(panel,/await Promise\.allSettled\(\[fetchStock\(\), refreshWallet\(\)\]\)/,
+ "T28-P2 committed buyer must not become failed purchase due to wallet refresh");
+assert.doesNotMatch(panel,/await Promise\.all\(\[fetchStock\(\), refreshWallet\(\)\]\)/,
+ "Do not reintroduce a false purchase-failure notice after successful server debit");
+const buyerRegressions=src("scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs");
+for(const code of ["T28-P2-BUY-R01","T28-P2-BUY-R02","T28-P2-BUY-R03","T28-P2-BUY-R04","T28-P2-BUY-R05"]) {
+ assert.ok(buyerRegressions.includes(code),"Buyer handler test case missing: "+code);
+}
+
 assert.match(wallet,/const activeTargetMatches = guardRef\.current\.snapshot\(\)\.targetUserId === selectedTargetId/);
 assert.match(wallet,/const visibleGp = activeTargetMatches \? gp : null/);
 assert.match(wallet,/return \{uid,gp:visibleGp,loading:visibleLoading,err,label,refresh,set\}/);
