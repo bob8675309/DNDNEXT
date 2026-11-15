@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `de6a175d907312d48601354f10e7865ce5fc890a` |
+| Exact source commit represented by this archive snapshot | `b6e6f30ec1fa1a6f672f233c841e7f762b7667ee` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin source-original user_id-only wallet fixture and ordered disposable schema upgrade |
+| Last source commit title | test(c34): assert local original player_wallets schema upgrade before seeding or buyer RPC |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
+- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
 
 ## Research-branch change inventory versus main
 
