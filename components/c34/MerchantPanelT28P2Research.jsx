@@ -77,8 +77,7 @@ export default function MerchantPanel({
   const merchantIdRef = useRef(merchant?.id || null);
   merchantIdRef.current = merchant?.id || null;
   const stockGuardRef = useRef(null);
-  if (!stockGuardRef.current) {
-    stockGuardRef.current = createT28P2CommerceGuardCandidate({
+  const createStockGuard = () => createT28P2CommerceGuardCandidate({
       readStock: async merchantId => {
         const { data, error } = await supabase.from("character_stock").select("*")
           .eq("character_id",merchantId).order("display_name",{ascending:true});
@@ -90,8 +89,9 @@ export default function MerchantPanel({
       onWallet: () => {},
       onError: error => setErr(String(error?.message || error))
     });
-  }
+  if (!stockGuardRef.current) stockGuardRef.current = createStockGuard();
   useEffect(() => {
+    if (stockGuardRef.current?.snapshot().stopped) stockGuardRef.current = createStockGuard();
     let active = true;
     let eventSeen = false;
     const authChanged = (event,session) => {
@@ -101,6 +101,11 @@ export default function MerchantPanel({
       const next = session?.user?.id || null;
       if (event === "SIGNED_OUT" || event === "USER_UPDATED") guard.revoke();
       guard.observeActor(next);
+      if (event === "SIGNED_OUT" || event === "USER_UPDATED" || !next) {
+        setBusyId(null);
+        setNotice(null);
+        setErr("");
+      }
       guard.selectMerchant(merchantIdRef.current);
       if (!next) setLoading(false);
       else if (merchantIdRef.current) {
@@ -230,6 +235,8 @@ export default function MerchantPanel({
 
   useEffect(() => {
     stockGuardRef.current.selectMerchant(merchant?.id || null);
+    setBusyId(null);
+    setNotice(null);
     if (merchant?.id) void fetchStock();
     else {setStock([]);setLoading(false);}
   }, [fetchStock,merchant?.id,uid]);
