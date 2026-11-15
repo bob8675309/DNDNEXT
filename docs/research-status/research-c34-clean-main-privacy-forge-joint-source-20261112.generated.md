@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c1c8bfb850352e01f2b614b3365633e14c4e2f44` |
+| Exact source commit represented by this archive snapshot | `2b7a9438e8c62c13c1c35a43b83c717ad16b890f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): execute original-derived merchant purchase refresh failure/late response negatives |
+| Last source commit title | ci(c34): verify committed merchant RPC success is not mislabeled when wallet display refresh fails |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
