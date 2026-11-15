@@ -65,50 +65,34 @@ async function createCharacter(gm,kind,name,secret){
  return result.data;
 }
 
-// Source-qualified scratch schema compatibility for ORIGINAL current pages/npcs.js.
-// The prior signed fixtures intentionally omit many world-position/UI columns.
-// Add only nullable columns in the disposable local DB, after all T1–T24 tests.
-// No RLS policy, grants, trigger, function, production SQL or map behavior altered.
-function addCurrentManagerLocalColumns(){
- for(const [name,type] of [
-  ["map_icon_id","uuid"],["camp_sprite_path","text"],
-  ["x","double precision"],["y","double precision"],
-  ["roaming_speed","double precision"],
-  ["projected_destination_id","bigint"],
-  ["route_mode","text"]
- ]){
-  sql("ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS "+name+" "+type);
- }
- // Original setup sends this notification after its own DDL. Match that
- // transport contract for new *disposable-only* compatibility columns.
- sql("NOTIFY pgrst, 'reload schema'");
- console.log("PASS T25-FIXTURE: current-manager nullable legacy presentation columns installed in DISPOSABLE PG17");
-}
-
+// The original stage2 ACL is part of the test authority. Do not grant
+// SELECT or change the fixture schema to make the legacy query pass.
+// Narrow T24 verified columns are the only direct SELECT roster contract.
 let server=null,browser=null,serverLog="";
 fs.mkdirSync(pdfDir,{recursive:true});
 try {
- addCurrentManagerLocalColumns();
  const users={};
  for(const name of ["GM","COEDITOR","INVONLY","OUTSIDER"])
   users[name]=await createRole(name.toLowerCase());
  sql("INSERT INTO private.test_admins(id) VALUES("+q(users.GM.id)+")");
- // Verify the actual wide PostgREST field set instead of a misleading
- // id/name-only query. This runs as the signed test GM, not postgres/service_role.
- let wideResult=null;
- for(let i=0;i<15;i++){
-  wideResult=await users.GM.who.from("characters").select(
-   "id,name,kind,race,role,affiliation,status,location_id,tags,description,"+
-   "map_icon_id,portrait_url,portrait_storage_path,portrait_thumb_url,portrait_shop_url,"+
-   "portrait_source,image_url,sprite_path,sprite_scale,camp_sprite_path,updated_at,"+
-   "is_hidden,x,y,roaming_speed,last_known_location_id,projected_destination_id,route_mode"
-  ).eq("kind","npc").limit(1);
-  if(!wideResult.error)break;
-  if(i===14)break;
-  await new Promise(done=>setTimeout(done,350));
- }
- assert.ifError(wideResult.error);
- console.log("PASS T25-FIXTURE-WIDE: signed GM current real roster SELECT public-safe columns without ACL or schema-cache failure");
+ // RED: the REAL stage2 source forbids a wide legacy manager roster read.
+ // Never grant this to authenticated or bypass the column ACL for testing.
+ const legacy=await users.GM.who.from("characters").select(
+  "id,name,kind,race,role,affiliation,status,location_id,tags,description,"+
+  "map_icon_id,portrait_url,portrait_storage_path,portrait_thumb_url,portrait_shop_url,"+
+  "portrait_source,image_url,sprite_path,sprite_scale,camp_sprite_path,updated_at,"+
+  "is_hidden,x,y,roaming_speed,last_known_location_id,projected_destination_id,route_mode"
+ ).eq("kind","npc").limit(1);
+ assert.ok(legacy.error,"T25 must prove original wide roster SELECT stays blocked");
+ assert.equal(legacy.error.code,"42501",
+  "Unexpected wide roster failure; never substitute a blanket SELECT grant");
+ // GREEN: T24 already demonstrated exact BASIC public roster query under
+ // the same signed auth/RLS. Fail before running browser if this contract drifts.
+ const safe=await users.GM.who.from("characters")
+  .select("id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url")
+  .in("kind",["npc","merchant"]).limit(2);
+ assert.ifError(safe.error);
+ console.log("PASS T25-ACL-RED-GREEN: original wide roster denied (42501), T24 narrow signed projection succeeds");
 
  const secret="T25_GM_SECRET_NEVER_PUBLIC";
  const npc=await createCharacter(users.GM,"npc","T25 Probe NPC",secret);
