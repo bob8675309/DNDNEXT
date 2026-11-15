@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6e0b78f275cd95890a6d015eac21c0599072dc25` |
+| Exact source commit represented by this archive snapshot | `4dcef4a14478174af6cf308f69dd7cbc9b17e462` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T26 signed original MerchantPanel Profile-Shop-Profile plus delayed PostgREST/actor races |
+| Last source commit title | ci(c34): T26 genuine signed current Next merchant storefront plus actor/selection race suite |
 | Files changed relative to main | 110 (89 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
