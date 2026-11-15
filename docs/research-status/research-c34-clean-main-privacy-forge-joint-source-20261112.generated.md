@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b90e4e22596e613811ac0ed26871fcd7ac4d182c` |
+| Exact source commit represented by this archive snapshot | `eb351f1deaa89cfe61d5ac679809c9f6789a7283` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): allow research-branch pushes to run disposable signed local PG17 suite without owner nonce |
+| Last source commit title | test(c34): align source contract with automatic research-only disposable CI trigger |
 | Files changed relative to main | 139 (113 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
