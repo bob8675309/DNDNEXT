@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4a485fd8c71147fab11b4bfea28fc8d137488697` |
+| Exact source commit represented by this archive snapshot | `e3cc91e065e2744b52e80a5ab822e9f82fd3cd09` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): sync manager roster click with disposable Next page selection |
-| Files changed relative to main | 101 (82 non-docs; 19 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record exact green T24 signed manager/real PDF tests and release HOLD |
+| Files changed relative to main | 102 (82 non-docs; 20 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/fixtures/t24_nonmap_manager_next_probe_page.jsx`
+- `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
 
 ## Research-branch change inventory versus main
 
@@ -42,6 +42,7 @@
 - `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
+- `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
@@ -70,8 +71,7 @@
 - `scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql`
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
-- `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
-- … 51 more
+- … 52 more
 
 ## Trust and update procedure
 
