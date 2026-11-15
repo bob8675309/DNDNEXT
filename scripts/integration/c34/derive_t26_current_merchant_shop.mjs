@@ -28,7 +28,7 @@ export function deriveT26CurrentMerchantShop() {
  const before='import NpcPanel from "../components/character/CharacterInteractionPanel";';
  const after='import NpcPanel from "../components/c34/NonMapMerchantShopResearchPanel";';
  assert.equal(manager.split(before).length-1,1,"T26 exact overlay import source drift");
- const sourceOnlyProfileButton = '<div className="h5 mb-1">{selected.name}</div>';
+ const sourceOnlyProfileButton = '<div className="h5 mb-1" data-testid="t25-selected-character" data-character-id={selected.id}>{selected.name}</div>';
  assert.equal(manager.split(sourceOnlyProfileButton).length-1,1,
   "T26 selected merchant header source drift");
  const allowlistedProfileButton = sourceOnlyProfileButton + `
