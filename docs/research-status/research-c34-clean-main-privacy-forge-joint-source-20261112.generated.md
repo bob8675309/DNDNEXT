@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c740f924f961eaf3820ef67234d5e1d7643560ea` |
+| Exact source commit represented by this archive snapshot | `c18fda0e938981cde416e5acf4909c4d88d6deb5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): scope T28-P2 first source-only candidate and outstanding signed commerce acceptance |
+| Last source commit title | docs(c34): promote P2 research source increment with explicit CI and signed-browser hold |
 | Files changed relative to main | 129 (103 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
