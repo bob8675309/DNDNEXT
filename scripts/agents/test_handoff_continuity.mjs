@@ -82,4 +82,22 @@ runCase(cwd => { write(cwd, 'components/NpcPanel.js', 'new\n'); commit(cwd, 'leg
     console.log('PASS newly created PR stacked on a research base');
   } finally { rmSync(cwd, {recursive:true,force:true}); }
 }
-console.log('PASS all continuity behavioral and integration fixtures');
+
+import { readFileSync } from 'node:fs';
+const wf = readFileSync('.github/workflows/validate-handoff-continuity.yml', 'utf8');
+for (const term of [
+  'pull_request_target:', 'ref: ${{ github.event.repository.default_branch }}',
+  'PR_BASE_REF: ${{ github.event.pull_request.base.ref }}',
+  'PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}',
+  'PR_CREATED_AT: ${{ github.event.pull_request.created_at }}',
+  'test "$(git rev-parse refs/remotes/origin/continuity-pr-base)" = "$PR_BASE_SHA"',
+  'persist-credentials: false', 'contents: read',
+]) assert.ok(wf.includes(term), 'Missing trusted-workflow safety contract: ' + term);
+for (const unsafe of [
+  'ref: ${{ github.event.pull_request.base.sha }}',
+  'ref: ${{ github.event.pull_request.head.sha }}',
+  'contents: write',
+  'secrets.SUPABASE', 'secrets.VERCEL', 'secrets.OPENAI',
+]) assert.ok(!wf.includes(unsafe), 'Unsafe trusted-workflow configuration: '+unsafe);
+
+console.log('PASS all continuity behavioral and trusted-workflow contract fixtures');
