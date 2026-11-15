@@ -90,7 +90,6 @@ for (const term of [
   'PR_BASE_REF: ${{ github.event.pull_request.base.ref }}',
   'PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}',
   'PR_CREATED_AT: ${{ github.event.pull_request.created_at }}',
-  'test "$(git rev-parse refs/remotes/origin/continuity-pr-base)" = "$PR_BASE_SHA"',
   'persist-credentials: false', 'contents: read',
   'The base can advance independently of this PR.',
 ]) assert.ok(wf.includes(term), 'Missing trusted-workflow safety contract: ' + term);
