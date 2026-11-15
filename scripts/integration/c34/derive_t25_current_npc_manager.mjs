@@ -65,6 +65,32 @@ function changeRoster(state, start, end, kind) {
   state.text = state.text.slice(0, from) + piece + state.text.slice(to);
   state.edits.push(kind + " roster: no bulk protected narrative or secret query");
 }
+// Actor-bound roster transport: permission-specific rosters must never
+// persist on GM -> outsider switches or accept late prior-actor results.
+function guardManagerLoader(state, start, end, clearMethod, mode = "roster") {
+  const first = state.text.indexOf(start);
+  const last = state.text.indexOf(end, first + start.length);
+  assert.ok(first >= 0 && last > first, "T25 actor loader source drift " + start);
+  let segment = state.text.slice(first, last);
+  assert.ok(segment.startsWith(start));
+  segment = segment.replace(start, start +
+    "\n    const requestActor = actorRef.current;" +
+    "\n    if (!requestActor) { " + clearMethod + "; return; }");
+  if (mode === "roster" || mode === "map-icons") {
+    const marker = "    const { data, error } = res;";
+    assert.equal(segment.split(marker).length - 1, 1, "T25 read response anchor drift " + start);
+    segment = segment.replace(marker, marker +
+      "\n    if (actorRef.current !== requestActor) return;");
+  } else {
+    const marker = "    if (!res.error)";
+    assert.equal(segment.split(marker).length - 1, 1, "T25 list response anchor drift " + start);
+    segment = segment.replace(marker,
+      "    if (actorRef.current !== requestActor) return;\n" + marker);
+  }
+  state.text = state.text.slice(0, first) + segment + state.text.slice(last);
+  state.edits.push("actor-bound and immediately cleared read " + start.trim());
+}
+
 export function deriveT25CurrentManager(source) {
   assert.equal(gitBlobHash(source), T25_BASE_BLOB, "T25 refuses stale/mismatched active manager");
   const state = { text: source, edits: [] };
@@ -121,6 +147,43 @@ export function deriveT25CurrentManager(source) {
   changeRoster(state,
     "  const loadMerchantProfiles = useCallback(async () => {",
     "  /* ------------------- roster merge ------------------- */", "merchant-profile");
+  // None of the NPC/merchant roster or supporting list requests may accept
+  // a response after actor identity changes. Not even GM-hidden roster names.
+  guardManagerLoader(state,
+    "  const loadNpcs = useCallback(async () => {",
+    "  const loadMerchants = useCallback(async () => {", "setNpcs([])");
+  guardManagerLoader(state,
+    "  const loadMerchants = useCallback(async () => {",
+    "  const loadMerchantProfiles = useCallback(async () => {", "setMerchants([])");
+  guardManagerLoader(state,
+    "  const loadMerchantProfiles = useCallback(async () => {",
+    "  /* ------------------- roster merge ------------------- */", "setMerchantProfiles(new Map())");
+  guardManagerLoader(state,
+    "  const loadPlayers = useCallback(async () => {",
+    "  const loadLocations = useCallback(async () => {", "setPlayers([])", "basic");
+  guardManagerLoader(state,
+    "  const loadLocations = useCallback(async () => {",
+    "  const loadMapIcons = useCallback(async () => {", "setLocations([])", "basic");
+  guardManagerLoader(state,
+    "  const loadMapIcons = useCallback(async () => {",
+    "  const loadNpcs = useCallback(async () => {", "setMapIcons([])", "map-icons");
+  // The existing mount-time load can race auth hydration; re-fetch after
+  // every authenticated actor transition in addition to invalidating caches.
+  replaceOnce(state,
+    "  /* ------------------- roster merge ------------------- */",
+    [
+      "  useEffect(() => {",
+      "    if (!userId) return;",
+      "    void Promise.all([",
+      "      loadNpcs(), loadMerchants(), loadMerchantProfiles(),",
+      "      loadPlayers(), loadLocations(), loadMapIcons()",
+      "    ]);",
+      "  }, [userId,loadNpcs,loadMerchants,loadMerchantProfiles,loadPlayers,loadLocations,loadMapIcons]);",
+      "",
+      "  /* ------------------- roster merge ------------------- */"
+    ].join("\n"),
+    "refetch all authenticated rosters after account changes");
+
   replaceOnce(state,
     '  // Resolve the selected character\'s map icon record (for showing next to the name).',
     '  const selectedCharPerm = selectedManagerDisplayRights(charPerm, selected?.id, userId);\n' +
@@ -143,6 +206,9 @@ export function deriveT25CurrentManager(source) {
     '      equipmentRequestRef.current += 1;',
     '      notesRequestRef.current += 1;',
     '      setSelectedPrivate(null); setCharPerm(null); setIsAdmin(false);',
+    '      setNpcs([]); setMerchants([]); setMerchantProfiles(new Map());',
+    '      setPlayers([]); setLocations([]); setMapIcons([]);',
+
     '      setSheet(null); setSheetDraft({}); setNotes([]); setEquippedRows([]);',
     '      setDetailsBase(null); setDetailsDraft(null);',
     '    }',
@@ -165,6 +231,9 @@ export function deriveT25CurrentManager(source) {
     '      actorRef.current = actor;',
     '      setUserId(actor); setIsAdmin(false); setCharPerm(null);',
     '      setSelectedPrivate(null); sheetCacheRef.current.clear();',
+    '      setNpcs([]); setMerchants([]); setMerchantProfiles(new Map());',
+    '      setPlayers([]); setLocations([]); setMapIcons([]);',
+
     '      sheetRequestRef.current += 1;',
     '      equipmentRequestRef.current += 1;',
     '      notesRequestRef.current += 1;',
