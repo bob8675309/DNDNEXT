@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1c16f0ec5ae4841061fc64becc62d26d13d82291` |
+| Exact source commit represented by this archive snapshot | `88cfd7ca46fbf0f947d54c5ef02914e444e7dfe3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin all T25 rosters to source-proven nine-column ACL-safe projection |
+| Last source commit title | security(c34): bind all T25 roster and location reads to actor, clear and refetch on account changes |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_current_manager_source.mjs`
+- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
 
 ## Research-branch change inventory versus main
 
