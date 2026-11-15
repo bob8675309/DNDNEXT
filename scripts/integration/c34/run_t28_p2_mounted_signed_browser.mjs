@@ -193,6 +193,23 @@ export async function runT28P2MountedCommerceSignedBrowser({
   assert.equal(inspect("SELECT qty FROM public.character_stock WHERE id="+q(stockId)),"1");
   assert.equal(inspect("SELECT count(*) FROM public.inventory_items WHERE user_id="+q(users.OUTSIDER.id)),"0");
   console.log("PASS T28-P2-ROLES: outsider cannot set/read GM GP or buy unaffordable item; no unauthorized ledger or stock change");
+  // The original T26 suite already tested manager/Profile roles. P2 independently
+  // confirms commerce wallets and signed stock under separate current accounts:
+  // sheet co-editor and inventory-only are NOT wallet Admin grants.
+  for(const label of ["COEDITOR","INVONLY"]){
+    await signOut();
+    await signIn(label);
+    await waitValue(0);
+    await shop().getByText(stockLabel,{exact:true}).first().waitFor({timeout:18000});
+    const deniedEdit=await users[label].who.rpc("wallet_set",{p_user:null,p_amount:500});
+    assert.ok(deniedEdit.error,label+" must not gain Admin wallet-set ability");
+    assert.equal(deniedEdit.error.code,"42501");
+    const deniedOther=await users[label].who.rpc("wallet_get",{p_user:users.GM.id});
+    assert.ok(deniedOther.error,label+" must not gain GM wallet reader");
+    assert.equal(deniedOther.error.code,"42501");
+  }
+  assert.equal(inspect("SELECT count(*) FROM public.inventory_items WHERE user_id="+q(users.GM.id)),"2");
+  console.log("PASS T28-P2-EDITOR-INVENTORY: coeditor and inventory-only signed wallets stay isolated, stock browse retained, Admin mutation denied");
   await signOut();
   await waitValue("NONE");
  } finally {
