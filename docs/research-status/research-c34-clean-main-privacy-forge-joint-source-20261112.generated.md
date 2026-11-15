@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `981d36a4abf977cc71ef9baeddf57f72e63671ca` |
+| Exact source commit represented by this archive snapshot | `b9e63ce53ba7ea95de7c8f392ca63e8755f3e43a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed merchant roster assertion and browser navigation diagnostics |
+| Last source commit title | fix(c34): preserve NPC deep-link identity while merchant roster resolves asynchronously |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
+- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
 
 ## Research-branch change inventory versus main
 
