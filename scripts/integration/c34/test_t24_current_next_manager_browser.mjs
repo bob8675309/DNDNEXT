@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// test_t24_current_next_browser.mjs
+// test_t24_current_next_manager_browser.mjs
 // C34 T24: REAL CURRENT-HEAD NEXT.JS PAGES ROUTER + Chromium + LOCAL signed
 // GoTrue/PostgREST/PG17. Synthetic test data only, no checked-in test route.
 // Original #345 browser and historical negative tests run separately unchanged.
@@ -28,7 +28,7 @@ assert.ok(env.C33_BROWSER_TOOL_ROOT&&path.isAbsolute(env.C33_BROWSER_TOOL_ROOT))
 assert.ok(env.C33_BROWSER_CHROME&&path.isAbsolute(env.C33_BROWSER_CHROME));
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const probe=path.join(root,"pages/__c34_t24_probe.jsx");
-const sourcePage=path.join(root,"scripts/integration/c34/fixtures/t24_nonmap_next_probe_page.jsx");
+const sourcePage=path.join(root,"scripts/integration/c34/fixtures/t24_nonmap_manager_next_probe_page.jsx");
 assert.ok(fs.existsSync(sourcePage)&&!fs.existsSync(probe),
  "T24 refuses existing/production route overwrite");
 const require=createRequire(path.join(env.C33_BROWSER_TOOL_ROOT,"t24-playwright-anchor.cjs"));
