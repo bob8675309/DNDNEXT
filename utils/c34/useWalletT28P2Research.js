@@ -10,6 +10,7 @@ export default function useWalletT28P2Research(userId) {
   const [gp, setGp] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const lastCommittedGp = useRef(null);
   const guardRef = useRef(null);
   if (!guardRef.current) {
     guardRef.current = createT28P2CommerceGuardCandidate({
@@ -20,7 +21,7 @@ export default function useWalletT28P2Research(userId) {
         return Number.isFinite(data) ? Number(data) : 0;
       },
       onStock: () => {},
-      onWallet: value => setGp(value),
+      onWallet: value => { lastCommittedGp.current = value; setGp(value); },
       onError: error => setErr(String(error?.message || "Failed to load wallet."))
     });
   }
@@ -42,6 +43,7 @@ export default function useWalletT28P2Research(userId) {
       guard.selectWalletTarget(userIdRef.current);
       if (prior !== next || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         setUid(next);
+        lastCommittedGp.current = null;
         setGp(null);
         setErr("");
       }
@@ -92,15 +94,8 @@ export default function useWalletT28P2Research(userId) {
     guard.selectWalletTarget(userIdRef.current);
     const result = await guard.loadWallet();
     if (result.error && !guard.snapshot().stopped) throw result.error;
-    return result.committed ? gpFromGuardRef() : null;
+    return result.committed ? lastCommittedGp.current : null;
   };
-  // A response is returned to callers only if the same captured wallet was committed.
-  const lastCommittedGp = useRef(null);
-  // Track state independently of render timing (refresh may resolve before the next render).
-  const gpFromGuardRef = () => lastCommittedGp.current;
-  // onWallet callback above is overridden via state setter below, so synchronize on render.
-  lastCommittedGp.current = gp;
-
   const set = async amount => {
     guard.selectWalletTarget(userIdRef.current);
     const start = guard.snapshot();
@@ -111,7 +106,11 @@ export default function useWalletT28P2Research(userId) {
     const end = guard.snapshot();
     if (start.actorId === end.actorId && start.actorEpoch === end.actorEpoch &&
         start.targetEpoch === end.targetEpoch && start.targetUserId === end.targetUserId &&
-        !end.stopped && !error) setGp(Number.isFinite(data) ? Number(data) : null);
+        !end.stopped && !error) {
+      const nextGp = Number.isFinite(data) ? Number(data) : null;
+      lastCommittedGp.current = nextGp;
+      setGp(nextGp);
+    }
     return {data,error};
   };
 
