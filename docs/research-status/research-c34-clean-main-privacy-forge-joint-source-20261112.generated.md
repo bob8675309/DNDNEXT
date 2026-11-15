@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4c76007280120f4eef114ee7221e590a9c8cb73c` |
+| Exact source commit represented by this archive snapshot | `7c76348acfa29083c4b08a732a8430d4003351e7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): clear stale displayed GP on current wallet read failure without changing server ledger |
+| Last source commit title | test(c34): add current wallet read-error stale GP negative and signed-balance retry recovery |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/t28P2CommerceGuardCandidate.mjs`
+- `scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs`
 
 ## Research-branch change inventory versus main
 
