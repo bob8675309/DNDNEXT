@@ -5,25 +5,26 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f3ed0f9fa00c849e8e237afe6d9ad0a11d860f9e` |
+| Exact source commit represented by this archive snapshot | `141f109ff4443272c4b593a39770b80ed151a1e3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): log simplified automatic branch CI, no owner action or live security changes |
-| Files changed relative to main | 138 (112 non-docs; 26 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | feat(c34): add disabled-by-default guarded commerce preview in town modal only; preserve world map storefront |
+| Files changed relative to main | 139 (113 non-docs; 26 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `components/TownSheet.js`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
+- `components/TownSheet.js`
 - `components/c34/MerchantPanelT28P2Research.jsx`
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
@@ -70,8 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
-- `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 88 more
+- … 89 more
 
 ## Trust and update procedure
 
