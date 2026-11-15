@@ -30,6 +30,12 @@ jobs:
           node scripts/integration/c34/verify_original_trigger_coverage.mjs
       - name: Run static and negative regression tests
         run: node --test scripts/integration/c34/test_source_contract.mjs
+      - name: T25 exact-current NPC manager derived-source and preservation negatives
+        run: |
+          node --check scripts/integration/c34/derive_t25_current_npc_manager.mjs
+          node --check scripts/integration/c34/test_t25_current_manager_source.mjs
+          node scripts/integration/c34/derive_t25_current_npc_manager.mjs --verify
+          node --test scripts/integration/c34/test_t25_current_manager_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
