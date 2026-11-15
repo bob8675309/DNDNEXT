@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d07096360bea46b3eeb617a2b0950e0b3e564124` |
+| Exact source commit represented by this archive snapshot | `37dbaff694d00b4506793a50bcd69090790a13aa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): derived useWallet API with actor and selected-wallet epoch guards (unmounted) |
+| Last source commit title | fix(c34): refresh returns committed guarded GP and wallet_set tracks current target |
 | Files changed relative to main | 130 (104 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
