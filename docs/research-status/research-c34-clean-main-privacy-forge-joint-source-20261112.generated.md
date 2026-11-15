@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8f3d035aa4e4bf8bafa625c4cfc95eb3baf47aaa` |
+| Exact source commit represented by this archive snapshot | `8ad5a8b10f0de9b1f89e9bd8d132d67a4761bbf1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): mount source-derived guarded shop and wallet in isolated nonmap probe |
-| Files changed relative to main | 133 (107 non-docs; 26 docs) |
+| Last source commit title | research(c34): source-pinned disposable route for mounted guarded merchant/wallet |
+| Files changed relative to main | 134 (108 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/T28P2MountedCommerceProbe.jsx`
+- `scripts/integration/c34/derive_t28_p2_mounted_probe.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 83 more
+- … 84 more
 
 ## Trust and update procedure
 
