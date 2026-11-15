@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0b4f01603828f428af0b54339dfaaf3904ef6d2b` |
+| Exact source commit represented by this archive snapshot | `8222570cf9817cfc8d33bd794ee260bdb940f607` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): set next verified task to exact-head full signed P2 test, not premature production release |
+| Last source commit title | docs(c34): append P2 original-buy browser harness provenance and unverified CI handoff |
 | Files changed relative to main | 137 (111 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
