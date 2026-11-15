@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5f066b7eb0e8849bb39587f8a54b6fd3f8f4b3c0` |
+| Exact source commit represented by this archive snapshot | `3ccf8172425bbb08b92d6d880080e349afe76e7a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): document town-only disabled-by-default guarded merchant preview with byte-reversible fallback |
+| Last source commit title | docs(c34): mark disabled-by-default town merchant candidate integrated in research branch; world map untouched |
 | Files changed relative to main | 140 (114 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
