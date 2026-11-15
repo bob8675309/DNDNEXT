@@ -18,16 +18,18 @@ assert.equal(hash(src("scripts/fixtures/forge_original_merchant_buy_source_pg17.
 assert.ok(!existsSync(path.join(root,T28_P2_TEMP_ROUTE)),"P2 temporary CI route committed or stale");
 const route=deriveT28P2MountedRoute(
  "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
- "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+ "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+ "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
 );
 assert.match(route,/T28P2MountedCommerceProbe/);
+assert.match(route,/cccccccc-cccc-4ccc-8ccc-cccccccccccc/);
 assert.doesNotMatch(route,/MapPageClient|pages\/map|pages\/town/);
 const mounted=src("components/c34/T28P2MountedCommerceProbe.jsx");
 for(const token of [
  "MerchantPanelT28P2Research", "useWalletT28P2Research",
  "supabase.auth.onAuthStateChange", "t28p2-mounted-shop",
  "t28p2-wallet-refresh", "t28p2-wallet-set",
- "t28p2-switch-merchant", "t28p2-select-wallet-other", "window.__sb"
+ "t28p2-switch-merchant", "t28p2-select-wallet-other", "alternateWalletUserId", "window.__sb"
 ])assert.ok(mounted.includes(token),"Mounted P2 probe missing "+token);
 const p2=src("scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs");
 for(const token of [
@@ -74,7 +76,7 @@ const p2Run=original.indexOf("await runT28P2MountedCommerceSignedBrowser({");
 assert.ok(t27>=0&&p1>t27&&p2Setup>p1&&p2Run>p2Setup,
  "P2 may not replace or run before original T27/P1 signed suite");
 for(const token of [
- "writeT28P2MountedRoute(merchant,alternateMerchant)",
+ "writeT28P2MountedRoute(merchant,alternateMerchant,users.OUTSIDER.id)",
  "const p2Probe=path.join(root,T28_P2_TEMP_ROUTE)",
  "fs.unlinkSync(p2Probe)",
  "assert.ok(!fs.existsSync(p2Probe)",
