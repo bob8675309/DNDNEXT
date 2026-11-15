@@ -5,12 +5,17 @@ import { mkdtempSync, mkdirSync, writeFileSync, appendFileSync, rmSync } from 'n
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assessHandoff, isMaterialPath } from './check_handoff_continuity.mjs';
+import { assessHandoff, isMaterialPath, isLegacyPr, ENFORCEMENT_START_UTC } from './check_handoff_continuity.mjs';
 
 const thisDir = resolve(fileURLToPath(import.meta.url), '..');
 const script = join(thisDir, 'check_handoff_continuity.mjs');
 const initial = '# History\n\n## 2026-11-14 — Previous decision\nRetained intact.\n';
 const receipt = '\n## 2026-11-15 — Continuity proof\nDecision: preserve original systems. Evidence: exact test fixture only. No production changes or releases. Next task: source-review the integration scope and exact-head CI.\n';
+assert.equal(ENFORCEMENT_START_UTC, '2026-11-16T00:00:00Z');
+assert.equal(isLegacyPr('2026-11-07T19:23:08Z'), true);
+assert.equal(isLegacyPr('2026-11-13T06:05:25Z'), true);
+assert.equal(isLegacyPr('2026-11-16T00:00:00Z'), false);
+assert.throws(() => isLegacyPr('invalid'), /timestamp/);
 assert.equal(isMaterialPath('components/NpcPanel.js'), true);
 assert.equal(isMaterialPath('sql/candidates/auth.sql'), true);
 assert.equal(isMaterialPath('.github/workflows/build.yml'), true);
@@ -36,17 +41,17 @@ function fixture() {
   git(cwd, 'checkout', '-qb', 'research/test');
   return { cwd, base };
 }
-function audit(cwd, base) {
+function audit(cwd, base, createdAt='2026-11-16T00:00:00Z') {
   const child = spawnSync(process.execPath, [script], {
-    cwd, encoding: 'utf8', env: { ...process.env, PR_BASE_SHA: base, PR_HEAD_SHA: git(cwd, 'rev-parse', 'HEAD') },
+    cwd, encoding: 'utf8', env: { ...process.env, PR_BASE_SHA: base, PR_HEAD_SHA: git(cwd, 'rev-parse', 'HEAD'), PR_CREATED_AT: createdAt },
   });
   return { code: child.status, output: (child.stdout || '') + (child.stderr || '') };
 }
-function runCase(fn, expected, name) {
+function runCase(fn, expected, name, createdAt='2026-11-16T00:00:00Z') {
   const { cwd, base } = fixture();
   try {
     fn(cwd);
-    const result = audit(cwd, base);
+    const result = audit(cwd, base, createdAt);
     assert.equal(result.code, expected, `${name}: ${result.output}`);
     console.log(`PASS ${name}: ${expected === 0 ? 'accepted' : 'rejected'}`);
   } finally { rmSync(cwd, { recursive: true, force: true }); }
@@ -57,6 +62,8 @@ runCase(cwd => { write(cwd, 'docs/ACTIVE_WORK.md', 'Next review\n'); appendFileS
 runCase(cwd => { write(cwd, 'components/NpcPanel.js', 'new\n'); write(cwd, 'docs/ACTIVE_WORK.md', 'Next review\n'); write(cwd, 'docs/HANDOFF_LOG.md', '# overwritten\n' + receipt); commit(cwd, 'rewritten history'); }, 1, 'rewritten original log');
 runCase(cwd => { write(cwd, 'docs/README.md', 'docs only\n'); commit(cwd, 'docs'); }, 0, 'documentation-only change');
 runCase(cwd => { write(cwd, 'scripts/new_validator.mjs', 'new\n'); write(cwd, 'docs/ACTIVE_WORK.md', 'Next review\n'); commit(cwd, 'script without receipt'); }, 1, 'one handoff document missing');
+runCase(cwd => { write(cwd, 'components/NpcPanel.js', 'new\n'); commit(cwd, 'legacy source without docs'); },
+  0, 'existing held PR gives advisory rather than a retroactive block', '2026-11-13T06:05:25Z');
 // A held, stacked research PR compares against its moving parent, not main.
 {
   const { cwd, base } = fixture();
