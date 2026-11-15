@@ -1,0 +1,79 @@
+name: P1.3 NPC visible-sheet privacy genuine local JWT research
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-p1-3-npc-profile-rls.yml"
+      - "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql"
+      - "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql"
+      - "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql"
+      - "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql"
+      - "scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql"
+      - "scripts/fixtures/p1_3_npc_creator_replay_fixture_pg17.sql"
+      - "scripts/test_p1_3_npc_profile_safe_local_auth.mjs"
+      - "scripts/validate_p1_3_npc_profile_rls_source.mjs"
+      - "docs/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  true-local-jwt-security:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_NPC_PROFILE_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify source fingerprints and security boundaries
+        run: |
+          node --check scripts/validate_p1_3_npc_profile_rls_source.mjs
+          node scripts/validate_p1_3_npc_profile_rls_source.mjs
+          node --check scripts/test_p1_3_npc_profile_safe_local_auth.mjs
+      - name: Configure disposable local Supabase 17 and GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/p1-3-profile-local/supabase"
+          cat > "$RUNNER_TEMP/p1-3-profile-local/supabase/config.toml" <<'TOML'
+          project_id = "p13-npc-profile-research"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start local Auth and PostgREST
+        run: |
+          cd "$RUNNER_TEMP/p1-3-profile-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Execute signed-in negative baseline and guarded candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          (cd "$RUNNER_TEMP/p1-3-profile-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/p1-3-profile-local-env"
+          set -a
+          source "$RUNNER_TEMP/p1-3-profile-local-env"
+          set +a
+          export DNDNEXT_NPC_PROFILE_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_NPC_PROFILE_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql
+          node scripts/test_p1_3_npc_profile_safe_local_auth.mjs
+      - name: Stop and delete disposable local services
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/p1-3-profile-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
