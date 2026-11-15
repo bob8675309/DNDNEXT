@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6c2ecd8488c0c5238171caa3efeaaee8d69f2675` |
+| Exact source commit represented by this archive snapshot | `7a91c62c11a1177ac11da8ef01b07edfa8abe565` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): require genuine signed browser double-click with one buyer debit in source contract |
+| Last source commit title | docs(c34): record merchant double-click protection, direct R07/R08, pending signed ledger proof |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
+- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
