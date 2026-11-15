@@ -30,6 +30,13 @@ CREATE TABLE IF NOT EXISTS public.player_wallets (
  user_id uuid PRIMARY KEY, gp numeric NOT NULL DEFAULT 0,
  updated_at timestamptz NOT NULL DEFAULT now()
 );
+-- The earlier SOURCE-ORIGINAL C34 deferred-equipment fixture already creates
+-- public.player_wallets(user_id uuid PRIMARY KEY) without gp or updated_at.
+-- CREATE TABLE IF NOT EXISTS does not upgrade that existing table. Adapt only
+-- this disposable PG17 scratch schema before installing the original buyer.
+ALTER TABLE public.player_wallets
+ ADD COLUMN IF NOT EXISTS gp numeric NOT NULL DEFAULT 0,
+ ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 CREATE TABLE IF NOT EXISTS public.inventory_items (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  user_id uuid, item_id text, item_name text, item_type text,
