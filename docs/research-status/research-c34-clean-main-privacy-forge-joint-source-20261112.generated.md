@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c60f29bea432cb3db46f3bd7bbfeb0ba7e308197` |
+| Exact source commit represented by this archive snapshot | `53c31cf487a73b1c13a9d885e62ec4ffc7671800` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): assert no old GP in render-before-effect target switch against actual derived hook |
+| Last source commit title | test(c34): source-lock synchronous wallet and merchant render-scope privacy, R04 target prop regression |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_wallet_set_stale_unit.mjs`
+- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
