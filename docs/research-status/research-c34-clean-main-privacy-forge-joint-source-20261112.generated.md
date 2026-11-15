@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6568d0194bcbfb8cb940eeb3e0bfce5aa4b30dab` |
+| Exact source commit represented by this archive snapshot | `c1c8bfb850352e01f2b614b3365633e14c4e2f44` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): execute original-derived merchant buy handler with wallet refresh rejection and actor/shop races |
+| Last source commit title | ci(c34): execute original-derived merchant purchase refresh failure/late response negatives |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
