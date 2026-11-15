@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7c76348acfa29083c4b08a732a8430d4003351e7` |
+| Exact source commit represented by this archive snapshot | `b490b7d2b7e319d2857a6e5c06399981f121fc5d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add current wallet read-error stale GP negative and signed-balance retry recovery |
+| Last source commit title | fix(c34): clear obsolete wallet read errors after a successful current balance recovery |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs`
+- `utils/c34/useWalletT28P2Research.js`
 
 ## Research-branch change inventory versus main
 
