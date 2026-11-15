@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `67bf84192491e9c07af3ec7640b56210a7aa3d9c` |
+| Exact source commit represented by this archive snapshot | `0e91c4ce4559147233487ee8995dbd9881b8ecee` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record T25 source-locked current-manager scratch implementation, tests and release hold |
+| Last source commit title | test(c34): capture real selected-NPC timeout actor, public roster and Next diagnostics |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
+- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
 
 ## Research-branch change inventory versus main
 
