@@ -227,12 +227,14 @@ export default function MerchantPanel({
     if (!merchant?.id || !guard.snapshot().actorId) {
       setStock([]);
       setLoading(false);
-      return;
+      return {committed:false,reason:"no-auth-or-merchant"};
     }
     setLoading(true);
     setErr("");
     const result = await guard.loadStock();
     if (result.committed || result.current || result.reason) setLoading(false);
+    if (result.current && result.error) setStock([]);
+    return result;
   }, [merchant?.id]);
 
   useEffect(() => {
@@ -397,10 +399,13 @@ export default function MerchantPanel({
       // Both refreshes remain best-effort and scoped to the current actor/shop.
       const refreshed = await Promise.allSettled([fetchStock(), refreshWallet()]);
       if (!samePurchaseScope()) return;
+      const stockRefreshFailed = refreshed[0].status === "rejected" ||
+        Boolean(refreshed[0].value?.current && refreshed[0].value?.error);
       const balanceRefreshFailed = refreshed[1].status === "rejected";
       setNotice({
         kind: "success",
         message: "Purchased " + card.item_name + " for " + card._price_gp + " gp. It has been added to your inventory." +
+          (stockRefreshFailed ? " Stock could not be refreshed; reopen the shop before buying again." : "") +
           (balanceRefreshFailed ? " Your balance could not be refreshed; please refresh it before buying again." : ""),
       });
     } catch (e) {
