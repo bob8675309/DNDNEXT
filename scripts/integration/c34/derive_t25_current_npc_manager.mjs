@@ -185,6 +185,10 @@ export function deriveT25CurrentManager(source) {
     "refetch all authenticated rosters after account changes");
 
   replaceOnce(state,
+    "  const selected = useMemo(() => {\n    if (!selectedKey) return null;\n    const { type, id } = parseKey(selectedKey);\n    return roster.find((r) => r.type === type && String(r.id) === String(id)) || null;\n  }, [selectedKey, roster]);",
+    "  const selected = useMemo(() => {\n    if (!selectedKey) return null;\n    const { type, id } = parseKey(selectedKey);\n    const row = roster.find((r) => r.type === type && String(r.id) === String(id)) || null;\n    if (!row) return null;\n    // Restore only selected character's PUBLIC, stage1 allowlisted metadata,\n    // including race, affiliation and portrait variants stripped from roster.\n    // Never spread raw dossier/editor narrative or prior-actor data into roster.\n    const profile = selectedPrivate?.actorId === userId &&\n      String(selectedPrivate?.characterId || \"\") === String(id)\n      ? selectedPrivate?.result?.profile : null;\n    if (!profile || String(profile.id) !== String(row.id) ||\n        String(profile.kind) !== String(row.type)) return row;\n    return { ...row, ...profile, id: row.id, type: row.type, kind: row.kind };\n  }, [selectedKey, roster, selectedPrivate, userId]);",
+    "restore public selected Profile metadata from source-authenticated stage1");
+  replaceOnce(state,
     '  // Resolve the selected character\'s map icon record (for showing next to the name).',
     '  const selectedCharPerm = selectedManagerDisplayRights(charPerm, selected?.id, userId);\n' +
     '  const selectedPrivateResult = selectedPrivate?.actorId === userId &&\n' +
