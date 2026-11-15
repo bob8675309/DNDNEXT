@@ -343,9 +343,9 @@ export function deriveT25CurrentManager(source) {
     "          Refresh permissions\n" +
     "        </button>",
     "explicit revocation refresh surface");
-  assert.doesNotMatch(state.text, /charPerm\\?\\.(can_edit|can_inventory|can_convert)/,
+  assert.ok(!state.text.includes("charPerm?."),
     "T25 refuses any unbound permission consumers");
-  assert.match(state.text, /readNonMapNpcProfileCandidate\\(supabase, id/,
+  assert.ok(state.text.includes("readNonMapNpcProfileCandidate(supabase, id"),
     "selected private reader must be active");
 
   const preface = [
