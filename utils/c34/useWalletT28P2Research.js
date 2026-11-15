@@ -51,7 +51,7 @@ export default function useWalletT28P2Research(userId) {
       else if (prior !== next || event === "SIGNED_IN" || event === "INITIAL_SESSION") {
         setLoading(true);
         void guard.loadWallet().then(result => {
-          if (live && result.committed) setLoading(false);
+          if (live && (result.committed || result.current)) setLoading(false);
         });
       }
     };
@@ -93,7 +93,7 @@ export default function useWalletT28P2Research(userId) {
   const refresh = async () => {
     guard.selectWalletTarget(userIdRef.current);
     const result = await guard.loadWallet();
-    if (result.error && !guard.snapshot().stopped) throw result.error;
+    if (result.error && result.current && !guard.snapshot().stopped) throw result.error;
     return result.committed ? lastCommittedGp.current : null;
   };
   const set = async amount => {
