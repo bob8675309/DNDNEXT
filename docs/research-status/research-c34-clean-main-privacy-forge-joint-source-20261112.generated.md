@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6dd3a123b3eb7ed7312eee85b81c7f3c4e016bf0` |
+| Exact source commit represented by this archive snapshot | `6c2ecd8488c0c5238171caa3efeaaee8d69f2675` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin synchronous purchase-inflight epoch lock and R07/R08 duplicate request negatives |
+| Last source commit title | test(c34): require genuine signed browser double-click with one buyer debit in source contract |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
