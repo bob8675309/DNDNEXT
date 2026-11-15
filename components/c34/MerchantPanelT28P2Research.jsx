@@ -51,6 +51,9 @@ export default function MerchantPanel({
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
+  // Synchronous lock: React busy state alone cannot prevent two clicks in one render.
+  // Scoped by actor+merchant epochs so a pending old shop does not block a new shop.
+  const purchaseInFlightRef = useRef(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
   const [stockTheme, setStockTheme] = useState("general");
@@ -369,7 +372,14 @@ export default function MerchantPanel({
         current.merchantId === purchaseScope.merchantId &&
         current.merchantEpoch === purchaseScope.merchantEpoch);
     };
-    if (!samePurchaseScope()) return;
+    // The prop/uid may change before passive effects synchronize the guard.
+    if (!samePurchaseScope() || purchaseScope.actorId !== uid ||
+        purchaseScope.merchantId !== merchant?.id) return;
+    const purchaseKey = [purchaseScope.actorId, purchaseScope.actorEpoch,
+      purchaseScope.merchantId, purchaseScope.merchantEpoch].join(":");
+    if (purchaseInFlightRef.current?.key === purchaseKey) return;
+    const purchaseToken = { key:purchaseKey, cardId:card.id };
+    purchaseInFlightRef.current = purchaseToken;
     setBusyId(card.id);
     setErr("");
 
@@ -416,6 +426,7 @@ export default function MerchantPanel({
         setNotice({ kind: "error", message: msg });
       }
     } finally {
+      if (purchaseInFlightRef.current === purchaseToken) purchaseInFlightRef.current = null;
       if (samePurchaseScope()) setBusyId(null);
     }
   }
