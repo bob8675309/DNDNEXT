@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c47c3938dd4fd56c20934b361b2f6913e0030ae9` |
+| Exact source commit represented by this archive snapshot | `99285dbc950abf8aa2f5ef3b57100a88a5b3c2aa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): execute real guarded buy handler rapid double-click and merchant-switch lock regressions |
+| Last source commit title | test(c34): signed local browser double-click probes exactly one original purchase debit and inventory row |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs`
+- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
