@@ -1,0 +1,102 @@
+#!/usr/bin/env node
+// C34 T28-P2 actual derived merchant handleBuy contract.
+// Executes the function extracted from the source-derived merchant component,
+// without inventing a parallel implementation. No real DB or browser.
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
+const original=readFileSync(path.join(root,"components/c34/MerchantPanelT28P2Research.jsx"),"utf8");
+const beginning=original.indexOf("  async function handleBuy(card) {");
+const ending=original.indexOf("  // Paste helper",beginning);
+assert.ok(beginning>=0 && ending>beginning,"source-derived buy function moved");
+const functionBody=original.slice(beginning,ending);
+assert.match(functionBody,/supabase\.rpc\("buy_from_merchant"/);
+assert.match(functionBody,/await Promise\.allSettled\(\[fetchStock\(\), refreshWallet\(\)\]\)/);
+assert.doesNotMatch(functionBody,/await Promise\.all\(\[fetchStock\(\), refreshWallet\(\)\]\)/);
+const build=new Function(
+ "uid","stockGuardRef","setBusyId","setErr","setNotice",
+ "supabase","merchant","fetchStock","refreshWallet","console",
+ functionBody+"\nreturn handleBuy;"
+);
+const card={id:"item-1",item_name:"Example Elixir",_price_gp:12};
+const make=({buyer=()=>Promise.resolve({data:1,error:null}),stock=async()=>{},
+ wallet=async()=>{},uid="gm"}={})=>{
+ const session={actorId:"gm",actorEpoch:5,merchantId:"merchant-1",merchantEpoch:7};
+ const notices=[],errors=[],busy=[],rpc=[];
+ const handleBuy=build(
+  uid,{current:{snapshot:()=>({...session})}},
+  v=>busy.push(v),v=>errors.push(v),v=>notices.push(v),
+  {rpc:async(name,args)=>{rpc.push({name,args});return buyer(name,args)}},
+  {id:"merchant-1"},stock,wallet,{error:()=>{}}
+ );
+ return {handleBuy,session,notices,errors,busy,rpc};
+};
+
+// (R01) Original buyer succeeds but wallet re-read fails: NOT a failed purchase.
+{
+ const c=make({wallet:async()=>{throw Error("temporary wallet_get failure")}});
+ await c.handleBuy(card);
+ assert.equal(c.rpc.length,1);
+ assert.equal(c.rpc[0].name,"buy_from_merchant");
+ assert.equal(c.notices.length,1);
+ assert.equal(c.notices[0].kind,"success");
+ assert.match(c.notices[0].message,/Purchased Example Elixir for 12 gp/);
+ assert.match(c.notices[0].message,/balance could not be refreshed/);
+ assert.ok(!c.notices.some(n=>n?.kind==="error"),"RPC success cannot become purchase failed");
+ assert.equal(c.busy.at(-1),null);
+ console.log("PASS T28-P2-BUY-R01: committed purchase remains success if wallet display refresh fails");
+}
+// (R02) Original buyer itself rejects: no success and no refresh attempts.
+{
+ let attempts=0;
+ const c=make({buyer:async()=>({data:null,error:new Error("Insufficient funds")}),
+  stock:async()=>{attempts++},wallet:async()=>{attempts++}});
+ await c.handleBuy(card);
+ assert.equal(c.notices.at(-1)?.kind,"error");
+ assert.match(c.notices.at(-1)?.message,/Insufficient funds/);
+ assert.equal(attempts,0);
+ assert.equal(c.busy.at(-1),null);
+ console.log("PASS T28-P2-BUY-R02: rejected original buyer produces only true transaction error");
+}
+// (R03) Original buyer succeeded but actor logged out before HTTP response:
+// never display an old buyer's purchase result or run new actor refreshes.
+{
+ let complete;
+ let refreshes=0;
+ const c=make({buyer:()=>new Promise(resolve=>{complete=resolve}),
+  stock:async()=>{refreshes++},wallet:async()=>{refreshes++}});
+ const pending=c.handleBuy(card);
+ c.session.actorId=null;
+ c.session.actorEpoch++;
+ complete({data:1,error:null});
+ await pending;
+ assert.equal(refreshes,0);
+ assert.equal(c.notices.length,0);
+ console.log("PASS T28-P2-BUY-R03: accepted late buyer response cannot publish after logout");
+}
+// (R04) Server succeeded; async refresh resolves after switching merchant.
+// No success or error notice goes to the new shop.
+{
+ let finishRefresh;
+ const c=make({wallet:()=>new Promise(resolve=>{finishRefresh=resolve})});
+ const pending=c.handleBuy(card);
+ for(let i=0;i<4;i++)await Promise.resolve();
+ assert.equal(typeof finishRefresh,"function");
+ c.session.merchantId="merchant-2";c.session.merchantEpoch++;
+ finishRefresh(55);
+ await pending;
+ assert.equal(c.notices.length,0);
+ console.log("PASS T28-P2-BUY-R04: old shop success UI blocked after merchant switch");
+}
+// (R05) All operations work, do not display a spurious wallet refresh warning.
+{
+ const c=make();
+ await c.handleBuy(card);
+ assert.equal(c.notices.at(-1)?.kind,"success");
+ assert.doesNotMatch(c.notices.at(-1)?.message,/could not be refreshed/);
+ console.log("PASS T28-P2-BUY-R05: normal buyer success retains original success message");
+}
+console.log("PASS T28-P2-BUY-UNIT: derived original-buyer handler distinguishes committed transactions from display refresh");
