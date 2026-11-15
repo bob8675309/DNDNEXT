@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0b9166fb8edff1881eab66d2df7ad64a6c41843f` |
+| Exact source commit represented by this archive snapshot | `e56600c5f6cb03ceebea59b6adee3ebf5423cbec` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): invalidate research PDF bytes with every manager identity/permission reset |
+| Last source commit title | test(c34): prove revocation refresh also wipes previously generated PDF bytes |
 | Files changed relative to main | 101 (82 non-docs; 19 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/NonMapNpcManagerResearchShell.jsx`
+- `scripts/integration/c34/test_t24_current_next_manager_browser.mjs`
 
 ## Research-branch change inventory versus main
 
