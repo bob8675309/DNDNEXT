@@ -75,8 +75,11 @@ export function createT28P2CommerceGuardCandidate({
       });
       return {committed:committed && seq === stockReadSeq};
     } catch (error) {
-      scope.settle(ticket, () => { if (seq === stockReadSeq) onError(error); });
-      return {committed:false, error};
+      let current = false;
+      scope.settle(ticket, () => {
+        if (seq === stockReadSeq) { onError(error); current = true; }
+      });
+      return {committed:false, error, current};
     }
   };
   const loadWallet = async () => {
@@ -97,11 +100,12 @@ export function createT28P2CommerceGuardCandidate({
       });
       return {committed:valid && wrote};
     } catch (error) {
+      let current = false;
       scope.settle(ticket, () => {
         if (seq === walletReadSeq && targetAtEpoch === targetEpoch &&
-            targetAtStart === targetUserId) onError(error);
+            targetAtStart === targetUserId) { onError(error); current = true; }
       });
-      return {committed:false,error};
+      return {committed:false,error,current};
     }
   };
   const dispose = () => {
