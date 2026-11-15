@@ -55,6 +55,9 @@ test("T25-05 actor, character, permissions and PDF must fail closed",()=>{
  assert.match(output,/Refresh permissions/);
  assert.match(output,/printNotes=\{\(notes \|\| \[\]\)\.filter\(canSeeNote\)\}/);
  assert.match(output,/secret: ""/);
+ assert.match(output,/t25-sheet-restricted/);
+ assert.match(output,/selectedPrivateResult\?\.capabilities\?\.canPrint/);
+ assert.match(output,/selectedPrivateResult\?\.capabilities\?\.canEdit/);
  assert.doesNotMatch(output,/charPerm\?\.(can_edit|can_inventory|can_convert)/);
 });
 test("T25-06 original map and other production mounts do not import scratch transform",()=>{
