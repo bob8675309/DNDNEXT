@@ -94,6 +94,15 @@ try {
  const secret="T25_GM_SECRET_NEVER_PUBLIC";
  const npc=await createCharacter(users.GM,"npc","T25 Probe NPC",secret);
  const merchant=await createCharacter(users.GM,"merchant","T25 Probe Merchant","T25_MERCHANT_SECRET");
+
+ const merchantSigned=await users.GM.who.from("characters")
+  .select("id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url")
+  .eq("kind","merchant").order("name",{ascending:true});
+ assert.ifError(merchantSigned.error);
+ assert.ok((merchantSigned.data||[]).some(row=>row.id===merchant),
+   "Signed GM merchant must exist in T24 approved narrow roster");
+ console.log("PASS T25-ACL-MERCHANT: signed merchant exists in exact T24-safe name-ordered roster");
+
  for(const [label,edit,inventory] of [["COEDITOR",true,false],["INVONLY",false,true]])
   sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES("+
    q(npc)+","+q(users[label].id)+","+(edit?"true":"false")+","+(inventory?"true":"false")+",false)");
@@ -219,7 +228,20 @@ try {
  assert.ok(!extracted.stdout.includes(secret),"Explicit public PDF leaked GM Secret");
  assert.ok(!extracted.stdout.includes("T25_NOBODY_PRINTS_GM_NOTES"),"PDF rendered GM-only sheet notes");
  console.log("PASS T25-C03 original live manager Print Sheet generates true safe 3-page PDF");
+ try {
  await page.locator(".npc-roster-list").getByRole("button",{name:/T25 Probe Merchant/}).click();
+ } catch(error) {
+  const probe=await page.evaluate(async()=>{
+   const r=await window.__sb.from("characters")
+     .select("id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url")
+     .eq("kind","merchant").order("name",{ascending:true});
+   return {error:r.error?.message||null,code:r.error?.code||null,
+    rows:(r.data||[]).map(v=>({id:v.id,name:v.name})).slice(0,10),
+    visibleText:document.body.innerText.slice(0,2400)};
+  });
+  console.error("T25-DIAG-C04-MERCHANT",JSON.stringify({probe,pageErrors:errors}));
+  throw error;
+ }
  await page.getByText("T25 Probe Merchant",{exact:true}).first().waitFor();
  assert.ok(!(await body()).includes(secret),"NPC dossier remained after merchant switch");
  console.log("PASS T25-C04 merchant roster switch clears NPC secret and retains original manager controls");
