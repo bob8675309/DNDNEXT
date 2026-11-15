@@ -43,6 +43,7 @@ const stockRequest=id=>r=>{
  catch{return false}
 };
 const walletRequest=r=>r.method()==="POST" && /\/rest\/v1\/rpc\/wallet_get(?:\?|$)/.test(r.url());
+const walletSetRequest=r=>r.method()==="POST" && /\/rest\/v1\/rpc\/wallet_set(?:\?|$)/.test(r.url());
 const buyRequest=r=>r.method()==="POST" && /\/rest\/v1\/rpc\/buy_from_merchant(?:\?|$)/.test(r.url());
 const q=s=>{assert.match(s,/^[a-f0-9-]{36}$/i);return "'"+s+"'"};
 
@@ -179,6 +180,29 @@ export async function runT28P2MountedCommerceSignedBrowser({
     "Late original server purchase response must NOT create a signed-out success notice");
   assert.equal(inspect("SELECT count(*) FROM public.inventory_items WHERE user_id="+q(users.GM.id)),"2");
   console.log("PASS T28-P2-BUY-LATE: original server transaction committed once, stale post-logout success UI suppressed");
+
+  // Even when the synthetic Admin wallet_set completed successfully on the
+  // genuine signed server, its numeric return MUST NOT escape the derived hook
+  // OR the mounted caller after logout. The server write is not rolled back.
+  await signIn("GM");
+  await waitValue(42);
+  const delayedSet=await hold("**/rest/v1/rpc/wallet_set",walletSetRequest,"P2 late wallet_set callback hold");
+  await page.getByTestId("t28p2-wallet-set").click();
+  const setData=await delayedSet.ready;
+  assert.equal(setData.status,200,"Synthetic signed wallet_set must succeed BEFORE logout");
+  assert.equal(Number(setData.parsed),66);
+  assert.equal(inspect("SELECT gp FROM public.player_wallets WHERE user_id="+q(users.GM.id)),"66");
+  await signOut();
+  await waitValue("NONE");
+  delayedSet.release();
+  await delayedSet.done();
+  await page.waitForTimeout(350);
+  assert.equal(await value().innerText(),"NONE");
+  assert.ok(!(await page.getByTestId("t28p2-wallet-outcome").innerText()).includes("SET 66"),
+    "Late wallet_set returned old account numeric through mounted caller after sign-out");
+  assert.equal(inspect("SELECT gp FROM public.player_wallets WHERE user_id="+q(users.GM.id)),"66",
+    "A server-committed wallet_set must not be incorrectly reversed by a UI guard");
+  console.log("PASS T28-P2-SET-LATE: genuine signed local wallet_set 200 after logout, no stale hook/caller GP, server commit preserved");
 
   // Opposing role sees ONLY own wallet and cannot call Admin-only wallet_set.
   await signIn("OUTSIDER");
