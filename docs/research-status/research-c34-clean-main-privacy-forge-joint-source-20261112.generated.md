@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4fb63eb6c6f01c098fdb19f69d06e8798f24d786` |
+| Exact source commit represented by this archive snapshot | `de3ad4a69fc79d7a92b8304779c0ac563561a51a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): derive original merchant panel with scoped stock and purchase UI guards in isolated nonmap file |
+| Last source commit title | fix(c34): use current merchant ref in persistent auth listener instead of stale mounted merchant |
 | Files changed relative to main | 131 (105 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
