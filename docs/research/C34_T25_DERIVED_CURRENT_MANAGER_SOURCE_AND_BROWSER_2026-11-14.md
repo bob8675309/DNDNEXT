@@ -35,6 +35,23 @@
 
 **Open classification:** C01–C03 have specific preceding signed-green evidence; C04 merchant and C05–C06 role/logout/revocation on the *same final executable head* remain pending until final signed run completes. The existing shared Profile `components/NpcPanel.js` still contains the legacy private-column selector and calls `loadCharacterSecrets`; it is also shared with the protected world map, so a tested derived roster/PDF cannot be treated as complete real Profile→Shop parity or as production release approval. Continue source-by-source private consumer review and scratch-only real merchant storefront/selection-race coverage. No hosted SQL, active app route, map change, Vercel, main merge or PR deletion.
 
+## T25 signed closure — exact executable research head `2de527cb48959a943e413d5326dcac3be8c9a01e`
+
+**Signed browser PASS:** [C34 exact-head run #43684349495](https://github.com/bob8675309/DNDNEXT/actions/runs/43684349495), completed **SUCCESS**. This run executed unchanged original source-authenticated T1–T24 and held original #345 browser/PDF gates **before** the T25 scratch browser suite on the same disposable PostgreSQL 17 + GoTrue/PostgREST database. The actual current Next.js 16 `_app` and exact original manager source-derived route were used, not the simplified T24 shell.
+
+- **T25 ACL RED/GREEN:** original wide authenticated `characters` selection denied with `42501`, nine-column stage2-safe roster allowed; explicit GM merchant exists in signed narrow roster. **No permission grants or RLS/schema changes.**
+- **T25-C01:** actual current 2,420-line manager-derived temporary route compiles; real app `_app` is unchanged.
+- **T25-C02:** original `/npcs?focus=npc:<uuid>` resolves the exact intended GM NPC, displays original public description and the server-authorized revealed background. Source-locked fix ensures a faster merchant roster cannot select a different default character.
+- **T25-C03:** real unchanged `CharacterSheetPanel` **Print Sheet** generates the actual three-page PDF using synthetic canonical sheet; text extraction checks the correct NPC name and absence of the GM Secret and GM-only synthetic note markers. **Not** an arbitrary Sheet JSON redaction proof.
+- **T25-C04:** actual NPC-to-merchant roster click succeeds and prior NPC secret is absent. Direct merchant list sorts by ACL-safe `name` (the existing merged UI already sorts by name); storefront is **NOT mounted**.
+- **T25-C05:** real GoTrue GM logout → outsider login; no GM dossier/private motivation or privileged Print Sheet in outsider UI.
+- **T25-C06:** real editor grant revoked in disposable SQL and **explicit Refresh permissions** clears elevated current-manager state and disables Print Sheet. No claim of instantaneous DB push revocation without refresh.
+- Browser asserted no offsite Supabase requests and no page exceptions. All local synthetic data/PDF files and temporary Next route were removed in `finally`.
+- **Static/source evidence:** [C34 run #43684349482](https://github.com/bob8675309/DNDNEXT/actions/runs/43684349482) **SUCCESS** for eight source-lock/feature-preservation/negative tests at the same executable commit; six other distinct workflows also succeeded at this exact executable head, including free PR inheritance review (NOT release approval).
+- **Boundaries:** All T25 research code is on [draft #379](https://github.com/bob8675309/DNDNEXT/pull/379), not in active `pages/npcs.js` or a production deployment. `components/NpcPanel.js` and the live merchant Shop still use older consumers; changes to that shared world-map panel remain prohibited. C01–C06 signed pass is a **bounded manager vertical**, not the complete app, full privacy cutover, or production signoff.
+
+**ONE next bounded task:** scratch-only, source-compatible signed current-application **real merchant storefront Profile→Shop→Profile** and delayed PostgREST actor/character selection-race negative tests, without modifying the world-map-connected shared panel or installing Stage1–3 SQL in hosted Supabase. Then evaluate the complete paired frontend/SQL release dependency graph and remaining original PR feature dispositions.
+
 ## Unresolved, without overclaiming
 
 1. Research-only source transformation is NOT the mounted live `pages/npcs.js`. Never import it from a production route or mark it deployed based on a CI probe.
