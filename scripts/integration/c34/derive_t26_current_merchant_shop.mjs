@@ -39,7 +39,11 @@ export function deriveT26CurrentMerchantShop() {
                       Open Profile
                     </button>
                   ) : null}`;
+ const originalAuthClear='selectedKeyRef.current = ""; setSelectedKey(null);';
+ assert.equal(manager.split(originalAuthClear).length-1,1,"T26 auth overlay reset drift");
+ const isolatedAuthClear=originalAuthClear+' setProfilePanelOpen(false);';
  const output=manager.replace(before,after)
+  .replace(originalAuthClear,isolatedAuthClear)
   .replace(sourceOnlyProfileButton,allowlistedProfileButton).replace(
   "// C34 T25 generated from current",
   "// C34 T26 SCRATCH SHOP WRAPPER (real original MerchantPanel): derived from current"
