@@ -390,3 +390,10 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 - The existing 215-synthetic-PR pagination test and original four-anchor health validator remain source-only process evidence; exact-new-HEAD Actions and actual post-merge publisher output remain **UNVERIFIED pending next run**.
 - No production changes, live Supabase SQL, Vercel commands, gameplay/map touches, branch retirement, paid agent, or main merge.
 - **Next process action:** verify updated draft #380 exact commit tests and full-scope CI with zero failures, then seek separate owner approval for main activation. Domain C34 T27 remains the next technical project task.
+
+## 2026-11-15 — PR #380 second CI fixture correction, exact source message only
+
+- At draft head `860f753f223a180f2487024115743000ba8f68a5`, all eight continuity Git regression cases passed; free research publisher, handoff registry and tactical preservation checks passed. The new combined continuity job [43725742323](https://github.com/bob8675309/DNDNEXT/actions/runs/43725742323) still FAILED in the 215-synthetic-PR metadata validator: invalid `sourceSha` was correctly rejected by `assert.match`, but the deliberately malformed-input test expected the word `SHA` in the error while the generic assertion did not include it.
+- **Bounded correction:** `render_open_pr_index.mjs` now labels malformed `meta.mainSha` / `meta.sourceSha` errors explicitly as invalid main/source SHA. The 40-character SHA guard, negative test, default-branch-only audit, old-PR advisory policy and 215-case nontruncation contract are unchanged.
+- No production code, DB mutation, authorizations, world-map, deployment, hosted SQL, original PR source/test removal, main merge or paid AI call. Exact-new-head CI must be checked; do not claim this repair passed until independently confirmed.
+- **Next process action:** verify full current-head CI and complete PR inheritance, then seek owner review before activation. Domain C34 #379 T27 remains unmodified.

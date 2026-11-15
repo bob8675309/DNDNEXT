@@ -12,8 +12,8 @@ const safe = value => String(value ?? '').replace(/[\u0000-\u001f|<>\x60\[\]\\]/
 
 export function normalizeOpenPrs(raw, meta) {
   assert.ok(Array.isArray(raw), 'GitHub PR collection must be a paginated array');
-  assert.match(String(meta.mainSha || ''), SHA);
-  assert.match(String(meta.sourceSha || ''), SHA);
+  assert.match(String(meta.mainSha || ''), SHA, 'invalid main SHA');
+  assert.match(String(meta.sourceSha || ''), SHA, 'invalid source SHA');
   assert.match(String(meta.generatedAt || ''), /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/);
   const seen = new Set();
   const pulls = raw.map(pr => {
