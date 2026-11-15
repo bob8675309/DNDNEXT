@@ -118,12 +118,18 @@ try {
   "SELECT 1 FROM public.characters c WHERE c.id=character_id AND "+
   "c.kind='merchant' AND c.storefront_enabled=true))");
  sql("UPDATE public.characters SET storefront_enabled=true WHERE id="+q(merchant));
+ sql("NOTIFY pgrst, 'reload schema'");
  const stockId=randomUUID(), stockLabel="T26 AUTUMN WILLOW ELIXIR";
  sql("INSERT INTO public.character_stock (id,character_id,display_name,qty,price_gp,card_payload) VALUES ("+
   q(stockId)+","+q(merchant)+",'"+stockLabel+"',3,12,"+
   "'{\"item_type\":\"Potion\",\"item_rarity\":\"Common\",\"item_description\":\"Synthetic signed local shelf\"}'::jsonb)");
- const signedStock=await users.GM.who.from("character_stock")
-  .select("id,display_name,qty").eq("character_id",merchant);
+ let signedStock=null;
+ for(let retry=0;retry<16;retry++){
+  signedStock=await users.GM.who.from("character_stock")
+   .select("id,display_name,qty").eq("character_id",merchant);
+  if(!signedStock.error)break;
+  if(retry<15)await new Promise(resolve=>setTimeout(resolve,300));
+ }
  assert.ifError(signedStock.error);
  assert.equal(signedStock.data.length,1);
  const anonymousStock=await client().from("character_stock")
@@ -292,7 +298,7 @@ try {
 
  // Test the REAL current MerchantPanel/StorefrontView behind an allowlisted
  // selected-only non-map Profile. The shared map-connected NpcPanel is HELD.
- await page.getByRole("button",{name:"Profile",exact:true}).click();
+ await page.getByTestId("t26-open-public-profile").click();
  await page.getByTestId("t26-safe-merchant-profile").waitFor({timeout:30000});
  assert.equal(await page.getByTestId("t26-safe-merchant-profile").getAttribute("data-character-id"),merchant);
  await page.getByRole("button",{name:"Let me browse your wares."}).click();
@@ -342,7 +348,7 @@ try {
  // Race 2: A signed account switch while the original store is open must
  // unmount and destroy its old stock in the same authorization transition.
  await page.locator(".npc-roster-list").getByRole("button",{name:/T26 Probe Merchant/}).click();
- await page.getByRole("button",{name:"Profile",exact:true}).click();
+ await page.getByTestId("t26-open-public-profile").click();
  await page.getByTestId("t26-safe-merchant-profile").waitFor();
  await page.getByRole("button",{name:"Let me browse your wares."}).click();
  await page.getByTestId("t26-real-merchant-shop").waitFor();
@@ -351,7 +357,6 @@ try {
  await page.getByTestId("t26-real-merchant-shop").waitFor({state:"detached",timeout:15000});
  assert.equal(await page.getByRole("listbox",{name:"Merchant stock"}).count(),0,
   "Merchant storefront survived signed user logout");
- await page.getByRole("button",{name:"Close Profile"}).click();
  console.log("PASS T26-R02: GM logout drops original shop stock and selected Profile");
 
  await login("OUTSIDER");
@@ -360,6 +365,21 @@ try {
  assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0,"Outsider retained Print Sheet");
  assert.ok(!(await body()).includes(secret),"Outsider saw prior GM dossier");
  assert.ok(!(await body()).includes("T26 PRIVATE MOTIVATION"));
+
+ // A signed outsider has NO canonical Sheet access, but must still be able to
+ // open the public merchant Profile and browse genuinely available shelf stock.
+ await page.locator(".npc-roster-list").getByRole("button",{name:/T26 Probe Merchant/}).click();
+ await page.getByTestId("t26-open-public-profile").click();
+ await page.getByTestId("t26-safe-merchant-profile").waitFor({timeout:30000});
+ assert.ok(!(await page.getByTestId("t26-safe-merchant-profile").innerText()).includes("T26_MERCHANT_SECRET"));
+ await page.getByRole("button",{name:"Let me browse your wares."}).click();
+ await page.getByTestId("t26-real-merchant-shop").waitFor({timeout:30000});
+ await actualStock.getByRole("option",{name:new RegExp(stockLabel)}).waitFor({timeout:30000});
+ assert.ok(!(await body()).includes(secret));
+ await page.getByRole("button",{name:"Return to Profile"}).click();
+ await page.getByRole("button",{name:"Close Profile"}).click();
+ console.log("PASS T26-S03: outsider with no Sheet opens authorized merchant public Profile and original stock safely");
+
  console.log("PASS T26-C05 GM-to-outsider signed account switch denies private narrative");
  await logout();await login("COEDITOR");
  await page.locator(".npc-roster-list").getByRole("button",{name:/T26 Probe NPC/}).click();
