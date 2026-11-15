@@ -1,0 +1,37 @@
+# T28-P0 source-only clean-main extraction from held C34 #379 — original wallet/stock request epochs
+
+**Research-only main integration candidate · November 15, 2026.** Original [held C34 #379](https://github.com/bob8675309/DNDNEXT/pull/379), initial T28-P0 commit `26c2a5bf18b6959640bde5c2ae15ea964e229b18`, subsequent source-locked T28-P1 real signed executable `a0bb5a0990a1a4c5edb25a1aee2245a985e5dbf5`; original research/docs-only head later `5b43c09a3f8d833f7ce258cb74c3f67fcfa005cd`. Current clean-main parent at authoring `8787d5c3dc11a4871985cea8a8dcbe16fa33102e`. This package **does not** claim to merge C34 itself, install signed privacy SQL, or fix real merchant/wallet components.
+
+## Exact original source and destination
+
+| Extracted file from held #379 | Original held Git blob SHA1 | Purpose and disposition |
+|---|---|---|
+| `utils/c34/actorRequestEpochCandidate.mjs` | `0ec38f07fd3c84c59289c00f76748ab326b37834` | **Exact original byte-for-byte copy.** Pure unmounted factory for actor generation, merchant selection generation, signed-out/revocation/dispose invalidation and stock vs wallet ticket commit gate. No React, Supabase, SQL, network, open game route or client import. |
+| `scripts/integration/c34/test_t28_actor_epoch_candidate.mjs` | `96fd56e9688d9fcd9b1fe39ffb111268e0241750` | **Exact original byte-for-byte copy.** Seven Node tests: production original MerchantPanel/useWallet/map/manager/town/inventory SHA source lock; old unguarded async response RED **in deterministic model only** vs candidate GREEN; same actor merchant switch preserves wallet; GM logout/relogin token generation, account switch, explicit revoke, dispose and forged ticket denial; ensure no active app consumer imports the candidate. |
+| `.github/workflows/validate-t28-p0-epoch-source.yml` | Fresh clean-main additive workflow | Free 5-minute Node22, source-only, no packages, credentials, Supabase local or hosted or paid automation; requires original seven deterministic tests and checked-in scratch route absence. No permission except `contents: read`. |
+| `docs/research/T28_P0_MAIN_SOURCE_ONLY_EXTRACTION_2026-11-15.md` | New audit document | This original-source and release tier/PR dependency record. |
+| `docs/ACTIVE_WORK.md` and `docs/HANDOFF_LOG.md` | Main-current handoff overlay and strictly appended receipt only | Preserve all older main/branch handoff content; never transplant outdated C34 task snapshots or treat this as an active game feature. |
+
+**Exact destination checks pre-proposal:** Main has the exact original current `components/MerchantPanel.js` Git blob `22e4d0810603bc0322904573cb5fe0c14bad1f88`, `utils/useWallet.js` `f34b99f1d6eee66420d57bdcefdc6d3427092e25`, and owner-protected `components/MapPageClient.js` `61f8738da2ca3d8635b5a413bfdc18c094228a0a`. Neither P0 file already exists on main. Source test explicitly rejects candidate imports by real `pages/npcs.js`, `pages/town/[id].js`, `pages/inventory.js`, `components/NpcPanel.js`, `components/MapPageClient.js`, `components/character/CharacterInteractionPanel.js`, `components/MerchantPanel.js`, `utils/useWallet.js`.
+
+## Original actual signed evidence retained separately — NOT part of this main merge
+
+C34 T28-P1 on held branch has independently [passed genuine local PG17/GoTrue/PostgREST/Next Chromium/true PDF at #43740525687](https://github.com/bob8675309/DNDNEXT/actions/runs/43740525687) and [source/negative #43740525703](https://github.com/bob8675309/DNDNEXT/actions/runs/43740525703), executable `a0bb5a0990a1a4c5edb25a1aee2245a985e5dbf5`. It demonstrated original **unchanged** MerchantPanel/useWallet can display old GM stock and GP **when intentionally kept mounted in a scratch negative owner** through SIGNED_OUT, while separate guarded scratch owner using real signed 200 response bytes rejects both. Also original T27 (T26 scratch unmounted Profile), merchant switch and outsider own wallet; after use, temp pages and entire local PG17/GoTrue DB discarded.
+
+**This exact main integration contains neither the original signed browser harness nor the P1 React probe, SQL fixture, temporary route, actual shop patch or full manager Profile**. Green P0 CI means only source-pinned pure actor-epoch logic and deterministic unit tests. No proof that the deployed UI leaks, or that any actual deployed wallet/merchant is guarded. The original P1 executable evidence and remaining functional work stay on #379 as source, not silently dropped.
+
+## Current blocker/closure and rollback policy
+
+- **No new production import or runtime behavior:** Source-only pure helper is inert. This workflow cannot authorize a purchase, wallet edit, stock visibility or a spell. It does not touch `useWallet`, `MerchantPanel`, NPC manager, shared Profile, world/town/tactical maps, CSS, deployed SQL, public wallet RPC, RLS, Storage, data, Vercel manual release or paid AI.
+- Original held #379 has many additional **UNMERGED** Stage1–3 privacy SQL, Forge, research, Story, manager, stock, wallet and role fixtures; leave draft open. No automatic PR closures based on this 2-file extraction.
+- Main #386 already merged [deep original #346 Spell Engine preservation](https://github.com/bob8675309/DNDNEXT/pull/386); **held #309/#312** original executable spell/replay/permission research remains open. Original #347/#349 source-only drafts were verified and retired through #384, main 42 open PRs at dated capture. Do not use this P0 slice as Spell Engine, NPC privacy or production cutover acceptance.
+- Full next T28-P2 release work requires original merchant/wallet scoped guard *inside* source-derived components, real signed **persistent** manager/town/inventory nonmap roles/Profile-first/three-page PDF, GM vs creator/editor/outsider/anon, separate atomic buy/restock/GP contracts and hosted true-schema/RLS parity. Owner-protected world map cannot change without separate discussion. Independently encrypted native PG17 restore and byte-for-byte 340 Storage object restore, 22/34 legacy account sheet writers, 29/31 nonmap Forge + two excluded map triggers, rollback and explicit owner GO remain blocked.
+
+## Verification and integration gates
+
+1. Verify fresh main base/HEAD and original 2 Git SHA1s, source test seven direct cases, no existing path overwritten and only the six listed paths.
+2. Require **new main-based source-only PR** `node --test` result (7/7) on exact head, plus existing original PR inheritance, handoff, class/tactical/Spell Engine drift checks; do not copy held C34 signed green to this source-only PR.
+3. Merge only this source-only package if reviewed CI green and main unchanged; confirm matching new main SHA, new checksum and automatic Vercel READY without claiming gameplay release.
+4. Append actual tested exact SHA and GitHub PR outcome as closeout in both main and branch handoff. The new branch should remain active at T28-P2, and original #379 stays open. Do not delete source branches or clean user data.
+
+**One next domain task:** T28-P2 isolated source-authentic guarded merchant and wallet implementations as NON-MAP candidate and real role/browser tests. **One PR reduction task:** continue file-by-file original PR integration, and retire only source-complete originals with immutable evidence.
