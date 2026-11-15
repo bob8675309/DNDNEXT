@@ -1,0 +1,23 @@
+# C34 T28-P2 OWNER-SIGNED LOCAL CI TRIGGER — RESEARCH BRANCH ONLY
+#
+# This is an inert text marker. No application imports it; no SQL runs by
+# changing this file. It exists because the signed C34 workflow is only on the
+# held research branch (not default/main), so workflow_dispatch is unavailable.
+#
+# To run the disposable local signed PG17/GoTrue/Next/Chromium test:
+# 1. Sign in on GitHub as bob8675309 (repo owner; job checks github.actor).
+# 2. Open this file on branch:
+#    research/c34-clean-main-privacy-forge-joint-source-20261112
+# 3. Click the pencil Edit button. Change REQUEST_NONCE below to another
+#    distinct text string, e.g. "owner-run-1".
+# 4. Commit the edit DIRECTLY to the same research branch (not main).
+# 5. The push to scripts/integration/c34/** matches the exact workflow's push
+#    paths and the owner actor gate. Check Actions for "C34 real signed PG17
+#    GoTrue Story nonce and inventory integration" at that NEW branch HEAD.
+#
+# IMPORTANT: No token, password, database key or hosted service is required.
+# The workflow uses a disposable local PG17 database only. Do not alter
+# .github/workflows, merge PR #379 or edit production to run the test.
+#
+# When owner run reports a result, share the Actions run URL for review.
+REQUEST_NONCE: not-yet-owner-triggered
