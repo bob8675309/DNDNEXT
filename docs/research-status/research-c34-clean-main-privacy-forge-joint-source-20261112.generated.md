@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `72dcb95f37dfcb6538d9d9dcc323b999da5d0f35` |
+| Exact source commit represented by this archive snapshot | `f17193853781d1a06ab0b62ce126519bcdd664b9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): await selected signed background and diagnose RPC if it never renders |
+| Last source commit title | research(c34): enrich selected NPC/merchant metadata using only server-authorized public Profile |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
+- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
 
 ## Research-branch change inventory versus main
 
