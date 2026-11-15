@@ -69,6 +69,9 @@ jobs:
           node --check utils/c34/t28P2CommerceGuardCandidate.mjs
           node --check scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs
           node scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs
+          node --check utils/c34/useWalletT28P2Research.js
+          node --check scripts/integration/c34/test_t28_p2_derived_source_contract.mjs
+          node scripts/integration/c34/test_t28_p2_derived_source_contract.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
