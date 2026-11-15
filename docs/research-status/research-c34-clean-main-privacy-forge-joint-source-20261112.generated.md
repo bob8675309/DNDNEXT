@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4cc0a3c3b160aaa1403f6cd9c686268bddef2bb9` |
+| Exact source commit represented by this archive snapshot | `514a347b8e46e8ffcfba67e73d0f06c2d98c9b1f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): await actual Next app Supabase client hydration before signing in |
+| Last source commit title | security(c34): T25 fail-closed sheet/print and save plus inventory-only navigation |
 | Files changed relative to main | 105 (85 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_derived_current_manager_browser.mjs`
+- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
 
 ## Research-branch change inventory versus main
 
