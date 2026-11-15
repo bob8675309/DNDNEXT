@@ -36,6 +36,12 @@ jobs:
           node --check scripts/integration/c34/test_t25_current_manager_source.mjs
           node scripts/integration/c34/derive_t25_current_npc_manager.mjs --verify
           node --test scripts/integration/c34/test_t25_current_manager_source.mjs
+      - name: T26 source-locked real merchant Profile-Shop-Profile scratch-only negatives
+        run: |
+          node --check scripts/integration/c34/derive_t26_current_merchant_shop.mjs
+          node --check scripts/integration/c34/test_t26_merchant_shop_source.mjs
+          node scripts/integration/c34/derive_t26_current_merchant_shop.mjs --verify
+          node --test scripts/integration/c34/test_t26_merchant_shop_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
