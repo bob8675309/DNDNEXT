@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8ad5a8b10f0de9b1f89e9bd8d132d67a4761bbf1` |
+| Exact source commit represented by this archive snapshot | `9392fd83b45d2a14a9d7c99aa5a1f52b611ed0ba` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): source-pinned disposable route for mounted guarded merchant/wallet |
-| Files changed relative to main | 134 (108 non-docs; 26 docs) |
+| Last source commit title | test(c34): P2 disposable wallet permissions and inventory tables for original merchant-buy source |
+| Files changed relative to main | 135 (109 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t28_p2_mounted_probe.mjs`
+- `scripts/integration/c34/t28_p2_disposable_original_buy_wallet_setup_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 84 more
+- … 85 more
 
 ## Trust and update procedure
 
