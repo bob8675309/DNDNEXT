@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `be3bdebd6df2a57c7b75889cc31aba2299f3a9a8` |
+| Exact source commit represented by this archive snapshot | `cc238e1fa988b8690d109eb5d5951159b88779c4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record pre-effect render privacy correction and safe owner-triggered branch CI procedure |
+| Last source commit title | docs(c34): route owner to branch-only signed CI trigger; preserve unaccepted P2 hold |
 | Files changed relative to main | 139 (113 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
