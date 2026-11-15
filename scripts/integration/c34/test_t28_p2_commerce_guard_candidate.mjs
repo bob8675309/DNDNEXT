@@ -103,7 +103,25 @@ assert.equal(deniedResult.committed,false);
 assert.equal(deniedResult.current,true);
 assert.match(String(errors.at(-1)?.message),/current RLS denied/);
 
-// (8) Disposal silences old requests without issuing React state setters.
+// (8) A current signed wallet read fails after a successful balance. The
+// client must not continue presenting the previous GP as authoritative.
+const oldBalance=latest(balances);
+assert.equal(oldBalance,0);
+const deniedWallet=guard.loadWallet();
+latest(pendingWallets).reject(new Error("wallet unavailable"));
+const failedWallet=await deniedWallet;
+assert.equal(failedWallet.current,true);
+assert.equal(failedWallet.committed,false);
+assert.equal(latest(balances),null,
+ "Failed CURRENT wallet read must clear the previously displayed balance");
+assert.match(String(latest(errors)?.message),/wallet unavailable/);
+const walletRecovery=guard.loadWallet();
+latest(pendingWallets).resolve(14);
+assert.equal((await walletRecovery).committed,true);
+assert.equal(latest(balances),14);
+console.log("PASS T28-P2-WALLET-READ-R09: failed current read clears stale GP; successful retry restores real GP");
+
+// (9) Disposal silences old requests without issuing React state setters.
 guard.selectMerchant("m2");
 const pending=guard.loadStock();
 const previous=rows.length;
@@ -114,4 +132,4 @@ assert.equal(rows.length,previous);
 assert.equal((await guard.loadWallet()).committed,false);
 assert.equal(guard.snapshot().stopped,true);
 
-console.log("PASS T28-P2-UNIT: 8 scoped cases; logout, same-user relogin, merchant switch, selected wallet target, latest wins, actor errors, current denial, dispose");
+console.log("PASS T28-P2-UNIT: 9 scoped cases; logout, same-user relogin, merchant switch, selected wallet target, latest wins, actor errors, current denial, wallet read failure/recovery, dispose");
