@@ -143,6 +143,7 @@ try {
  };
  const body=()=>page.locator(".npcs-page-root").innerText();
  await page.goto(route+"?focus=npc:"+npc,{waitUntil:"domcontentloaded",timeout:30000});
+ await page.waitForFunction(()=>!!window.__sb?.auth,null,{timeout:30000});
  await page.addStyleTag({path:path.join(root,"node_modules/bootstrap/dist/css/bootstrap.min.css")});
  await login("GM");
  await page.getByText("T25 Probe NPC",{exact:true}).first().waitFor({timeout:30000});
