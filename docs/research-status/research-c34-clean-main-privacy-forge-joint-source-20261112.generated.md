@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `39ff25763e4c5807b29ff70e3b42c178195fc212` |
+| Exact source commit represented by this archive snapshot | `093682da01cddff31dfca01fa90a052726e7f684` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): suppress late wallet set/refresh results at mounted caller across auth and target changes |
+| Last source commit title | test(c34): add signed held wallet_set 200 across logout with server commit and UI nonleak |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/T28P2MountedCommerceProbe.jsx`
+- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
