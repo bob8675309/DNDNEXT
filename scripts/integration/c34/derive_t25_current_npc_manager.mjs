@@ -35,7 +35,14 @@ function changeRoster(state, start, end, kind) {
   const from = state.text.indexOf(start), to = state.text.indexOf(end, from);
   assert.ok(from >= 0 && to > from, "T25 " + kind + " roster anchors");
   let piece = state.text.slice(from, to);
-  piece = piece.replace(/^\s*"(background|motivation|quirk|mannerism|voice)",\n/gm, "");
+  // Stage2 intentionally revokes broad authenticated characters SELECT, even
+  // for GMs. Reuse the T24 signed-tested BASIC public projection for every
+  // roster; obtain richer/secret fields ONLY through selected stage1/2 RPCs.
+  const broadProjection = /\.select\(\s*\[[\s\S]*?\]\.join\(","\)\s*\)/g;
+  const projections = [...piece.matchAll(broadProjection)];
+  assert.equal(projections.length, 1, "T25 expects one source roster SELECT in " + kind);
+  piece = piece.replace(broadProjection, '.select(C34_T25_PUBLIC_ROSTER_FIELDS)');
+  assert.doesNotMatch(piece, /\.select\(\s*\[/, "T25 leaked source roster projection in " + kind);
   if (kind === "npc") {
     const old = /    let secretById = new Map\(\);[\s\S]*?    setNpcs\(rows\);/;
     assert.match(piece, old);
@@ -97,9 +104,20 @@ export function deriveT25CurrentManager(source) {
     '    const hasCachedSheet = Boolean(selectedId) && sheetCacheRef.current.has(String(selectedId));',
     '    const hasCachedSheet = false; // Never display cached sheet prior to role re-authorization.',
     "prevent speculative sheet reuse");
+  replaceOnce(state,
+    'const NPC_SPRITE_BUCKET = "map-icons";',
+    'const NPC_SPRITE_BUCKET = "map-icons";\n' +
+    '// Original T24 successful signed PostgREST roster projection. All other\n' +
+    '// characters data is selected-only, via original stage1/2/3 authority.\n' +
+    'const C34_T25_PUBLIC_ROSTER_FIELDS = "id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url";',
+    "use sole source-tested role-safe roster column allowlist");
   changeRoster(state,
     "  const loadNpcs = useCallback(async () => {",
     "  const loadMerchants = useCallback(async () => {", "npc");
+  changeRoster(state,
+    "  const loadMerchants = useCallback(async () => {",
+    "  const loadMerchantProfiles = useCallback(async () => {",
+    "merchant");
   changeRoster(state,
     "  const loadMerchantProfiles = useCallback(async () => {",
     "  /* ------------------- roster merge ------------------- */", "merchant-profile");
@@ -378,6 +396,8 @@ export function deriveT25CurrentManager(source) {
   const rosterOnly = output.slice(output.indexOf("  const loadNpcs = "),
     output.indexOf("  /* ------------------- roster merge ------------------- */"));
   assert.doesNotMatch(rosterOnly, /"(background|motivation|quirk|mannerism|voice)"/);
+  assert.equal(rosterOnly.match(/\.select\(C34_T25_PUBLIC_ROSTER_FIELDS\)/g)?.length, 3);
+  assert.doesNotMatch(rosterOnly, /\.select\(\s*\[/);
   assert.match(output, /function NpcsPage/);
   assert.match(output, /function handleDeleteNpc/);
   assert.match(output, /\/npcs\?focus|focusRaw/);
