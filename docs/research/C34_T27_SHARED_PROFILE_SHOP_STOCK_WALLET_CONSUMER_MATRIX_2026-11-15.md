@@ -62,3 +62,33 @@ No changes to `MapPageClient.js`, world-map movement, original `NpcPanel`, merch
 ## One next task after T27 evidence
 
 If and only if T27 exact-head source AND signed browser checks pass, the next bounded scope is **T28 non-map mounted-readiness preflight** for the manager, town and inventory in a disposable source-derived shell: verify account switching, Profile→shop→Profile, canonical Sheet/Print/Story/Shop privacy, wallet/stock request generations, and original #345 dependency/rollback before any shared Profile/world-map or hosted SQL change. Preserve current C34 branch handoff and append-only receipt after each milestone.
+
+## 2026-11-15 — T27 exact executable source/signed acceptance: GREEN (SCRATCH ONLY)
+
+**Exact executable C34 HEAD:** `a4d5cd9bd6f27d07fddb9ef16c4d3539ba38cc25` (original T27 material source at `4ac3abea480efa0b4d90a5c17d0b0d949999e1c5`, followed only by scoped owner-push C34 CI triggers and handoff). **All six distinct exact-HEAD GitHub workflows SUCCESS**:
+
+| Evidence | Actual result |
+|---|---|
+| [#43731000650 — exact-source C34 research](https://github.com/bob8675309/DNDNEXT/actions/runs/43731000650) | PASS: 10 original consumer SHA1s pinned, T25/T26 originals preserved, T27 source negatives, explicit research release rejection |
+| [#43731000556 — genuine PG17/GoTrue/PostgREST/Next Chromium](https://github.com/bob8675309/DNDNEXT/actions/runs/43731000556) | PASS: original I1C+inventory, held #345 T20 true browser/PDF, T22/T24/T25, real T26 shop/role/three-page PDF, **T27-R01** |
+| [#43731002546 — full PR inheritance](https://github.com/bob8675309/DNDNEXT/actions/runs/43731002546) | PASS: inherited branch-source/feature audit, **NOT** production release approval |
+| [#43731002573 — trusted authored handoff](https://github.com/bob8675309/DNDNEXT/actions/runs/43731002573) | PASS: legacy research branch remains advisory and source reviewed |
+| [#43731000566 — tactical preservation](https://github.com/bob8675309/DNDNEXT/actions/runs/43731000566) | PASS: prior protected tactical contract unchanged |
+| [#43731000604 — free metadata publisher](https://github.com/bob8675309/DNDNEXT/actions/runs/43731000604) | PASS: source-status/archive publisher, not PR feature/CI approval |
+
+**New genuine browser trace:** job `132863176929` at `2026-11-15T15:44:34Z` logs:
+> PASS T27-R01: REAL signed local character_stock GET bytes held, GM signs out, late response delivered, shop and stock remain destroyed
+
+The runner confirmed the **actual signed PostgREST GET response status 200 and stocked item bytes**, zero DOM stock before release, real auth SIGNED_OUT and shop unmount *before* delivery, successful delivery of held response, and zero stock DOM afterward. It then passed original T26-C05/C06 outsider/editor revocation, original true three-page Print Sheet and offsite/page-error controls. The runner removed its ephemeral Next route in `finally`; CI also completed synthetic-PDF evidence handling and disposable database/credential discard. **No production actor or service-role browser token was used.**
+
+**Limits of this green result:** The negative is effective because the **scratch-only** signed public Profile adapter unmounts the original MerchantPanel on actor change. Original `MerchantPanel.fetchStock` still has no intrinsic actor/request-generation check and `useWallet.refresh` may still settle after a session switch. The test does **not** execute purchases, modify GP, mount current shared `NpcPanel` on town/map, or prove hosted RLS/DDL, real stock-schema parity, 22/34 writers, 29/31 original nonmap triggers, backup restore or production rollout.
+
+### Read-only live commerce-schema comparison (NOT a production write)
+
+At this T27 review the connected hosted **DnDWeb** project `ucggczovhmauhshvhusx` was queried using **SELECT-only PostgreSQL metadata**, with no game records or tokens read or changed. Server functions currently present: `public.buy_from_merchant(p_merchant_id uuid,p_stock_uuid uuid,p_qty integer)`, `public.stock_merchant_item(p_merchant_id uuid,p_display_name text,p_price_gp numeric,p_qty integer,p_payload jsonb)`, `public.wallet_get(p_user uuid)` and `public.wallet_set(p_user uuid,p_amount numeric)`. These permit authenticated EXECUTE and deny anon EXECUTE; actual signed purchase/write transactions and reentrancy were **not exercised**.
+
+The **hosted** `public.character_stock` has more columns than T26's minimal scratch fixture: `id,character_id,display_name,qty,price_gp,card_payload,created_at,updated_at,item_id,legacy_stock_id,note`. The current UI orders by `display_name` and does not depend on these extra fields for the tested shelf render. Hosted `character_stock_select_authenticated` is authenticated SELECT with a character-exists check; it does **not explicitly** require `storefront_enabled=true` in its policy text, whereas scratch T26 does. Hosted `character_stock_admin_write` checks `private.current_user_is_admin()` for writes. The actual `characters` RLS and merchant visibility implications must be separately evaluated for any T28 browser or production security claim. Stage1 `get_npc_profile_visible_v1`, Stage2 `get_npc_dossier_admin_v1`/`get_character_editor_narrative_v1` and Stage3 `create_player_character_with_private_backstory_v1` were absent from the SELECT-only live function list. **Never install them as an automatic follow-up.**
+
+### Next bounded task now authorized only as research: T28
+
+**T28 source-authentic NON-MAP mounted-readiness preflight, not a release:** design/test the current manager, town, inventory, merchant Profile/shop and wallet actor/request-generation boundary against held #345, preserving original complete tabs/Print/Story/craft/transfer and real browser roles. Special focus: stock and `wallet_get` responses after account changes when the **mounted** owner persists, merchant buyer transactional authority, source-derived live stock schema, and original town SIGNED_OUT teardown. **Keep protected world map untouched**; defer SQL Stage1–3, hosted grants, customer data, real purchases and rollout until independently restored Postgres+340 Storage and owner go/no-go.
