@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `37dbaff694d00b4506793a50bcd69090790a13aa` |
+| Exact source commit represented by this archive snapshot | `4fb63eb6c6f01c098fdb19f69d06e8798f24d786` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): refresh returns committed guarded GP and wallet_set tracks current target |
-| Files changed relative to main | 130 (104 non-docs; 26 docs) |
+| Last source commit title | research(c34): derive original merchant panel with scoped stock and purchase UI guards in isolated nonmap file |
+| Files changed relative to main | 131 (105 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,13 +17,14 @@
 
 ## Latest source commit paths
 
-- `utils/c34/useWalletT28P2Research.js`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
 - `components/c34/NonMapNpcProfileResearchShell.jsx`
@@ -70,8 +71,7 @@
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
-- `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
-- … 80 more
+- … 81 more
 
 ## Trust and update procedure
 
