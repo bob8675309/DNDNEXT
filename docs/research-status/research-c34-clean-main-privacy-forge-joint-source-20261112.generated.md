@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5574d6f10f6b84b61b22fc8a5e80212cf26b6ab0` |
+| Exact source commit represented by this archive snapshot | `bc2d71f5eafe92d9c067c6e45ee541c0d0ec9388` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): execute T28-P2 scoped wallet and stock guard regressions without secrets |
+| Last source commit title | test(c34): pin original merchant and wallet blobs; forbid T28-P2 production imports |
 | Files changed relative to main | 128 (103 non-docs; 25 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs`
 
 ## Research-branch change inventory versus main
 
