@@ -31,22 +31,23 @@ assert.match(functionBody,/supabase\.rpc\("buy_from_merchant"/);
 assert.match(functionBody,/await Promise\.allSettled\(\[fetchStock\(\), refreshWallet\(\)\]\)/);
 assert.doesNotMatch(functionBody,/await Promise\.all\(\[fetchStock\(\), refreshWallet\(\)\]\)/);
 const build=new Function(
- "uid","stockGuardRef","setBusyId","setErr","setNotice",
+ "uid","stockGuardRef","purchaseInFlightRef","setBusyId","setErr","setNotice",
  "supabase","merchant","fetchStock","refreshWallet","console",
  functionBody+"\nreturn handleBuy;"
 );
 const card={id:"item-1",item_name:"Example Elixir",_price_gp:12};
 const make=({buyer=()=>Promise.resolve({data:1,error:null}),stock=async()=>{},
- wallet=async()=>{},uid="gm"}={})=>{
- const session={actorId:"gm",actorEpoch:5,merchantId:"merchant-1",merchantEpoch:7};
+ wallet=async()=>{},uid="gm",actor=null,merchantId="merchant-1",purchaseRef=null}={})=>{
+ const session=actor||{actorId:"gm",actorEpoch:5,merchantId:"merchant-1",merchantEpoch:7};
+ const inFlight=purchaseRef||{current:null};
  const notices=[],errors=[],busy=[],rpc=[];
  const handleBuy=build(
-  uid,{current:{snapshot:()=>({...session})}},
+  uid,{current:{snapshot:()=>({...session})}},inFlight,
   v=>busy.push(v),v=>errors.push(v),v=>notices.push(v),
   {rpc:async(name,args)=>{rpc.push({name,args});return buyer(name,args)}},
-  {id:"merchant-1"},stock,wallet,{error:()=>{}}
+  {id:merchantId},stock,wallet,{error:()=>{}}
  );
- return {handleBuy,session,notices,errors,busy,rpc};
+ return {handleBuy,session,purchaseRef:inFlight,notices,errors,busy,rpc};
 };
 
 // Original source RED: RPC succeeded, follow-up wallet_get fails, but original
@@ -137,4 +138,46 @@ const make=({buyer=()=>Promise.resolve({data:1,error:null}),stock=async()=>{},
  assert.ok(!c.notices.some(n=>n?.kind==="error"));
  console.log("PASS T28-P2-BUY-R06: committed purchase survives stock read error with clear retry warning");
 }
-console.log("PASS T28-P2-BUY-UNIT: derived original-buyer handler distinguishes committed transactions from display refresh");
+// (R07) Two clicks before React can commit busyId must issue exactly one
+// original buy_from_merchant RPC in the SAME actor/merchant generation.
+{
+ let resolveBuy;
+ const c=make({buyer:()=>new Promise(resolve=>{resolveBuy=resolve})});
+ const first=c.handleBuy(card);
+ const duplicate=c.handleBuy(card);
+ assert.equal(c.rpc.length,1,"two rapid Buy clicks submitted two live RPCs");
+ assert.ok(c.purchaseRef.current,"purchase token must be set synchronously");
+ resolveBuy({data:1,error:null});
+ await Promise.all([first,duplicate]);
+ assert.equal(c.rpc.length,1);
+ assert.equal(c.purchaseRef.current,null,"purchase lock must clear after completion");
+ console.log("PASS T28-P2-BUY-R07: same-scope rapid double-click submits exactly one purchase");
+}
+// (R08) A delayed old merchant must not block or unlock a new merchant's
+// purchase after a shop change while the original HTTP response is still held.
+{
+ let resolveOld,resolveNew;
+ const c=make({buyer:()=>new Promise(resolve=>{resolveOld=resolve})});
+ const old=c.handleBuy(card);
+ assert.equal(c.rpc.length,1);
+ c.session.merchantId="merchant-2";c.session.merchantEpoch++;
+ const replacement=make({
+  buyer:()=>new Promise(resolve=>{resolveNew=resolve}),
+  actor:c.session,merchantId:"merchant-2",purchaseRef:c.purchaseRef
+ });
+ const newer=replacement.handleBuy({...card,id:"item-2"});
+ assert.equal(replacement.rpc.length,1,"old merchant must not block fresh shop");
+ const token=replacement.purchaseRef.current;
+ resolveOld({data:1,error:null});
+ await old;
+ assert.equal(replacement.purchaseRef.current,token,
+  "old merchant completion cleared new merchant's purchase lock");
+ await replacement.handleBuy({...card,id:"item-2"});
+ assert.equal(replacement.rpc.length,1,
+  "old merchant completion allowed duplicate new merchant purchase");
+ resolveNew({data:1,error:null});
+ await newer;
+ assert.equal(c.purchaseRef.current,null);
+ console.log("PASS T28-P2-BUY-R08: old merchant pending purchase cannot block/unlock new merchant");
+}
+console.log("PASS T28-P2-BUY-UNIT: derived original-buyer handler distinguishes committed transactions from display refresh and rapid double-click");
