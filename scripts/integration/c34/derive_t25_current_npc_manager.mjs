@@ -268,6 +268,86 @@ export function deriveT25CurrentManager(source) {
     '  }, [selectedKey, sheetReloadToken, sheetCacheReady, loadSelectedSheet, permissionEpoch]);',
     "re-fetch sheet after auth/grant change");
 
+  replaceSection(state,
+    "  const buildDetailsBase = useCallback(",
+    "  useEffect(() => {\n    if (!selected) {",
+    [
+      "  const buildDetailsBase = useCallback(",
+      "    (sel) => {",
+      "      if (!sel) return null;",
+      "      const base = sel.type === \"merchant\" ?",
+      "        (merchantProfiles.get(String(sel.id)) || sel) :",
+      "        ((npcs || []).find(row => String(row.id) === String(sel.id)) || sel);",
+      "      const lore = selectedPrivateResult?.profile?.lore || {};",
+      "      const privateRow = isAdmin ? selectedPrivateResult?.dossier :",
+      "        (selectedCharPerm.can_edit ? selectedPrivateResult?.editorNarrative : null);",
+      "      const row = { ...base, ...lore, ...(privateRow || {}) };",
+      "      return {",
+      "        role: safeStr(row.role), affiliation: safeStr(row.affiliation),",
+      "        description: safeStr(row.description), background: safeStr(row.background),",
+      "        motivation: privateRow ? safeStr(row.motivation) : \"\",",
+      "        quirk: privateRow ? safeStr(row.quirk) : \"\",",
+      "        mannerism: privateRow ? safeStr(row.mannerism) : \"\",",
+      "        voice: privateRow ? safeStr(row.voice) : \"\",",
+      "        secret: isAdmin && selectedPrivateResult?.dossier ? safeStr(row.secret) : \"\"",
+      "      };",
+      "    },",
+      "    [npcs, merchantProfiles, selectedPrivateResult, isAdmin, selectedCharPerm.can_edit]",
+      "  );",
+      ""
+    ].join("\n") + "\n",
+    "selected-only authorized private narrative projection");
+  replaceOnce(state,
+    "  const canEditCharacter = !!isAdmin || !!charPerm?.can_edit;\n  const canStoreToggle = !!isAdmin || !!charPerm?.can_inventory || !!charPerm?.can_edit;\n  const canConvertKind = !!isAdmin || !!charPerm?.can_convert;",
+    "  const canEditCharacter = !!userId && (!!isAdmin || !!selectedCharPerm.can_edit);\n" +
+    "  const canStoreToggle = !!userId && (!!isAdmin || !!selectedCharPerm.can_inventory || !!selectedCharPerm.can_edit);\n" +
+    "  const canConvertKind = !!userId && (!!isAdmin || !!selectedCharPerm.can_convert);",
+    "never use unbound grants for manager editing");
+  replaceOnce(state,
+    "    if (!(isAdmin || charPerm?.can_edit)) return;",
+    "    if (!(isAdmin || selectedCharPerm.can_edit)) return;",
+    "selected-character delete guard");
+  replaceOnce(state,
+    "    enabled: !!selected?.id && (!!isAdmin || !!charPerm?.can_inventory || !!charPerm?.can_edit),\n    canCommand: !!isAdmin || !!charPerm?.can_edit,",
+    "    enabled: !!selected?.id && !!userId && (!!isAdmin || selectedCharPerm.can_edit),\n    canCommand: !!userId && (!!isAdmin || selectedCharPerm.can_edit),",
+    "guard sheet-action hook against inventory-only sheet reads");
+  replaceOnce(state,
+    "  const backgroundText = canEditNarrative ? details.background : safeStr(selected?.background || sheetDraft?.background || \"\");",
+    "  const backgroundText = (isAdmin || selectedCharPerm.can_edit) && selectedPrivateResult\n" +
+    "    ? safeStr(details.background) : safeStr(selectedPrivateResult?.profile?.lore?.background || \"\");",
+    "remove unsafe roster and sheet background fallback");
+  replaceOnce(state,
+    "    background: backgroundText,\n    motivation: safeStr(details?.motivation || selected?.motivation),\n    quirk: safeStr(details?.quirk || selected?.quirk),\n    mannerism: safeStr(details?.mannerism || selected?.mannerism),\n    voice: safeStr(details?.voice || selected?.voice),\n    secret: isAdmin ? safeStr(details?.secret || selected?.secret) : \"\",",
+    "    background: safeStr(selectedPrivateResult?.profile?.lore?.background || \"\"),\n" +
+    "    motivation: \"\", quirk: \"\", mannerism: \"\", voice: \"\", secret: \"\",",
+    "public PDF profile excludes elevated lore and GM secret");
+  replaceOnce(state,
+    "                      printNotes={notes}",
+    "                      printNotes={(notes || []).filter(canSeeNote)}",
+    "PDF receives only visible notes");
+  replaceOnce(state,
+    "                          await saveCharacterSecret(supabase, selected.id, detailsDraft.secret);",
+    "                          if (isAdmin && selectedPrivateResult?.dossier) {\n" +
+    "                            await saveCharacterSecret(supabase, selected.id, detailsDraft.secret);\n" +
+    "                          }",
+    "editor save never overwrites GM secret");
+  replaceOnce(state,
+    "            isAdmin={isAdmin || canEditCharacter}",
+    "            isAdmin={!!userId && isAdmin}",
+    "edit grant never masquerades as GM in shared Profile");
+  replaceOnce(state,
+    "        <h1 className=\"h4 mb-0\">NPCs</h1>",
+    "        <h1 className=\"h4 mb-0\">NPCs</h1>\n" +
+    "        <button type=\"button\" className=\"btn btn-sm btn-outline-secondary ms-3\"\n" +
+    "          data-testid=\"t25-refresh-permissions\" onClick={refreshManagerPermissions}>\n" +
+    "          Refresh permissions\n" +
+    "        </button>",
+    "explicit revocation refresh surface");
+  assert.doesNotMatch(state.text, /charPerm\\?\\.(can_edit|can_inventory|can_convert)/,
+    "T25 refuses any unbound permission consumers");
+  assert.match(state.text, /readNonMapNpcProfileCandidate\\(supabase, id/,
+    "selected private reader must be active");
+
   const preface = [
     "// C34 T25 generated from current pages/npcs.js at exact blob " + T25_BASE_BLOB,
     "// TEMPORARY LOCALHOST-ONLY SCRATCH PROBE. Never check in under pages/.",
