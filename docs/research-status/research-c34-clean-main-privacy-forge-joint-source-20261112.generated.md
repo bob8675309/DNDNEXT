@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `78a405c1637649297aab95fbff8bd84fbff8e6fb` |
+| Exact source commit represented by this archive snapshot | `992f3f6dd7cdd4e7d1774e2162e1e08c5b7ee63f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record exact T26 signed real shop and PostgREST actor/race acceptance with hold |
+| Last source commit title | docs(c34): advance active T26 signed original shop and actor race green; next T27 source consumer audit |
 | Files changed relative to main | 111 (89 non-docs; 22 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
