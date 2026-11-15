@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `37e27405ef9090a2b95e559e33d59f6e8baf7cb2` |
+| Exact source commit represented by this archive snapshot | `ebce92d804ca87cdb0c32d7d82a6e16834462a96` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): T26 allow public Profile entry without privileged sheet in disposable manager |
+| Last source commit title | test(c34): T26 signed outsider public Profile, PostgREST stock refresh and logout-safe browser flow |
 | Files changed relative to main | 110 (89 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t26_current_merchant_shop.mjs`
+- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
 
 ## Research-branch change inventory versus main
 
