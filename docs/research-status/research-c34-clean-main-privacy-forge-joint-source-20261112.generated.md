@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5b43c09a3f8d833f7ce258cb74c3f67fcfa005cd` |
+| Exact source commit represented by this archive snapshot | `efe98f58d38c32dc6e38e52fc722fd290fb9d91e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): close T28 P1 genuine signed persistent stock-wallet research with exact receipts |
+| Last source commit title | docs(c34): synchronize T28 P1 genuine signed pass with independent P0 source main merge |
 | Files changed relative to main | 126 (101 non-docs; 25 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
