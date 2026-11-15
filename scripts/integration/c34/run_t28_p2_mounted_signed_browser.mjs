@@ -52,6 +52,7 @@ export async function runT28P2MountedCommerceSignedBrowser({
  stockId,stockLabel,alternateStockLabel,offsite,errors,inspect
 }) {
  const page=await context.newPage(),holders=[];
+ let walletFaultHandler=null;
  const hold=async(...args)=>{const h=await holdSigned(page,...args);holders.push(h);return h};
  const value=()=>page.getByTestId("t28p2-wallet-value");
  const shop=()=>page.getByTestId("t28p2-mounted-shop");
@@ -146,6 +147,23 @@ export async function runT28P2MountedCommerceSignedBrowser({
   assert.equal(inspect("SELECT gp FROM public.player_wallets WHERE user_id="+q(users.GM.id)),"66");
   console.log("PASS T28-P2-SET: synthetic local Admin wallet_set 66, guarded real signed refresh, database reconciled");
 
+  // Simulate a failed CURRENT signed wallet_get response AFTER the original
+  // purchase RPC commits. It must NOT turn the accepted transaction into a
+  // "purchase failed" notice or display stale GP as if it were current.
+  let rejectedWalletRead=false;
+  walletFaultHandler=async route=>{
+    if(!rejectedWalletRead && route.request().method()==="POST"){
+      rejectedWalletRead=true;
+      await route.fulfill({
+        status:503,contentType:"application/json",
+        body:JSON.stringify({code:"PGRST500",message:"Disposable wallet refresh unavailable"})
+      });
+      return;
+    }
+    await route.continue();
+  };
+  await page.route("**/rest/v1/rpc/wallet_get",walletFaultHandler);
+
   // Exercise TWO genuine DOM Buy clicks in one browser task before React's
   // busyId render can be relied on. The synchronous purchase ref must send
   // ONE source-original RPC and debit exactly once.
@@ -164,6 +182,16 @@ export async function runT28P2MountedCommerceSignedBrowser({
    document.querySelector('[data-testid="t28p2-mounted-shop"]')?.textContent
     ?.includes("Purchased "+label),
    stockLabel,{timeout:18000});
+  assert.equal(rejectedWalletRead,true,
+    "The signed wallet_get fault must be exercised by original-buy post-commit refresh");
+  const shopWithWalletReadFailure=await shop().innerText();
+  assert.match(shopWithWalletReadFailure,/Your balance could not be refreshed/,
+    "Accepted purchase must warn instead of reporting failed buyer RPC");
+  assert.match(shopWithWalletReadFailure,/Unavailable/,
+    "Current failed wallet read must not display stale GP or a false zero balance");
+  await page.unroute("**/rest/v1/rpc/wallet_get",walletFaultHandler);
+  walletFaultHandler=null;
+  console.log("PASS T28-P2-BUY-WALLET-FAIL: source-original purchase accepted; current signed wallet read 503 shows Unavailable and success warning");
   // The external wallet pane is a separately mounted hook, so its live balance
   // is refreshed explicitly after the merchant's own guarded wallet refresh.
   await page.getByTestId("t28p2-wallet-refresh").click();
@@ -254,6 +282,7 @@ export async function runT28P2MountedCommerceSignedBrowser({
   await signOut();
   await waitValue("NONE");
  } finally {
+  if(walletFaultHandler)await page.unroute("**/rest/v1/rpc/wallet_get",walletFaultHandler).catch(()=>{});
   for(const h of holders)await h.end().catch(()=>{});
   await page.close().catch(()=>{});
  }
