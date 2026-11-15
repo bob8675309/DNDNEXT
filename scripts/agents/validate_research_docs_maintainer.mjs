@@ -47,3 +47,13 @@ for(const token of ["node scripts/agents/validate_project_health.mjs","node scri
 for(const forbidden of ["openai/codex-action","SUPABASE_SERVICE_ROLE_KEY","VERCEL_TOKEN","schedule:","pull_request_target:"])
  assert.ok(!healthWorkflow.includes(forbidden),"Forbidden paid/live project-health privilege: "+forbidden);
 console.log("PASS zero-cost exact-head GitHub-only health collector, archive write scope and on-demand Work policy");
+
+const completeIndexWorkflow = readFileSync(".github/workflows/research-docs-maintenance.yml","utf8");
+for (const token of ["gh api --paginate", "pulls?state=open&per_page=100",
+  "node scripts/agents/validate_open_pr_index.mjs", "node scripts/agents/render_open_pr_index.mjs",
+  "docs/OPEN_PRS.generated.md", "openprs_old", "expectedHeadOid:$sha"]) {
+  assert.ok(completeIndexWorkflow.includes(token),"Missing complete open PR inventory safety contract: "+token);
+}
+for(const forbidden of ["schedule:", "pull_request_target:", "SUPABASE_SERVICE_ROLE_KEY", "VERCEL_TOKEN", "openai/codex-action"])
+  assert.ok(!completeIndexWorkflow.includes(forbidden),"Publisher must remain free/owner-push scoped: "+forbidden);
+console.log("PASS no-cost paginated complete open-PR metadata snapshot, atomic archive and no secrets/runtime");
