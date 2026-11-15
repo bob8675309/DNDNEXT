@@ -32,7 +32,7 @@ for(const token of [
 const p2=src("scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs");
 for(const token of [
  "T28-P2-MOUNT", "T28-P2-LATE", "T28-P2-TARGET", "T28-P2-SET",
- "T28-P2-BUY:", "T28-P2-BUY-LATE", "T28-P2-ROLES", "T28-P2-EDITOR-INVENTORY",
+ "T28-P2-BUY:", "T28-P2-BUY-LATE", "T28-P2-SET-LATE", "T28-P2-ROLES", "T28-P2-EDITOR-INVENTORY",
  "route.fetch()", "route.fulfill({response:upstream})",
  "window.__sb.auth.signOut()", "insufficient", "wallet_set",
  "buy_from_merchant", "pg", "stockId"
@@ -45,6 +45,11 @@ assert.match(p2,/assert\.equal\(walletData\.status,200\)/);
 assert.match(p2,/assert\.equal\(purchaseData\.status,200/);
 assert.match(p2,/await signOut\(\)/);
 assert.match(p2,/await delayedBuy\.done\(\)/);
+assert.match(p2,/await delayedSet\.done\(\)/);
+assert.match(p2,/assert\.equal\(setData\.status,200/);
+assert.match(p2,/walletSetRequest/);
+assert.match(p2,/genuine signed local wallet_set 200 after logout/);
+assert.match(mounted,/commitIfCurrent/);
 assert.match(p2,/delayedWallet\.done\(\)/);
 const fixture=src("scripts/integration/c34/t28_p2_disposable_original_buy_wallet_setup_pg17.sql");
 for(const token of [
