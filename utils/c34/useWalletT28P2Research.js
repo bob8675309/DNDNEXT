@@ -88,7 +88,7 @@ export default function useWalletT28P2Research(userId) {
     setLoading(true);
     let live = true;
     void guard.loadWallet().then(result => {
-      if (live && result.committed) setLoading(false);
+      if (live && (result.committed || result.current)) setLoading(false);
     });
     return () => {live = false};
   }, [userId]);
@@ -108,15 +108,26 @@ export default function useWalletT28P2Research(userId) {
     const {data,error} = await supabase.rpc("wallet_set",{
       p_user:userIdRef.current||null,p_amount:Number(amount)
     });
-    const end = guard.snapshot();
-    if (start.actorId === end.actorId && start.actorEpoch === end.actorEpoch &&
-        start.targetEpoch === end.targetEpoch && start.targetUserId === end.targetUserId &&
-        !end.stopped && !error) {
-      // Re-read the authoritative balance instead of committing a possibly
-      // out-of-order wallet_set response over a newer wallet_get/other edit.
-      // A failed refresh leaves the completed server write result unchanged.
-      try { await refresh(); } catch { /* read error already surfaced by guard */ }
+    const stillSameWallet = () => {
+      const end = guard.snapshot();
+      return Boolean(start.actorId && !end.stopped &&
+        start.actorId === end.actorId && start.actorEpoch === end.actorEpoch &&
+        start.targetEpoch === end.targetEpoch && start.targetUserId === end.targetUserId);
+    };
+    // The server may have ACCEPTED this transaction, even if the user signed
+    // out or changed the selected wallet while HTTP response was in flight.
+    // Do not pass its numeric result to a new account's UI callback.
+    const staleResult = () => ({
+      data:null,
+      error:new Error("Wallet context changed; verify the transaction status before retrying.")
+    });
+    if (!stillSameWallet()) return staleResult();
+    if (!error) {
+      // Re-read authoritative GP instead of displaying the wallet_set result.
+      // A failed read does not undo a server-committed transaction.
+      try { await refresh(); } catch { /* current read error already surfaced by guard */ }
     }
+    if (!stillSameWallet()) return staleResult();
     return {data,error};
   };
 
