@@ -1,3 +1,5 @@
+> **NOVEMBER 15, 2026 — REVIEW CANDIDATE, NOT CURRENT MAIN BEHAVIOR:** [draft #380](https://github.com/bob8675309/DNDNEXT/pull/380) proposes additive protection against missing source-fresh authored handoffs and a separate full-paginated list of all open PR heads in the existing docs/agent-status archive. The original four-PR detailed CI collector, Forge/agent snapshots, and atomic archive publishing remain intact. The proposed broader list has HEAD/base/draft/updated metadata only, **not 44 tested CI histories**, and refreshes only on qualifying owner research/agent pushes. A new PR gate is proposed only from **2026-11-16 00:00 UTC**; earlier/stacked PRs remain advisory to avoid retroactive CI blockage. Nothing here represents an existing deployed gate until a separately reviewed #380 merge. [Contract and rollback](HANDOFF_CONTINUITY_GUARD_2026-11-15.md).
+
 # Research documentation maintenance — source-driven, no paid AI
 
 **Owner request recorded November 6, 2026.** Keep research documentation current as engineering changes are made, without paid AI or broad production permissions.
