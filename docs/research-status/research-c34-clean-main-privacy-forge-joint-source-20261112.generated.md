@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `437304e1a73a9e0a59684d91251a559722b74c49` |
+| Exact source commit represented by this archive snapshot | `d602706111a0a2095bb6b7c7999458e99fdb8b34` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): add unmounted T23 NPC manager identity-bound roster candidate |
-| Files changed relative to main | 95 (77 non-docs; 18 docs) |
+| Last source commit title | ci(c34): run isolated T23 NPC manager negative/source tests in existing signed workflow |
+| Files changed relative to main | 96 (78 non-docs; 18 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/nonMapNpcManagerCandidate.mjs`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql`
 - `scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql`
-- … 45 more
+- … 46 more
 
 ## Trust and update procedure
 
