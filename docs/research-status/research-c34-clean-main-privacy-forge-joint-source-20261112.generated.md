@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `52311837af073910d7c5ff3316736879ea969bb0` |
+| Exact source commit represented by this archive snapshot | `06056102016b51f3224590100d273040e0861165` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): finish source-derived merchant loading on current rejected stock read |
-| Files changed relative to main | 131 (105 non-docs; 26 docs) |
+| Last source commit title | ci(c34): verify guarded source-derived merchant/wallet candidates and active-route exclusion |
+| Files changed relative to main | 132 (106 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
-- … 81 more
+- … 82 more
 
 ## Trust and update procedure
 
