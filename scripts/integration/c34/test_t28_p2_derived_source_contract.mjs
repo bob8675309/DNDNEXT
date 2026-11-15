@@ -61,13 +61,24 @@ assert.match(panel,/const visibleStock = stockMatches \? stock : EMPTY_VISIBLE_S
 assert.match(panel,/if \(result\.current && result\.error\) setStock\(\[\]\);/,
  "Current stock read rejection must clear stale purchaseable items");
 assert.match(panel,/const stockRefreshFailed = refreshed\[0\]\.status === "rejected"/);
+assert.match(panel,/const purchaseInFlightRef = useRef\(null\)/,
+ "Synchronous in-flight buy lock must exist before render state update");
+assert.match(panel,/if \(purchaseInFlightRef\.current\?\.key === purchaseKey\) return/,
+ "Two same-scope Buy calls must not issue duplicate RPCs");
+assert.match(panel,/if \(purchaseInFlightRef\.current === purchaseToken\) purchaseInFlightRef\.current = null/,
+ "Old shop completion must not unlock new shop's purchase");
+assert.match(panel,/purchaseScope\.actorId !== uid/,
+ "Buy must not use stale account state before auth effects");
+assert.match(panel,/purchaseScope\.merchantId !== merchant\?\.id/,
+ "Buy must not use stale merchant prop before selection effects");
+
 
 assert.match(panel,/await Promise\.allSettled\(\[fetchStock\(\), refreshWallet\(\)\]\)/,
  "T28-P2 committed buyer must not become failed purchase due to wallet refresh");
 assert.doesNotMatch(panel,/await Promise\.all\(\[fetchStock\(\), refreshWallet\(\)\]\)/,
  "Do not reintroduce a false purchase-failure notice after successful server debit");
 const buyerRegressions=src("scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs");
-for(const code of ["T28-P2-BUY-ORIGINAL-RED","T28-P2-BUY-R01","T28-P2-BUY-R02","T28-P2-BUY-R03","T28-P2-BUY-R04","T28-P2-BUY-R05","T28-P2-BUY-R06"]) {
+for(const code of ["T28-P2-BUY-ORIGINAL-RED","T28-P2-BUY-R01","T28-P2-BUY-R02","T28-P2-BUY-R03","T28-P2-BUY-R04","T28-P2-BUY-R05","T28-P2-BUY-R06","T28-P2-BUY-R07","T28-P2-BUY-R08"]) {
  assert.ok(buyerRegressions.includes(code),"Buyer handler test case missing: "+code);
 }
 
