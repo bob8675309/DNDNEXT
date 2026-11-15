@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `81c5cc0db4ee84f14a06518939763d8919f1a7e9` |
+| Exact source commit represented by this archive snapshot | `7b28e5fd9998702a4aa1deaf855711ce3096b0cd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): same actor role refresh invalidates every pending roster transport |
+| Last source commit title | fix(c34): use RLS-approved name ordering for merchant roster instead of updated_at |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_current_manager_source.mjs`
+- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
 
 ## Research-branch change inventory versus main
 
