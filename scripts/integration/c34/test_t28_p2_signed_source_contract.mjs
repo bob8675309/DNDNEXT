@@ -34,7 +34,7 @@ for(const token of [
 const p2=src("scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs");
 for(const token of [
  "T28-P2-MOUNT", "T28-P2-LATE", "T28-P2-TARGET", "T28-P2-SET",
- "T28-P2-BUY:", "T28-P2-BUY-DOUBLE", "T28-P2-BUY-LATE", "T28-P2-SET-LATE", "T28-P2-ROLES", "T28-P2-EDITOR-INVENTORY",
+ "T28-P2-BUY:", "T28-P2-BUY-DOUBLE", "T28-P2-BUY-WALLET-FAIL", "T28-P2-BUY-LATE", "T28-P2-SET-LATE", "T28-P2-ROLES", "T28-P2-EDITOR-INVENTORY",
  "route.fetch()", "route.fulfill({response:upstream})",
  "window.__sb.auth.signOut()", "insufficient", "wallet_set",
  "buy_from_merchant", "pg", "stockId"
@@ -45,6 +45,10 @@ for(const token of [
 assert.match(p2,/assert\.equal\(stockData\.status,200\)/);
 assert.match(p2,/assert\.equal\(walletData\.status,200\)/);
 assert.match(p2,/assert\.equal\(purchaseData\.status,200/);
+assert.match(p2,/status:503,contentType:"application\/json"/,
+ "Signed buyer must inject a real failed current wallet read");
+assert.match(p2,/assert\.match\(shopWithWalletReadFailure,\/Unavailable\//,
+ "Signed buyer UI must reject false zero and stale GP");
 assert.match(p2,/button\.click\(\);\s*button\.click\(\);/,
  "Signed browser must submit two DOM clicks to probe one-debit semantics");
 assert.match(p2,/SELECT count\(\*\) FROM public\.inventory_items WHERE user_id=/,
