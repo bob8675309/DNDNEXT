@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `33ccf5e408ce7667078cfb08839b12540f18e438` |
+| Exact source commit represented by this archive snapshot | `7908d608a893c0d0788a545c9bc64ddd75265437` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): require guarded wallet_set late numeric suppression in signed source contract |
+| Last source commit title | test(c34): wait for real original buy and synthetic wallet_set RPC schema readiness before signed browser |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
+- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
 
 ## Research-branch change inventory versus main
 
