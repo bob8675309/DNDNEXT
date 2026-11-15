@@ -5,20 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `efe98f58d38c32dc6e38e52fc722fd290fb9d91e` |
+| Exact source commit represented by this archive snapshot | `8ff3a42b2d892a41cad25def0637cdab73f1622c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): synchronize T28 P1 genuine signed pass with independent P0 source main merge |
-| Files changed relative to main | 126 (101 non-docs; 25 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | research(c34): add nonmap T28-P2 scoped stock and selected-wallet target guard |
+| Files changed relative to main | 127 (102 non-docs; 25 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
+- `utils/c34/t28P2CommerceGuardCandidate.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql`
 - `scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql`
 - `scripts/integration/c34/c34_original_battle_master_pair_pg17.sql`
-- … 76 more
+- … 77 more
 
 ## Trust and update procedure
 
