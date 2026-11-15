@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b52ab374a79e53cdc3f363d43ae7a1f39769ff57` |
+| Exact source commit represented by this archive snapshot | `7608a8e430fb627bf9dc1b9acdbd75bd8c7cf67c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add T24 signed Next manager revocation/race and real PDF browser test |
-| Files changed relative to main | 100 (81 non-docs; 19 docs) |
+| Last source commit title | test(c34): pin active map/NPC source and T24 localhost-only PDF release hold |
+| Files changed relative to main | 101 (82 non-docs; 19 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t24_current_next_manager_browser.mjs`
+- `scripts/integration/c34/test_t24_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
 - `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
-- … 50 more
+- … 51 more
 
 ## Trust and update procedure
 
