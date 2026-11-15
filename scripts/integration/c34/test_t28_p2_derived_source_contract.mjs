@@ -58,6 +58,17 @@ for(const token of [
 ]) assert.ok(guard.includes(token),"T28-P2 helper missing: "+token);
 assert.match(panel,/const stockMatches = Boolean\(stockScope\.actorId/);
 assert.match(panel,/const visibleStock = stockMatches \? stock : EMPTY_VISIBLE_STOCK/);
+
+assert.match(panel,/gp == null \? "Unavailable" : gp === -1/,
+ "Current wallet read failure must not silently render false zero GP");
+assert.match(wallet,/if \(value !== null\) setErr\(""\)/,
+ "Current recovered GP must clear obsolete wallet-fetch errors");
+assert.match(guard,/onWallet\(null\);\s*onError\(error\);\s*current = true;/,
+ "Current wallet read error must invalidate old displayed numeric GP");
+const walletGuardRegression=src("scripts/integration/c34/test_t28_p2_commerce_guard_candidate.mjs");
+assert.match(walletGuardRegression,/PASS T28-P2-WALLET-READ-R09/);
+assert.match(walletGuardRegression,/Failed CURRENT wallet read must clear/);
+
 assert.match(panel,/if \(result\.current && result\.error\) setStock\(\[\]\);/,
  "Current stock read rejection must clear stale purchaseable items");
 assert.match(panel,/const stockRefreshFailed = refreshed\[0\]\.status === "rejected"/);
