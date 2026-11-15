@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7b719aeffbe1ee1145971907b5cd85b1e260f77c` |
+| Exact source commit represented by this archive snapshot | `be75bcf7468a9fb6d5fd46ac4bd05a3130997730` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): promote double Buy prevention and pending signed ledger acceptance in active handoff |
+| Last source commit title | docs(c34): append rapid Buy duplicate RPC lock, real handler R07/R08 and signed ledger pending |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
