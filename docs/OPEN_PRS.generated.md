@@ -4,13 +4,13 @@
 
 | Captured UTC | GitHub main (not deployment verified) | Trigger source SHA | Open PRs |
 |---|---|---|---|
-| 2026-11-15T15:47:27Z | `2dab24fdb68713212cc9125de94e4520e10a76f1` | `95263d7387ecd2db00f218bb19c5f5eef54ee5e5` | 44 |
+| 2026-11-15T16:14:48Z | `e355a0989ad4b3dba5afe3ba9d5b9f335d1ff803` | `26c2a5bf18b6959640bde5c2ae15ea964e229b18` | 42 |
 
 Every open PR returned by **all pages** of the GitHub open-pulls API at capture time appears below, including draft and stacked research PRs. **Closed/merged PRs, unassociated branches and later PR activity are not included.**
 
 | PR / title | Exact HEAD | Branch → base | Draft? | GitHub updated UTC |
 |---|---|---|---|---|
-| [#379 — C34 T27 HOLD: shared Profile/town/shop/wallet audit + delayed stock logout research](https://github.com/bob8675309/DNDNEXT/pull/379) | `95263d7387ecd2db00f218bb19c5f5eef54ee5e5` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-15T15:47:09Z |
+| [#379 — C34 T28 HOLD: mounted non-map Profile/shop/wallet actor preflight after T27 signed PASS](https://github.com/bob8675309/DNDNEXT/pull/379) | `26c2a5bf18b6959640bde5c2ae15ea964e229b18` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-15T16:14:04Z |
 | [#371 — I2-G research: original signed level-up v1 account-overwrite RED and Option A no-mirror scratch GREEN](https://github.com/bob8675309/DNDNEXT/pull/371) | `6db27e720d0c2788774cc37d2f85d14244e61b95` | `research/i2g-signed-levelup-v1-option-a-20261112` → `research/i2f-source-species-projection-option-a-freeze-20261111` | yes | 2026-11-12T23:26:15Z |
 | [#370 — I2-F research: sourceChoices/species runtime private projection Option A no-mirror RED/GREEN](https://github.com/bob8675309/DNDNEXT/pull/370) | `ea43938da626292cb7b3f8f8459955b426874f9d` | `research/i2f-source-species-projection-option-a-freeze-20261111` → `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` | yes | 2026-11-12T03:54:47Z |
 | [#369 — I2-E research: signed original HP/Admin/Rage account-overwrite RED and Option A no-mirror GREEN](https://github.com/bob8675309/DNDNEXT/pull/369) | `1132a33b64e24197e974276cd58c48cbdded3baa` | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` → `research/i2d-private-forge-v3-option-a-freeze-20261111` | yes | 2026-11-12T03:14:06Z |
@@ -33,8 +33,6 @@ Every open PR returned by **all pages** of the GitHub open-pulls API at capture 
 | [#352 — I1-D research: original Forge trigger gap census plus signed Story nonce × Stage4 inventory integration](https://github.com/bob8675309/DNDNEXT/pull/352) | `79c9607d12c6bc186f8208d9a3e715242060d806` | `research/i1d-forge-trigger-inventory-joint-20261109` → `research/i1c-forge-story-complete-intent-20261109` | yes | 2026-11-10T04:34:15Z |
 | [#351 — I1-C research: Story-inclusive immutable Forge nonce with real signed PG17 concurrency regression](https://github.com/bob8675309/DNDNEXT/pull/351) | `5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7` | `research/i1c-forge-story-complete-intent-20261109` → `research/i1b-forge-story-nonce-joint-auth-20261109` | yes | 2026-11-10T04:09:50Z |
 | [#350 — I1-B research: source-locked GoTrue/PG17 Forge nonce + private Story negative fixture](https://github.com/bob8675309/DNDNEXT/pull/350) | `503e95a1cc1ee7151b5f16f8de60a45645bb818c` | `research/i1b-forge-story-nonce-joint-auth-20261109` → `feature/c3-3-npc-secure-profile-candidate-20261107` | yes | 2026-11-10T02:09:26Z |
-| [#349 — I1 research: preserve original Forge 31-trigger static evidence ledger and no-cost CI](https://github.com/bob8675309/DNDNEXT/pull/349) | `c9a60f9d1a10d1e2459df18f0afe217f35d84a5a` | `research/i1-forge-original-trigger-ledger-20261109` → `main` | yes | 2026-11-12T23:39:11Z |
-| [#347 — C4 research: extract source-only P1 Spell Recipe validator and preflight](https://github.com/bob8675309/DNDNEXT/pull/347) | `18e889ffc668ee9af45d04b6faf24d93f2d9f8ae` | `research/c4-spell-recipe-p1-extraction-20261109` → `main` | yes | 2026-11-09T06:40:50Z |
 | [#345 — C3.3 research: unified secure NPC reader/GM secrets/creator backstory and centered Profile-first UI](https://github.com/bob8675309/DNDNEXT/pull/345) | `4f5f8ff7587aff1a68f21581ad68a4752789f54a` | `feature/c3-3-npc-secure-profile-candidate-20261107` → `main` | yes | 2026-11-09T06:21:50Z |
 | [#335 — Research: J169 real Chromium clicks on Warlock source-choice React UI](https://github.com/bob8675309/DNDNEXT/pull/335) | `19d7275d24d26f9641c9e6d98ea24cf9431f4d81` | `agent/forge-warlock-react-choice-ui-j169-20261107` → `agent/forge-warlock-client-wire-j168-20261107` | yes | 2026-11-07T17:29:57Z |
 | [#334 — Research: J168 execute actual Forge Warlock source serializers under signed original v3](https://github.com/bob8675309/DNDNEXT/pull/334) | `0527f945269b6df32ad1f5c32fbe0434082d52f8` | `agent/forge-warlock-client-wire-j168-20261107` → `agent/forge-warlock-j167-ci-20261107` | yes | 2026-11-07T05:34:19Z |
