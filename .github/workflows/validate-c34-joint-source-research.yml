@@ -74,6 +74,8 @@ jobs:
           node --check utils/c34/useWalletT28P2Research.js
           node --check scripts/integration/c34/test_t28_p2_derived_source_contract.mjs
           node scripts/integration/c34/test_t28_p2_derived_source_contract.mjs
+          node --check scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
+          node scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
       - name: T28-P2 original buy and genuine signed mounted browser contracts (offline only)
         run: |
           node --check scripts/integration/c34/derive_t28_p2_mounted_probe.mjs
