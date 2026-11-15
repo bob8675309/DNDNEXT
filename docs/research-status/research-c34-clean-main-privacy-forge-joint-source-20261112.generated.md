@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `daaa51565c8159a1fb45a5f6ace07f55f9e31296` |
+| Exact source commit represented by this archive snapshot | `fe3c6e26da5bce8a58c33f9e286e280d428374e6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): explicitly refresh independently mounted wallet pane after original merchant buy |
-| Files changed relative to main | 136 (110 non-docs; 26 docs) |
+| Last source commit title | test(c34): enforce exact original-buy source, P1-before-P2 signed suite and scratch-only cleanup |
+| Files changed relative to main | 137 (111 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
 - `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 86 more
+- … 87 more
 
 ## Trust and update procedure
 
