@@ -74,6 +74,8 @@ export default function MerchantPanel({
 
   // Research-only stock reader: same original character_stock query, ticketed
   // by authenticated owner, selected merchant and latest same-shop request.
+  const merchantIdRef = useRef(merchant?.id || null);
+  merchantIdRef.current = merchant?.id || null;
   const stockGuardRef = useRef(null);
   if (!stockGuardRef.current) {
     stockGuardRef.current = createT28P2CommerceGuardCandidate({
@@ -99,9 +101,9 @@ export default function MerchantPanel({
       const next = session?.user?.id || null;
       if (event === "SIGNED_OUT" || event === "USER_UPDATED") guard.revoke();
       guard.observeActor(next);
-      guard.selectMerchant(merchant?.id || null);
+      guard.selectMerchant(merchantIdRef.current);
       if (!next) setLoading(false);
-      else if (merchant?.id) {
+      else if (merchantIdRef.current) {
         setLoading(true);
         void guard.loadStock().then(result => {
           if (active && result.committed) setLoading(false);
