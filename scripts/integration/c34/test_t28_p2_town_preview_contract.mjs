@@ -51,4 +51,11 @@ for (const file of [
  assert.doesNotMatch(src,/NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP|GuardedTownMerchantPanel|MerchantPanelT28P2Research/,
   "Town preview must NOT change shared world map, NPC profile, inventory or original storefront: "+file);
 }
+// Source-level byte check: strip ONLY the two opt-in edits and recover the
+// exact previously deployed town UI blob. This guards every other town feature.
+const unpatchedTown = town
+ .replace("const MerchantPanel = dynamic(() => import(\"./MerchantPanel\"), { ssr: false });\n// C34 T28-P2: opt-in town-only preview; never changes MapPageClient or NPC Profile.\nconst GuardedTownMerchantPanel = dynamic(() => import(\"./c34/MerchantPanelT28P2Research\"), { ssr: false });\nconst T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === \"1\";","const MerchantPanel = dynamic(() => import(\"./MerchantPanel\"), { ssr: false });")
+ .replace("{T28_P2_TOWN_SHOP_ENABLED ? (\n              <GuardedTownMerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation=\"town\" onClose={() => setActiveMerchant(null)} />\n            ) : (\n              <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation=\"town\" onClose={() => setActiveMerchant(null)} />\n            )}","<MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation=\"town\" onClose={() => setActiveMerchant(null)} />");
+assert.equal(blob(unpatchedTown),"5399097e48f548956807cd93476fefe03e4dee28",
+ "T28-P2 town preview must be precisely reversible to unchanged original town UI");
 console.log("PASS T28-P2-TOWN-PREVIEW: opt-in guarded town storefront, legacy default, preserved props, zero original world-map/shared-commerce mutations");
