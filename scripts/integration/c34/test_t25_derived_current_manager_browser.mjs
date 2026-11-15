@@ -146,7 +146,24 @@ try {
  await page.waitForFunction(()=>!!window.__sb?.auth,null,{timeout:30000});
  await page.addStyleTag({path:path.join(root,"node_modules/bootstrap/dist/css/bootstrap.min.css")});
  await login("GM");
+ try {
  await page.getByText("T25 Probe NPC",{exact:true}).first().waitFor({timeout:30000});
+ } catch(error) {
+  const details=await page.evaluate(async()=>{
+   const user=await window.__sb?.auth?.getUser().catch(e=>({error:{message:String(e)}}));
+   const jwt=user?.data?.user?.id||"no-actor";
+   const direct=await window.__sb?.from("characters")
+    .select("id,name,kind").eq("kind","npc").limit(5)
+    .then(v=>({error:v.error?.message||null,code:v.error?.code||null,rows:v.data?.map(x=>({id:x.id,name:x.name}))}))
+    .catch(e=>({exception:String(e)}));
+   return {jwt,direct,body:document.body.innerText.slice(0,4000)};
+  });
+  console.error("T25-DIAG-C02",JSON.stringify({
+   details,pageUrl:page.url(),pageErrors:errors,offsite,
+   nextServerLog:serverLog.slice(-7000)
+  }));
+  throw error;
+ }
  await page.getByText("T25 APPROVED PUBLIC DESCRIPTION").first().waitFor({timeout:30000});
  assert.ok((await body()).includes("T25 Probe NPC"));
  assert.ok((await body()).includes("T25 PUBLIC BACKGROUND"));
