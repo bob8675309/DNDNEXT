@@ -207,7 +207,7 @@ try {
  assert.ok(edits.length>=12);
  fs.writeFileSync(probe,output,{flag:"wx"});
  writeT28PersistentRoute(merchant,alternateMerchant);
- writeT28P2MountedRoute(merchant,alternateMerchant);
+ writeT28P2MountedRoute(merchant,alternateMerchant,users.OUTSIDER.id);
  const nextPort=await freePort(),origin="http://127.0.0.1:"+nextPort;
  const nextBin=path.join(root,"node_modules/next/dist/bin/next");
  assert.ok(fs.existsSync(nextBin),"T26 needs npm ci and pinned Next.js");
