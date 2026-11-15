@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c3db093a4b185c63295a8583ff705f44c9bd9c4e` |
+| Exact source commit represented by this archive snapshot | `52311837af073910d7c5ff3316736879ea969bb0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): report current-request errors without propagating stale actor errors |
+| Last source commit title | fix(c34): finish source-derived merchant loading on current rejected stock read |
 | Files changed relative to main | 131 (105 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/t28P2CommerceGuardCandidate.mjs`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 
 ## Research-branch change inventory versus main
 
