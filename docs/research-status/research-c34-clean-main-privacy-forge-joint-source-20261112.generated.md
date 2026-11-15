@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `88cfd7ca46fbf0f947d54c5ef02914e444e7dfe3` |
+| Exact source commit represented by this archive snapshot | `06d20a27b18bf5c3f7eb5066ceb14c5e71536883` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | security(c34): bind all T25 roster and location reads to actor, clear and refetch on account changes |
+| Last source commit title | test(c34): prove all T25 roster/list async results reject actor switch and refetch |
 | Files changed relative to main | 106 (85 non-docs; 21 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/derive_t25_current_npc_manager.mjs`
+- `scripts/integration/c34/test_t25_current_manager_source.mjs`
 
 ## Research-branch change inventory versus main
 
