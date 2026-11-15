@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `10f59b038f90cc3efe5c0756674e8679fc4bc96b` |
+| Exact source commit represented by this archive snapshot | `de7107d2a34313519a7bcc7827bfd79651977dd2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T25 source-locked privacy and full-manager preservation negative tests |
+| Last source commit title | ci(c34): execute T25 source-derived current-manager negative and preservation gates |
 | Files changed relative to main | 104 (84 non-docs; 20 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t25_current_manager_source.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
