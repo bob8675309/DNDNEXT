@@ -561,6 +561,16 @@ try {
  }
  assert.ifError(p2GmWallet.error);
  assert.equal(Number(p2GmWallet.data),79);
+ // This cross-target signed Admin check fails under the earlier P1-only wallet
+ // implementation, proving the P2 PostgREST schema and SQL replaced it locally.
+ let p2AdminTarget;
+ for(let attempts=0;attempts<20;attempts++){
+  p2AdminTarget=await users.GM.who.rpc("wallet_get",{p_user:users.OUTSIDER.id});
+  if(!p2AdminTarget.error)break;
+  await new Promise(done=>setTimeout(done,300));
+ }
+ assert.ifError(p2AdminTarget.error);
+ assert.equal(Number(p2AdminTarget.data),0);
  const p2AnonWallet=await client().rpc("wallet_get",{p_user:null});
  assert.ok(p2AnonWallet.error,"T28-P2 wallet_get must still deny anonymous users");
  const p2AnonBuy=await client().rpc("buy_from_merchant",{
