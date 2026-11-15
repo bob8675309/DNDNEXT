@@ -5,24 +5,25 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1bef293161e5b5d21c5f2c82cba7c59da064f261` |
+| Exact source commit represented by this archive snapshot | `fce54cf9ce7f237adf95bf13e3e87fe7c7797b65` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record T23 NPC manager privacy and active-route hold |
-| Files changed relative to main | 97 (78 non-docs; 19 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research(c34): stage unmounted T24 NPC manager real-session role probe |
+| Files changed relative to main | 98 (79 non-docs; 19 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
+- `components/c34/NonMapNpcManagerResearchShell.jsx`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
+- `components/c34/NonMapNpcManagerResearchShell.jsx`
 - `components/c34/NonMapNpcProfileResearchShell.jsx`
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
@@ -70,8 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/c34/c34_original_verified_creator_seed_pg17.sql`
 - `scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql`
 - `scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql`
-- `scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql`
-- … 47 more
+- … 48 more
 
 ## Trust and update procedure
 
