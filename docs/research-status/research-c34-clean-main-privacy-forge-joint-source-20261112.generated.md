@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `141f109ff4443272c4b593a39770b80ed151a1e3` |
+| Exact source commit represented by this archive snapshot | `11339ee3fbc71a03328d03ce7abbd2d63525322c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | feat(c34): add disabled-by-default guarded commerce preview in town modal only; preserve world map storefront |
-| Files changed relative to main | 139 (113 non-docs; 26 docs) |
+| Last source commit title | test(c34): verify opt-in guarded town merchant branch with byte-locked world map and legacy default |
+| Files changed relative to main | 140 (114 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/TownSheet.js`
+- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
-- … 89 more
+- … 90 more
 
 ## Trust and update procedure
 
