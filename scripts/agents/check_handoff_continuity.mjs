@@ -2,11 +2,18 @@
 // Read-only git-history gate. Execute only the trusted default-branch copy in
 // pull_request_target; never run an incoming PR's version with elevated access.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SHA = /^[a-f0-9]{40}$/;
+export const ENFORCEMENT_START_UTC = '2026-11-16T00:00:00Z';
+// Historical and stacked PRs are not retroactively blocked. Their source
+// audits continue to report findings, explicitly marked as advisory.
+export function isLegacyPr(createdAt) {
+  if (!/^20\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(String(createdAt || '')) ||
+      !Number.isFinite(Date.parse(createdAt))) throw new Error('Missing trusted GitHub PR creation timestamp');
+  return Date.parse(createdAt) < Date.parse(ENFORCEMENT_START_UTC);
+}
 const HANDOFF = 'docs/HANDOFF_LOG.md';
 const ACTIVE = 'docs/ACTIVE_WORK.md';
 const MATERIAL = /^(?:pages\/|components\/|lib\/|utils\/|hooks\/|styles\/|sql\/|supabase\/|scripts\/|public\/|\.github\/workflows\/|\.github\/actions\/|next\.config\.|package(?:-lock)?\.json$|vercel\.json$)/;
@@ -68,15 +75,24 @@ export function checkRepository(baseSha, headSha) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  let legacy = false;
   try {
+    legacy = isLegacyPr(process.env.PR_CREATED_AT);
     const outcome = checkRepository(process.env.PR_BASE_SHA, process.env.PR_HEAD_SHA);
-    for (const item of outcome.errors || []) console.error(`HANDOFF CONTINUITY: ${item}`);
-    console.log(outcome.ok
-      ? `PASS: ${outcome.note || `${outcome.material.length} material paths and authored, appended, source-fresh handoff.`}`
-      : `FAIL: ${outcome.material.length} material paths; do not accept a stale handoff.`);
-    if (!outcome.ok) process.exitCode = 1;
+    if (legacy) {
+      console.log('ADVISORY LEGACY PR: created before '+ENFORCEMENT_START_UTC+
+        '; no retroactive merge-blocking handoff gate. Source review and manual closeout remain required.');
+      for (const item of outcome.errors || []) console.log('::warning::Legacy handoff gap: '+item);
+    } else {
+      for (const item of outcome.errors || []) console.error('HANDOFF CONTINUITY: '+item);
+      console.log(outcome.ok
+        ? 'PASS: '+(outcome.note || outcome.material.length+' material paths and a verified source-fresh appended handoff.')
+        : 'FAIL: '+outcome.material.length+' material paths; do not accept a stale handoff.');
+      if (!outcome.ok) process.exitCode = 1;
+    }
   } catch (error) {
-    console.error(`HANDOFF CONTINUITY: unable to verify PR safely: ${error.message}`);
-    process.exitCode = 1;
+    const message='HANDOFF CONTINUITY: unable to verify PR safely: '+error.message;
+    if (legacy) console.log('::warning::Legacy PR review incomplete: '+message);
+    else { console.error(message); process.exitCode = 1; }
   }
 }

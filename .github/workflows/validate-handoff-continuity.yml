@@ -5,6 +5,11 @@ on:
     paths:
       - 'scripts/agents/check_handoff_continuity.mjs'
       - 'scripts/agents/test_handoff_continuity.mjs'
+      - 'scripts/agents/render_open_pr_index.mjs'
+      - 'scripts/agents/validate_open_pr_index.mjs'
+      - 'scripts/agents/project_health.mjs'
+      - 'scripts/agents/validate_project_health.mjs'
+      - '.github/workflows/research-docs-maintenance.yml'
       - '.github/workflows/validate-handoff-continuity.yml'
   pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review]
@@ -29,6 +34,10 @@ jobs:
           node --check scripts/agents/check_handoff_continuity.mjs
           node --check scripts/agents/test_handoff_continuity.mjs
           node scripts/agents/test_handoff_continuity.mjs
+          node --check scripts/agents/render_open_pr_index.mjs
+          node scripts/agents/validate_open_pr_index.mjs
+          node scripts/agents/validate_project_health.mjs
+          node scripts/agents/validate_research_docs_maintainer.mjs
 
   trusted-source-gate:
     name: Check actual PR source chronology against appended handoff

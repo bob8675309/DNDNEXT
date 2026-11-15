@@ -57,4 +57,22 @@ runCase(cwd => { write(cwd, 'docs/ACTIVE_WORK.md', 'Next review\n'); appendFileS
 runCase(cwd => { write(cwd, 'components/NpcPanel.js', 'new\n'); write(cwd, 'docs/ACTIVE_WORK.md', 'Next review\n'); write(cwd, 'docs/HANDOFF_LOG.md', '# overwritten\n' + receipt); commit(cwd, 'rewritten history'); }, 1, 'rewritten original log');
 runCase(cwd => { write(cwd, 'docs/README.md', 'docs only\n'); commit(cwd, 'docs'); }, 0, 'documentation-only change');
 runCase(cwd => { write(cwd, 'scripts/new_validator.mjs', 'new\n'); write(cwd, 'docs/ACTIVE_WORK.md', 'Next review\n'); commit(cwd, 'script without receipt'); }, 1, 'one handoff document missing');
+// A held, stacked research PR compares against its moving parent, not main.
+{
+  const { cwd, base } = fixture();
+  try {
+    git(cwd, 'checkout', '-qb', 'research/parent', 'main');
+    write(cwd, 'docs/ACTIVE_WORK.md', 'Parent next task\n');
+    appendFileSync(join(cwd, 'docs/HANDOFF_LOG.md'), receipt);
+    const parent = commit(cwd, 'parent handoff');
+    git(cwd, 'checkout', '-qb', 'research/child');
+    write(cwd, 'components/NpcPanel.js', 'child source\n');
+    write(cwd, 'docs/ACTIVE_WORK.md', 'Child next task\n');
+    appendFileSync(join(cwd, 'docs/HANDOFF_LOG.md'), receipt);
+    commit(cwd, 'child source and authored closeout');
+    const result = audit(cwd, parent);
+    assert.equal(result.code, 0, 'stacked research PR: ' + result.output);
+    console.log('PASS newly created PR stacked on a research base');
+  } finally { rmSync(cwd, {recursive:true,force:true}); }
+}
 console.log('PASS all continuity behavioral and integration fixtures');

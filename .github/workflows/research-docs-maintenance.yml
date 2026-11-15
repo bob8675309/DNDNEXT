@@ -35,6 +35,8 @@ jobs:
           node scripts/agents/validate_research_docs_maintainer.mjs
           node --check scripts/agents/project_health.mjs
           node scripts/agents/validate_project_health.mjs
+          node --check scripts/agents/render_open_pr_index.mjs
+          node scripts/agents/validate_open_pr_index.mjs
       - name: Generate branch status from exact local source
         env:
           DOCS_TARGET_BRANCH: ${{ github.ref_name }}
@@ -79,6 +81,24 @@ jobs:
             '{mainSha:$mainSha,sourceSha:$sourceSha,sourceBranch:$sourceBranch,generatedAt:$generatedAt}' > "$dir/meta.json"
           node scripts/agents/project_health.mjs "$dir" "$RUNNER_TEMP/PROJECT_HEALTH.generated.md"
           cat "$RUNNER_TEMP/PROJECT_HEALTH.generated.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Enumerate ALL currently open PR heads from paginated GitHub metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/dndnext-health"
+          test -s "$dir/meta.json"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" \
+            --jq '.[] | {number,title,state,draft,head:{sha:.head.sha,ref:.head.ref},base:{sha:.base.sha,ref:.base.ref},updated_at,created_at}' \
+            | jq -s '.' > "$dir/open-prs.json"
+          test -s "$dir/open-prs.json"
+          node scripts/agents/render_open_pr_index.mjs \
+            "$dir/open-prs.json" "$dir/meta.json" "$RUNNER_TEMP/OPEN_PRS.generated.md"
+          test -s "$RUNNER_TEMP/OPEN_PRS.generated.md"
+          echo "### Complete open PR catalogue (point-in-time, no CI acceptance claims)" >> "$GITHUB_STEP_SUMMARY"
+          grep -m 1 '^| 20' "$RUNNER_TEMP/OPEN_PRS.generated.md" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish source snapshot into separate docs archive branch only
         env:
           GH_TOKEN: ${{ github.token }}
@@ -94,15 +114,19 @@ jobs:
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           output="$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
           health="$RUNNER_TEMP/PROJECT_HEALTH.generated.md"
+          openprs="$RUNNER_TEMP/OPEN_PRS.generated.md"
           test -s "$health"
+          test -s "$openprs"
           archive_branch='docs/agent-status'
           safe_name="$(printf '%s' "$TARGET_BRANCH" | tr '/' '-')"
           snapshot="docs/research-status/$safe_name.generated.md"
           old_content="$(gh api "repos/$GITHUB_REPOSITORY/contents/$snapshot?ref=$archive_branch" --jq .content 2>/dev/null || true)"
           health_old="$(gh api "repos/$GITHUB_REPOSITORY/contents/docs/PROJECT_HEALTH.generated.md?ref=$archive_branch" --jq .content 2>/dev/null || true)"
-          if [[ -n "$old_content" && -n "$health_old" ]] &&
+          openprs_old="$(gh api "repos/$GITHUB_REPOSITORY/contents/docs/OPEN_PRS.generated.md?ref=$archive_branch" --jq .content 2>/dev/null || true)""
+          if [[ -n "$old_content" && -n "$health_old" && -n "$openprs_old" ]] &&
              printf '%s' "$old_content" | base64 -d | cmp -s - "$output" &&
-             printf '%s' "$health_old" | base64 -d | cmp -s - "$health"; then
+             printf '%s' "$health_old" | base64 -d | cmp -s - "$health" &&
+             printf '%s' "$openprs_old" | base64 -d | cmp -s - "$openprs"; then
             echo 'Status and project health already synchronized.'
             exit 0
           fi
@@ -110,6 +134,7 @@ jobs:
           [[ "$archive_head" =~ ^[a-f0-9]{40}$ ]] || exit 1
           data="$(base64 -w0 "$output")"
           health_data="$(base64 -w0 "$health")"
+          openprs_data="$(base64 -w0 "$openprs")"
           jq -n \
             --arg query 'mutation($input:CreateCommitOnBranchInput!){createCommitOnBranch(input:$input){commit{oid}}}' \
             --arg repo "$GITHUB_REPOSITORY" \
@@ -117,9 +142,10 @@ jobs:
             --arg sha "$archive_head" \
             --arg content "$data" \
             --arg health "$health_data" \
+            --arg openprs "$openprs_data" \
             --arg file "$snapshot" \
             --arg title "docs(bot): update source evidence for $TARGET_BRANCH" \
-            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:$title},fileChanges:{additions:[{path:$file,contents:$content},{path:"docs/PROJECT_HEALTH.generated.md",contents:$health}]}}}}' \
+            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:$title},fileChanges:{additions:[{path:$file,contents:$content},{path:"docs/PROJECT_HEALTH.generated.md",contents:$health},{path:"docs/OPEN_PRS.generated.md",contents:$openprs}]}}}}' \
             > "$RUNNER_TEMP/docs-only-graphql.json"
           gh api graphql --input "$RUNNER_TEMP/docs-only-graphql.json" --jq '.data.createCommitOnBranch.commit.oid'
           echo "Status and project-health snapshots published without changing research PR heads."
