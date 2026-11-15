@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `39f9f52e2faf6254e74d6bbf84c7be09de6230c8` |
+| Exact source commit represented by this archive snapshot | `f26568b6c69b88da296d12e0400cecd99f9e326d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): update latest task and evidence tier after wallet-set return fix and actual outsider fixture |
+| Last source commit title | docs(c34): append wallet-set return isolation fix, signed readiness and pending P2 exact-head acceptance |
 | Files changed relative to main | 138 (112 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
