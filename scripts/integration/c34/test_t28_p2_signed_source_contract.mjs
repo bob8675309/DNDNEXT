@@ -8,6 +8,7 @@ import {fileURLToPath} from "node:url";
 import path from "node:path";
 import {deriveT28P2MountedRoute,T28_P2_TEMP_ROUTE,ORIGINAL_COMMERCE}
  from "./derive_t28_p2_mounted_probe.mjs";
+import {deriveT28P2TownProfileRoute,T28_P2_TOWN_TEMP_ROUTE} from "./derive_t28_p2_town_profile_probe.mjs";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const src=p=>readFileSync(path.join(root,p),"utf8");
 const hash=s=>createHash("sha1").update("blob "+Buffer.byteLength(s)+"\0"+s).digest("hex");
@@ -22,6 +23,10 @@ const route=deriveT28P2MountedRoute(
  "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
 );
 assert.match(route,/T28P2MountedCommerceProbe/);
+assert.ok(!existsSync(path.join(root,T28_P2_TOWN_TEMP_ROUTE)),"Town Profile probe must be disposable");
+const townProbe=deriveT28P2TownProfileRoute("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+assert.match(townProbe,/CharacterInteractionPanelTownT28P2Research/);
+assert.match(townProbe,/useGuardedTownMerchant=\{true\}/);
 assert.match(route,/cccccccc-cccc-4ccc-8ccc-cccccccccccc/);
 assert.doesNotMatch(route,/MapPageClient|pages\/map|pages\/town/);
 const mounted=src("components/c34/T28P2MountedCommerceProbe.jsx");
@@ -33,7 +38,7 @@ for(const token of [
 ])assert.ok(mounted.includes(token),"Mounted P2 probe missing "+token);
 const p2=src("scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs");
 for(const token of [
- "T28-P2-MOUNT", "T28-P2-LATE", "T28-P2-TARGET", "T28-P2-SET",
+ "T28-P2-MOUNT", "T28-P2-TOWN-PROFILE", "T28-P2-LATE", "T28-P2-TARGET", "T28-P2-SET",
  "T28-P2-BUY:", "T28-P2-BUY-DOUBLE", "T28-P2-BUY-WALLET-FAIL", "T28-P2-BUY-LATE", "T28-P2-SET-LATE", "T28-P2-ROLES", "T28-P2-EDITOR-INVENTORY",
  "route.fetch()", "route.fulfill({response:upstream})",
  "window.__sb.auth.signOut()", "insufficient", "wallet_set",
@@ -99,6 +104,10 @@ assert.ok(t27>=0&&p1>t27&&p2Setup>p1&&p2Run>p2Setup,
  "P2 may not replace or run before original T27/P1 signed suite");
 for(const token of [
  "writeT28P2MountedRoute(merchant,alternateMerchant,users.OUTSIDER.id)",
+ "writeT28P2TownProfileRoute(merchant)",
+ "fs.unlinkSync(p2TownProbe)",
+ "assert.ok(!fs.existsSync(p2TownProbe)",
+ "townProfileProbeUrl:origin",
  "const p2Probe=path.join(root,T28_P2_TEMP_ROUTE)",
  "fs.unlinkSync(p2Probe)",
  "assert.ok(!fs.existsSync(p2Probe)",
