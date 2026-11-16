@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `56122038e0d7e2e3509a21eba33fd30e4b25c9c9` |
+| Exact source commit represented by this archive snapshot | `927667053f06374a64a4ada1076271c8c8c47b14` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): use globally initialized original Supabase client in actual town actor switch |
+| Last source commit title | test(c34): wait for real Next dev readiness before T33 signed Chromium navigation |
 | Files changed relative to main | 169 (138 non-docs; 31 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
