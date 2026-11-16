@@ -332,6 +332,22 @@ jobs:
           node --check scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
           node scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
           echo 'PASS C34-T29 signed Admin GM DM commerce only, original buyer and all original T26/T27/T28 gates retained'
+      - name: T30 signed strict town commerce/travel/dossier role and Stage2 projection (disposable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T30_ROLE_CONFIRM=SIGNED_TOWN_STAGE2_LOCAL_ONLY
+          node --test scripts/integration/c34/test_t30_town_role_source.mjs
+          node scripts/integration/c34/test_t30_town_role_profile_signed_pg17.mjs
+          echo 'PASS T30 WORKFLOW: signed strict town role + original Stage2 privacy, NO active route'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4

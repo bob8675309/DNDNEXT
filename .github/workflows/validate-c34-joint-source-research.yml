@@ -95,6 +95,11 @@ jobs:
           node --check scripts/integration/c34/test_t29_commerce_source_parity.mjs
           node --test scripts/integration/c34/test_t29_commerce_source_parity.mjs
           node --check scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
+      - name: T30 strict town-only role and Stage2 NPC Profile source/negative tests
+        run: |
+          node --check utils/c34/t30TownRoleProfileCandidate.mjs
+          node --check scripts/integration/c34/test_t30_town_role_profile_signed_pg17.mjs
+          node --test scripts/integration/c34/test_t30_town_role_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
