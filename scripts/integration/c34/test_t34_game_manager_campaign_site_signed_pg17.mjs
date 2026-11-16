@@ -86,11 +86,18 @@ for(const role of ["admin","gm","dm","player","editor","unknown"]){
   "') ON CONFLICT(id) DO UPDATE SET role=excluded.role");
  actors[role]={who,id:u.data.user.id,email,password};
 }
-// Genuine last-source merchant theme accepts text[]; the T28 local town
-// fixture keeps JSONB tags and has an original player-tag guard TRIGGER
-// dependent on that column. Never drop/retype it (first signed T34 RED).
-// Add a disposable exact-JSONB overload delegating to source ORIGINAL text[]
-// theme helper, without modifying the fixture's protected tag schema/trigger.
+// Genuine last-source merchant theme accepts text[]. The earlier local
+// Forge/T28 fixtures may already have text[] or JSONB tags, with a protected
+// player-tag guard trigger. First T34 signed RED proved DROP COLUMN forbidden;
+// second RED proved assuming the type is JSONB is also incorrect. Inspect
+// original local type; NEVER alter/drop the column or its guard trigger.
+const actualTagShape=sql(
+ "SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a "+
+ "WHERE a.attrelid='public.characters'::regclass AND a.attname='tags' "+
+ "AND a.attnum>0 AND NOT a.attisdropped");
+assert.ok(["text[]","jsonb"].includes(actualTagShape),
+ "T34 refuses unexpected original player-tag column type "+actualTagShape);
+console.log("T34-DISPOSABLE-TAGS-SHAPE: "+actualTagShape+"; original column and trigger preserved");
 install([
  "BEGIN; SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='75s';",
  "DO $g$ BEGIN IF current_database()<>'postgres' OR current_setting('server_version_num')::int NOT BETWEEN 170000 AND 179999",
@@ -100,10 +107,11 @@ install([
  " THEN RAISE EXCEPTION 'T34 refuses non-original local fixture'; END IF; END $g$;",
  "ALTER TABLE public.campaign_item_pool_settings ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT timezone('utc',now()), ADD COLUMN IF NOT EXISTS updated_by uuid;",
  "DO $tags$ BEGIN IF to_regprocedure('private.current_user_is_admin()') IS NULL OR",
- " (SELECT data_type FROM information_schema.columns WHERE table_schema='public'",
- " AND table_name='characters' AND column_name='tags') <> 'jsonb'",
+ " (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a",
+ "  WHERE a.attrelid='public.characters'::regclass AND a.attname='tags'",
+ "    AND a.attnum>0 AND NOT a.attisdropped) NOT IN ('text[]','jsonb')",
  " OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname='characters_guard_player_tags_v1' AND NOT tgisinternal)",
- " THEN RAISE EXCEPTION 'T34 refuses missing protected JSONB player-tags trigger'; END IF; END $tags$;",
+ " THEN RAISE EXCEPTION 'T34 refuses missing protected player-tags trigger or unsupported tag type'; END IF; END $tags$;",
  "UPDATE public.characters SET storefront_enabled=false WHERE storefront_enabled IS TRUE;",
  "UPDATE public.characters SET storefront_enabled=true WHERE id="+quote(merchant)+";",
  "CREATE TABLE IF NOT EXISTS public.players(user_id uuid PRIMARY KEY,name text);",
@@ -111,9 +119,9 @@ install([
  "ALTER TABLE public.players ADD COLUMN IF NOT EXISTS name text;",
  "COMMIT;"
 ].join("\n"),"fixture");
-// Only scratch-local overload: preserve original immutable text[] helper
-// and all original character tags/guard triggers. The original full setter
-// resolves the JSONB argument to this wrapper then calls the text[] source.
+// Only IF the original column is JSONB: scratch overload delegates to the
+// untouched original text[] theme function. If it is already text[], use
+// original source directly without any extra SQL helper.
 const tagsOverload=[
  "CREATE OR REPLACE FUNCTION private.merchant_theme_from_identity_v1(",
  " p_name text,p_role text,p_affiliation text,p_title text,p_tagline text,p_tags jsonb)",
@@ -127,7 +135,7 @@ const tagsOverload=[
  " );",
  "$t34_tags$;"
 ].join("\n");
-install(theme+"\n"+tagsOverload+"\n"+originalSetter+"\n"+
+install(theme+"\n"+(actualTagShape==="jsonb"?tagsOverload+"\n":"")+originalSetter+"\n"+
  "REVOKE ALL ON FUNCTION public.set_campaign_future_tech_enabled_v1(boolean) FROM PUBLIC,anon,authenticated;\n"+
  "GRANT EXECUTE ON FUNCTION public.set_campaign_future_tech_enabled_v1(boolean) TO authenticated,service_role;\n"+
  "NOTIFY pgrst,'reload schema';","original-setter");
