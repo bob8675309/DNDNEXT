@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1f9f355e01fa761c1326ef8b869a57849de918ab` |
+| Exact source commit represented by this archive snapshot | `f053a835f162477c5df86d31d332652760dc5dd0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept exact signed town actor-switch gate and record remaining Stage2 role holds |
-| Files changed relative to main | 146 (119 non-docs; 27 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | test(c34): lock owner-approved Admin GM DM commerce-only permission matrix (research) |
+| Files changed relative to main | 149 (121 non-docs; 28 docs) |
+| Last source commit | 7 files (3 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,13 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-joint-source-research.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 - `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
+- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
+- `scripts/integration/c34/test_t29_commerce_role_source.mjs`
+- `utils/c34/commerceRolePolicyCandidate.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -60,6 +63,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
 - `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 - `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
+- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `pages/town/[id].js`
@@ -73,8 +77,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
-- `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
-- … 96 more
+- … 99 more
 
 ## Trust and update procedure
 
