@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0f2082e5c292810687c6bc39dcc58c53c0cb2177` |
+| Exact source commit represented by this archive snapshot | `fab9c03e13c26ff78a543112e1ec79f37578bf52` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin genuine denied-write stock snapshot SQL concatenation |
+| Last source commit title | test(c34): await genuine PostgREST site-report schema registration, keep original RED and role checks |
 | Files changed relative to main | 173 (140 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs`
+- `scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
