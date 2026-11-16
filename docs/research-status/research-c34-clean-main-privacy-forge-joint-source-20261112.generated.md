@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2ad563d0fbfa94d4869a8d0f1a33fa6220dce77b` |
+| Exact source commit represented by this archive snapshot | `7e697aae8148dc7db80eaf8d9d6343638f9a0bee` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): T34 signed exact-source campaign setter vs technical site role proof |
-| Files changed relative to main | 171 (139 non-docs; 32 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): T34 signed original campaign-vs-site authority and preserved negative CI |
+| Files changed relative to main | 172 (140 non-docs; 32 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,9 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +73,7 @@
 - `scripts/agents/render_open_pr_index.mjs`
 - `scripts/agents/validate_open_pr_index.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
-- … 121 more
+- … 122 more
 
 ## Trust and update procedure
 
