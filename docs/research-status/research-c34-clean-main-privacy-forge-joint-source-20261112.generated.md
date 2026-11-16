@@ -5,20 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8fd21bb3bd3f0910da645a8399f9b7f1a23f2c20` |
+| Exact source commit represented by this archive snapshot | `9551113da02c837e9ba9bc7fcd89ed1b777d0642` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): retain one postflight-guarded local catalog price normalization |
+| Last source commit title | docs(c34): record target-scoped GM DM commerce and pending signed catalog acceptance |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/t29_disposable_commerce_role_gate_pg17.sql`
-- `scripts/integration/c34/test_t29_commerce_source_parity.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
