@@ -302,7 +302,30 @@ try {
  const modified="T36 SIGNED GM NARRATIVE SAVE";
  await editTexts.nth(idx).fill(modified);
  await page.getByRole("button",{name:"Done",exact:true}).click();
- await page.getByRole("button",{name:"Edit",exact:true}).first().waitFor({timeout:60000});
+ // The full original Sheet component catches onSave errors internally. A
+ // timeout without inspecting its inline error hides the real authority bug.
+ try{
+  await page.getByRole("button",{name:"Edit",exact:true}).first().waitFor({timeout:14000});
+ }catch(original){
+  const stage2=await users.GM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:npc});
+  const diagnostic=await page.evaluate(()=>{
+   const root=document.querySelector(".csheet");
+   const visible=e=>e&&!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length);
+   return {
+    errors:[...(root?.querySelectorAll(".alert-danger")||[])].map(e=>e.textContent?.trim()),
+    buttons:[...(root?.querySelectorAll("button")||[])].filter(visible)
+      .map(e=>({text:e.textContent?.trim(),disabled:e.disabled})).slice(0,25),
+    editor:!!root?.classList?.contains("csheet--edit"),
+    roleLabel:document.querySelector(".npcs-page-root .ms-auto.small")?.textContent?.trim()||null,
+   };
+  });
+  console.error("T36-DIAG-SAVE-ORIGINAL-SHEET",JSON.stringify({
+   ...diagnostic,stage2Error:stage2.error?.code||null,
+   narrativeStored:stage2.data?.background==="T36 SIGNED GM NARRATIVE SAVE",
+   pageErrors:errors.slice(-8)
+  }));
+  throw original;
+ }
  const saved=await users.GM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:npc});
  assert.ifError(saved.error);
  assert.equal(saved.data?.background,modified,
