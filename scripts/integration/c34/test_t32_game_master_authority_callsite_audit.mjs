@@ -108,9 +108,17 @@ test("T32-A07 protected source and all owner-authorization experiments remain he
   "components/MerchantPanel.js":"22e4d0810603bc0322904573cb5fe0c14bad1f88",
   "utils/useWallet.js":"f34b99f1d6eee66420d57bdcefdc6d3427092e25",
  }))assert.equal(hash(p),h,p);
- for(const p of active)
-  assert.doesNotMatch(read(p),/c34_game_manager_capabilities_research_v1|t31GameManagerRoleProfileCandidate/,
-   "T31 not approved for product mount "+p);
+ for(const p of active) {
+  const source=read(p);
+  if (p==="pages/town/[id].js") {
+    assert.match(source,/T33_TOWN_SAFE_ENABLED = T28_P2_TOWN_SHOP_ENABLED && process\.env\.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === "1"/);
+    assert.match(source,/role\.capabilities\.isGameManager === true/);
+    assert.doesNotMatch(source,/c34_game_manager_capabilities_research_v1/);
+  } else {
+    assert.doesNotMatch(source,/c34_game_manager_capabilities_research_v1|t31GameManagerRoleProfileCandidate/,
+      "Unflagged original UI must not mount T31 "+p);
+  }
+ }
  assert.match(read("pages/town/[id].js"),/NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1"/);
 });
 console.log("PASS T32-CALLSITE-AUDIT: observed hardcoded role, Stage2 reader, world, inventory and site-activity release blockers; no runtime patches");
