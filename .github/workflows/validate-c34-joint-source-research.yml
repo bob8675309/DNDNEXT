@@ -90,6 +90,11 @@ jobs:
           node --check utils/c34/commerceRolePolicyCandidate.mjs
           node --check scripts/integration/c34/test_t29_commerce_role_source.mjs
           node --test scripts/integration/c34/test_t29_commerce_role_source.mjs
+      - name: T29 exact source original commerce RPCs and GM DM ACL only (no hosted database)
+        run: |
+          node --check scripts/integration/c34/test_t29_commerce_source_parity.mjs
+          node --test scripts/integration/c34/test_t29_commerce_source_parity.mjs
+          node --check scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
