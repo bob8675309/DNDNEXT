@@ -36,6 +36,7 @@ test("T34-02 only one original setter predicate and separate site-report gate de
  assert.match(s,/PASS T34-ORIGINAL-RED/);
  assert.match(s,/PASS T34-GAME-/);
  assert.match(s,/PASS T34-SITE-/);
+ assert.match(s,/ \|\| \(SELECT count\(\*\)::text FROM public\.character_stock/);
  assert.match(s,/PASS T34-DEMOTION/);
  assert.match(s,/PASS T34-SWITCH/);
  assert.match(s,/SELECT md5\(pg_get_functiondef/);
