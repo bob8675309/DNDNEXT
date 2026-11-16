@@ -5,24 +5,18 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f053a835f162477c5df86d31d332652760dc5dd0` |
+| Exact source commit represented by this archive snapshot | `daccb5cb34b867117c1e6144627575c662ec9d78` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): lock owner-approved Admin GM DM commerce-only permission matrix (research) |
+| Last source commit title | test(c34): keep T29 role-negative source assertion free of descriptive comment matches |
 | Files changed relative to main | 149 (121 non-docs; 28 docs) |
-| Last source commit | 7 files (3 non-docs; 4 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
-- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
-- `scripts/integration/c34/test_t29_commerce_role_source.mjs`
 - `utils/c34/commerceRolePolicyCandidate.mjs`
 
 ## Research-branch change inventory versus main
