@@ -1,0 +1,33 @@
+# C34 T33 — Actual town Stage2-safe Profile with equal Admin / GM / DM (SIGNED RESEARCH PASS)
+
+**2026-11-16 CST. Draft PR #379, NOT RELEASED.** Research execution source HEAD `927667053f06374a64a4ada1076271c8c8c47b14`. No hosted Supabase permissions, role changes, world map, main merge, or Vercel production changes.
+
+## Owner decision and inherited original proof
+
+- Owner approved exact roles `admin`, `gm`, `dm` as equivalent **in-game** administrators; `player`, `editor`, `unknown`, malformed/uppercase, and anonymous are not. The role must be read from the current authenticated database actor and enforced by original server-side RPC/RLS, not from user-editable claims or browser props. Game authority is not infrastructure/account/site activity authority.
+- Original T29/T30 narrow-role contract tests remain as historical, superseded negatives, run **before** scratch T31 equal game-manager helper. T31 signed original full test [43920049870](https://github.com/bob8675309/DNDNEXT/actions/runs/43920049870) and T32 signed [43920571040](https://github.com/bob8675309/DNDNEXT/actions/runs/43920571040) SUCCESS.
+
+## Exactly what T33 changed (held / double OFF)
+
+1. Added `components/NpcPanelTownT33Research.jsx`, a town-only source-derived NPC Profile that replaces the old five forbidden direct narrative column SELECT and broad sheet SELECT with the signed T31 adapter (`readTownGameManagerNpcProfileCandidate`). Public reveal comes exclusively from original Stage1; full NPC dossier comes from independent original Stage2 guarded RPC for signed Admin/GM/DM. Only original authorized editor projection/Sheet is returned. Hidden GM notes never enter player data.
+2. Added `components/character/CharacterInteractionPanelTownT33Research.js`; ignores externally requested legacy `isAdmin`, uses T31 current server-owned capability reader, validates actor epoch on auth events/focus, and preserves class/features/spells, merchant Profile-first navigation, Craft and Sheet/Inventory entry points.
+3. Actual Pages Router `pages/town/[id].js` uses the new town panel and signed role check **only when both** `NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === '1'` and `NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === '1'`. Both OFF/default. When T33 OFF, old original T28 flag behavior remains. The town parent clears old actor cache/roster/inventory and chosen Profile on account switching.
+4. Original `components/MapPageClient.js`, `components/NpcPanel.js`, shared `components/character/CharacterInteractionPanel.js`, original T28 research variants, `components/TownSheet.js`, `components/MerchantPanel.js`, `utils/useWallet.js`, original Stage1–3 SQL and original atomic `buy_from_merchant` source remain unchanged. Original T27 and T28 exact Git blob ancestry negatives now strip **only** T33 additive changes, then prove the exact original source.
+5. Added source-locked T33 checks and a genuine original-current-Next Pages Router/Chromium test using disposable PG17/GoTrue/PostgREST with generated local-only scratch pages and forced cleanup. All remote Supabase calls blocked; no live user, campaign or credentials used.
+
+## Actual CI results (not inferred)
+
+- **Source and historical provenance SUCCESS:** [43930006446](https://github.com/bob8675309/DNDNEXT/actions/runs/43930006446) at runnable `927667053f06374a64a4ada1076271c8c8c47b14`. [Full preserved-source audit 43930014736](https://github.com/bob8675309/DNDNEXT/actions/runs/43930014736) SUCCESS; [handoff continuity 43930014956](https://github.com/bob8675309/DNDNEXT/actions/runs/43930014956) SUCCESS.
+- **Full signed current Next/Chromium/PG17/PostgREST/GoTrue/PDF SUCCESS:** [43930006655](https://github.com/bob8675309/DNDNEXT/actions/runs/43930006655), job `133519566191`, exact runnable commit `927667053f06374a64a4ada1076271c8c8c47b14` (confirmed completed success; log receipts below). All original T1–T31, actual T28 Bazaar→Profile→Shop→Profile, original purchase, source-preserved PDF passed before T33.
+- Actual new `PASS T33-SIGNED-ACL`: signed Admin/GM/DM original Stage2 private dossier allowed, player/unknown denied; five direct narrative columns still 42501 for every signed role.
+- Actual new `PASS T33-NEXT-READY`: pinned Next server and local generated route compiled; `PASS T33-ROLE-ADMIN`, `-ROLE-GM`, `-ROLE-DM`: original real signed private dossier in UI; `PASS T33-ROLE-PLAYER`, `-ROLE-UNKNOWN`: no private dossier/manager UI even when outer parent passes isAdmin=true; `PASS T33-ROLE-REVOKE`: same-JWT GM→player loses dossier/manager tools.
+- Actual new `PASS T33-TOWN-DM-ENTRY`, `PASS T33-TOWN-PROFILE-SHOP`, `PASS T33-TOWN-ACTOR-SWITCH`, `PASS T33-SIGNED-CHROMIUM`: genuine `/town/910020` DM Bazaar→Profile→Shop→Profile→Shop, same-page DM signout→player clears private Profile/merchant tools, no JS page errors/offsite calls.
+- **Preserved honest RED:** First T33 signed [43928824951](https://github.com/bob8675309/DNDNEXT/actions/runs/43928824951) reached signed Stage2 ACL positive but browser failed before navigation with `ERR_CONNECTION_REFUSED` because the local Next server was not yet bound. Fixed readiness/compiled HTTP route check only at `927667053f06374a64a4ada1076271c8c8c47b14`; **no weakening** of privacy or original negative. The retry above passed.
+
+## Remaining release gates and next task
+
+- A signed local UI PASS means **research acceptance**, NOT production migration approval. Stage2 five-column ACL requires coordinated NPC manager/Forge/shared consumers; no authenticated runtime should directly read revoked private columns.
+- T33 Sheet/Inventory UI still needs delegated DML/end-to-end character action review, and publisher-secret reveal must use original separate GM-authored publication mechanism rather than trusting `profileReveal.secret`. Other independent SQL functions (notably full merchant reroll and `set_campaign_future_tech_enabled_v1`) hardcode strict `admin` and need source-preserved three-role audits.
+- Global `private.current_user_is_admin()` also authorizes site visitor/activity data (technical/privacy scope), so game-master parity must not silently grant technical site activity. Owner-protected world map server/RLS side effects require separate explicit compatibility review before any global helper rollout.
+- Original complete source integration, editor/permission revocation and independent verification of full PostgreSQL + **340 Storage objects** restore remain release blockers.
+- **ONE NEXT TASK:** bounded cross-consumer auth cutover plan for held NPC manager/player Forge and hardcoded game-control RPCs, preserving T33 signed town + T28 shop + old T1–T31 red/green and original map; no production SQL/merge/deploy without distinct owner release.
