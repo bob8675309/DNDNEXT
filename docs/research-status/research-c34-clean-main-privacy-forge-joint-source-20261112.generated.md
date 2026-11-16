@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fab9c03e13c26ff78a543112e1ec79f37578bf52` |
+| Exact source commit represented by this archive snapshot | `994241280a62c7c6e847089b77b5c316ca6ba836` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): await genuine PostgREST site-report schema registration, keep original RED and role checks |
+| Last source commit title | test(c34): check true catalog presence independent of regprocedure search_path rendering |
 | Files changed relative to main | 173 (140 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
