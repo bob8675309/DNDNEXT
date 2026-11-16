@@ -109,8 +109,17 @@ test("T31-S01 preserve old source-original SQL, map and shared components unchan
   "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql":"01e48823ac3a46aa5880e98200e97c2595501ce7",
  }))assert.equal(hash(p),sha,p);
  for(const p of ["pages/_app.js","pages/npcs.js","pages/town/[id].js",
-  "components/NpcPanel.js","components/MapPageClient.js"])
-  assert.doesNotMatch(read(p),/t31GameManagerRoleProfileCandidate|c34_game_manager_capabilities_research_v1/,p);
+  "components/NpcPanel.js","components/MapPageClient.js"]) {
+  const s=read(p);
+  if(p==="pages/town/[id].js"){
+    // T33 is separately double-flagged and still unmounted in all deployed apps.
+    assert.match(s,/T33_TOWN_SAFE_ENABLED = T28_P2_TOWN_SHOP_ENABLED && process\.env\.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === "1"/);
+    assert.match(s,/role\.capabilities\.isGameManager === true/);
+    assert.doesNotMatch(s,/c34_game_manager_capabilities_research_v1/);
+  } else {
+    assert.doesNotMatch(s,/t31GameManagerRoleProfileCandidate|c34_game_manager_capabilities_research_v1/,p);
+  }
+ }
  const source=read("scripts/integration/c34/t31_disposable_game_manager_role_unification_pg17.sql");
  for(const s of ["T31_DISPOSABLE_LOCAL_CONFIRMED","private.current_user_is_admin()",
   "('admin','gm','dm')","get_npc_dossier_admin_v1","REVOKE ALL","auth.uid()"])
