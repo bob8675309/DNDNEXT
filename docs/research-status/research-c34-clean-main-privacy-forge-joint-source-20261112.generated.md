@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1596261381589c141ee07d4575631ce4d47878e6` |
+| Exact source commit represented by this archive snapshot | `8fd21bb3bd3f0910da645a8399f9b7f1a23f2c20` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): assign prices only to unpriced disposable Forge catalog rows for original reroll |
+| Last source commit title | test(c34): retain one postflight-guarded local catalog price normalization |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
