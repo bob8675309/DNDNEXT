@@ -5,19 +5,23 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `775d5025858401cc571be76880818da82e05ab15` |
+| Exact source commit represented by this archive snapshot | `ca42c5da0353c461a936dc6f603bc8a0389bfde0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record live Admin and delegated-inventory mismatches and rollback gate |
+| Last source commit title | test(c34): invalidate opt-in town actor caches and verify signed cross-account isolation |
 | Files changed relative to main | 146 (119 non-docs; 27 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 5 files (5 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
+- `pages/town/[id].js`
+- `scripts/integration/c34/run_t28_p2_real_town_route_browser.mjs`
+- `scripts/integration/c34/test_t27_consumer_source.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
+- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
 
 ## Research-branch change inventory versus main
 
