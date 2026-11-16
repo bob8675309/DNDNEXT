@@ -403,6 +403,27 @@ jobs:
           node --check scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs
           node scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs
           echo 'PASS T34: signed original game-admin item pool, technical site-only Admin; no production change'
+      - name: T35 genuine source-derived FULL NPC manager signed Admin GM DM unknown revocation and true PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T35_BROWSER_CONFIRM=CURRENT_FULL_MANAGER_THREE_GAME_MASTER_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t35_probe.jsx
+          node --check scripts/integration/c34/test_t35_full_manager_signed_browser.mjs
+          node scripts/integration/c34/test_t35_full_manager_signed_browser.mjs
+          test ! -e pages/__c34_t35_probe.jsx
+          echo 'PASS T35: full original NPC manager source with signed Stage2 Admin/GM/DM and true PDF'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
