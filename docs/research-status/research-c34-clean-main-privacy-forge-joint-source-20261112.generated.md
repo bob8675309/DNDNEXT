@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8610c7916adcbb8c0c421447c9d1cf01fd7192fe` |
+| Exact source commit represented by this archive snapshot | `56122038e0d7e2e3509a21eba33fd30e4b25c9c9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): genuine signed actual town T33 Stage2 game-master Chromium proof (held) |
+| Last source commit title | test(c34): use globally initialized original Supabase client in actual town actor switch |
 | Files changed relative to main | 169 (138 non-docs; 31 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
 - `scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
