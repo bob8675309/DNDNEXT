@@ -38,9 +38,15 @@ export function makeT36Source(){
   // Keep full original onSave (and its separate GM-secret + sheet writes), but
   // substitute ONLY the exactly anchored narrative UPDATE with the signed,
   // server-whitelisted, character-scoped T36 scratch writer.
-  const start=code.indexOf('                         // Save narrative fields');
-  const end=code.indexOf('                         // Save sheet overlay',start);
-  assert.ok(start>0&&end>start,"T36 refuse moved original narrative onSave block");
+  const beginMarker='// Save narrative fields';
+  const endMarker='// Save sheet overlay';
+  assert.equal(code.split(beginMarker).length-1,1,
+    "T36 original full manager narrative section moved");
+  assert.equal(code.split(endMarker).length-1,1,
+    "T36 original full manager sheet section moved");
+  const start=code.indexOf(beginMarker);
+  const end=code.indexOf(endMarker,start);
+  assert.ok(start>0&&end>start,"T36 refuse reordered original narrative onSave");
   const originalWrite='const upd = await supabase.from("characters").update(patch).eq("id", selected.id);';
   const narrative=code.slice(start,end);
   assert.equal(narrative.split(originalWrite).length-1,1,

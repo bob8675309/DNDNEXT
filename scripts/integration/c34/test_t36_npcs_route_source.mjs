@@ -63,8 +63,10 @@ test("T36-03 generated full manager is exact T35 output plus only a diagnostic r
  const originalWithMarker=prior.replace(
   '<div className="npcs-page-root">',
   '<div className="npcs-page-root" '+T36_MARKER+'>');
- const saveStart=originalWithMarker.indexOf('                         // Save narrative fields');
- const saveEnd=originalWithMarker.indexOf('                         // Save sheet overlay',saveStart);
+ assert.equal(originalWithMarker.split('// Save narrative fields').length-1,1);
+ assert.equal(originalWithMarker.split('// Save sheet overlay').length-1,1);
+ const saveStart=originalWithMarker.indexOf('// Save narrative fields');
+ const saveEnd=originalWithMarker.indexOf('// Save sheet overlay',saveStart);
  assert.ok(saveStart>0&&saveEnd>saveStart);
  assert.equal(originalWithMarker.slice(saveStart,saveEnd).split(direct).length-1,1);
  const expectedBody=originalWithMarker.slice(0,saveStart)+
