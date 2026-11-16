@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2965244277fc31f43742ec42c6dc2474c2ca5308` |
+| Exact source commit represented by this archive snapshot | `b972fbd9796927ac3a265aaecad01f776086502b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pass disposable town Profile probe URL into signed browser runner |
+| Last source commit title | test(c34): signed current Next town Profile tab opens guarded Shop without changing original map panels |
 | Files changed relative to main | 144 (118 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
