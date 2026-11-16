@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b972fbd9796927ac3a265aaecad01f776086502b` |
+| Exact source commit represented by this archive snapshot | `71b945852657c7796ac67832716e07ad0011eeea` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed current Next town Profile tab opens guarded Shop without changing original map panels |
+| Last source commit title | test(c34): pin disposable real town Profile→Shop signed browser probe and cleanup |
 | Files changed relative to main | 144 (118 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
