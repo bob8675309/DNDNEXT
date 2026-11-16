@@ -130,11 +130,12 @@ test("T36-06 scoped Stage2 narrative writer changes NO original global RLS or ot
  assert.match(sql,/GRANT EXECUTE ON FUNCTION public.c34_npc_narrative_save_research_v1/);
  assert.doesNotMatch(sql,/\bALTER\s+TABLE\s+public\.characters\b|\bGRANT\s+(?:ALL|UPDATE|SELECT)\s+ON\s+(?:TABLE\s+)?public\.characters\b/i);
  const t=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
- for(const proof of ["T36-NARRATIVE-ORIGINAL-RED","T36-NARRATIVE-WRITER-ADMIN",
-   "T36-NARRATIVE-WRITER-GM","T36-NARRATIVE-WRITER-DM",
+ for(const proof of ["T36-NARRATIVE-ORIGINAL-RED","T36-NARRATIVE-WRITER-",
    "T36-NARRATIVE-NONMANAGER","T36-NARRATIVE-SECRET-DENY",
    "T36-NARRATIVE-GM","T36-REVOCATION"]){
    assert.ok(t.includes(proof),"Missing signed narrative proof "+proof);
  }
+ assert.match(t,/for\(const label of \["ADMIN","GM","DM"\]\)/,
+  "T36 signed narrative writer must test every owner-approved game manager");
 });
 console.log("PASS T36-SOURCE: original /npcs bytes intact, local-only default-OFF Next rewrite and full T35 source retained");
