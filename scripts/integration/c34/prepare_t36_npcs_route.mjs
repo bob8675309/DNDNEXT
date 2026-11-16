@@ -31,8 +31,30 @@ export function makeT36Source(){
   assert.ok(edits.length>=4&&baseEdits.length>=12);
   const tag='<div className="npcs-page-root">';
   assert.equal(output.split(tag).length-1,1,"Original/T35 root drift; do not mount partial UI");
-  const code=output.replace(tag,'<div className="npcs-page-root" '+T36_MARKER+'>');
+  let code=output.replace(tag,'<div className="npcs-page-root" '+T36_MARKER+'>');
+  // Stage2 revokes SELECT on five narrative columns for *all* authenticated
+  // callers. Original PostgREST UPDATE(patch) then fails 42501 even for GM;
+  // never restore the revoked column/table grants to make UI Save appear green.
+  // Keep full original onSave (and its separate GM-secret + sheet writes), but
+  // substitute ONLY the exactly anchored narrative UPDATE with the signed,
+  // server-whitelisted, character-scoped T36 scratch writer.
+  const start=code.indexOf('                         // Save narrative fields');
+  const end=code.indexOf('                         // Save sheet overlay',start);
+  assert.ok(start>0&&end>start,"T36 refuse moved original narrative onSave block");
+  const originalWrite='const upd = await supabase.from("characters").update(patch).eq("id", selected.id);';
+  const narrative=code.slice(start,end);
+  assert.equal(narrative.split(originalWrite).length-1,1,
+    "T36 refuse changed original narrative UPDATE; inspect authenticated source");
+  const securedWrite=[
+    'const narrativePatch = { ...patch };',
+    '                           delete narrativePatch.updated_at;',
+    '                           const upd = await supabase.rpc("c34_npc_narrative_save_research_v1", {',
+    '                             p_character_id: selected.id, p_patch: narrativePatch',
+    '                           });'
+  ].join("\n");
+  code=code.slice(0,start)+narrative.replace(originalWrite,securedWrite)+code.slice(end);
   assert.match(code,/readTownGameManagerNpcProfileCandidate\(supabase, id/);
+  assert.match(code,/c34_npc_narrative_save_research_v1/);
   assert.doesNotMatch(code,/\.rpc\("is_admin",\s*\{\s*uid:/);
   return "// T36 EXACT SOURCE generated from ORIGINAL current NPC manager / T25 / T35.\n"+
     "// LOCALHOST-only, unsigned production build MUST NOT contain this page.\n"+code;
