@@ -5,22 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `59378deef5432e6af057376e0a92915650059b16` |
+| Exact source commit represented by this archive snapshot | `d03eb244461304fdf0b2b417afa9dbeddba5fd03` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record genuine T31 signed roles PASS and T32 authority source-audit PASS |
-| Files changed relative to main | 165 (134 non-docs; 31 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | research(c34): derive Stage2-safe T33 town Profile and validated GM interaction shell |
+| Files changed relative to main | 167 (136 non-docs; 31 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T31_OWNER_REVISED_GAME_MASTER_ROLE_EQUIVALENCE_2026-11-16.md`
-- `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
+- `components/NpcPanelTownT33Research.jsx`
+- `components/character/CharacterInteractionPanelTownT33Research.js`
 
 ## Research-branch change inventory versus main
 
@@ -28,6 +26,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
+- `components/NpcPanelTownT33Research.jsx`
 - `components/c34/MerchantPanelT28P2Research.jsx`
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
@@ -35,6 +34,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/c34/T28NonMapPersistentResearchProbe.jsx`
 - `components/c34/T28P2MountedCommerceProbe.jsx`
 - `components/character/CharacterInteractionPanelTownT28P2Research.js`
+- `components/character/CharacterInteractionPanelTownT33Research.js`
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
@@ -72,9 +72,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/agents/validate_open_pr_index.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
-- `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
-- `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
-- … 115 more
+- … 117 more
 
 ## Trust and update procedure
 
