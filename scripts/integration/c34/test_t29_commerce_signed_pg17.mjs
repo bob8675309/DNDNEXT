@@ -65,6 +65,8 @@ sql("INSERT INTO public.player_wallets(user_id,gp) VALUES("+quote(id)+",11) "+
  "ON CONFLICT(user_id) DO UPDATE SET gp=11");
 const merchant=sql("SELECT id::text FROM public.characters WHERE name='T26 Probe Merchant' AND kind='merchant' LIMIT 1");
 assert.match(merchant,/^[0-9a-f-]{36}$/i);
+const npc=sql("SELECT id::text FROM public.characters WHERE name='T26 Probe NPC' AND kind='npc' LIMIT 1");
+assert.match(npc,/^[0-9a-f-]{36}$/i);
 let stockCache=0;
 for(const role of ["admin","gm","dm"]){
  const user=actors[role];
@@ -97,6 +99,27 @@ for(const role of ["admin","gm","dm"]){
  assert.ifError(reroll.error);
  assert.equal(reroll.data?.[0]?.merchant_id,merchant);
  assert.ok(reroll.data?.[0]?.inserted_count>=1,"Reroll emitted no stock for "+role);
+ if(role!=="admin"){
+  const otherManager=role==="gm"?actors.dm.id:actors.admin.id;
+  await mustDeny(role+" other staff wallet_set",()=>user.who.rpc("wallet_set",{
+   p_user:otherManager,p_amount:999
+  }));
+  await mustDeny(role+" other staff wallet_get",()=>user.who.rpc("wallet_get",{p_user:otherManager}));
+  const npcBefore=sql("SELECT count(*) FROM public.character_stock WHERE character_id="+quote(npc));
+  const forbiddenNpc=await user.who.from("character_stock").insert({
+   character_id:npc,display_name:"T29 FORBIDDEN NPC",qty:2,price_gp:7,
+   card_payload:{item_type:"Potion"}
+  }).select("id");
+  assert.ok(forbiddenNpc.error,role+" must not insert stock on NPC");
+  await mustDeny(role+" NPC source stock RPC",()=>user.who.rpc("stock_merchant_item",{
+   p_merchant_id:npc,p_display_name:"T29 NPC RPC",p_price_gp:5,p_qty:1,p_payload:{}
+  }));
+  await mustDeny(role+" NPC reroll",()=>user.who.rpc("reroll_merchant_inventory_v2",{
+   p_merchant_id:npc,p_theme:"general",p_count:12
+  }));
+  assert.equal(sql("SELECT count(*) FROM public.character_stock WHERE character_id="+quote(npc)),npcBefore);
+  console.log("PASS T29-SCOPE-"+role.toUpperCase()+": merchant-only stock and player-only gold, NPC/staff targets denied");
+ }
  stockCache=Number(sql("SELECT count(*) FROM public.character_stock WHERE character_id="+quote(merchant)));
  assert.ok(stockCache>=1);
  console.log("PASS T29-ROLE-"+role.toUpperCase()+": genuine signed direct stock CRUD, source-stock RPC, original reroll, cross-target wallet_get/set");

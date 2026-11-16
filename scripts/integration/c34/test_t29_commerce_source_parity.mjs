@@ -18,14 +18,14 @@ const originals={
 };
 const guards={
  wallet_get:["if target <> caller and caller_role = 'player' then",
-  "if target <> caller and not private.current_user_can_manage_commerce_v1() then"],
+  "if target <> caller and not private.current_user_can_manage_player_gold_v1(target) then"],
  wallet_set:["if caller_role = 'player' then",
-  "if not private.current_user_can_manage_commerce_v1() then"],
+  "if not private.current_user_can_manage_player_gold_v1(coalesce(p_user,caller)) then"],
  stock_merchant_item:["if coalesce(v_role, 'player') = 'player' then",
-  "if not private.current_user_can_manage_commerce_v1() then"],
+  "if not private.current_user_can_manage_merchant_stock_v1(p_merchant_id) then"],
  reroll_merchant_inventory_v2:[
   "IF NOT coalesce(v_is_admin,false) THEN RAISE EXCEPTION 'Only admins can reroll merchant stock'; END IF;",
-  "IF v_uid IS NOT NULL AND NOT private.current_user_can_manage_commerce_v1() THEN RAISE EXCEPTION 'Commerce manager required to reroll merchant stock' USING ERRCODE='42501'; END IF;"
+  "IF v_uid IS NOT NULL AND NOT private.current_user_can_manage_merchant_stock_v1(p_merchant_id) THEN RAISE EXCEPTION 'Commerce manager required to reroll merchant stock' USING ERRCODE='42501'; END IF;"
  ]
 };
 test("T29-S01 source-original hosted definition hashes unchanged",()=>{
@@ -60,14 +60,17 @@ test("T29-S03 row policy, helper, EXECUTE grants and local-only safety boundary"
   "T29_DISPOSABLE_LOCAL_CONFIRMED","to_regclass('private.t28_wallet_probe')",
   "private.test_admins","DROP FUNCTION public.wallet_get(uuid);",
   "1dbe8c24c4c718396d7256f6f7465354","CREATE POLICY character_stock_admin_write",
-  "USING (private.current_user_can_manage_commerce_v1())",
-  "WITH CHECK (private.current_user_can_manage_commerce_v1())",
+  "USING (private.current_user_can_manage_merchant_stock_v1(character_id))",
+  "WITH CHECK (private.current_user_can_manage_merchant_stock_v1(character_id))",
+  "CREATE OR REPLACE FUNCTION private.current_user_can_manage_merchant_stock_v1",
+  "CREATE OR REPLACE FUNCTION private.current_user_can_manage_player_gold_v1",
+  "subject.kind='merchant'","target.role='player'",
   "p.role IN ('admin','gm','dm')","GRANT EXECUTE ON FUNCTION public.wallet_get(uuid)",
   "REVOKE ALL ON FUNCTION public.wallet_get(uuid)"])
   assert.ok(sql.includes(word),"Missing role/source guard: "+word);
  assert.doesNotMatch(sql,/CREATE OR REPLACE FUNCTION private\.current_user_is_admin|ALTER POLICY .*map_|ALTER TABLE .*map_/);
  assert.doesNotMatch(sql,/CREATE OR REPLACE FUNCTION public\.buy_from_merchant/);
- assert.match(sql,/IF v_uid IS NOT NULL AND NOT private\.current_user_can_manage_commerce_v1\(\)/,
+ assert.match(sql,/IF v_uid IS NOT NULL AND NOT private\.current_user_can_manage_merchant_stock_v1\(p_merchant_id\)/,
   "Preserve original reroll trusted internal/null actor path");
  const roleModel=read("utils/c34/commerceRolePolicyCandidate.mjs");
  assert.match(roleModel,/COMMERCE_MANAGER_ROLES = Object\.freeze\(\["admin", "gm", "dm"\]\)/);
@@ -80,4 +83,4 @@ test("T29-S04 original shared runtime and source purchase method still isolated"
    "Protected app/map source cannot import T29 SQL");
  }
 });
-console.log("PASS T29-SOURCE: exact hosted function byte snapshots, four authorization guards, local-only source policy; NO hosted SQL executed");
+console.log("PASS T29-SOURCE: exact hosted function snapshots, four scoped auth guards, GM/DM merchant-only stock and player-only gold, no hosted SQL");

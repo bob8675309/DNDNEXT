@@ -42,6 +42,51 @@ REVOKE ALL ON FUNCTION private.current_user_can_manage_commerce_v1()
  FROM PUBLIC,anon,authenticated;
 GRANT USAGE ON SCHEMA private TO authenticated;
 GRANT EXECUTE ON FUNCTION private.current_user_can_manage_commerce_v1() TO authenticated;
+
+-- T29 scoped commerce authorization. A GM or DM cannot stock arbitrary NPC
+-- character rows, even through SECURITY DEFINER original stock/reroll functions.
+-- Full Admin keeps pre-existing broader character stock administration.
+CREATE OR REPLACE FUNCTION private.current_user_can_manage_merchant_stock_v1(p_character_id uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','auth'
+AS $t29_stock$
+ SELECT auth.uid() IS NOT NULL AND EXISTS (
+   SELECT 1 FROM public.user_profiles actor
+   WHERE actor.id=auth.uid() AND (
+     actor.role='admin' OR (
+       actor.role IN ('gm','dm')
+       AND EXISTS (
+         SELECT 1 FROM public.characters subject
+         WHERE subject.id=p_character_id AND subject.kind='merchant'
+       )
+     )
+   )
+ );
+$t29_stock$;
+-- A GM/DM may adjust OTHER player's gold, not an arbitrary GM/Admin wallet.
+-- Full Admin retains source-original cross-user wallet powers.
+CREATE OR REPLACE FUNCTION private.current_user_can_manage_player_gold_v1(p_user_id uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','auth'
+AS $t29_gold$
+ SELECT auth.uid() IS NOT NULL AND EXISTS (
+   SELECT 1 FROM public.user_profiles actor
+   WHERE actor.id=auth.uid() AND (
+     actor.role='admin' OR (
+       actor.role IN ('gm','dm')
+       AND EXISTS (
+         SELECT 1 FROM public.user_profiles target
+         WHERE target.id=p_user_id AND target.role='player'
+       )
+     )
+   )
+ );
+$t29_gold$;
+REVOKE ALL ON FUNCTION private.current_user_can_manage_merchant_stock_v1(uuid),
+ private.current_user_can_manage_player_gold_v1(uuid)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION private.current_user_can_manage_merchant_stock_v1(uuid),
+ private.current_user_can_manage_player_gold_v1(uuid) TO authenticated;
 -- Synthetic C34 reduced-catalog adapters only; existing source helpers
 -- (if present) remain untouched. Real item rules are a separate release gate.
 -- The original local Forge reduced character_stock id has NO uuid default,
@@ -130,7 +175,7 @@ begin
   caller_role := coalesce(caller_role, 'player');
 
   target := coalesce(p_user, caller);
-  if target <> caller and not private.current_user_can_manage_commerce_v1() then
+  if target <> caller and not private.current_user_can_manage_player_gold_v1(target) then
     raise exception 'Not authorized';
   end if;
 
@@ -166,7 +211,7 @@ begin
   caller_role := coalesce(caller_role, 'player');
 
   -- In this app, wallet_set is intended for admin controls.
-  if not private.current_user_can_manage_commerce_v1() then
+  if not private.current_user_can_manage_player_gold_v1(coalesce(p_user,caller)) then
     raise exception 'Not authorized';
   end if;
 
@@ -207,7 +252,7 @@ begin
   end if;
 
   select role into v_role from public.user_profiles where id = v_caller;
-  if not private.current_user_can_manage_commerce_v1() then
+  if not private.current_user_can_manage_merchant_stock_v1(p_merchant_id) then
     raise exception 'Not authorized';
   end if;
 
@@ -259,7 +304,7 @@ BEGIN
       FROM public.user_profiles up
       WHERE up.id=v_uid;
   END IF;
-  IF v_uid IS NOT NULL AND NOT private.current_user_can_manage_commerce_v1() THEN RAISE EXCEPTION 'Commerce manager required to reroll merchant stock' USING ERRCODE='42501'; END IF;
+  IF v_uid IS NOT NULL AND NOT private.current_user_can_manage_merchant_stock_v1(p_merchant_id) THEN RAISE EXCEPTION 'Commerce manager required to reroll merchant stock' USING ERRCODE='42501'; END IF;
 
   SELECT coalesce(s.future_tech_enabled,false)
     INTO v_future_enabled
@@ -451,8 +496,8 @@ ALTER TABLE public.character_stock ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS character_stock_admin_write ON public.character_stock;
 CREATE POLICY character_stock_admin_write ON public.character_stock
  FOR ALL TO authenticated
- USING (private.current_user_can_manage_commerce_v1())
- WITH CHECK (private.current_user_can_manage_commerce_v1());
+ USING (private.current_user_can_manage_merchant_stock_v1(character_id))
+ WITH CHECK (private.current_user_can_manage_merchant_stock_v1(character_id));
 GRANT SELECT,INSERT,UPDATE,DELETE ON public.character_stock TO authenticated;
 REVOKE ALL ON FUNCTION public.wallet_get(uuid),
  public.wallet_set(uuid,numeric),
