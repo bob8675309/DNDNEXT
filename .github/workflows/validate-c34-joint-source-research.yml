@@ -119,6 +119,12 @@ jobs:
           node --check scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs
           node --check scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs
           node --test scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs
+      - name: T35 source-derived FULL NPC manager exact ancestry and strict GM DM Stage2 negatives
+        run: |
+          node --check scripts/integration/c34/derive_t35_full_npc_manager.mjs
+          node --check scripts/integration/c34/test_t35_npc_manager_source.mjs
+          node scripts/integration/c34/derive_t35_full_npc_manager.mjs --verify
+          node --test scripts/integration/c34/test_t35_npc_manager_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
