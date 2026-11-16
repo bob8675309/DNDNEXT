@@ -154,7 +154,7 @@ assert.ok(oldGM.error && oldGM.error.code!=="PGRST202","original setter must den
 // PostgREST's NOTIFY schema reload is asynchronous. The genuine original
 // function was just installed; only tolerate the transient PGRST202 cache miss.
 // Any server error, role failure, or missing report after a bounded retry fails.
-assert.equal(sql("SELECT to_regprocedure('public.get_recent_site_activity_v1()')::text"),"get_recent_site_activity_v1()");
+assert.equal(sql("SELECT to_regprocedure('public.get_recent_site_activity_v1()') IS NOT NULL"),"t");
 let oldVisit;
 for(let attempt=0;attempt<40;attempt++){
  oldVisit=await actors.gm.who.rpc("get_recent_site_activity_v1");
