@@ -107,11 +107,13 @@ export async function runT28P2MountedCommerceSignedBrowser({
   // role="tablist"; its buttons do not have role="tab" / aria-selected.
   // Assert the actual original selected CSS contract instead of inventing
   // ARIA metadata that the source does not implement.
-  const profileTab=page.getByRole("button",{name:"Profile",exact:true}).first();
+  const townTabs=page.getByTestId("t28p2-town-profile-probe")
+    .getByRole("tablist",{name:"Character interaction views"});
+  const profileTab=townTabs.getByRole("button",{name:"Profile",exact:true});
   await profileTab.waitFor({timeout:30000});
   assert.match(await profileTab.getAttribute("class") || "",/\bbtn-primary\b/,
     "Town Profile must be active before selecting Shop");
-  await page.getByRole("button",{name:"Shop",exact:true}).first().click();
+  await townTabs.getByRole("button",{name:"Shop",exact:true}).click();
   await page.getByText(stockLabel,{exact:true}).first().waitFor({timeout:20000});
   console.log("PASS T28-P2-TOWN-PROFILE: signed Profile-first town Shop uses guarded merchant stock");
   await page.goto(origin+"/__c34_t28_p2_probe",{waitUntil:"domcontentloaded",timeout:60000});

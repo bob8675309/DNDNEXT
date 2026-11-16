@@ -51,8 +51,13 @@ for(const token of [
 // role=tab and have no aria-selected. A fake tab locator would time out.
 assert.doesNotMatch(p2,/getByRole\("tab"/,
  "Town Profile smoke must use the actual original CharacterInteractionTabs buttons");
-assert.match(p2,/getByRole\("button",\{name:"Profile",exact:true\}\)/);
-assert.match(p2,/getByRole\("button",\{name:"Shop",exact:true\}\)/);
+assert.match(p2,/getByTestId\("t28p2-town-profile-probe"\)/);
+assert.match(p2,/getByRole\("tablist",\{name:"Character interaction views"\}\)/);
+assert.match(p2,/townTabs\.getByRole\("button",\{name:"Profile",exact:true\}\)/);
+assert.match(p2,/townTabs\.getByRole\("button",\{name:"Shop",exact:true\}\)/);
+assert.doesNotMatch(p2,/page\.getByRole\("button",\{name:"Profile",exact:true\}\)\.first\(\)/,
+ "Temporary Profile smoke must not select global site navigation");
+// The same scoped tablist must also own the Shop button.
 assert.match(p2,/getAttribute\("class"\)/);
 
 assert.match(p2,/assert\.equal\(stockData\.status,200\)/);
