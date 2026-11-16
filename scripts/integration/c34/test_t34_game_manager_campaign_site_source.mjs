@@ -27,6 +27,9 @@ test("T34-02 only one original setter predicate and separate site-report gate de
  assert.match(s,/if not private\.current_user_is_site_admin_v1\(\) then/);
  assert.match(s,/p\.role='admin'/);
  assert.match(s,/const tagsOverload=/);
+ assert.match(s,/const actualTagShape=sql\(/);
+ assert.match(s,/\["text\[\]","jsonb"\]\.includes\(actualTagShape\)/);
+ assert.match(s,/actualTagShape==="jsonb"\?tagsOverload/);
  assert.match(s,/characters_guard_player_tags_v1/);
  assert.match(s,/ARRAY\(SELECT jsonb_array_elements_text/);
  assert.doesNotMatch(s,/ALTER TABLE public\.characters DROP COLUMN|ALTER TABLE public\.characters ALTER COLUMN tags/);
