@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b27b69efb909efbe3c47b5a7459b6df00b35fa31` |
+| Exact source commit represented by this archive snapshot | `99a93dc3c73936871e817f564d0b3a7cf4447e40` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): use original Profile/Shop button semantics in signed Chromium probe, not nonexistent tab role |
+| Last source commit title | test(c34): enforce actual original Profile/Shop button locators and selected class in signed browser |
 | Files changed relative to main | 144 (118 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
