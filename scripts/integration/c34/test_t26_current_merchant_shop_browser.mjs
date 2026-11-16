@@ -15,6 +15,7 @@ import { deriveT26CurrentMerchantShop,T26_TEMP_ROUTE } from "./derive_t26_curren
 import { writeT28PersistentRoute,T28_P1_TEMP_ROUTE } from "./derive_t28_persistent_probe.mjs";
 import { runT28NonMapPersistentSignedBrowser } from "./run_t28_persistent_signed_browser.mjs";
 import {writeT28P2MountedRoute,T28_P2_TEMP_ROUTE} from "./derive_t28_p2_mounted_probe.mjs";
+import {writeT28P2TownProfileRoute,T28_P2_TOWN_TEMP_ROUTE} from "./derive_t28_p2_town_profile_probe.mjs";
 import {runT28P2MountedCommerceSignedBrowser} from "./run_t28_p2_mounted_signed_browser.mjs";
 
 const env=process.env;
@@ -32,8 +33,10 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..")
 const probe=path.join(root,T26_TEMP_ROUTE);
 const t28Probe=path.join(root,T28_P1_TEMP_ROUTE);
 const p2Probe=path.join(root,T28_P2_TEMP_ROUTE);
+const p2TownProbe=path.join(root,T28_P2_TOWN_TEMP_ROUTE);
 assert.ok(!fs.existsSync(t28Probe),"T28 refuses overwriting tracked/preexisting route");
 assert.ok(!fs.existsSync(p2Probe),"T28-P2 refuses overwriting tracked/preexisting route");
+assert.ok(!fs.existsSync(p2TownProbe),"T28-P2 town Profile probe must be generated only in disposable CI");
 const pdfDir=path.join(env.RUNNER_TEMP||"/tmp","c34-t25-pdf-"+randomUUID());
 assert.ok(!fs.existsSync(probe),"T26 refuses overwriting a tracked or preexisting route");
 const require=createRequire(path.join(env.C33_BROWSER_TOOL_ROOT,"t25-playwright-anchor.cjs"));
@@ -208,6 +211,7 @@ try {
  fs.writeFileSync(probe,output,{flag:"wx"});
  writeT28PersistentRoute(merchant,alternateMerchant);
  writeT28P2MountedRoute(merchant,alternateMerchant,users.OUTSIDER.id);
+ writeT28P2TownProfileRoute(merchant);
  const nextPort=await freePort(),origin="http://127.0.0.1:"+nextPort;
  const nextBin=path.join(root,"node_modules/next/dist/bin/next");
  assert.ok(fs.existsSync(nextBin),"T26 needs npm ci and pinned Next.js");
@@ -633,6 +637,7 @@ try {
  await runT28P2MountedCommerceSignedBrowser({
    context,origin,localUrl:env.DNDNEXT_C34_LOCAL_URL,
    users,merchant,alternateMerchant,stockId,stockLabel,alternateStockLabel,
+   townProfileProbeUrl:origin+"/__c34_t28_p2_town_profile_probe",
    offsite,errors,inspect:sql
  });
  console.log("PASS T28-P2-MOUNTED: genuine signed original buy and guarded nonmap wallet/shop browser suite");
@@ -645,8 +650,10 @@ try {
  try{fs.unlinkSync(probe)}catch{}
  try{fs.unlinkSync(t28Probe)}catch{}
  try{fs.unlinkSync(p2Probe)}catch{}
+ try{fs.unlinkSync(p2TownProbe)}catch{}
  fs.rmSync(pdfDir,{recursive:true,force:true});
  assert.ok(!fs.existsSync(probe),"T26 must remove disposable Next route in finally");
  assert.ok(!fs.existsSync(t28Probe),"T28 must remove persistent disposable route in finally");
  assert.ok(!fs.existsSync(p2Probe),"T28-P2 must remove mounted disposable route in finally");
+ assert.ok(!fs.existsSync(p2TownProbe),"T28-P2 must remove town Profile disposable route in finally");
 }
