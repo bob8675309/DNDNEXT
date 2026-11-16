@@ -126,6 +126,15 @@ for(const token of [
  "PASS T26-C03 original live manager Print Sheet generates true safe 3-page PDF",
  "PASS T26-C06 real local permission revocation"
 ])assert.ok(original.includes(token),"T28 P2 must retain original suite and new local-only checks "+token);
+const actualTown=src("scripts/integration/c34/run_t28_p2_real_town_route_browser.mjs");
+for(const token of ["REAL /town/[id]", "Browse Wares", "Return to Profile",
+ "T28-P2-REAL-TOWN-ENTRY", "T28-P2-REAL-TOWN-SHOP", "T28-P2-REAL-TOWN-SIGNOUT",
+ "auth.signOut()", "town-profile-sidepanel"])
+ assert.ok(actualTown.includes(token),"Missing real-town signed browser assertion: "+token);
+for(const token of ['NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP:"1"',
+ "runT28P2RealTownSignedBrowser({", "T28-P2-REAL-TOWN-FIXTURE",
+ "denied.error?.code","GRANT SELECT ("])
+ assert.ok(original.includes(token),"Missing scratch market/role fixture: "+token);
 const workflow=src(".github/workflows/validate-c34-joint-local-auth.yml");
 
 const sourceWorkflow=src(".github/workflows/validate-c34-joint-source-research.yml");

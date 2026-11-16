@@ -17,6 +17,7 @@ import { runT28NonMapPersistentSignedBrowser } from "./run_t28_persistent_signed
 import {writeT28P2MountedRoute,T28_P2_TEMP_ROUTE} from "./derive_t28_p2_mounted_probe.mjs";
 import {writeT28P2TownProfileRoute,T28_P2_TOWN_TEMP_ROUTE} from "./derive_t28_p2_town_profile_probe.mjs";
 import {runT28P2MountedCommerceSignedBrowser} from "./run_t28_p2_mounted_signed_browser.mjs";
+import {runT28P2RealTownSignedBrowser} from "./run_t28_p2_real_town_route_browser.mjs";
 
 const env=process.env;
 for(const [key,expected] of Object.entries({
@@ -206,6 +207,48 @@ try {
  for(const [label,edit,inventory] of [["COEDITOR",true,false],["INVONLY",false,true]])
   sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES("+
    q(npc)+","+q(users[label].id)+","+(edit?"true":"false")+","+(inventory?"true":"false")+",false)");
+ // Disposable-only real TownSheet compatible fields. Never undo Stage2 ACL.
+ const realTownId=910020;
+ sql("CREATE TABLE IF NOT EXISTS public.locations(id bigint PRIMARY KEY,npcs jsonb NOT NULL DEFAULT '[]'::jsonb)");
+ for(const [field,type] of [["name","text"],["description","text"],["quests","jsonb"]])
+  sql("ALTER TABLE public.locations ADD COLUMN IF NOT EXISTS "+field+" "+type);
+ for(const [field,type] of [
+  ["race","text"],["role","text"],["affiliation","text"],["status","text"],["state","text"],
+  ["last_known_location_id","bigint"],["projected_destination_id","bigint"],
+  ["map_icon_id","uuid"],["tags","jsonb"],["portrait_storage_path","text"],
+  ["portrait_thumb_url","text"],["portrait_shop_url","text"],["portrait_source","text"],
+  ["image_url","text"],["home_location_id","bigint"],["storefront_title","text"],
+  ["storefront_tagline","text"],["storefront_bg_url","text"],["storefront_bg_image_url","text"],
+  ["storefront_bg_video_url","text"]
+ ])sql("ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS "+field+" "+type);
+ sql("GRANT SELECT ON public.locations TO authenticated");
+ const safeTownColumns=[
+  "id","name","kind","race","role","affiliation","status","state",
+  "location_id","last_known_location_id","projected_destination_id",
+  "is_hidden","map_icon_id","tags","portrait_url","portrait_storage_path",
+  "portrait_thumb_url","portrait_shop_url","portrait_source","image_url",
+  "home_location_id","storefront_enabled","storefront_title","storefront_tagline",
+  "storefront_bg_url","storefront_bg_image_url","storefront_bg_video_url"
+ ].join(",");
+ // The original Stage2 forbidden background,motivation,quirk,mannerism,
+ // voice columns MUST remain inaccessible to authenticated users.
+ sql("GRANT SELECT ("+safeTownColumns+") ON public.characters TO authenticated");
+ sql("INSERT INTO public.locations(id,name,description) VALUES ("+
+  realTownId+",'C34 Signed Bazaar','Disposable-only town') "+
+  "ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,description=EXCLUDED.description");
+ sql("UPDATE public.characters SET location_id="+realTownId+
+  ",home_location_id="+realTownId+" WHERE id="+q(merchant));
+ sql("NOTIFY pgrst, 'reload schema'");
+ const townRows=await users.GM.who.from("characters").select(safeTownColumns)
+  .eq("kind","merchant").eq("location_id",realTownId);
+ assert.ifError(townRows.error);
+ assert.equal(townRows.data?.length,1);
+ assert.equal(townRows.data[0].id,merchant);
+ const signedTown=await users.GM.who.from("locations").select("id,name").eq("id",realTownId).single();
+ assert.ifError(signedTown.error);
+ const denied=await users.GM.who.from("characters").select("id,background,motivation").limit(1);
+ assert.equal(denied.error?.code,"42501","Never restore Stage2 narrative access in fixture");
+ console.log("PASS T28-P2-REAL-TOWN-FIXTURE signed real town and merchant, narrative still 42501");
  const {output,edits}=deriveT26CurrentMerchantShop();
  assert.ok(edits.length>=12);
  fs.writeFileSync(probe,output,{flag:"wx"});
@@ -217,7 +260,7 @@ try {
  assert.ok(fs.existsSync(nextBin),"T26 needs npm ci and pinned Next.js");
  server=spawn(process.execPath,[nextBin,"dev","-H","127.0.0.1","-p",String(nextPort)],{
   cwd:root,detached:true,stdio:["ignore","pipe","pipe"],
-  env:{...env,NEXT_PUBLIC_SUPABASE_URL:env.DNDNEXT_C34_LOCAL_URL,
+  env:{...env,NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP:"1",NEXT_PUBLIC_SUPABASE_URL:env.DNDNEXT_C34_LOCAL_URL,
    NEXT_PUBLIC_SUPABASE_ANON_KEY:env.DNDNEXT_C34_LOCAL_ANON_KEY,
    NODE_ENV:"development",NEXT_TELEMETRY_DISABLED:"1"}
  });
@@ -641,6 +684,8 @@ try {
    offsite,errors,inspect:sql
  });
  console.log("PASS T28-P2-MOUNTED: genuine signed original buy and guarded nonmap wallet/shop browser suite");
+ await runT28P2RealTownSignedBrowser({context,origin,localUrl:env.DNDNEXT_C34_LOCAL_URL,users,
+  townId:realTownId,merchant,stockLabel,offsite,errors});
  assert.deepEqual(offsite,[],"T26/T28 attempted offsite Supabase requests");
  assert.deepEqual(errors,[],"T26 browser exceptions "+errors.join("; "));
  console.log("T26 original merchant storefront and actor/character race signed browser PASS; production unchanged.");
