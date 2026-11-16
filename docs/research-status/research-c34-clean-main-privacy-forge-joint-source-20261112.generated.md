@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5a84b7ad2488e0338e72f9f75ca8a527738a5a13` |
+| Exact source commit represented by this archive snapshot | `0425b012bdf5af91527b14f74cc38461435b17f3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T33 privacy and equal GM source negatives in non-release CI |
+| Last source commit title | test(c34): T27 original consumer regression retains exact T33 double-flag inversion |
 | Files changed relative to main | 168 (137 non-docs; 31 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
-- `scripts/integration/c34/test_t33_town_stage2_source.mjs`
+- `scripts/integration/c34/test_t27_consumer_source.mjs`
 
 ## Research-branch change inventory versus main
 
