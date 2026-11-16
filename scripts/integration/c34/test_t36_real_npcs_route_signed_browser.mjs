@@ -133,7 +133,8 @@ try {
    env,cwd:root,encoding:"utf8",timeout:75000
  });
  assert.equal(install.status,0,"T36 protected local narrative RPC SQL: "+install.stderr?.slice(-2200));
- assert.equal(sql("SELECT has_column_privilege('authenticated','public.characters','background','SELECT')::text"),"f");
+ assert.equal(sql("SELECT has_column_privilege('authenticated','public.characters','background','SELECT')::text"),"false",
+  "T36 must preserve the source-original Stage2 narrative SELECT revoke");
  // PostgREST's NOTIFY schema refresh is asynchronous. Retry ONLY its
  // temporary missing-function cache error; no authorization errors ignored.
  const call=async(label,patch)=>{
