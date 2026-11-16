@@ -10,7 +10,7 @@ export default {
     // /npcs file already exists; beforeFiles is required to override it.
     // With the flag OFF, return the original no-rewrite [] contract.
     return t36Enabled
-      ? {beforeFiles:[T36_REWRITE],afterFiles:[],fallback:[]}
+      ? {beforeFiles:[{...T36_REWRITE}],afterFiles:[],fallback:[]}
       : [];
   },
 };
