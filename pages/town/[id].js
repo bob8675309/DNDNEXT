@@ -6,6 +6,8 @@ import { supabase } from "../../utils/supabaseClient";
 import { pickId } from "../../utils/townData";
 
 const CharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanel"), { ssr: false });
+// Only this town route opts its Profile→Shop tab into the guarded candidate.
+const T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1";
 
 function normalizeMapRow(row) {
   return {
@@ -1127,6 +1129,7 @@ function handleOpenTownProfile(character, initialView = "profile") {
                   isAdmin={isAdmin}
                   locations={location ? [location] : []}
                   initialView={activeTownProfileView}
+                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}
                   onClose={() => setActiveTownProfileCharacter(null)}
                 />
               </aside>
