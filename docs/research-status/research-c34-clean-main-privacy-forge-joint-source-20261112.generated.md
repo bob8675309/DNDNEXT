@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d51eaccf8a7d078f5d2f854490b5327d3e5bd58d` |
+| Exact source commit represented by this archive snapshot | `de3c148b07ec9ae8b328751d17811eb8410b3c2e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): preserve Stage2 SELECT deny, add scoped authenticated NPC narrative writer only in disposable T36 |
+| Last source commit title | test(c34): T36 genuine original Stage2 narrative RED, scoped writer three-role/secret/actor negatives and UI save |
 | Files changed relative to main | 183 (148 non-docs; 35 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
@@ -17,8 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/prepare_t36_npcs_route.mjs`
-- `scripts/integration/c34/t36_disposable_npc_narrative_save_pg17.sql`
+- `scripts/integration/c34/test_t36_npcs_route_source.mjs`
+- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
