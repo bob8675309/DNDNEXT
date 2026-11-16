@@ -109,6 +109,11 @@ jobs:
         run: |
           node --check scripts/integration/c34/test_t32_game_master_authority_callsite_audit.mjs
           node --test scripts/integration/c34/test_t32_game_master_authority_callsite_audit.mjs
+      - name: T33 town-only Stage2 source and T28 exact source inversion
+        run: |
+          node --check scripts/integration/c34/test_t33_town_stage2_source.mjs
+          node --test scripts/integration/c34/test_t33_town_stage2_source.mjs
+          node scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
