@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2debc429cd32ffed6c177c89a10c4fc010832792` |
+| Exact source commit represented by this archive snapshot | `5a84b7ad2488e0338e72f9f75ca8a527738a5a13` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T33 exact additive inverse retains all T28 original town assertions |
-| Files changed relative to main | 167 (136 non-docs; 31 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): T33 privacy and equal GM source negatives in non-release CI |
+| Files changed relative to main | 168 (137 non-docs; 31 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t33_town_stage2_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +72,7 @@
 - `scripts/agents/validate_open_pr_index.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
-- … 117 more
+- … 118 more
 
 ## Trust and update procedure
 
