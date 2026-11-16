@@ -48,7 +48,8 @@ test("T29-C04 owner authorization does not silently alter protected app runtime,
 });
 test("T29-C05 permissions approval does not imply every non-player role",()=>{
  const c=read("utils/c34/commerceRolePolicyCandidate.mjs");
- assert.doesNotMatch(c,/role\s*!==?\s*["']player/);
+ const executable=c.split("\n").filter(line=>!line.trimStart().startsWith("//")).join("\n");
+ assert.doesNotMatch(executable,/role\s*!==?\s*["']player/);
  assert.match(c,/COMMERCE_MANAGER_ROLES\.includes\(role\)/);
 });
 console.log("PASS T29-COMMERCE-ROLE-SOURCE: Admin/GM/DM stock+gold only, unknown deny, protected original UI unchanged; hosted SQL NOT executed");
