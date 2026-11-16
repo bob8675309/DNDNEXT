@@ -74,9 +74,14 @@ const flaggedImport=baseImport+
  '\nconst T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1";'+
  '\nconst GuardedTownCharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanelTownT28P2Research"), { ssr: false });'+
  '\nconst TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED ? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel;';
+assert.equal(page.split("T28_P2_TOWN_SHOP_ENABLED && requestedView === \"shop\" ? \"profile\" : requestedView").length-1,1,
+ "Flagged Browse Wares must enter Profile before Shop");
+const originalTownView="  setActiveTownProfileView(initialView || \"profile\");";
+const guardedTownView="  const requestedView = initialView || \"profile\";\n  // T28-P2 opt-in: the Bazaar still requests \"shop\", but enter Profile\n  // first. Default OFF preserves the pre-research town navigation.\n  setActiveTownProfileView(\n    T28_P2_TOWN_SHOP_ENABLED && requestedView === \"shop\" ? \"profile\" : requestedView\n  );";
 const reversedPage=page.replace(flaggedImport,baseImport)
  .replace('<TownProfilePanel\n                  key=','<CharacterInteractionPanel\n                  key=')
- .replace('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n',"");
+ .replace('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n',"")
+ .replace(guardedTownView,originalTownView);
 assert.equal(hash(reversedPage),"a4e790e5941afb16660a112ee9189e4a84d4afb7",
  "Actual town page must preserve Profile-first loader and be byte-reversible");
 for(const file of ["pages/map.js","components/MapPageClient.js","pages/npcs.js","pages/inventory.js",

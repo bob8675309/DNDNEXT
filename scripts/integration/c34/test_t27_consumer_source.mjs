@@ -34,6 +34,8 @@ const exactGatedTownImport=exactOriginalTownImport+
  '\nconst T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1";'+
  '\nconst GuardedTownCharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanelTownT28P2Research"), { ssr: false });'+
  '\nconst TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED ? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel;';
+const exactOriginalTownView="  setActiveTownProfileView(initialView || \"profile\");";
+const exactGuardedTownView="  const requestedView = initialView || \"profile\";\n  // T28-P2 opt-in: the Bazaar still requests \"shop\", but enter Profile\n  // first. Default OFF preserves the pre-research town navigation.\n  setActiveTownProfileView(\n    T28_P2_TOWN_SHOP_ENABLED && requestedView === \"shop\" ? \"profile\" : requestedView\n  );";
 function t27UnderlyingOriginalTownSource(source) {
  assert.equal(source.split(exactGatedTownImport).length-1,1,
   "T27 town must have precisely one disabled-by-default Profile override");
@@ -41,9 +43,12 @@ function t27UnderlyingOriginalTownSource(source) {
   "T27 town Profile must have exactly one selected shell");
  assert.equal(source.split('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n').length-1,1,
   "T27 town must pass the opt-in only into the Profile shell");
+ assert.equal(source.split(exactGuardedTownView).length-1,1,
+  "T27 flagged Bazaar must enter Profile before Shop");
  return source.replace(exactGatedTownImport,exactOriginalTownImport)
   .replace('<TownProfilePanel\n                  key=','<CharacterInteractionPanel\n                  key=')
-  .replace('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n',"");
+  .replace('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n',"")
+  .replace(exactGuardedTownView,exactOriginalTownView);
 }
 test("T27-S01 source-lock all original consumers; exact reversible T28-P2 TOWN ONLY Profile selection",()=>{
  for(const [p,expected] of Object.entries(originals)) {

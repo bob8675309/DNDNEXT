@@ -1089,7 +1089,12 @@ function handleOpenTownProfile(character, initialView = "profile") {
       }
     : character;
   setActiveTownProfileCharacter(panelCharacter);
-  setActiveTownProfileView(initialView || "profile");
+  const requestedView = initialView || "profile";
+  // T28-P2 opt-in: the Bazaar still requests "shop", but enter Profile
+  // first. Default OFF preserves the pre-research town navigation.
+  setActiveTownProfileView(
+    T28_P2_TOWN_SHOP_ENABLED && requestedView === "shop" ? "profile" : requestedView
+  );
 }
 
   return (
