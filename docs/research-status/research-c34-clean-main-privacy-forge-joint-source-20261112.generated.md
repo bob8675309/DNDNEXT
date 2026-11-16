@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `869e07925dc982e399c50c24c66788c838b80bee` |
+| Exact source commit represented by this archive snapshot | `17add1fc14e833a7c343cdf0f71251fb446e762e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): isolate T35 genuine signed fixture names from T25 same disposable DB |
+| Last source commit title | test(c34): guard T35 unique signed fixture identities and full role/actor negative matrix |
 | Files changed relative to main | 176 (143 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t35_full_manager_signed_browser.mjs`
+- `scripts/integration/c34/test_t35_npc_manager_source.mjs`
 
 ## Research-branch change inventory versus main
 
