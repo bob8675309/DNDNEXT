@@ -105,6 +105,10 @@ jobs:
           node --check utils/c34/t31GameManagerRoleProfileCandidate.mjs
           node --check scripts/integration/c34/test_t31_game_manager_role_signed_pg17.mjs
           node --test scripts/integration/c34/test_t31_game_manager_role_source.mjs
+      - name: T32 exact-source game-master role consumer/gate and protected map audit
+        run: |
+          node --check scripts/integration/c34/test_t32_game_master_authority_callsite_audit.mjs
+          node --test scripts/integration/c34/test_t32_game_master_authority_callsite_audit.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
