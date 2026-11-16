@@ -348,6 +348,22 @@ jobs:
           node --test scripts/integration/c34/test_t30_town_role_source.mjs
           node scripts/integration/c34/test_t30_town_role_profile_signed_pg17.mjs
           echo 'PASS T30 WORKFLOW: signed strict town role + original Stage2 privacy, NO active route'
+      - name: T31 signed owner-revised equal Admin GM DM game access (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T31_ROLE_CONFIRM=OWNER_REVISED_EQUAL_GAME_ADMIN_LOCAL_ONLY
+          node --test scripts/integration/c34/test_t31_game_manager_role_source.mjs
+          node scripts/integration/c34/test_t31_game_manager_role_signed_pg17.mjs
+          echo 'PASS T31: signed equal GAME management roles, unchanged real buyer, no active UI'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
