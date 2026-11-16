@@ -46,6 +46,13 @@ test("T29-S02 four precise auth-only differences, original reroll and wallet bod
   assert.equal(sql.split(patched+";\n").length-1,1,name+" source body diverged");
  }
 });
+test("T29-S02b reduced original Forge item catalog receives only missing scratch reroll columns",()=>{
+ const originalForge=read("scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql");
+ assert.match(originalForge,/CREATE TABLE public\.items_catalog/);
+ assert.doesNotMatch(originalForge,/CREATE TABLE public\.items_catalog\s*\([\s\S]{0,240}price_gp/);
+ assert.match(sql,/ALTER TABLE public\.items_catalog\s+ADD COLUMN IF NOT EXISTS price_gp numeric,/);
+ assert.match(sql,/ADD COLUMN IF NOT EXISTS merchant_tags text\[\]/);
+});
 test("T29-S03 row policy, helper, EXECUTE grants and local-only safety boundary",()=>{
  for(const word of [
   "T29_DISPOSABLE_LOCAL_CONFIRMED","to_regclass('private.t28_wallet_probe')",

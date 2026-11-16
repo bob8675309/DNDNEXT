@@ -55,6 +55,13 @@ CREATE TABLE IF NOT EXISTS public.items_catalog(
  item_type text,item_rarity text,price_gp numeric,
  payload jsonb DEFAULT '{}'::jsonb,merchant_tags text[] DEFAULT ARRAY[]::text[]
 );
+-- Original Forge materializer already installed a reduced items_catalog with
+-- item_key/name/type/rarity/payload but WITHOUT price_gp or merchant_tags.
+-- CREATE TABLE IF NOT EXISTS alone cannot upgrade existing scratch schema.
+-- Add only the two absent merchant reroll columns, local transaction only.
+ALTER TABLE public.items_catalog
+ ADD COLUMN IF NOT EXISTS price_gp numeric,
+ ADD COLUMN IF NOT EXISTS merchant_tags text[] DEFAULT ARRAY[]::text[];
 DO $synthetic$
 BEGIN
  IF to_regprocedure('private.merchant_alchemy_crafted_payload_v1(jsonb)') IS NULL THEN
