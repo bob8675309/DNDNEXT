@@ -8,9 +8,6 @@ import { loadItemCatalogList } from "../utils/itemsIndex";
 import styles from "./TownSheet.module.scss";
 
 const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
-// C34 T28-P2: opt-in town-only preview; never changes MapPageClient or NPC Profile.
-const GuardedTownMerchantPanel = dynamic(() => import("./c34/MerchantPanelT28P2Research"), { ssr: false });
-const T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1";
 
 function cls(...parts) {
   return parts.filter(Boolean).join(" ");
@@ -3519,11 +3516,7 @@ export default function TownSheet({
       {activeMerchant ? (
         <div className={styles.modalBackdrop} onClick={() => setActiveMerchant(null)}>
           <div className={cls(styles.crafterModal, styles.crafterModalBuilder, styles.merchantMarketModal)} onClick={(event) => event.stopPropagation()}>
-            {T28_P2_TOWN_SHOP_ENABLED ? (
-              <GuardedTownMerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation="town" onClose={() => setActiveMerchant(null)} />
-            ) : (
-              <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation="town" onClose={() => setActiveMerchant(null)} />
-            )}
+            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation="town" onClose={() => setActiveMerchant(null)} />
           </div>
         </div>
       ) : null}
