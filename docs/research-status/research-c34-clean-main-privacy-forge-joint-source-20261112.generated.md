@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d9108ecccfef3ce1caa9235f5f297fd1611e7072` |
+| Exact source commit represented by this archive snapshot | `b18710d8236046c8dd48e2922f99dc3301535284` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): require Profile before guarded town Bazaar Shop on opt-in only |
-| Files changed relative to main | 144 (118 non-docs; 26 docs) |
+| Last source commit title | test(c34): signed actual town Bazaar Profile-first commerce route |
+| Files changed relative to main | 145 (119 non-docs; 26 docs) |
 | Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,9 +17,9 @@
 
 ## Latest source commit paths
 
-- `pages/town/[id].js`
-- `scripts/integration/c34/test_t27_consumer_source.mjs`
-- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
+- `scripts/integration/c34/run_t28_p2_real_town_route_browser.mjs`
+- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +73,7 @@
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
-- … 94 more
+- … 95 more
 
 ## Trust and update procedure
 
