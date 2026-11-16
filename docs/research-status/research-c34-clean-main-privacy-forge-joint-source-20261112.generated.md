@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c69a2f8ba68b711d53e1c60bc5c02fb51ac0e2d4` |
+| Exact source commit represented by this archive snapshot | `6c5ce6d316b3ace33aeba28ec23ecd1d7ce7459d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-lock isolated town-only Profile/Shop derivatives and original protected NpcPanel parity |
+| Last source commit title | test(c34): allow exact town Profile wrapper only; keep world-map/original commerce import bans |
 | Files changed relative to main | 143 (117 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
+- `scripts/integration/c34/test_t28_p2_derived_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
