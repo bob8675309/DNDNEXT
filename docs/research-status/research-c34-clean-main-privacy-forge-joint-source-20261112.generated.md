@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `00ff17ee03d8789accef007cee42d716afc4221c` |
+| Exact source commit represented by this archive snapshot | `c69a2f8ba68b711d53e1c60bc5c02fb51ac0e2d4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): switch town-only Profile shell to isolated derived Interaction panel; original NpcPanel protected |
+| Last source commit title | test(c34): source-lock isolated town-only Profile/Shop derivatives and original protected NpcPanel parity |
 | Files changed relative to main | 143 (117 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `pages/town/[id].js`
+- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
 
 ## Research-branch change inventory versus main
 
