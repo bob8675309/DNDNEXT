@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e6d2d0bd8cfdba6afb046fd434bf9b25f4d1d70c` |
+| Exact source commit represented by this archive snapshot | `4fae3446a4f529f203d8fee4624bb18e2f935463` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): fix overescaped JS source assertions for Next beforeFiles and default-OFF rewrites |
+| Last source commit title | fix(c34): pass Next mutable copy of immutable T36 beforeFiles rewrite definition |
 | Files changed relative to main | 181 (147 non-docs; 34 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,7 @@
 
 ## Latest source commit paths
 
+- `next.config.mjs`
 - `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 
 ## Research-branch change inventory versus main
