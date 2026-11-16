@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dfe8b9620d87287e3ea9ca5ef1206ab7cc409d08` |
+| Exact source commit represented by this archive snapshot | `a0e5335b68ec195c6d831112b94d534995286fba` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): replace only T28 synthetic wallet default overload before exact original T29 RPC |
+| Last source commit title | test(c34): identify synthetic wallet by stable function body instead of normalized dollar tag |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
