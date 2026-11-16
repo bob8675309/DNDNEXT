@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c7c3e4d2b22ab7023b57694c638685109bb62563` |
+| Exact source commit represented by this archive snapshot | `b80def0973bed5eeda6d6204ec9478a8a7c1b28c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): limit GM DM stock to merchant characters and gold edits to players only |
+| Last source commit title | fix(c34): keep town-only merchant stock tools separate from route administration |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/t29_disposable_commerce_role_gate_pg17.sql`
-- `scripts/integration/c34/test_t29_commerce_signed_pg17.mjs`
-- `scripts/integration/c34/test_t29_commerce_source_parity.mjs`
+- `components/c34/MerchantPanelT28P2Research.jsx`
+- `scripts/integration/c34/test_t29_commerce_role_source.mjs`
 
 ## Research-branch change inventory versus main
 
