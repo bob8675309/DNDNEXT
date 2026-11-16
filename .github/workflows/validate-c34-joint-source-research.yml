@@ -125,6 +125,13 @@ jobs:
           node --check scripts/integration/c34/test_t35_npc_manager_source.mjs
           node scripts/integration/c34/derive_t35_full_npc_manager.mjs --verify
           node --test scripts/integration/c34/test_t35_npc_manager_source.mjs
+      - name: T36 actual /npcs default-OFF signed local rewrite, source-complete manager and hosted negatives
+        run: |
+          node --check scripts/integration/c34/prepare_t36_npcs_route.mjs
+          node --check scripts/integration/c34/test_t36_npcs_route_source.mjs
+          node --check scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs
+          node scripts/integration/c34/prepare_t36_npcs_route.mjs --verify
+          node --test scripts/integration/c34/test_t36_npcs_route_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
