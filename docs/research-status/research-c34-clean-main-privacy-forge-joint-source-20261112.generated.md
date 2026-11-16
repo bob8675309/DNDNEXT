@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fbbe452e58819bd8aa199c4d22ccc85d4ab34a8e` |
+| Exact source commit represented by this archive snapshot | `e934f5219c05b6b00a344ae6a9c0caeb0a3d3777` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): quote colon-bearing YAML step label so research workflow schedules jobs |
+| Last source commit title | test(c34): prevent invalid workflow YAML regression; trigger real local signed C34 CI |
 | Files changed relative to main | 141 (115 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
 
 ## Research-branch change inventory versus main
 
