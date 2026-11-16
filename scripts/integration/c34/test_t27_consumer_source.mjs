@@ -56,7 +56,23 @@ function stripExactTownActorBoundary(source) {
     .replaceAll("if (!isCurrentActor())","if (!alive)")
     .replace(exactTownActorDepsNew,exactTownActorDepsOld);
 }
+// Restore original T27 world-map/town source after proving T33's additive
+// feature-gated changes are precisely reversible, not ignored.
+function stripExactT33TownAdditions(source) {
+ const addedImport = "import { readTownGameManagerCapabilitiesCandidate } from \"../../utils/c34/t31GameManagerRoleProfileCandidate.mjs\";\n";
+ const addedFlag = "\n// T33 requires BOTH research flags; existing T28 and release routes unchanged by default.\nconst T33_TOWN_SAFE_ENABLED = T28_P2_TOWN_SHOP_ENABLED && process.env.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === \"1\";\nconst T33TownSafeProfile = dynamic(() => import(\"../../components/character/CharacterInteractionPanelTownT33Research\"), { ssr: false });\nconst TownProfileForRoute = T33_TOWN_SAFE_ENABLED ? T33TownSafeProfile : TownProfilePanel;";
+ const addedRole = "        let admin = false;\n        if (T33_TOWN_SAFE_ENABLED) {\n          const role = await readTownGameManagerCapabilitiesCandidate(supabase, { isCurrent: isCurrentActor });\n          admin = role.status === \"ok\" && role.capabilities.isGameManager === true;\n        } else if (user?.id) {\n          const { data: isAdminRpc } = await supabase.rpc(\"is_admin\", { uid: user.id });\n          admin = !!isAdminRpc;\n        }";
+ const originalRole = "        let admin = false;\n        if (user?.id) {\n          const { data: isAdminRpc } = await supabase.rpc(\"is_admin\", { uid: user.id });\n          admin = !!isAdminRpc;\n        }";
+ assert.equal(source.split(addedImport).length-1,1);
+ assert.equal(source.split(addedFlag).length-1,1);
+ assert.equal(source.split(addedRole).length-1,1);
+ assert.equal(source.split('<TownProfileForRoute\n                  key=').length-1,1);
+ return source.replace(addedImport,'').replace(addedFlag,'')
+  .replace(addedRole,originalRole)
+  .replace('<TownProfileForRoute\n                  key=','<TownProfilePanel\n                  key=');
+}
 function t27UnderlyingOriginalTownSource(source) {
+ source=stripExactT33TownAdditions(source);
  assert.equal(source.split(exactGatedTownImport).length-1,1,
   "T27 town must have precisely one disabled-by-default Profile override");
  assert.equal(source.split('<TownProfilePanel\n                  key=').length-1,1,
