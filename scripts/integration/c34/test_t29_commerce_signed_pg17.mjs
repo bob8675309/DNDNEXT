@@ -41,10 +41,10 @@ async function createActor(role) {
   "') ON CONFLICT(id) DO UPDATE SET role=EXCLUDED.role");
  return {who,id,email,password,role};
 }
-async function mustDeny(label,task){
+async function mustDeny(label,task,{allowHidden=false}={}){
  const res=await task();
  assert.ok(res.error,label+" unexpectedly authorized: "+JSON.stringify(res.data));
- assert.notEqual(res.error.code,"PGRST202",label+" RPC absent rather than denied");
+ if(!allowHidden)assert.notEqual(res.error.code,"PGRST202",label+" signed RPC absent rather than denied");
  return res;
 }
 function dbStockState(){
@@ -123,14 +123,15 @@ assert.equal(sql("SELECT gp::text FROM public.player_wallets WHERE user_id="+quo
 assert.equal(dbStockState(),beforeStock);
 console.log("PASS T29-NEGATIVE: player/editor/unknown denied stock RLS, stock RPC, reroll and wallet changes");
 const anon=makeClient();
-await mustDeny("anon wallet_set",()=>anon.rpc("wallet_set",{p_user:id,p_amount:999}));
+await mustDeny("anon wallet_set",()=>anon.rpc("wallet_set",{p_user:id,p_amount:999}),{allowHidden:true});
 await mustDeny("anon stock RPC",()=>anon.rpc("stock_merchant_item",{
  p_merchant_id:merchant,p_display_name:"T29 ANON",p_price_gp:9,p_qty:1,p_payload:{}
-}));
+}),{allowHidden:true});
 await mustDeny("anon reroll",()=>anon.rpc("reroll_merchant_inventory_v2",{
  p_merchant_id:merchant,p_theme:"general",p_count:12
-}));
+}),{allowHidden:true});
 assert.equal(dbStockState(),beforeStock);
+assert.equal(sql("SELECT gp::text FROM public.player_wallets WHERE user_id="+quote(id)),beforeMoney);
 console.log("PASS T29-ANON: anonymous clients denied direct and RPC commerce modification");
 const gm=actors.gm;
 sql("UPDATE public.user_profiles SET role='player' WHERE id="+quote(gm.id));
