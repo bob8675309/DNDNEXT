@@ -16,13 +16,23 @@ const panel=src("components/c34/MerchantPanelT28P2Research.jsx");
 const wallet=src("utils/c34/useWalletT28P2Research.js");
 const guard=src("utils/c34/t28P2CommerceGuardCandidate.mjs");
 for(const p of ["pages/map.js","components/MapPageClient.js","pages/npcs.js",
- "pages/town/[id].js","pages/inventory.js","components/NpcPanel.js",
+ "pages/inventory.js","components/NpcPanel.js",
  "components/character/CharacterInteractionPanel.js","components/MerchantPanel.js",
  "utils/useWallet.js","pages/encounters/combat.js"]) {
  const body=src(p);
  assert.doesNotMatch(body,/T28P2Research|t28P2CommerceGuardCandidate|useWalletT28P2Research/,
   "T28-P2 cannot be imported by active product: "+p);
 }
+
+// The only permitted active path is a TOWN-only, disabled-by-default wrapper;
+// the original world-map/shared character module and merchant remain pinned.
+// Do not import the guarded commerce helper directly into the town page.
+const townRoute=src("pages/town/[id].js");
+assert.match(townRoute,/const T28_P2_TOWN_SHOP_ENABLED = process\.env\.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1"/);
+assert.match(townRoute,/const TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED \? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel/);
+assert.doesNotMatch(townRoute,/t28P2CommerceGuardCandidate|useWalletT28P2Research|MerchantPanelT28P2Research/,
+ "Town page can only import isolated Profile wrapper, not guarded commerce directly");
+
 assert.ok(!existsSync(path.join(root,"pages/__c34_t28_p2_probe.jsx")),"P2 research route cannot be checked in");
 for(const token of [
  "import MerchantStorefrontView from \"../MerchantStorefrontView\"",
