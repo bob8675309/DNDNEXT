@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `765ac610ee47d2c72d3ed3afbec4fbc025283348` |
+| Exact source commit represented by this archive snapshot | `8610c7916adcbb8c0c421447c9d1cf01fd7192fe` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): preserve T31 original negative while acknowledging exact gated T33 town mount |
-| Files changed relative to main | 168 (137 non-docs; 31 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): genuine signed actual town T33 Stage2 game-master Chromium proof (held) |
+| Files changed relative to main | 169 (138 non-docs; 31 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t31_game_manager_role_source.mjs`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +72,7 @@
 - `scripts/agents/validate_open_pr_index.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
-- … 118 more
+- … 119 more
 
 ## Trust and update procedure
 
