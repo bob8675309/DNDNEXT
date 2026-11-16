@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3e60c71ff29d1c4dd4649bc4c92eb94cdf59a6be` |
+| Exact source commit represented by this archive snapshot | `b336692181bdbc92d87b7baeb9c801f5a019d72d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): upgrade only absent reduced Forge catalog columns in disposable T29 reroll fixture |
+| Last source commit title | test(c34): pin original reduced item catalog DDL boundary without false cross-table match |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/t29_disposable_commerce_role_gate_pg17.sql`
 - `scripts/integration/c34/test_t29_commerce_source_parity.mjs`
 
 ## Research-branch change inventory versus main
