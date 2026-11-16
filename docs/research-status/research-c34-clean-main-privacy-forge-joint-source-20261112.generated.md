@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4259324f6688aab3b99fbf3d5db5cd5ac6c0168d` |
+| Exact source commit represented by this archive snapshot | `9d06470ae924270c89d7ea3649f91453001df4d6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): verify live-source commerce guard parity and signed Admin GM DM RLS RPC roles after T28 |
+| Last source commit title | ci(c34): gate T29 original-function byte parity before signed role integration |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `scripts/integration/c34/test_t29_commerce_signed_pg17.mjs`
-- `scripts/integration/c34/test_t29_commerce_source_parity.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 
 ## Research-branch change inventory versus main
 
