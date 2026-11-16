@@ -102,7 +102,10 @@ try{
  fs.writeFileSync(path.join(root,authPath),authCode,{flag:"wx"});
  fs.writeFileSync(path.join(root,npcPath),npcCode,{flag:"wx"});
  const port=await freePort(),origin="http://127.0.0.1:"+port;
- server=spawn(process.execPath,[nextBin,"dev","-H","127.0.0.1","-p",String(port)],{
+ // T34 evidence: Next 16 default Turbopack stalled compiling the local scratch route
+ // in run 43943212306, although T33 source/ACL and earlier signed browser passed.
+ // Use framework-supported Webpack ONLY for this disposable test server.
+ server=spawn(process.execPath,[nextBin,"dev","--webpack","-H","127.0.0.1","-p",String(port)],{
   cwd:root,detached:true,stdio:["ignore","pipe","pipe"],
   env:{...env,
    NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP:"1",
