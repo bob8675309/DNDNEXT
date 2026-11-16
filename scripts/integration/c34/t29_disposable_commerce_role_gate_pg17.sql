@@ -44,6 +44,10 @@ GRANT USAGE ON SCHEMA private TO authenticated;
 GRANT EXECUTE ON FUNCTION private.current_user_can_manage_commerce_v1() TO authenticated;
 -- Synthetic C34 reduced-catalog adapters only; existing source helpers
 -- (if present) remain untouched. Real item rules are a separate release gate.
+-- The original local Forge reduced character_stock id has NO uuid default,
+-- unlike the hosted merchant stock writer's source-original INSERT that omits id.
+-- Set default only in scratch PG17 AFTER all original T26/T28 tests completed.
+ALTER TABLE public.character_stock ALTER COLUMN id SET DEFAULT gen_random_uuid();
 ALTER TABLE public.character_stock ADD COLUMN IF NOT EXISTS note text;
 CREATE TABLE IF NOT EXISTS public.campaign_item_pool_settings(
  id integer PRIMARY KEY,future_tech_enabled boolean NOT NULL DEFAULT false
