@@ -5,19 +5,23 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `33d3a1791a95eb0ff903a68dfa55d20e2fbb7121` |
+| Exact source commit represented by this archive snapshot | `810b309f43e00e8706a12eb392f63c1a0bdf5dbc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T31 asserts latest T22 committed private Story, not initial draft |
-| Files changed relative to main | 163 (133 non-docs; 30 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(c34): T32 game-manager role consumer and independent SQL guard audit (no runtime) |
+| Files changed relative to main | 165 (134 non-docs; 31 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t31_game_manager_role_signed_pg17.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
+- `scripts/integration/c34/test_t32_game_master_authority_callsite_audit.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -60,6 +64,7 @@
 - `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
 - `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
 - `docs/research/C34_T31_OWNER_REVISED_GAME_MASTER_ROLE_EQUIVALENCE_2026-11-16.md`
+- `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `pages/town/[id].js`
@@ -70,8 +75,7 @@
 - `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
-- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
-- … 113 more
+- … 115 more
 
 ## Trust and update procedure
 
