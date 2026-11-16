@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ea7d7d7caee2fbf54b0db67fce8db2524116da8f` |
+| Exact source commit represented by this archive snapshot | `4259324f6688aab3b99fbf3d5db5cd5ac6c0168d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | feat(c34): original-byte-pinned disposable Admin GM DM commerce RLS and four RPC guard candidate |
-| Files changed relative to main | 151 (123 non-docs; 28 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): verify live-source commerce guard parity and signed Admin GM DM RLS RPC roles after T28 |
+| Files changed relative to main | 153 (125 non-docs; 28 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,9 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/t29_disposable_commerce_role_gate_pg17.sql`
-- `scripts/integration/c34/t29_hosted_original_commerce_procs.json`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t29_commerce_signed_pg17.mjs`
+- `scripts/integration/c34/test_t29_commerce_source_parity.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +73,7 @@
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 101 more
+- … 103 more
 
 ## Trust and update procedure
 
