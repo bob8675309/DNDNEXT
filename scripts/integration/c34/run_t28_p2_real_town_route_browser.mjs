@@ -30,20 +30,24 @@ export async function runT28P2RealTownSignedBrowser({context,origin,localUrl,use
   await browse.first().waitFor({timeout:25000});
   assert.equal(await browse.count(),1,"Exactly one disposable town merchant expected");
   await browse.click();
-  const profile=page.getByRole("button",{name:"Profile",exact:true}).first();
+  // The global app toolbar also has a "Profile" button (class nav-link).
+  // Scope tab assertions to the actual selected town merchant overlay.
+  const sidepanel=page.locator(".town-profile-sidepanel");
+  await sidepanel.waitFor({timeout:35000});
+  const profile=sidepanel.getByRole("button",{name:"Profile",exact:true});
   await profile.waitFor({timeout:35000});
   assert.match(await profile.getAttribute("class")||"",/\bbtn-primary\b/,
     "Actual Bazaar Browse Wares bypassed Profile-first");
   assert.equal(await page.getByText(stockLabel,{exact:true}).count(),0,
     "Shop shelf leaked before Profile-to-Shop navigation");
-  assert.ok((await page.locator(".town-profile-sidepanel").innerText()).includes("T26 Probe Merchant"));
+  assert.ok((await sidepanel.innerText()).includes("T26 Probe Merchant"));
   console.log("PASS T28-P2-REAL-TOWN-ENTRY signed real Bazaar Browse Wares starts Profile");
-  await page.getByRole("button",{name:"Shop",exact:true}).first().click();
+  await sidepanel.getByRole("button",{name:"Shop",exact:true}).click();
   await page.getByText(stockLabel,{exact:true}).first().waitFor({timeout:25000});
-  await page.getByRole("button",{name:"Return to Profile",exact:true}).click();
+  await sidepanel.getByRole("button",{name:"Return to Profile",exact:true}).click();
   assert.match(await profile.getAttribute("class")||"",/\bbtn-primary\b/);
   await page.getByText(stockLabel,{exact:true}).first().waitFor({state:"detached",timeout:15000});
-  await page.getByRole("button",{name:"Let me browse your wares."}).click();
+  await sidepanel.getByRole("button",{name:"Let me browse your wares."}).click();
   await page.getByText(stockLabel,{exact:true}).first().waitFor({timeout:25000});
   console.log("PASS T28-P2-REAL-TOWN-SHOP Profile -> guarded Shop -> Profile -> Shop");
   const error=await page.evaluate(async()=>{
