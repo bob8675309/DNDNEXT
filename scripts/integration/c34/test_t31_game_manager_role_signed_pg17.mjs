@@ -82,7 +82,8 @@ for(const role of ["admin","gm","dm","player","editor","unknown","GM"]){
   });
   assert.equal(ownerProfile.status,"ok",role+" player sheet/story");
   assert.ok(ownerProfile.sheet && typeof ownerProfile.sheet==="object",role+" sheet");
-  assert.equal(ownerProfile.privateBackstory,"T22_ORIGINAL_CREATOR_PRIVATE_STORY",role+" Story");
+  // Earlier genuine T22 browser edits Story: verify persisted latest state, not the creation draft.
+  assert.equal(ownerProfile.privateBackstory,"T22_CREATOR_EDITED_PRIVATE_STORY",role+" Story");
   assert.equal(ownerProfile.capabilities.canPrint,true);
   assert.equal(ownerProfile.capabilities.canEditBackstory,true);
   const staffWallet=await who.rpc("wallet_set",{p_user:actors.admin.id,p_amount:role==="admin"?31:role==="gm"?41:51});
