@@ -183,7 +183,7 @@ install([
 assert.ok(Number(sql("SELECT position('current_user_is_site_admin_v1()' IN pg_get_functiondef('public.get_recent_site_activity_v1()'::regprocedure))"))>0);
 assert.ok(Number(sql("SELECT position('up.role IN (' IN pg_get_functiondef('public.set_campaign_future_tech_enabled_v1(boolean)'::regprocedure))"))>0);
 const state=()=>sql("SELECT future_tech_enabled::text||':'||coalesce(updated_by::text,'none')||':'"+
- " (SELECT count(*)::text FROM public.character_stock WHERE character_id="+quote(merchant)+")"+
+ " || (SELECT count(*)::text FROM public.character_stock WHERE character_id="+quote(merchant)+")"+
  " FROM public.campaign_item_pool_settings WHERE id=1");
 for(const [role,val] of [["admin",true],["gm",false],["dm",true]]){
  const actor=actors[role];
