@@ -49,7 +49,7 @@ const q=s=>{assert.match(s,/^[a-f0-9-]{36}$/i);return "'"+s+"'"};
 
 export async function runT28P2MountedCommerceSignedBrowser({
  context,origin,localUrl,users,merchant,alternateMerchant,
- stockId,stockLabel,alternateStockLabel,offsite,errors,inspect
+ stockId,stockLabel,alternateStockLabel,townProfileProbeUrl,offsite,errors,inspect
 }) {
  const page=await context.newPage(),holders=[];
  let walletFaultHandler=null;
