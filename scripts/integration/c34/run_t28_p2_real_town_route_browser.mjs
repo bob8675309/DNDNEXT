@@ -57,6 +57,30 @@ export async function runT28P2RealTownSignedBrowser({context,origin,localUrl,use
   assert.equal(error,null);
   await page.getByText(stockLabel,{exact:true}).first().waitFor({state:"detached",timeout:18000});
   console.log("PASS T28-P2-REAL-TOWN-SIGNOUT guarded real town stock cleared on logout");
+  await sidepanel.waitFor({state:"detached",timeout:18000});
+  console.log("PASS T28-P2-REAL-TOWN-ACTOR-CLEAR signed logout evicted the entire prior town Profile, not only shop stock");
+  const outsiderId=await page.evaluate(async creds=>{
+    const {data,error}=await window.__sb.auth.signInWithPassword(creds);
+    if(error)throw Error(error.message);
+    return data.user.id;
+  },{email:users.OUTSIDER.email,password:users.OUTSIDER.password});
+  assert.equal(outsiderId,users.OUTSIDER.id);
+  await page.getByRole("heading",{name:"C34 Signed Bazaar"}).waitFor({timeout:35000});
+  await page.getByRole("button",{name:"Bazaar / market",exact:true}).click();
+  const newBrowse=page.getByRole("button",{name:"Browse Wares",exact:true});
+  await newBrowse.waitFor({timeout:25000});
+  await newBrowse.click();
+  const outsiderPanel=page.locator(".town-profile-sidepanel");
+  const outsiderProfile=outsiderPanel.getByRole("button",{name:"Profile",exact:true});
+  await outsiderProfile.waitFor({timeout:25000});
+  assert.match(await outsiderProfile.getAttribute("class")||"",/\bbtn-primary\b/);
+  assert.equal(await outsiderPanel.getByRole("button",{name:"Merchant tools",exact:true}).count(),0,
+    "Previous GM merchant editor controls survived a switch to outsider");
+  await outsiderPanel.getByRole("button",{name:"Shop",exact:true}).click();
+  await outsiderPanel.getByText(stockLabel,{exact:true}).first().waitFor({timeout:25000});
+  assert.equal(await outsiderPanel.getByRole("button",{name:"Merchant tools",exact:true}).count(),0);
+  console.log("PASS T28-P2-REAL-TOWN-ACTOR-SWITCH signed outsider reloads town+public shop without prior GM Admin controls");
+
   assert.deepEqual(offsite.slice(offsiteStart),[]);
   assert.deepEqual(errors.slice(errorStart),[]);
  }finally{await page.close().catch(()=>{});}

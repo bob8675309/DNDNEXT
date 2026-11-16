@@ -134,6 +134,7 @@ const actualTown=src("scripts/integration/c34/run_t28_p2_real_town_route_browser
 for(const token of ["REAL /town/[id]", "Browse Wares", "Return to Profile",
  "sidepanel.getByRole", "const sidepanel=page.locator",
  "T28-P2-REAL-TOWN-ENTRY", "T28-P2-REAL-TOWN-SHOP", "T28-P2-REAL-TOWN-SIGNOUT",
+ "T28-P2-REAL-TOWN-ACTOR-CLEAR", "T28-P2-REAL-TOWN-ACTOR-SWITCH",
  "auth.signOut()", "town-profile-sidepanel"])
  assert.ok(actualTown.includes(token),"Missing real-town signed browser assertion: "+token);
 for(const token of ['NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP:"1"',

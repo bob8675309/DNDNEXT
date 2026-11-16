@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import TownSheet from "../../components/TownSheet";
@@ -658,6 +658,38 @@ export default function TownPage() {
   const [activeTownProfileCharacter, setActiveTownProfileCharacter] = useState(null);
   const [activeTownProfileView, setActiveTownProfileView] = useState("profile");
 
+  // C34 T28-P2 ACTOR-TOWN-BOUNDARY BEGIN (disabled unless research flag is 1).
+  // Child stock/wallet guards do not protect TownSheet's parent inventory and Profile cache.
+  const actorBoundaryEpochRef = useRef(0);
+  const [actorBoundaryEpoch, setActorBoundaryEpoch] = useState(0);
+  useEffect(() => {
+    if (!T28_P2_TOWN_SHOP_ENABLED) return undefined;
+    let subscribed = true;
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (!subscribed || !["SIGNED_OUT", "SIGNED_IN", "USER_UPDATED"].includes(event)) return;
+      // Increment synchronously before any old async response can commit.
+      actorBoundaryEpochRef.current += 1;
+      setActiveTownProfileCharacter(null);
+      setActiveTownProfileView("profile");
+      setPlayerInventory([]);
+      setPlayerPlants([]);
+      setPlayerUserId(null);
+      setMarketData({ presentMerchants: [], residentMerchants: [] });
+      setRosterChars([]);
+      setQuests([]);
+      setStoredLabels([]);
+      setIsAdmin(false);
+      setLocation(null);
+      setLoading(true);
+      setActorBoundaryEpoch(actorBoundaryEpochRef.current);
+    });
+    return () => {
+      subscribed = false;
+      data?.subscription?.unsubscribe();
+    };
+  }, []);
+  // C34 T28-P2 ACTOR-TOWN-BOUNDARY END.
+
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
     if (!objectPath) return null;
@@ -684,6 +716,9 @@ export default function TownPage() {
 
   useEffect(() => {
     let alive = true;
+    const loadedActorEpoch = actorBoundaryEpochRef.current;
+    const isCurrentActor = () => alive && (!T28_P2_TOWN_SHOP_ENABLED ||
+      loadedActorEpoch === actorBoundaryEpochRef.current);
     const load = async () => {
       if (!router.isReady) return;
       if (!id) {
@@ -700,14 +735,14 @@ export default function TownPage() {
           const { data: isAdminRpc } = await supabase.rpc("is_admin", { uid: user.id });
           admin = !!isAdminRpc;
         }
-        if (alive) {
+        if (isCurrentActor()) {
           setIsAdmin(admin);
           setPlayerUserId(user?.id || null);
         }
 
         const { data: loc, error: locErr } = await supabase.from("locations").select("*").eq("id", id).single();
         if (locErr) throw locErr;
-        if (!alive) return;
+        if (!isCurrentActor()) return;
         setLocation(loc);
         setLoading(false);
 
@@ -717,7 +752,7 @@ export default function TownPage() {
           .in("kind", ["npc", "merchant"])
           .eq("location_id", id)
           .order("name", { ascending: true });
-        if (!alive) return;
+        if (!isCurrentActor()) return;
         setRosterChars(Array.isArray(rosterData) ? rosterData : []);
 
         const merchantSelect = [
@@ -761,7 +796,7 @@ export default function TownPage() {
         ]);
         if (presentErr) console.warn("present merchants load skipped", presentErr.message);
         if (residentErr) console.warn("resident merchants load skipped", residentErr.message);
-        if (!alive) return;
+        if (!isCurrentActor()) return;
         setMarketData({
           presentMerchants: dedupeMerchants(presentMerchants || []),
           residentMerchants: dedupeMerchants(residentMerchants || []),
@@ -782,7 +817,7 @@ export default function TownPage() {
               resolve([]);
             }, 9000)),
           ]);
-          if (!alive) return;
+          if (!isCurrentActor()) return;
           setPlayerInventory((inventoryRows || []).map(normalizeInventoryRow).filter(Boolean));
           setPlayerPlants(plantRows);
         } else {
@@ -793,7 +828,7 @@ export default function TownPage() {
         const rawQuestKeys = Array.isArray(loc?.quests) ? loc.quests.map(pickId).filter(Boolean) : [];
         if (rawQuestKeys.length) {
           const { data: questData } = await supabase.from("quests").select("id, title, status").in("id", rawQuestKeys);
-          if (!alive) return;
+          if (!isCurrentActor()) return;
           const byId = new Map((questData || []).map((q) => [q.id, q]));
           setQuests(rawQuestKeys.map((qid) => byId.get(qid)).filter(Boolean));
         } else {
@@ -806,20 +841,20 @@ export default function TownPage() {
           .eq("location_id", id)
           .order("sort_order", { ascending: true });
         if (labelErr) console.warn("town_map_labels load skipped", labelErr.message);
-        if (!alive) return;
+        if (!isCurrentActor()) return;
         setStoredLabels((labelRows || []).map(normalizeMapRow));
       } catch (err) {
         console.error("TownPage load failed", err);
-        if (alive) setLocation(null);
+        if (isCurrentActor()) setLocation(null);
       } finally {
-        if (alive) setLoading(false);
+        if (isCurrentActor()) setLoading(false);
       }
     };
     load();
     return () => {
       alive = false;
     };
-  }, [router.isReady, id]);
+  }, [router.isReady, id, actorBoundaryEpoch]);
 
   async function handleSaveMapData({ labels }) {
     if (!id) return;

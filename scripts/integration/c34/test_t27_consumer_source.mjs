@@ -36,6 +36,26 @@ const exactGatedTownImport=exactOriginalTownImport+
  '\nconst TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED ? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel;';
 const exactOriginalTownView="  setActiveTownProfileView(initialView || \"profile\");";
 const exactGuardedTownView="  const requestedView = initialView || \"profile\";\n  // T28-P2 opt-in: the Bazaar still requests \"shop\", but enter Profile\n  // first. Default OFF preserves the pre-research town navigation.\n  setActiveTownProfileView(\n    T28_P2_TOWN_SHOP_ENABLED && requestedView === \"shop\" ? \"profile\" : requestedView\n  );";
+const exactTownActorImportOld="import { useEffect, useMemo, useState } from \"react\";";
+const exactTownActorImportNew="import { useEffect, useMemo, useRef, useState } from \"react\";";
+const exactTownActorBoundary="\n  // C34 T28-P2 ACTOR-TOWN-BOUNDARY BEGIN (disabled unless research flag is 1).\n  // Child stock/wallet guards do not protect TownSheet's parent inventory and Profile cache.\n  const actorBoundaryEpochRef = useRef(0);\n  const [actorBoundaryEpoch, setActorBoundaryEpoch] = useState(0);\n  useEffect(() => {\n    if (!T28_P2_TOWN_SHOP_ENABLED) return undefined;\n    let subscribed = true;\n    const { data } = supabase.auth.onAuthStateChange((event) => {\n      if (!subscribed || ![\"SIGNED_OUT\", \"SIGNED_IN\", \"USER_UPDATED\"].includes(event)) return;\n      // Increment synchronously before any old async response can commit.\n      actorBoundaryEpochRef.current += 1;\n      setActiveTownProfileCharacter(null);\n      setActiveTownProfileView(\"profile\");\n      setPlayerInventory([]);\n      setPlayerPlants([]);\n      setPlayerUserId(null);\n      setMarketData({ presentMerchants: [], residentMerchants: [] });\n      setRosterChars([]);\n      setQuests([]);\n      setStoredLabels([]);\n      setIsAdmin(false);\n      setLocation(null);\n      setLoading(true);\n      setActorBoundaryEpoch(actorBoundaryEpochRef.current);\n    });\n    return () => {\n      subscribed = false;\n      data?.subscription?.unsubscribe();\n    };\n  }, []);\n  // C34 T28-P2 ACTOR-TOWN-BOUNDARY END.\n";
+const exactTownActorLoaderOld="  useEffect(() => {\n    let alive = true;\n    const load = async () => {";
+const exactTownActorLoaderNew="  useEffect(() => {\n    let alive = true;\n    const loadedActorEpoch = actorBoundaryEpochRef.current;\n    const isCurrentActor = () => alive && (!T28_P2_TOWN_SHOP_ENABLED ||\n      loadedActorEpoch === actorBoundaryEpochRef.current);\n    const load = async () => {";
+const exactTownActorDepsOld="  }, [router.isReady, id]);";
+const exactTownActorDepsNew="  }, [router.isReady, id, actorBoundaryEpoch]);";
+function stripExactTownActorBoundary(source) {
+  for(const [key,token] of [["hook",exactTownActorBoundary],["loader",exactTownActorLoaderNew],
+    ["deps",exactTownActorDepsNew],["import",exactTownActorImportNew]])
+    assert.equal(source.split(token).length-1,1,"T27 exact opt-in actor boundary "+key);
+  assert.equal(source.split("if (isCurrentActor())").length-1,3);
+  assert.equal(source.split("if (!isCurrentActor())").length-1,6);
+  return source.replace(exactTownActorImportNew,exactTownActorImportOld)
+    .replace(exactTownActorBoundary,"")
+    .replace(exactTownActorLoaderNew,exactTownActorLoaderOld)
+    .replaceAll("if (isCurrentActor())","if (alive)")
+    .replaceAll("if (!isCurrentActor())","if (!alive)")
+    .replace(exactTownActorDepsNew,exactTownActorDepsOld);
+}
 function t27UnderlyingOriginalTownSource(source) {
  assert.equal(source.split(exactGatedTownImport).length-1,1,
   "T27 town must have precisely one disabled-by-default Profile override");
@@ -45,7 +65,7 @@ function t27UnderlyingOriginalTownSource(source) {
   "T27 town must pass the opt-in only into the Profile shell");
  assert.equal(source.split(exactGuardedTownView).length-1,1,
   "T27 flagged Bazaar must enter Profile before Shop");
- return source.replace(exactGatedTownImport,exactOriginalTownImport)
+ return stripExactTownActorBoundary(source).replace(exactGatedTownImport,exactOriginalTownImport)
   .replace('<TownProfilePanel\n                  key=','<CharacterInteractionPanel\n                  key=')
   .replace('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n',"")
   .replace(exactGuardedTownView,exactOriginalTownView);
