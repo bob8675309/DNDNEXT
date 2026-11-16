@@ -47,6 +47,14 @@ for(const token of [
  if(token==="pg"||token==="insufficient")continue;
  assert.ok(p2.includes(token),"P2 signed intended assertion missing "+token);
 }
+// Original Profile buttons live inside role=tablist but are not themselves
+// role=tab and have no aria-selected. A fake tab locator would time out.
+assert.doesNotMatch(p2,/getByRole\("tab"/,
+ "Town Profile smoke must use the actual original CharacterInteractionTabs buttons");
+assert.match(p2,/getByRole\("button",\{name:"Profile",exact:true\}\)/);
+assert.match(p2,/getByRole\("button",\{name:"Shop",exact:true\}\)/);
+assert.match(p2,/getAttribute\("class"\)/);
+
 assert.match(p2,/assert\.equal\(stockData\.status,200\)/);
 assert.match(p2,/assert\.equal\(walletData\.status,200\)/);
 assert.match(p2,/assert\.equal\(purchaseData\.status,200/);
