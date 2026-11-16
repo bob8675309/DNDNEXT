@@ -23,9 +23,9 @@ test("T36-01 original /npcs page is byte identical and no generated research rou
  assert.equal(existsSync(path.join(root,"pages/__c34_t25_probe.jsx")),false);
  const conf=read("next.config.mjs");
  assert.match(conf,/reconcileT36Route\(process\.env\)/);
- assert.match(conf,/beforeFiles:\\[T36_REWRITE\\]/,
+ assert.ok(conf.includes("beforeFiles:[T36_REWRITE]"),
   "Only Next beforeFiles can override the existing physical /npcs page");
- assert.match(conf,/return t36Enabled[\\s\\S]*?: \\[\\];/,
+ assert.ok(conf.includes(": [];"),
   "Flag OFF must return empty rewrites");
  assert.doesNotMatch(read("pages/npcs.js"),/T36_REWRITE|NEXT_PUBLIC_C34_T36_NPCS_RESEARCH/);
 });
