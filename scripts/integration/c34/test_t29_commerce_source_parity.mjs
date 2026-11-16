@@ -58,6 +58,7 @@ test("T29-S02b reduced original Forge item catalog receives only missing scratch
 test("T29-S03 row policy, helper, EXECUTE grants and local-only safety boundary",()=>{
  for(const word of [
   "T29_DISPOSABLE_LOCAL_CONFIRMED","to_regclass('private.t28_wallet_probe')",
+  "t28p2_wallet","DROP FUNCTION public.wallet_get(uuid);",
   "1dbe8c24c4c718396d7256f6f7465354","CREATE POLICY character_stock_admin_write",
   "USING (private.current_user_can_manage_commerce_v1())",
   "WITH CHECK (private.current_user_can_manage_commerce_v1())",

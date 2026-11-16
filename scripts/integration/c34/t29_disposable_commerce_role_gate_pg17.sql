@@ -97,6 +97,18 @@ SELECT 'T29-'||n,'T29 Inventory '||n,'Potion',
  5+n,'{"source":"XPHB","item_type":"Potion"}'::jsonb, ARRAY['alchemy','potions']::text[]
 FROM generate_series(1,24) g(n);
 
+-- T28-P2 used an ephemeral wallet_get(p_user uuid DEFAULT NULL); the source-
+-- ORIGINAL wallet_get(p_user uuid) has NO default. PostgreSQL cannot remove a
+-- parameter default with CREATE OR REPLACE. Only after all T28 tests, reject
+-- any non-synthetic function and DROP the scratch overload with RESTRICT
+-- (never CASCADE) before installing exact original function body.
+DO $t29_wallet_source$
+BEGIN
+ IF to_regprocedure('public.wallet_get(uuid)') IS NULL
+ OR strpos(pg_get_functiondef('public.wallet_get(uuid)'::regprocedure),'t28p2_wallet')=0
+ THEN RAISE EXCEPTION 'T29 REFUSE: expected synthetic T28-P2 wallet_get overload'; END IF;
+END $t29_wallet_source$;
+DROP FUNCTION public.wallet_get(uuid);
 -- SOURCE ORIGINAL wallet_get md5 0df12d179f1c68a4dd8ddeaf3fca4fd0; only role guard patched
 CREATE OR REPLACE FUNCTION public.wallet_get(p_user uuid)
  RETURNS numeric
