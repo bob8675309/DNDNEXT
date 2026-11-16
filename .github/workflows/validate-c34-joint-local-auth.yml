@@ -364,6 +364,29 @@ jobs:
           node --test scripts/integration/c34/test_t31_game_manager_role_source.mjs
           node scripts/integration/c34/test_t31_game_manager_role_signed_pg17.mjs
           echo 'PASS T31: signed equal GAME management roles, unchanged real buyer, no active UI'
+      - name: T33 genuine current Next town and Stage2 Admin GM DM Chrome signed browser (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T33_BROWSER_CONFIRM=SIGNED_STAGE2_TOWN_GAME_MASTER_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t33_auth_probe.jsx
+          test ! -e pages/__c34_t33_npc_probe.jsx
+          node --check scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs
+          node scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs
+          test ! -e pages/__c34_t33_auth_probe.jsx
+          test ! -e pages/__c34_t33_npc_probe.jsx
+          echo 'PASS T33: genuine current Next/Chromium town Stage2 safe GM DM browser; research only'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
