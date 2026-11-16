@@ -53,6 +53,8 @@ test("T29-S02b reduced original Forge item catalog receives only missing scratch
  assert.doesNotMatch(originalCatalog,/\bprice_gp\b/);
  assert.match(sql,/ALTER TABLE public\.items_catalog\s+ADD COLUMN IF NOT EXISTS price_gp numeric,/);
  assert.match(sql,/ADD COLUMN IF NOT EXISTS merchant_tags text\[\]/);
+ assert.match(sql,/UPDATE public\.items_catalog SET price_gp=1 WHERE price_gp IS NULL/);
+ assert.match(sql,/T29 reduced scratch catalog has unpriced merchant rows/);
  assert.match(sql,/ALTER TABLE public\.character_stock ALTER COLUMN id SET DEFAULT gen_random_uuid\(\)/);
 });
 test("T29-S03 row policy, helper, EXECUTE grants and local-only safety boundary",()=>{

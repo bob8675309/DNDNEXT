@@ -141,6 +141,16 @@ SELECT 'T29-'||n,'T29 Inventory '||n,'Potion',
  CASE WHEN n%4=0 THEN 'Rare' WHEN n%4=1 THEN 'Uncommon' ELSE 'Common' END,
  5+n,'{"source":"XPHB","item_type":"Potion"}'::jsonb, ARRAY['alchemy','potions']::text[]
 FROM generate_series(1,24) g(n);
+-- T29 disposable fixture ONLY: source-original reduced Forge catalog rows
+-- pre-date the merchant price column. Original reroll requires every chosen
+-- price_gp to be NOT NULL. Supply a positive deterministic adapter price
+-- after ALL original T26/T27/T28 tests. Never change hosted item records.
+UPDATE public.items_catalog SET price_gp=1 WHERE price_gp IS NULL;
+DO $t29_catalog$
+BEGIN
+ IF EXISTS (SELECT 1 FROM public.items_catalog WHERE price_gp IS NULL)
+ THEN RAISE EXCEPTION 'T29 reduced scratch catalog has unpriced merchant rows'; END IF;
+END $t29_catalog$;
 
 -- T28-P2 used an ephemeral wallet_get(p_user uuid DEFAULT NULL); the source-
 -- ORIGINAL wallet_get(p_user uuid) has NO default. PostgreSQL cannot remove a
