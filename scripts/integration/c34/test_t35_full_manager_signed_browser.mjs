@@ -100,8 +100,8 @@ try {
  console.log("PASS T25-ACL-RED-GREEN: original wide roster denied (42501), T24 narrow signed projection succeeds");
 
  const secret="T25_GM_SECRET_NEVER_PUBLIC";
- const npc=await createCharacter(users.GM,"npc","T25 Probe NPC",secret);
- const merchant=await createCharacter(users.GM,"merchant","T25 Probe Merchant","T25_MERCHANT_SECRET");
+ const npc=await createCharacter(users.GM,"npc","T35 Probe NPC",secret);
+ const merchant=await createCharacter(users.GM,"merchant","T35 Probe Merchant","T25_MERCHANT_SECRET");
 
  const merchantSigned=await users.GM.who.from("characters")
   .select("id,name,kind,role,description,location_id,storefront_enabled,is_hidden,portrait_url")
@@ -183,7 +183,7 @@ try {
  await page.addStyleTag({path:path.join(root,"node_modules/bootstrap/dist/css/bootstrap.min.css")});
  await login("GM");
  try {
- await page.getByText("T25 Probe NPC",{exact:true}).first().waitFor({timeout:30000});
+ await page.getByText("T35 Probe NPC",{exact:true}).first().waitFor({timeout:30000});
  } catch(error) {
   const details=await page.evaluate(async()=>{
    const user=await window.__sb?.auth?.getUser().catch(e=>({error:{message:String(e)}}));
@@ -216,7 +216,7 @@ try {
   console.error("T25-DIAG-C02-DESCRIPTION",JSON.stringify({state,pageErrors:errors}));
   throw error;
  }
- assert.ok((await body()).includes("T25 Probe NPC"));
+ assert.ok((await body()).includes("T35 Probe NPC"));
  try {
   await page.getByText("T25 PUBLIC BACKGROUND",{exact:true}).first().waitFor({timeout:30000});
  } catch(error){
@@ -247,12 +247,12 @@ try {
  const file=path.join(pdfDir,"gm-public.pdf");fs.writeFileSync(file,Buffer.from(bytes));
  const extracted=spawnSync("pdftotext",["-layout",file,"-"],{env,encoding:"utf8",timeout:20000});
  assert.equal(extracted.status,0,extracted.stderr);
- assert.ok(extracted.stdout.includes("T25 Probe NPC"));
+ assert.ok(extracted.stdout.includes("T35 Probe NPC"));
  assert.ok(!extracted.stdout.includes(secret),"Explicit public PDF leaked GM Secret");
  assert.ok(!extracted.stdout.includes("T25_NOBODY_PRINTS_GM_NOTES"),"PDF rendered GM-only sheet notes");
  console.log("PASS T25-C03 original live manager Print Sheet generates true safe 3-page PDF");
  try {
- await page.locator(".npc-roster-list").getByRole("button",{name:/T25 Probe Merchant/}).click();
+ await page.locator(".npc-roster-list").getByRole("button",{name:/T35 Probe Merchant/}).click();
  } catch(error) {
   const probe=await page.evaluate(async()=>{
    const r=await window.__sb.from("characters")
@@ -265,7 +265,7 @@ try {
   console.error("T25-DIAG-C04-MERCHANT",JSON.stringify({probe,pageErrors:errors}));
   throw error;
  }
- await page.getByText("T25 Probe Merchant",{exact:true}).first().waitFor();
+ await page.getByText("T35 Probe Merchant",{exact:true}).first().waitFor();
  assert.ok(!(await body()).includes(secret),"NPC dossier remained after merchant switch");
  console.log("PASS T25-C04 merchant roster switch clears NPC secret and retains original manager controls");
  // T35: full current NPC manager and current signed server-role check for
@@ -317,14 +317,14 @@ try {
  console.log("PASS T35-UNKNOWN: unknown role denied despite broad legacy is_admin(uid)");
 
  await logout();await login("OUTSIDER");
- await page.getByText("T25 Probe NPC",{exact:true}).first().waitFor();
+ await page.getByText("T35 Probe NPC",{exact:true}).first().waitFor();
  await page.getByTestId("t25-sheet-restricted").waitFor();
  assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0,"Outsider retained Print Sheet");
  assert.ok(!(await body()).includes(secret),"Outsider saw prior GM dossier");
  assert.ok(!(await body()).includes("T25 PRIVATE MOTIVATION"));
  console.log("PASS T25-C05 GM-to-outsider signed account switch denies private narrative");
  await logout();await login("COEDITOR");
- await page.locator(".npc-roster-list").getByRole("button",{name:/T25 Probe NPC/}).click();
+ await page.locator(".npc-roster-list").getByRole("button",{name:/T35 Probe NPC/}).click();
  await page.getByRole("button",{name:"Print Sheet"}).waitFor();
  sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id="+q(npc)+
   " AND user_id="+q(users.COEDITOR.id));
