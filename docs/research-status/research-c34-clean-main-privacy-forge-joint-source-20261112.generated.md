@@ -5,21 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6ad84eb9a3c2bfca58cacd6e753f370242f098d1` |
+| Exact source commit represented by this archive snapshot | `775d5025858401cc571be76880818da82e05ab15` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): add town guarded merchant Return to Profile without changing shared shop |
-| Files changed relative to main | 145 (119 non-docs; 26 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record live Admin and delegated-inventory mismatches and rollback gate |
+| Files changed relative to main | 146 (119 non-docs; 27 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
-- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
-- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
+- `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
@@ -58,6 +56,7 @@
 - `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
 - `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
 - `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
+- `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `pages/town/[id].js`
@@ -72,8 +71,7 @@
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
-- `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
-- … 95 more
+- … 96 more
 
 ## Trust and update procedure
 
