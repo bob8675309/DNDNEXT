@@ -1,0 +1,27 @@
+# C34 T29 — Owner-approved Commerce Permission Contract (REVIEW ONLY)
+
+**Owner decision:** Full Administrator, GM, and DM accounts may **edit merchant stock** and **set player gold balances**. Ordinary players must not. This is an explicit commerce-only grant; it does not automatically authorize world-map travel/route administration, NPC private dossier access, character-owner reassignment or arbitrary inventory transfers. Role strings proposed for the existing `public.user_profiles.role` are exactly `admin`, `gm`, `dm` (lowercase). Do not assume all non-player roles qualify. Preserve other independently documented GM/Dungeon Master permissions.
+
+**Observed hosted roles, metadata only (Nov 15 CST):** `user_profiles` grouped counts: `admin: 1`, `player: 4`. **No `gm` or `dm` rows currently present.** This is not proof that future assigned users have those roles or that they should be promoted automatically. The current `user_profiles` role column has no CHECK constraint restricting strings. No user identities, wallets, or character rows were read or changed.
+
+## Pre-change RLS/RPC mismatches (hosted read-only)
+- `private.current_user_is_admin()` and `public.is_admin()` require role exactly `admin`. `public.is_admin(uid uuid)` returns true for *any* non-`player` caller's own role. **Do not alter the shared Admin helper**: it is used by protected map/world and other policies.
+- `character_stock_admin_write` RLS uses `private.current_user_is_admin()` and will **reject GM/DM direct stock CRUD** even while the town UI `is_admin(uid)` may show controls.
+- `reroll_merchant_inventory_v2` explicitly checks `user_profiles.role='admin'`, while `stock_merchant_item`, `wallet_set`, and cross-target `wallet_get` check `role <> 'player'`; this inconsistency is broader than the approved roles.
+- Actual `buy_from_merchant(uuid,uuid,integer)` is a player purchasing RPC; never change its buyer eligibility, stock locks, inventory grant, or atomic wallet debit to satisfy GM administration.
+- The guarded `MerchantPanelT28P2Research.jsx` `isAdmin` flag opens **both stock controls and travel/movement tools**. Reusing it unmodified as a GM/DM capability would grant UI access beyond the authorization decision. Separate `canManageCommerce` from `canManageTravel` and back both with server-side checks in the eventual integration.
+
+## Proposed discrete implementation (NOT YET INSTALLED)
+1. Database-backed **private** `current_user_can_manage_commerce_v1()` checks `auth.uid()` and *trusted* `public.user_profiles.role IN ('admin','gm','dm')`; no user-editable JWT metadata, no public broad Admin helper revision. If exposed as a callable public probe for the UI, ensure `auth.uid()` is bound to the caller, `EXECUTE` is explicitly role-limited, and no target UID parameter can spoof role checks.
+2. Change only `character_stock_admin_write` RLS `USING` and `WITH CHECK` to the new commerce predicate, preserving the select policy, table grants, merchant identity constraints, and Admin role's existing access. Inspect any indirect triggers or RPCs for bypass.
+3. Preserve exact original source logic when changing the role gates in `reroll_merchant_inventory_v2`, `stock_merchant_item`, `wallet_set`, and `wallet_get`; require guarded definition SHA/MD5 preflight and signed role denial tests. **Do not replace the long reroll body with a simplified procedure.** Track `SECURITY DEFINER`, search_path, `PUBLIC` revoke and `authenticated` execute explicitly.
+4. Only town-only opt-in UI should call a signed commerce capability for stock controls; keep route/destination/dwell settings attached to the existing strict Admin travel capability. Independently scope `pages/inventory.js` player-wallet editing to the signed commerce capability without broadening arbitrary item direct DML or delegated NPC inventory.
+5. Signed disposable PG17/GoTrue/PostgREST matrix: **Admin**, **GM**, **DM** can each add/reroll/quantity-edit/delete a merchant stock row and wallet_set a *different* player's GP; **player**, **editor**, **unknown role**, **anon**, **stale signed-out**, and cross-target actor switch cannot. GM/DM cannot change world-map routes or privacy fields. Verify same-page auth transition and GM-to-player privilege revocation. Preserve all existing C34 T1–T28 buyer/negative/PDF tests.
+6. Stage2 narrative column ACL + town NPC Profile RPC cutover remains separately held. Full production migration requires independent DB and Storage recovery, rollback, preserved original PR source, owner-approved rollout and an explicit separate deployment decision.
+
+## Implemented in this research step
+- Pure candidate `utils/c34/commerceRolePolicyCandidate.mjs` defines exact three-role **product intent**, not a permission check that a user can manipulate to gain DB rights.
+- `scripts/integration/c34/test_t29_commerce_role_source.mjs` checks Admin+GM+DM positive, player/other/unknown negative, GM/DM travel and privacy negative, and untouched original app/map components; pinned into `validate-c34-joint-source-research.yml`.
+- **Not yet done:** no application imports of this module, no SQL candidate applied to hosted database, no GM/DM account created/promoted, no signed DB GM/DM positive tests, no migration, no deployment or main merge. Existing #379 DRAFT/HOLD; `NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP` OFF by default.
+
+Next owner input required only if a later choice changes the boundary (e.g., allowing GM/DM to alter merchant travel). Otherwise follow the commerce-only scope.

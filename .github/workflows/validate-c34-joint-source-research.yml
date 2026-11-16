@@ -85,6 +85,11 @@ jobs:
           node --check scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs
           node --check scripts/integration/c34/test_t28_p2_signed_source_contract.mjs
           node scripts/integration/c34/test_t28_p2_signed_source_contract.mjs
+      - name: T29 owner-approved Admin GM DM commerce-only role intent (no hosted DB)
+        run: |
+          node --check utils/c34/commerceRolePolicyCandidate.mjs
+          node --check scripts/integration/c34/test_t29_commerce_role_source.mjs
+          node --test scripts/integration/c34/test_t29_commerce_role_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
