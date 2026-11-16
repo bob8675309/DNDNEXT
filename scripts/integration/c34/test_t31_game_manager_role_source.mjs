@@ -115,6 +115,7 @@ test("T31-S01 preserve old source-original SQL, map and shared components unchan
  for(const s of ["T31_DISPOSABLE_LOCAL_CONFIRMED","private.current_user_is_admin()",
   "('admin','gm','dm')","get_npc_dossier_admin_v1","REVOKE ALL","auth.uid()"])
   assert.ok(source.includes(s),"T31 missing signed local guard "+s);
- assert.doesNotMatch(source,/auth\.jwt\(|user_metadata|CREATE POLICY|ALTER POLICY|DROP POLICY|CASCADE/i);
+ const executable=source.split("\n").filter(line=>!line.trimStart().startsWith("--")).join("\n");
+ assert.doesNotMatch(executable,/auth\.jwt\(|user_metadata|CREATE POLICY|ALTER POLICY|DROP POLICY|CASCADE/i);
 });
 console.log("PASS T31-SOURCE: equal Admin/GM/DM gameplay rights, Stage2 dossier and all old negative/provenance preserved");
