@@ -39,7 +39,7 @@ assert.match(page,/initialView=\{activeTownProfileView\}/);
 assert.match(page,/const T28_P2_TOWN_SHOP_ENABLED = process\.env\.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1"/);
 assert.match(page,/const GuardedTownCharacterInteractionPanel = dynamic\(\(\) => import\("\.\.\/\.\.\/components\/character\/CharacterInteractionPanelTownT28P2Research"\)/);
 assert.match(page,/const TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED \? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel/);
-assert.match(page,/<TownProfilePanel\s+key=/);
+assert.match(page,/<TownProfileForRoute\s+key=/);
 assert.match(page,/useGuardedTownMerchant=\{T28_P2_TOWN_SHOP_ENABLED\}/);
 assert.match(interaction,/React\.createElement\(NpcPanel, \{\s*\.\.\.props,/);
 assert.match(derivedInteraction,/import NpcPanel from "\.\.\/NpcPanelTownT28P2Research"/);
@@ -103,7 +103,7 @@ function stripExactTownActorBoundaryForT28(source) {
 // Additional T33 changes are removed exactly before the original T28
 // source-inversion assertion. Any drift to the opt-in role code fails closed.
 const t33Import = "import { readTownGameManagerCapabilitiesCandidate } from \"../../utils/c34/t31GameManagerRoleProfileCandidate.mjs\";\n";
-const t33Block = "// T33 requires BOTH research flags; existing T28 and release routes unchanged by default.\nconst T33_TOWN_SAFE_ENABLED = T28_P2_TOWN_SHOP_ENABLED && process.env.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === \"1\";\nconst T33TownSafeProfile = dynamic(() => import(\"../../components/character/CharacterInteractionPanelTownT33Research\"), { ssr: false });\nconst TownProfileForRoute = T33_TOWN_SAFE_ENABLED ? T33TownSafeProfile : TownProfilePanel;";
+const t33Block = "\n// T33 requires BOTH research flags; existing T28 and release routes unchanged by default.\nconst T33_TOWN_SAFE_ENABLED = T28_P2_TOWN_SHOP_ENABLED && process.env.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === \"1\";\nconst T33TownSafeProfile = dynamic(() => import(\"../../components/character/CharacterInteractionPanelTownT33Research\"), { ssr: false });\nconst TownProfileForRoute = T33_TOWN_SAFE_ENABLED ? T33TownSafeProfile : TownProfilePanel;";
 const t33RoleNew = "        let admin = false;\n        if (T33_TOWN_SAFE_ENABLED) {\n          const role = await readTownGameManagerCapabilitiesCandidate(supabase, { isCurrent: isCurrentActor });\n          admin = role.status === \"ok\" && role.capabilities.isGameManager === true;\n        } else if (user?.id) {\n          const { data: isAdminRpc } = await supabase.rpc(\"is_admin\", { uid: user.id });\n          admin = !!isAdminRpc;\n        }";
 const t33RoleOld = "        let admin = false;\n        if (user?.id) {\n          const { data: isAdminRpc } = await supabase.rpc(\"is_admin\", { uid: user.id });\n          admin = !!isAdminRpc;\n        }";
 assert.equal(page.split(t33Import).length-1,1);
@@ -113,6 +113,7 @@ assert.equal(page.split('<TownProfileForRoute\n                  key=').length-1
 const t33Undone = page.replace(t33Import,'').replace(t33Block,'')
   .replace(t33RoleNew,t33RoleOld)
   .replace('<TownProfileForRoute\n                  key=','<TownProfilePanel\n                  key=');
+assert.match(t33Undone,/<TownProfilePanel\s+key=/);
 const reversedPage=stripExactTownActorBoundaryForT28(t33Undone).replace(flaggedImport,baseImport)
  .replace('<TownProfilePanel\n                  key=','<CharacterInteractionPanel\n                  key=')
  .replace('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n',"")
