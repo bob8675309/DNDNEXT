@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `de6f1b1d32b68edb068b1dd4b7df81a7a781256f` |
+| Exact source commit represented by this archive snapshot | `6ad84eb9a3c2bfca58cacd6e753f370242f098d1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): scope real town Profile and Shop browser assertions to merchant overlay |
+| Last source commit title | fix(c34): add town guarded merchant Return to Profile without changing shared shop |
 | Files changed relative to main | 145 (119 non-docs; 26 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,9 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t28_p2_real_town_route_browser.mjs`
+- `components/c34/MerchantPanelT28P2Research.jsx`
 - `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
+- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
 
 ## Research-branch change inventory versus main
 
