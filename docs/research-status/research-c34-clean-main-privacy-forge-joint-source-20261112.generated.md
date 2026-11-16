@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5f3378aa3a1fa42c5dd0e33acc27ea105b30381b` |
+| Exact source commit represented by this archive snapshot | `a416d3036a1f10ef44a1f8d9ce7f300963191072` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T35 original full NPC manager source ancestry, strict signed GM/DM role and Stage2 negative |
-| Files changed relative to main | 175 (142 non-docs; 33 docs) |
+| Last source commit title | test(c34): full source-derived NPC manager signed Admin GM DM and original PDF browser |
+| Files changed relative to main | 176 (143 non-docs; 33 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,8 +17,8 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
-- `scripts/integration/c34/test_t35_npc_manager_source.mjs`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t35_full_manager_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +72,7 @@
 - `scripts/agents/project_health.mjs`
 - `scripts/agents/render_open_pr_index.mjs`
 - `scripts/agents/validate_open_pr_index.mjs`
-- … 125 more
+- … 126 more
 
 ## Trust and update procedure
 
