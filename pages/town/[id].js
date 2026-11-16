@@ -4,12 +4,17 @@ import { useRouter } from "next/router";
 import TownSheet from "../../components/TownSheet";
 import { supabase } from "../../utils/supabaseClient";
 import { pickId } from "../../utils/townData";
+import { readTownGameManagerCapabilitiesCandidate } from "../../utils/c34/t31GameManagerRoleProfileCandidate.mjs";
 
 const CharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanel"), { ssr: false });
 // Only this town route opts its Profile→Shop tab into the guarded candidate.
 const T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1";
 const GuardedTownCharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanelTownT28P2Research"), { ssr: false });
 const TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED ? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel;
+// T33 requires BOTH research flags; existing T28 and release routes unchanged by default.
+const T33_TOWN_SAFE_ENABLED = T28_P2_TOWN_SHOP_ENABLED && process.env.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === "1";
+const T33TownSafeProfile = dynamic(() => import("../../components/character/CharacterInteractionPanelTownT33Research"), { ssr: false });
+const TownProfileForRoute = T33_TOWN_SAFE_ENABLED ? T33TownSafeProfile : TownProfilePanel;
 
 function normalizeMapRow(row) {
   return {
@@ -731,7 +736,10 @@ export default function TownPage() {
         const { data: authData } = await supabase.auth.getSession();
         const user = authData?.session?.user || null;
         let admin = false;
-        if (user?.id) {
+        if (T33_TOWN_SAFE_ENABLED) {
+          const role = await readTownGameManagerCapabilitiesCandidate(supabase, { isCurrent: isCurrentActor });
+          admin = role.status === "ok" && role.capabilities.isGameManager === true;
+        } else if (user?.id) {
           const { data: isAdminRpc } = await supabase.rpc("is_admin", { uid: user.id });
           admin = !!isAdminRpc;
         }
@@ -1165,7 +1173,7 @@ function handleOpenTownProfile(character, initialView = "profile") {
           {activeTownProfileCharacter ? (
             <div className="town-profile-sidepanel-backdrop" onClick={() => setActiveTownProfileCharacter(null)}>
               <aside className="town-profile-sidepanel" onClick={(event) => event.stopPropagation()}>
-                <TownProfilePanel
+                <TownProfileForRoute
                   key={activeTownProfileCharacter?.id || "town-profile"}
                   character={activeTownProfileCharacter}
                   isAdmin={isAdmin}
