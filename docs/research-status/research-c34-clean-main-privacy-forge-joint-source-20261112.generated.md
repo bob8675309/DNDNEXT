@@ -5,20 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a18c378b7a9f6daf408cf39815ade07f24ac89df` |
+| Exact source commit represented by this archive snapshot | `f4ac32c4da7e6916256336f4ae249993992f0ad8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add scratch stock UUID default for unmodified source merchant insert |
+| Last source commit title | docs(c34): report T29 initial scratch catalog failure, source-green repair and held role UI gate |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/t29_disposable_commerce_role_gate_pg17.sql`
-- `scripts/integration/c34/test_t29_commerce_source_parity.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
