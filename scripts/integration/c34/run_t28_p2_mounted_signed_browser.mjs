@@ -103,10 +103,15 @@ export async function runT28P2MountedCommerceSignedBrowser({
   console.log("PASS T28-P2-MOUNT: source-derived real merchant and wallet signed current Next/React and PG17");
   assert.ok(townProfileProbeUrl?.startsWith(origin+"/__c34_t28_p2_town_profile_probe"));
   await page.goto(townProfileProbeUrl,{waitUntil:"domcontentloaded",timeout:60000});
-  const profileTab=page.getByRole("tab",{name:"Profile",exact:true}).first();
+  // The ORIGINAL CharacterInteractionTabs renders <button> within a
+  // role="tablist"; its buttons do not have role="tab" / aria-selected.
+  // Assert the actual original selected CSS contract instead of inventing
+  // ARIA metadata that the source does not implement.
+  const profileTab=page.getByRole("button",{name:"Profile",exact:true}).first();
   await profileTab.waitFor({timeout:30000});
-  assert.equal(await profileTab.getAttribute("aria-selected"),"true");
-  await page.getByRole("tab",{name:"Shop",exact:true}).first().click();
+  assert.match(await profileTab.getAttribute("class") || "",/\bbtn-primary\b/,
+    "Town Profile must be active before selecting Shop");
+  await page.getByRole("button",{name:"Shop",exact:true}).first().click();
   await page.getByText(stockLabel,{exact:true}).first().waitFor({timeout:20000});
   console.log("PASS T28-P2-TOWN-PROFILE: signed Profile-first town Shop uses guarded merchant stock");
   await page.goto(origin+"/__c34_t28_p2_probe",{waitUntil:"domcontentloaded",timeout:60000});
