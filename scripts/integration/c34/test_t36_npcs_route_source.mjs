@@ -79,10 +79,11 @@ test("T36-04 no world-map, shared app, commerce and original town source edited"
 });
 test("T36-05 signed real /npcs test must check OFF and ON and never leak generated file",()=>{
  const t=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
- for(const s of ["T36-ROUTE-OFF","T36-ROUTE-ON","T36-MANAGER-ADMIN",
- "T36-MANAGER-DM","T36-REVOCATION","T36-UNKNOWN",
+ for(const s of ["T36-ROUTE-OFF","T36-ROUTE-ON","T36-MANAGER-","T36-REVOCATION","T36-UNKNOWN",
  "T36-SIGNED-CHROMIUM","T36_LOCAL_ROUTE","NEXT_PUBLIC_C34_T36_NPCS_RESEARCH",
  "reconcileT36Route"])assert.ok(t.includes(s),s+" signed assertion missing");
+ assert.match(t,/for\(const role of \["ADMIN","DM"\]\)/,
+  "T36 actual signed manager must exercise both Admin and DM");
  assert.ok(!t.includes('pages/__c34_t35_probe.jsx'));
 });
 console.log("PASS T36-SOURCE: original /npcs bytes intact, local-only default-OFF Next rewrite and full T35 source retained");
