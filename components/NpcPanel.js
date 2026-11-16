@@ -15,6 +15,8 @@ import { formatInventoryEquipmentText } from "../utils/characterSheetActions";
 import { buildCharacterSheetFeatures } from "../utils/characterSheetFeatures";
 
 const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
+// Town Profile→Shop opt-in only; default map/NPC behavior stays on MerchantPanel.
+const GuardedTownMerchantPanel = dynamic(() => import("./c34/MerchantPanelT28P2Research"), { ssr: false });
 
 const PROFILE_REVEAL_KEYS = [
   { key: "description", label: "Description", group: "Overview", hint: "Player-facing first impression and short profile summary.", alwaysPublic: true },
@@ -86,7 +88,7 @@ function normalizePanelView(value) {
   return ["profile", "sheet", "inventory", "shop", "craft"].includes(v) ? v : "profile";
 }
 
-export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, initialView = "profile", interactionView = null, interactionTabs = null, setInteractionView = null, renderInteractionTabs = null, renderCraftView = null, craftProfession = "", hasCraftCapability = false }) {
+export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, initialView = "profile", interactionView = null, interactionTabs = null, setInteractionView = null, renderInteractionTabs = null, renderCraftView = null, craftProfession = "", hasCraftCapability = false, useGuardedTownMerchant = false }) {
   const router = useRouter();
 
   const [fullNpc, setFullNpc] = useState(null);
@@ -738,7 +740,11 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
     return (
       <div className="npc-panel-shop-view">
-        <MerchantPanel merchant={view} isAdmin={isAdmin} locations={locations} showTravelTools={false} onBackToProfile={() => setPanelView("profile")} />
+        {useGuardedTownMerchant ? (
+          <GuardedTownMerchantPanel merchant={view} isAdmin={isAdmin} locations={locations} showTravelTools={false} onBackToProfile={() => setPanelView("profile")} />
+        ) : (
+          <MerchantPanel merchant={view} isAdmin={isAdmin} locations={locations} showTravelTools={false} onBackToProfile={() => setPanelView("profile")} />
+        )}
       </div>
     );
   }
