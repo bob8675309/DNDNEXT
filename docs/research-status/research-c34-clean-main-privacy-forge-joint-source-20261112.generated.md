@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `17add1fc14e833a7c343cdf0f71251fb446e762e` |
+| Exact source commit represented by this archive snapshot | `5aaf7d8603bfa367b51d354643c6254d407edb24` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): guard T35 unique signed fixture identities and full role/actor negative matrix |
-| Files changed relative to main | 176 (143 non-docs; 33 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(c34): T36 localhost-only default-OFF actual /npcs Next rewrite, complete source-derived manager |
+| Files changed relative to main | 179 (145 non-docs; 34 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t35_npc_manager_source.mjs`
+- `next.config.mjs`
+- `scripts/integration/c34/prepare_t36_npcs_route.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -65,13 +66,13 @@
 - `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
 - `docs/research/C34_T33_TOWN_STAGE2_SAFE_GM_PROFILE_2026-11-16.md`
 - `docs/research/C34_T34_GAME_MANAGER_CAMPAIGN_VS_SITE_AUTH_2026-11-16.md`
+- `docs/research/C34_T35_FULL_NPC_MANAGER_STAGE2_EQUAL_GAME_MASTERS_SIGNED_2026-11-16.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
+- `next.config.mjs`
 - `pages/town/[id].js`
 - `scripts/agents/project_health.mjs`
-- `scripts/agents/render_open_pr_index.mjs`
-- `scripts/agents/validate_open_pr_index.mjs`
-- … 126 more
+- … 129 more
 
 ## Trust and update procedure
 
