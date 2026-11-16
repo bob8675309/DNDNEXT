@@ -313,6 +313,25 @@ jobs:
           test ! -e pages/__c34_t26_probe.jsx
           echo 'PASS C34-T26/T27 original real shop + T28-P1 persistent original stock/wallet delayed signed RED and scoped guarded GREEN; no active route cutover'
 
+      - name: T29 owner commerce only Admin GM DM original RPC and stock RLS signed matrix (disposable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T29_ROLE_CONFIRM=OWNER_APPROVED_COMMERCE_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t29_commerce_source_parity.mjs
+          node --test scripts/integration/c34/test_t29_commerce_source_parity.mjs
+          node --check scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
+          node scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
+          echo 'PASS C34-T29 signed Admin GM DM commerce only, original buyer and all original T26/T27/T28 gates retained'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
