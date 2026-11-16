@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a4b2dde8fc3c09601c656054d30ae330d033ea94` |
+| Exact source commit represented by this archive snapshot | `2965244277fc31f43742ec42c6dc2474c2ca5308` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): generate and clean isolated real town Profile→Shop page inside disposable signed Next run |
+| Last source commit title | test(c34): pass disposable town Profile probe URL into signed browser runner |
 | Files changed relative to main | 144 (118 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs`
+- `scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
