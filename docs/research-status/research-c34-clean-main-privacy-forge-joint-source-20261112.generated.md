@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0425b012bdf5af91527b14f74cc38461435b17f3` |
+| Exact source commit represented by this archive snapshot | `765ac610ee47d2c72d3ed3afbec4fbc025283348` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T27 original consumer regression retains exact T33 double-flag inversion |
+| Last source commit title | test(c34): preserve T31 original negative while acknowledging exact gated T33 town mount |
 | Files changed relative to main | 168 (137 non-docs; 31 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t27_consumer_source.mjs`
+- `scripts/integration/c34/test_t31_game_manager_role_source.mjs`
 
 ## Research-branch change inventory versus main
 
