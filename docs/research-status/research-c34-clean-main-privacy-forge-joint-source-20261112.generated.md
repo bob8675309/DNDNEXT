@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `391f280eec658800d1746a8ca4c095430161728d` |
+| Exact source commit represented by this archive snapshot | `17343445696f5ad6ad2ce391203c029aea87d3e3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): verify actual town Profile→Shop flag path, original world-map defaults and exact rollback |
-| Files changed relative to main | 142 (116 non-docs; 26 docs) |
+| Last source commit title | research(c34): isolate guarded town Profile→Shop in dedicated NpcPanel copy; keep production original pinned |
+| Files changed relative to main | 143 (117 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
+- `components/NpcPanelTownT28P2Research.jsx`
 
 ## Research-branch change inventory versus main
 
@@ -25,6 +25,7 @@
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `components/NpcPanel.js`
+- `components/NpcPanelTownT28P2Research.jsx`
 - `components/c34/MerchantPanelT28P2Research.jsx`
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
@@ -70,8 +71,7 @@
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
 - `scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql`
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
-- `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
-- … 92 more
+- … 93 more
 
 ## Trust and update procedure
 
