@@ -101,6 +101,17 @@ export async function runT28P2MountedCommerceSignedBrowser({
   await waitValue(79);
   await shop().getByText(stockLabel,{exact:true}).first().waitFor({timeout:20000});
   console.log("PASS T28-P2-MOUNT: source-derived real merchant and wallet signed current Next/React and PG17");
+  assert.ok(townProfileProbeUrl?.startsWith(origin+"/__c34_t28_p2_town_profile_probe"));
+  await page.goto(townProfileProbeUrl,{waitUntil:"domcontentloaded",timeout:60000});
+  const profileTab=page.getByRole("tab",{name:"Profile",exact:true}).first();
+  await profileTab.waitFor({timeout:30000});
+  assert.equal(await profileTab.getAttribute("aria-selected"),"true");
+  await page.getByRole("tab",{name:"Shop",exact:true}).first().click();
+  await page.getByText(stockLabel,{exact:true}).first().waitFor({timeout:20000});
+  console.log("PASS T28-P2-TOWN-PROFILE: signed Profile-first town Shop uses guarded merchant stock");
+  await page.goto(origin+"/__c34_t28_p2_probe",{waitUntil:"domcontentloaded",timeout:60000});
+  await waitActor(users.GM.id);
+  await waitValue(79);
 
   // Withhold genuine authorized 200 responses from BOTH guarded mounted components.
   // A same-actor switch starts the old merchant's fresh stock request.
