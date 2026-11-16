@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `91bec7c5c82c0d4bf8bdd5919358fb91c523a590` |
+| Exact source commit represented by this archive snapshot | `391f280eec658800d1746a8ca4c095430161728d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | feat(c34): town page alone opts Profile→Shop into guarded candidate; preserve Profile-first routing |
+| Last source commit title | test(c34): verify actual town Profile→Shop flag path, original world-map defaults and exact rollback |
 | Files changed relative to main | 142 (116 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `pages/town/[id].js`
+- `scripts/integration/c34/test_t28_p2_town_preview_contract.mjs`
 
 ## Research-branch change inventory versus main
 
