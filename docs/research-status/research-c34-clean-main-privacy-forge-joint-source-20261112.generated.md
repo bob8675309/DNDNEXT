@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `467843711497dee12949de6285b183d28a63dbc6` |
+| Exact source commit represented by this archive snapshot | `f37068454862cab3ee5ab62dd9f263ab68b90884` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): assert original player-tag JSONB trigger and character column are never changed |
+| Last source commit title | test(c34): source-discover original protected tags type, preserve text[]/JSONB without column edits |
 | Files changed relative to main | 173 (140 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs`
+- `scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
