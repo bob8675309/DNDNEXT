@@ -49,7 +49,8 @@ test("T29-S02 four precise auth-only differences, original reroll and wallet bod
 test("T29-S02b reduced original Forge item catalog receives only missing scratch reroll columns",()=>{
  const originalForge=read("scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql");
  assert.match(originalForge,/CREATE TABLE public\.items_catalog/);
- assert.doesNotMatch(originalForge,/CREATE TABLE public\.items_catalog\s*\([\s\S]{0,240}price_gp/);
+ const originalCatalog=originalForge.split("CREATE TABLE public.items_catalog (")[1].split(");")[0];
+ assert.doesNotMatch(originalCatalog,/\bprice_gp\b/);
  assert.match(sql,/ALTER TABLE public\.items_catalog\s+ADD COLUMN IF NOT EXISTS price_gp numeric,/);
  assert.match(sql,/ADD COLUMN IF NOT EXISTS merchant_tags text\[\]/);
 });
