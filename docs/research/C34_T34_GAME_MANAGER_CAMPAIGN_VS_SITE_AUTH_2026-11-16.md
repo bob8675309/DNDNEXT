@@ -30,3 +30,16 @@
 - **ONE NEXT:** first finish and verify genuine signed T34 outcome, repair only proved local fixture/function-guard issues without weakening originals; then prepare isolated current NPC-manager Stage2-safe roster/detail+sheet source cutover and signed Admin/GM/DM/player/account switch, with original Forge data/reveal, PDF, all preserved PR tests and site-activity separation. Before release: independent restored PostgreSQL + **340 Storage objects** and owner-approved production migration/rollback evidence.
 
 **Research held**: no production Supabase DDL/data/Storage, game-account role edit, feature-flag enablement, world-map/shared code edit, `main` merge, or Vercel.
+
+
+## Verified final signed acceptance — 2026-11-16 CST (supersedes earlier in-progress snapshot)
+
+**Full genuine signed SUCCESS:** [GitHub Actions 43950730956](https://github.com/bob8675309/DNDNEXT/actions/runs/43950730956), job `133592186505`, runnable commit `994241280a62c7c6e847089b77b5c316ca6ba836`, **28/28 steps successful** (the job's signed + cleanup steps; no failed steps). Re-fetched actual job logs; original T31 `PASS T31-ROLE-ADMIN/GM/DM`, authentic T33 `PASS T33-SIGNED-CHROMIUM`, original T1–T30, official three-page PDF, atomic original buyer and all preserved negative regressions remained green.
+
+- `PASS T34-DISPOSABLE-TAGS-SHAPE` logs `text[]` (without the `PASS` prefix for the exact runtime tag probe), original trigger remains; `PASS T34-ORIGINAL-RED` proves independent original setter denied GM and broad original site reader allowed GM **before** isolation in scratch.
+- `PASS T34-GAME-ADMIN`, `PASS T34-GAME-GM`, `PASS T34-GAME-DM`: genuine signed server-side settings UPDATE + full original merchant reroll + Stage2 dossier for every owner-approved game master.
+- `PASS T34-SITE-ADMIN` retains private technical site reporting only for exact technical Admin; `PASS T34-SITE-GM`, `PASS T34-SITE-DM`, `PASS T34-NEGATIVE-PLAYER`, `-EDITOR`, `-UNKNOWN`, `PASS T34-ANON` prove no technical visitor disclosure or unauthorized campaign write.
+- `PASS T34-DEMOTION`: current session Admin→GM immediately denies site-report but retains game management; `PASS T34-SWITCH`: same client DM→unknown denies both. `PASS T34-SIGNED`: no original buyer mutation.
+- **Historical genuine REDs:** [43945750131](https://github.com/bob8675309/DNDNEXT/actions/runs/43945750131) failed in synthetic fixture because protected tags cannot be dropped; [43949370531](https://github.com/bob8675309/DNDNEXT/actions/runs/43949370531) passed T33 and tag preservation, failed on PostgREST cache's transient `PGRST202` before site RPC registration. Both fixed solely in local T34 harness. Source original files and security tests unchanged.
+
+**Classification:** signed *research* parity only. No installed hosted `private.current_user_is_site_admin_v1`, no hosted campaign setter change, no live migrations or GM/DM account role mutation, no production feature flags, world map, shared components, main or Vercel. Original registrar/hardening retention remains unchanged; independent Storage recovery and full original PR merge/rollback gates remain open. **ONE NEXT:** source-preserving Stage2 NPC-manager manager-role/roster/Sheet reader cutover and signed browser with full Forge, character editor/PDF/merchant negatives.
