@@ -151,7 +151,16 @@ assert.equal(oldAdmin.data?.[0]?.future_tech_enabled,false);
 assert.equal(oldAdmin.data?.[0]?.rerolled_merchants,1);
 const oldGM=await actors.gm.who.rpc("set_campaign_future_tech_enabled_v1",{p_enabled:true});
 assert.ok(oldGM.error && oldGM.error.code!=="PGRST202","original setter must deny GM");
-const oldVisit=await actors.gm.who.rpc("get_recent_site_activity_v1");
+// PostgREST's NOTIFY schema reload is asynchronous. The genuine original
+// function was just installed; only tolerate the transient PGRST202 cache miss.
+// Any server error, role failure, or missing report after a bounded retry fails.
+assert.equal(sql("SELECT to_regprocedure('public.get_recent_site_activity_v1()')::text"),"get_recent_site_activity_v1()");
+let oldVisit;
+for(let attempt=0;attempt<40;attempt++){
+ oldVisit=await actors.gm.who.rpc("get_recent_site_activity_v1");
+ if(oldVisit.error?.code!=="PGRST202")break;
+ await new Promise(resolve=>setTimeout(resolve,300));
+}
 assert.ifError(oldVisit.error);
 assert.ok(oldVisit.data?.length>0,"original site activity broad helper positive fixture");
 console.log("PASS T34-ORIGINAL-RED: original campaign setter denies GM; broad game helper exposes original private site activity to GM (disposable only)");
