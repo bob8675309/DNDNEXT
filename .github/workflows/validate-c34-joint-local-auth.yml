@@ -424,6 +424,27 @@ jobs:
           node scripts/integration/c34/test_t35_full_manager_signed_browser.mjs
           test ! -e pages/__c34_t35_probe.jsx
           echo 'PASS T35: full original NPC manager source with signed Stage2 Admin/GM/DM and true PDF'
+      - name: T36 actual /npcs flag OFF and ON, full signed Admin GM DM, original UI narrative save and PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T36_BROWSER_CONFIRM=ACTUAL_NPCS_REWRITE_THREE_GAME_MASTERS_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t36_npcs.jsx
+          node --check scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs
+          node scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs
+          test ! -e pages/__c34_t36_npcs.jsx
+          echo 'PASS T36: full /npcs original OFF and derived ON, canonical roles, original save/PDF, no production'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
