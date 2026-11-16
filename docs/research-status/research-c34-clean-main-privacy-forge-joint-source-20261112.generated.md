@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d4849f1cc33d490713085d28bfbb6e4c9e0143c0` |
+| Exact source commit represented by this archive snapshot | `1f9f355e01fa761c1326ef8b869a57849de918ab` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): receipt signed town green and pending actor-cache isolation plus live role audit |
+| Last source commit title | docs(c34): accept exact signed town actor-switch gate and record remaining Stage2 role holds |
 | Files changed relative to main | 146 (119 non-docs; 27 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
+- `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
 
 ## Research-branch change inventory versus main
 
