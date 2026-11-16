@@ -113,8 +113,25 @@ try{
  });
  for(const stream of [server.stdout,server.stderr])
   stream.on("data",chunk=>serverLog=(serverLog+chunk.toString()).slice(-22000));
+ // Next dev takes time to bind and compile the generated route. Do NOT
+ // mistake connection-refused during startup for a privacy/browser failure.
+ const readinessUrl=origin+"/__c34_t33_auth_probe";
+ let ready=false;
+ for(let attempt=0;attempt<110;attempt++){
+  if(server.exitCode!==null)throw Error("T33 Next exited before ready: "+serverLog);
+  try{
+   const reply=await fetch(readinessUrl,{signal:AbortSignal.timeout(2400)});
+   if(reply.ok && (await reply.text()).includes("t33-auth-probe")){
+    ready=true;
+    break;
+   }
+  }catch{}
+  await new Promise(resolve=>setTimeout(resolve,1200));
+ }
+ assert.ok(ready,"T33 current Next did not compile signed local auth route: "+serverLog);
+ console.log("PASS T33-NEXT-READY: real pinned Next server and generated local-only auth route compiled");
  browser=await chromium.launch({headless:true,executablePath:env.C33_BROWSER_CHROME,
-   args:["--no-sandbox","--disable-setuid-sandbox"]});
+   args:["--no-sandbox","--disable-dev-shm-usage"]});
  const context=await browser.newContext();
  const page=await context.newPage();
  page.on("pageerror",e=>errors.push(e.message));
