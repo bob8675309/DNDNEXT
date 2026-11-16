@@ -24,9 +24,33 @@ const originals=Object.freeze({
  "components/MerchantStorefrontView.js":"9460eb1ea15994b9b0ed2abefba660e9b4c9370c",
  "utils/useWallet.js":"f34b99f1d6eee66420d57bdcefdc6d3427092e25"
 });
-test("T27-S01 source-lock all 10 actual current nonmap/map/shop/wallet consumers",()=>{
- for(const [p,expected] of Object.entries(originals))
-  assert.equal(sha1(src(p)),expected,"T27 incompatible original source drift: "+p);
+// The ONLY authorized difference from T27's exact original source is the
+// opt-in TOWN route selection of a separately derived Profile shell. Rebuild
+// the exact old town-page blob before comparing; every other original remains
+// byte-identical. No shared map, NpcPanel or CharacterInteractionPanel cutover.
+const exactOriginalTownImport='const CharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanel"), { ssr: false });';
+const exactGatedTownImport=exactOriginalTownImport+
+ '\n// Only this town route opts its Profile→Shop tab into the guarded candidate.'+
+ '\nconst T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1";'+
+ '\nconst GuardedTownCharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanelTownT28P2Research"), { ssr: false });'+
+ '\nconst TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED ? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel;';
+function t27UnderlyingOriginalTownSource(source) {
+ assert.equal(source.split(exactGatedTownImport).length-1,1,
+  "T27 town must have precisely one disabled-by-default Profile override");
+ assert.equal(source.split('<TownProfilePanel\n                  key=').length-1,1,
+  "T27 town Profile must have exactly one selected shell");
+ assert.equal(source.split('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n').length-1,1,
+  "T27 town must pass the opt-in only into the Profile shell");
+ return source.replace(exactGatedTownImport,exactOriginalTownImport)
+  .replace('<TownProfilePanel\n                  key=','<CharacterInteractionPanel\n                  key=')
+  .replace('                  useGuardedTownMerchant={T28_P2_TOWN_SHOP_ENABLED}\n',"");
+}
+test("T27-S01 source-lock all original consumers; exact reversible T28-P2 TOWN ONLY Profile selection",()=>{
+ for(const [p,expected] of Object.entries(originals)) {
+  const current=src(p);
+  const source=p==="pages/town/[id].js" ? t27UnderlyingOriginalTownSource(current) : current;
+  assert.equal(sha1(source),expected,"T27 incompatible original source drift: "+p);
+ }
 });
 test("T27-S02 map/town/manager share original NpcPanel; no silent privacy cutover",()=>{
  const interaction=src("components/character/CharacterInteractionPanel.js");
