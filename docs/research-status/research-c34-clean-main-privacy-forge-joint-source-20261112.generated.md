@@ -5,21 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b3b8a79a5744a2694fe87e763ba0a59a83229782` |
+| Exact source commit represented by this archive snapshot | `ea7d7d7caee2fbf54b0db67fce8db2524116da8f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record owner GM DM commerce-only test green and held role migration |
-| Files changed relative to main | 149 (121 non-docs; 28 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | feat(c34): original-byte-pinned disposable Admin GM DM commerce RLS and four RPC guard candidate |
+| Files changed relative to main | 151 (123 non-docs; 28 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
+- `scripts/integration/c34/t29_disposable_commerce_role_gate_pg17.sql`
+- `scripts/integration/c34/t29_hosted_original_commerce_procs.json`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +72,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
 - `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 99 more
+- … 101 more
 
 ## Trust and update procedure
 
