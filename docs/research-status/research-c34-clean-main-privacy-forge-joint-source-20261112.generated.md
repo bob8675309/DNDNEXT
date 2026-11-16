@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e934f5219c05b6b00a344ae6a9c0caeb0a3d3777` |
+| Exact source commit represented by this archive snapshot | `07d93b395069156d22734af1588d9f0a558d0d0f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): prevent invalid workflow YAML regression; trigger real local signed C34 CI |
-| Files changed relative to main | 141 (115 non-docs; 26 docs) |
+| Last source commit title | fix(c34): restore original TownSheet; guarded shop belongs to actual Profile-first town handoff |
+| Files changed relative to main | 140 (114 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,14 +17,13 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t28_p2_signed_source_contract.mjs`
+- `components/TownSheet.js`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
-- `components/TownSheet.js`
 - `components/c34/MerchantPanelT28P2Research.jsx`
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
@@ -71,7 +70,8 @@
 - `scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql`
 - `scripts/integration/c34/c34_inventory_materializer_setup_pg17.sql`
 - `scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql`
-- … 91 more
+- `scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql`
+- … 90 more
 
 ## Trust and update procedure
 
