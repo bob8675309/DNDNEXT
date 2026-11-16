@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9551113da02c837e9ba9bc7fcd89ed1b777d0642` |
+| Exact source commit represented by this archive snapshot | `396996335d932ccabeb435395c176cf31786113b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record target-scoped GM DM commerce and pending signed catalog acceptance |
+| Last source commit title | docs(c34): accept full signed GM DM merchant-only and player-wallet permission matrix |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
 | Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
