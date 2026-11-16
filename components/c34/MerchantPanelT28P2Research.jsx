@@ -40,6 +40,10 @@ const LOOP_TAIL_SECONDS = 6;
 export default function MerchantPanel({
   merchant,
   isAdmin = false,
+  // Research-only UI capabilities; server RLS/RPC is always authoritative.
+  canManageCommerce,
+  canManageTravel,
+  showTravelTools = true,
   locations = [],
   onBackToProfile,
   onClose,
@@ -47,6 +51,8 @@ export default function MerchantPanel({
 }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } =
     useWallet();
+  const mayManageCommerce = Boolean(canManageCommerce ?? isAdmin);
+  const mayManageTravel = Boolean(showTravelTools && (canManageTravel ?? isAdmin) && isAdmin);
 
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,7 +159,7 @@ export default function MerchantPanel({
 
   // Load available map routes for admin travel controls
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!mayManageTravel) return;
 
     let cancelled = false;
 
@@ -178,7 +184,7 @@ export default function MerchantPanel({
     return () => {
       cancelled = true;
     };
-  }, [isAdmin]);
+  }, [mayManageTravel]);
 
   // When merchant or routes change, seed the route + next-destination controls
   useEffect(() => {
@@ -588,7 +594,7 @@ export default function MerchantPanel({
   }
 
   async function setMerchantRouteFallback(routeId, mode) {
-    if (!merchant?.id || !routeId) return;
+    if (!mayManageTravel || !merchant?.id || !routeId) return;
     const now = new Date().toISOString();
     const patch = {
       route_id: routeId,
@@ -612,7 +618,7 @@ export default function MerchantPanel({
 
   // Dump + reroll via pure RPC
   async function rerollThemed() {
-    if (!isAdmin) {
+    if (!mayManageCommerce) {
       alert("Only admins can reroll merchant stock.");
       return;
     }
@@ -691,7 +697,7 @@ export default function MerchantPanel({
   }
 
   async function setTradeRoute() {
-    if (!isAdmin) {
+    if (!mayManageTravel) {
       alert("Only admins can change routes.");
       return;
     }
@@ -714,7 +720,7 @@ export default function MerchantPanel({
   }
 
   async function sendOnExcursion() {
-    if (!isAdmin) {
+    if (!mayManageTravel) {
       alert("Only admins can send merchants on excursions.");
       return;
     }
@@ -737,7 +743,7 @@ export default function MerchantPanel({
   }
 
   async function saveMovementSettings() {
-    if (!merchant?.id) return;
+    if (!mayManageTravel || !merchant?.id) return;
     setSavingTravel(true);
     setErr("");
     try {
@@ -760,7 +766,7 @@ export default function MerchantPanel({
   }
 
   async function setNextDestination() {
-    if (!isAdmin) {
+    if (!mayManageTravel) {
       alert("Only admins can set destinations.");
       return;
     }
@@ -787,6 +793,7 @@ export default function MerchantPanel({
   }
 
   async function dumpAll() {
+    if (!mayManageCommerce) return;
     if (!confirm("Dump all current stock?")) return;
 
     setBusyId("dump");
@@ -809,7 +816,7 @@ export default function MerchantPanel({
 
   // Admin: add item by name or JSON; RPC first, then direct insert on ANY error
   async function addItem() {
-    if (!restockText.trim()) return;
+    if (!mayManageCommerce || !restockText.trim()) return;
 
     setBusyId("add");
     setErr("");
@@ -878,6 +885,7 @@ export default function MerchantPanel({
   }
 
   async function changeQty(stockId, nextQty) {
+    if (!mayManageCommerce) return;
     const qty = Math.max(0, Number(nextQty || 0));
     const { error } = await supabase
       .from("character_stock")
@@ -921,6 +929,7 @@ export default function MerchantPanel({
   }
 
   async function removeRow(stockId) {
+    if (!mayManageCommerce) return;
     if (!confirm("Remove this item from stock?")) return;
 
     setBusyId(`rm:${stockId}`);
@@ -952,12 +961,12 @@ export default function MerchantPanel({
     return `is-rarity-${slug || "common"}`;
   };
 
-  const adminConsole = isAdmin && showTravel ? (
+  const adminConsole = mayManageCommerce && showTravel ? (
     <section className="merchant-admin-console">
       <div className="merchant-admin-console-head">
         <div>
           <div className="merchant-market-kicker">Admin controls</div>
-          <strong>Stock, type, and travel</strong>
+          <strong>{mayManageTravel ? "Stock, type, and travel" : "Merchant stock"}</strong>
         </div>
         <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setShowTravel(false)}>Done</button>
       </div>
@@ -976,14 +985,14 @@ export default function MerchantPanel({
         <button type="button" className="btn btn-sm btn-outline-danger" onClick={dumpAll} disabled={busyId === "dump"}>Dump stock</button>
       </div>
 
-      <div className="merchant-admin-grid">
+      {mayManageTravel ? <div className="merchant-admin-grid">
         <label><span>Trade route</span><select className="form-select form-select-sm" value={tradeRouteId || ""} onChange={(event) => setTradeRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "trade").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-light" onClick={setTradeRoute} disabled={savingTravel || !tradeRouteId}>Set trade route</button></label>
         <label><span>Excursion route</span><select className="form-select form-select-sm" value={excursionRouteId || ""} onChange={(event) => setExcursionRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "excursion").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-warning" onClick={sendOnExcursion} disabled={savingTravel || !excursionRouteId}>Send on excursion</button></label>
         <label><span>Next destination</span><select className="form-select form-select-sm" value={nextLocationId || ""} onChange={(event) => setNextLocationId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{locations.filter((loc) => loc?.id).map((loc) => <option key={loc.id} value={loc.id}>{loc.name}</option>)}</select><button type="button" className="btn btn-sm btn-outline-info" onClick={setNextDestination} disabled={savingTravel || !nextLocationId}>Set destination</button></label>
         <label><span>Move speed · {Number(draftMoveSpeed).toFixed(3)} pct/sec</span><input type="range" className="form-range" min={0.001} max={0.05} step={0.001} value={draftMoveSpeed} onChange={(event) => setDraftMoveSpeed(parseFloat(event.target.value))} /></label>
         <label><span>Dwell time · {Number(draftDwellHours).toFixed(0)} hours</span><input type="range" className="form-range" min={1} max={24} step={1} value={draftDwellHours} onChange={(event) => setDraftDwellHours(parseInt(event.target.value, 10))} /></label>
         <div className="merchant-admin-save"><button type="button" className="btn btn-sm btn-success" onClick={saveMovementSettings} disabled={savingTravel}>{savingTravel ? "Saving…" : "Save movement"}</button></div>
-      </div>
+      </div> : null}
     </section>
   ) : null;
 
@@ -1002,7 +1011,7 @@ export default function MerchantPanel({
             Return to Profile
           </button>
         ) : null}
-        {isAdmin ? (
+        {mayManageCommerce ? (
           <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
             Merchant tools
           </button>

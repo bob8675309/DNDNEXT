@@ -52,4 +52,20 @@ test("T29-C05 permissions approval does not imply every non-player role",()=>{
  assert.doesNotMatch(executable,/role\s*!==?\s*["']player/);
  assert.match(c,/COMMERCE_MANAGER_ROLES\.includes\(role\)/);
 });
+test("T29-C06 research-only town stock is independent of route administration",()=>{
+ const shop=read("components/c34/MerchantPanelT28P2Research.jsx");
+ const parent=read("components/NpcPanelTownT28P2Research.jsx");
+ assert.match(parent,/showTravelTools=\{false\}/);
+ for(const token of [
+  "canManageCommerce","canManageTravel","showTravelTools = true",
+  "mayManageCommerce","mayManageTravel",
+  "if (!mayManageTravel) return",
+  "{mayManageTravel ? <div className=\"merchant-admin-grid\">",
+  "const adminConsole = mayManageCommerce && showTravel"
+ ])assert.ok(shop.includes(token),"Missing commerce/travel scope "+token);
+ assert.doesNotMatch(shop,/if \(!isAdmin\)/,
+  "No generic non-player admin role may gate travel/stock together");
+ assert.doesNotMatch(read("components/MerchantPanel.js"),/mayManageCommerce|mayManageTravel/,
+  "Protected original merchant still untouched");
+});
 console.log("PASS T29-COMMERCE-ROLE-SOURCE: Admin/GM/DM stock+gold only, unknown deny, protected original UI unchanged; hosted SQL NOT executed");
