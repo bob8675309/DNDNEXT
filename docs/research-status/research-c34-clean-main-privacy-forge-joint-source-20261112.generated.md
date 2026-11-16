@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ade07541c1f6a697bd1883458771e553b7124f25` |
+| Exact source commit represented by this archive snapshot | `50ef62f8ac0a1d49e88dc75395716e48e69b0361` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin source-derived existing tag representation before disposable merchant helper adapter |
+| Last source commit title | test(c34): fix snapshot SQL concatenation for denied-write verification |
 | Files changed relative to main | 173 (140 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs`
+- `scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
