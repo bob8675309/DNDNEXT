@@ -23,7 +23,10 @@ test("T36-01 original /npcs page is byte identical and no generated research rou
  assert.equal(existsSync(path.join(root,"pages/__c34_t25_probe.jsx")),false);
  const conf=read("next.config.mjs");
  assert.match(conf,/reconcileT36Route\(process\.env\)/);
- assert.match(conf,/return t36Enabled \? \[T36_REWRITE\] : \[\]/);
+ assert.match(conf,/beforeFiles:\\[T36_REWRITE\\]/,
+  "Only Next beforeFiles can override the existing physical /npcs page");
+ assert.match(conf,/return t36Enabled[\\s\\S]*?: \\[\\];/,
+  "Flag OFF must return empty rewrites");
  assert.doesNotMatch(read("pages/npcs.js"),/T36_REWRITE|NEXT_PUBLIC_C34_T36_NPCS_RESEARCH/);
 });
 test("T36-02 default OFF is strictly opt-in; hosted flags and unsigned roles cannot turn on the route",()=>{

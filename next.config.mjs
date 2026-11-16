@@ -6,6 +6,11 @@ import {reconcileT36Route,T36_REWRITE} from "./scripts/integration/c34/prepare_t
 const t36Enabled=reconcileT36Route(process.env);
 export default {
   async rewrites(){
-    return t36Enabled ? [T36_REWRITE] : [];
+    // An array is applied AFTER existing pages in Next 16. The source
+    // /npcs file already exists; beforeFiles is required to override it.
+    // With the flag OFF, return the original no-rewrite [] contract.
+    return t36Enabled
+      ? {beforeFiles:[T36_REWRITE],afterFiles:[],fallback:[]}
+      : [];
   },
 };
