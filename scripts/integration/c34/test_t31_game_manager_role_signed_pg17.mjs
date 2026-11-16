@@ -49,7 +49,7 @@ for(const role of ["admin","gm","dm","player","editor","unknown","GM"])
  actors[role]=await make(role);
 const npc=sql("SELECT id::text FROM public.characters WHERE name='T22 Profile NPC' AND kind='npc' LIMIT 1");
 const merchant=sql("SELECT id::text FROM public.characters WHERE name='T26 Probe Merchant' AND kind='merchant' LIMIT 1");
-const creator=sql("SELECT id::text FROM public.characters WHERE name='T22 signed source creator' AND kind='player' LIMIT 1");
+const creator=sql("SELECT id::text FROM public.characters WHERE name='T22 signed source creator' AND 'player-character'=ANY(tags) LIMIT 1");
 for(const [key,id] of Object.entries({npc,merchant,creator}))
  assert.match(id,/^[a-f0-9-]{36}$/i,"missing T22/T26 original local "+key);
 const expectedSecret="T22_GM_DOSSIER_NEVER_PUBLIC";
