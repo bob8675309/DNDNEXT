@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ad2fe2a7a01cf57270ec74e27e3a82af7f5d26ef` |
+| Exact source commit represented by this archive snapshot | `d51eaccf8a7d078f5d2f854490b5327d3e5bd58d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): expose original NPC Sheet save/Stage2 error instead of opaque T36 Edit timeout |
-| Files changed relative to main | 182 (147 non-docs; 35 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(c34): preserve Stage2 SELECT deny, add scoped authenticated NPC narrative writer only in disposable T36 |
+| Files changed relative to main | 183 (148 non-docs; 35 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
+- `scripts/integration/c34/prepare_t36_npcs_route.mjs`
+- `scripts/integration/c34/t36_disposable_npc_narrative_save_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +72,7 @@
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `next.config.mjs`
 - `pages/town/[id].js`
-- … 132 more
+- … 133 more
 
 ## Trust and update procedure
 
