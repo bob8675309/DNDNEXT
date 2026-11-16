@@ -86,9 +86,11 @@ for(const role of ["admin","gm","dm","player","editor","unknown"]){
   "') ON CONFLICT(id) DO UPDATE SET role=excluded.role");
  actors[role]={who,id:u.data.user.id,email,password};
 }
-// Genuine source expects text[] merchant tags, while T28 local town fixture
-// has JSONB tags. Convert the disposable scratch fixture AFTER T1-T33 tests;
-// never present this synthetic conversion as verified hosted schema parity.
+// Genuine last-source merchant theme accepts text[]; the T28 local town
+// fixture keeps JSONB tags and has an original player-tag guard TRIGGER
+// dependent on that column. Never drop/retype it (first signed T34 RED).
+// Add a disposable exact-JSONB overload delegating to source ORIGINAL text[]
+// theme helper, without modifying the fixture's protected tag schema/trigger.
 install([
  "BEGIN; SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='75s';",
  "DO $g$ BEGIN IF current_database()<>'postgres' OR current_setting('server_version_num')::int NOT BETWEEN 170000 AND 179999",
@@ -97,8 +99,11 @@ install([
  " OR to_regclass('public.site_visit_activity') IS NOT NULL",
  " THEN RAISE EXCEPTION 'T34 refuses non-original local fixture'; END IF; END $g$;",
  "ALTER TABLE public.campaign_item_pool_settings ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT timezone('utc',now()), ADD COLUMN IF NOT EXISTS updated_by uuid;",
- "ALTER TABLE public.characters DROP COLUMN IF EXISTS tags;",
- "ALTER TABLE public.characters ADD COLUMN tags text[] NOT NULL DEFAULT '{}'::text[];",
+ "DO $tags$ BEGIN IF to_regprocedure('private.current_user_is_admin()') IS NULL OR",
+ " (SELECT data_type FROM information_schema.columns WHERE table_schema='public'",
+ " AND table_name='characters' AND column_name='tags') <> 'jsonb'",
+ " OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname='characters_guard_player_tags_v1' AND NOT tgisinternal)",
+ " THEN RAISE EXCEPTION 'T34 refuses missing protected JSONB player-tags trigger'; END IF; END $tags$;",
  "UPDATE public.characters SET storefront_enabled=false WHERE storefront_enabled IS TRUE;",
  "UPDATE public.characters SET storefront_enabled=true WHERE id="+quote(merchant)+";",
  "CREATE TABLE IF NOT EXISTS public.players(user_id uuid PRIMARY KEY,name text);",
@@ -106,7 +111,23 @@ install([
  "ALTER TABLE public.players ADD COLUMN IF NOT EXISTS name text;",
  "COMMIT;"
 ].join("\n"),"fixture");
-install(theme+"\n"+originalSetter+"\n"+
+// Only scratch-local overload: preserve original immutable text[] helper
+// and all original character tags/guard triggers. The original full setter
+// resolves the JSONB argument to this wrapper then calls the text[] source.
+const tagsOverload=[
+ "CREATE OR REPLACE FUNCTION private.merchant_theme_from_identity_v1(",
+ " p_name text,p_role text,p_affiliation text,p_title text,p_tagline text,p_tags jsonb)",
+ "RETURNS text LANGUAGE sql IMMUTABLE",
+ "SET search_path TO 'pg_catalog','public','private'",
+ "AS $t34_tags$",
+ " SELECT private.merchant_theme_from_identity_v1(",
+ "  p_name,p_role,p_affiliation,p_title,p_tagline,",
+ "  ARRAY(SELECT jsonb_array_elements_text(",
+ "   CASE WHEN jsonb_typeof(p_tags)='array' THEN p_tags ELSE '[]'::jsonb END))",
+ " );",
+ "$t34_tags$;"
+].join("\n");
+install(theme+"\n"+tagsOverload+"\n"+originalSetter+"\n"+
  "REVOKE ALL ON FUNCTION public.set_campaign_future_tech_enabled_v1(boolean) FROM PUBLIC,anon,authenticated;\n"+
  "GRANT EXECUTE ON FUNCTION public.set_campaign_future_tech_enabled_v1(boolean) TO authenticated,service_role;\n"+
  "NOTIFY pgrst,'reload schema';","original-setter");
