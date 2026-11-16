@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `148a8425065e854565377c812d27348b80a4a491` |
+| Exact source commit represented by this archive snapshot | `00ff17ee03d8789accef007cee42d716afc4221c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): preserve original Interaction tabs but send town Shop to isolated guarded NPC panel |
+| Last source commit title | fix(c34): switch town-only Profile shell to isolated derived Interaction panel; original NpcPanel protected |
 | Files changed relative to main | 143 (117 non-docs; 26 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/character/CharacterInteractionPanelTownT28P2Research.js`
+- `pages/town/[id].js`
 
 ## Research-branch change inventory versus main
 
