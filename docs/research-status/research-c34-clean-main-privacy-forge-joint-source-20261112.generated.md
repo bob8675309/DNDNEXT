@@ -5,21 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9c4878c703f62e487273e0c8e5ff2a0178ddfc36` |
+| Exact source commit represented by this archive snapshot | `b3325d393f446be3f47d5efce09eb29f94a51234` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): handoff exact original-source GM DM SQL candidate with pending signed role CI |
+| Last source commit title | test(c34): accept PostgREST hidden anon RPC while proving zero stock and GP mutations |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
+- `scripts/integration/c34/test_t29_commerce_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
