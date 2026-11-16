@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5aaf7d8603bfa367b51d354643c6254d407edb24` |
+| Exact source commit represented by this archive snapshot | `cd13a14db19259f8d4da302d9a3553d2e28fc10b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): T36 localhost-only default-OFF actual /npcs Next rewrite, complete source-derived manager |
-| Files changed relative to main | 179 (145 non-docs; 34 docs) |
+| Last source commit title | test(c34): T36 default-OFF exact source and local-only signed route/role negative contracts |
+| Files changed relative to main | 180 (146 non-docs; 34 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,8 +17,8 @@
 
 ## Latest source commit paths
 
-- `next.config.mjs`
-- `scripts/integration/c34/prepare_t36_npcs_route.mjs`
+- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +72,7 @@
 - `next.config.mjs`
 - `pages/town/[id].js`
 - `scripts/agents/project_health.mjs`
-- … 129 more
+- … 130 more
 
 ## Trust and update procedure
 
