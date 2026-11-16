@@ -114,6 +114,11 @@ jobs:
           node --check scripts/integration/c34/test_t33_town_stage2_source.mjs
           node --test scripts/integration/c34/test_t33_town_stage2_source.mjs
           node scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
+      - name: T34 original campaign-pool and technical-site role source/negative preservation
+        run: |
+          node --check scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs
+          node --check scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs
+          node --test scripts/integration/c34/test_t34_game_manager_campaign_site_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
