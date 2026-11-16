@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `deb90b906993a682c6bfca37e1429440bc8fbd9f` |
+| Exact source commit represented by this archive snapshot | `1596261381589c141ee07d4575631ce4d47878e6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): normalize old reduced catalog prices only inside T29 disposable PG17 |
+| Last source commit title | test(c34): assign prices only to unpriced disposable Forge catalog rows for original reroll |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
