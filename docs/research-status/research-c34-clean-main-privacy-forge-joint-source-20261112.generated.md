@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7b0b31c299f6e0c33995abe7c137232afc6713f6` |
+| Exact source commit represented by this archive snapshot | `33d3a1791a95eb0ff903a68dfa55d20e2fbb7121` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source SQL security regex inspects executable lines, not comments |
+| Last source commit title | test(c34): T31 asserts latest T22 committed private Story, not initial draft |
 | Files changed relative to main | 163 (133 non-docs; 30 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t31_game_manager_role_source.mjs`
+- `scripts/integration/c34/test_t31_game_manager_role_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
