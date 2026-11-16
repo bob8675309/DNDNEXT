@@ -126,6 +126,10 @@ for(const token of [
  "PASS T26-C03 original live manager Print Sheet generates true safe 3-page PDF",
  "PASS T26-C06 real local permission revocation"
 ])assert.ok(original.includes(token),"T28 P2 must retain original suite and new local-only checks "+token);
+const guardedTownShop=src("components/c34/MerchantPanelT28P2Research.jsx");
+assert.match(guardedTownShop,/typeof onBackToProfile === "function"/);
+assert.match(guardedTownShop,/Return to Profile/);
+assert.match(guardedTownShop,/onClick=\{onBackToProfile\}/);
 const actualTown=src("scripts/integration/c34/run_t28_p2_real_town_route_browser.mjs");
 for(const token of ["REAL /town/[id]", "Browse Wares", "Return to Profile",
  "sidepanel.getByRole", "const sidepanel=page.locator",

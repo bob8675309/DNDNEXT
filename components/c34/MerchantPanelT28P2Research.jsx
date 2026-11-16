@@ -996,6 +996,12 @@ export default function MerchantPanel({
       titleAddon={<span className="merchant-market-theme-pill">{themeLabel}</span>}
       subline=""
       headerActions={<>
+        {/* Guarded town Shop is the only variant with a Profile return action. */}
+        {typeof onBackToProfile === "function" ? (
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={onBackToProfile}>
+            Return to Profile
+          </button>
+        ) : null}
         {isAdmin ? (
           <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
             Merchant tools

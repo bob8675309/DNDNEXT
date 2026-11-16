@@ -49,6 +49,8 @@ assert.match(derivedNpc,/\{useGuardedTownMerchant \? \(\s*<GuardedTownMerchantPa
 assert.match(derivedNpc,/\) : \(\s*<MerchantPanel/);
 assert.match(derivedNpc,/onBackToProfile=\{\(\) => setPanelView\("profile"\)\}/);
 assert.match(guardedShop,/import useWallet from "\.\.\/\.\.\/utils\/c34\/useWalletT28P2Research"/);
+assert.match(guardedShop,/typeof onBackToProfile === "function"/);
+assert.match(guardedShop,/Return to Profile/);
 
 // A derivative must be exactly the original source plus explicit,
 // reversible, isolated changes, not an accidental fork losing features.
