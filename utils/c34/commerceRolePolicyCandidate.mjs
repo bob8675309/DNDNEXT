@@ -4,7 +4,7 @@
 export const COMMERCE_MANAGER_ROLES = Object.freeze(["admin", "gm", "dm"]);
 
 // Intentionally exact, canonical, lowercase database values. Unknown or typoed
-// roles fail CLOSED instead of inheriting privileges from role !== "player".
+// roles fail CLOSED instead of allowing every unspecified non-player role.
 export function commerceRoleCapabilities(canonicalDatabaseRole) {
   const role = typeof canonicalDatabaseRole === "string" ? canonicalDatabaseRole : "";
   const canManageCommerce = COMMERCE_MANAGER_ROLES.includes(role);
