@@ -25,3 +25,7 @@
 - **Not yet done:** no application imports of this module, no SQL candidate applied to hosted database, no GM/DM account created/promoted, no signed DB GM/DM positive tests, no migration, no deployment or main merge. Existing #379 DRAFT/HOLD; `NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP` OFF by default.
 
 Next owner input required only if a later choice changes the boundary (e.g., allowing GM/DM to alter merchant travel). Otherwise follow the commerce-only scope.
+
+
+## Verified source gate (2026-11-15 CST)
+[T29 GitHub source CI 43803587885](https://github.com/bob8675309/DNDNEXT/actions/runs/43803587885) **SUCCESS** at code `6414abe37cd39f75b8a2454dd97ee86c6c242a62`; full exact-source C34 workflow also preserves original T27/T28 checks and release-blocking assertion. The first [T29 CI 43803451790](https://github.com/bob8675309/DNDNEXT/actions/runs/43803451790) caught a comment-only regex false positive, corrected by scanning executable lines; this is not evidence of a real authorization defect. **No signed GM/DM database proof or live grant yet.** The next acceptance gate must create explicit `gm` and `dm` users only inside disposable signed GoTrue/PostgREST and verify original-source stock/wallet functions and policy limits (plus world travel denial). Keep production role table and global Admin helpers unchanged.
