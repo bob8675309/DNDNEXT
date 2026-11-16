@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `297d81a2b11c58737459dfa94da0ea889ac97ac4` |
+| Exact source commit represented by this archive snapshot | `4e9591989ee6b166952f2a5254bd636c59304637` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record verified signed Actions receipts and fixed real town Profile-only integration |
+| Last source commit title | docs(c34): promote independently verified full signed T28-P2 evidence and real town Profile handoff hold |
 | Files changed relative to main | 144 (118 non-docs; 26 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
