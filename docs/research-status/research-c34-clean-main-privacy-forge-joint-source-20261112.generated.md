@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4df12f532b90b698a42498e5ff02fbc2967b31db` |
+| Exact source commit represented by this archive snapshot | `7f624923a461874e9c2d7b2763f95b860f90e6de` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): avoid flaky Next 16 Turbopack stall in disposable T33 browser using supported webpack |
+| Last source commit title | test(c34): retain original protected JSONB player tags; disposable merchant theme overload instead of DROP |
 | Files changed relative to main | 173 (140 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs`
+- `scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
