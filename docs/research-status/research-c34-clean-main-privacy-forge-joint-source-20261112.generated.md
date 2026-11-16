@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `810b309f43e00e8706a12eb392f63c1a0bdf5dbc` |
+| Exact source commit represented by this archive snapshot | `59378deef5432e6af057376e0a92915650059b16` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): T32 game-manager role consumer and independent SQL guard audit (no runtime) |
+| Last source commit title | docs(c34): record genuine T31 signed roles PASS and T32 authority source-audit PASS |
 | Files changed relative to main | 165 (134 non-docs; 31 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T31_OWNER_REVISED_GAME_MASTER_ROLE_EQUIVALENCE_2026-11-16.md`
 - `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
-- `scripts/integration/c34/test_t32_game_master_authority_callsite_audit.mjs`
 
 ## Research-branch change inventory versus main
 
