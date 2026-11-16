@@ -110,6 +110,13 @@ for(const token of [
  "PASS T26-C06 real local permission revocation"
 ])assert.ok(original.includes(token),"T28 P2 must retain original suite and new local-only checks "+token);
 const workflow=src(".github/workflows/validate-c34-joint-local-auth.yml");
+
+const sourceWorkflow=src(".github/workflows/validate-c34-joint-source-research.yml");
+assert.match(sourceWorkflow,/name: 'T28-P2 non-map commerce guard: selected wallet owner and late response safety'/,
+ "Source GitHub Actions workflow must quote a colon-bearing step label");
+assert.doesNotMatch(sourceWorkflow,/^\s*- name: T28-P2 non-map commerce guard: selected wallet owner/m,
+ "Unquoted YAML step names containing colon+space prevent any jobs from starting");
+
 assert.match(workflow,/C34_T26_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY/);
 assert.match(workflow,/test_t26_current_merchant_shop_browser\.mjs/);
 // C34 executes only disposable local PG17 and now runs on ordinary pushes to
