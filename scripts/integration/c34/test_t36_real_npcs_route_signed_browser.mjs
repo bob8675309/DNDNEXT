@@ -114,6 +114,76 @@ try {
  for(const [label,edit,inventory] of [["COEDITOR",true,false],["INVONLY",false,true]])
   sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES("+
    q(npc)+","+q(users[label].id)+","+(edit?"true":"false")+","+(inventory?"true":"false")+",false)");
+ // Authentic original Stage2 REVOKE makes this original current Manager
+ // PostgREST UPDATE fail for signed GM. Never weaken SELECT privileges.
+ const before=await users.GM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:npc});
+ assert.ifError(before.error);
+ const oldPatch={role:null,affiliation:null,
+  description:"T25 APPROVED PUBLIC DESCRIPTION",
+  background:"T25 PUBLIC BACKGROUND",motivation:"T25 PRIVATE MOTIVATION",
+  quirk:null,mannerism:null,voice:null,updated_at:new Date().toISOString()};
+ const originalWrite=await users.GM.who.from("characters")
+  .update(oldPatch).eq("id",npc);
+ assert.equal(originalWrite.error?.code,"42501",
+  "T36 source-original Stage2 original PostgREST narrative writer changed; stop rather than restore global SELECT");
+ console.log("PASS T36-NARRATIVE-ORIGINAL-RED: original full manager direct table UPDATE correctly denied under original Stage2 column ACL");
+ // Only install research SQL in the signed/disposable PG17 CI after T1–T35.
+ const install=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-q","-f",
+   path.join(root,"scripts/integration/c34/t36_disposable_npc_narrative_save_pg17.sql")],{
+   env,cwd:root,encoding:"utf8",timeout:75000
+ });
+ assert.equal(install.status,0,"T36 protected local narrative RPC SQL: "+install.stderr?.slice(-2200));
+ assert.equal(sql("SELECT has_column_privilege('authenticated','public.characters','background','SELECT')::text"),"f");
+ // PostgREST's NOTIFY schema refresh is asynchronous. Retry ONLY its
+ // temporary missing-function cache error; no authorization errors ignored.
+ const call=async(label,patch)=>{
+  let response;
+  for(let attempt=0;attempt<40;attempt++){
+   response=await users[label].who.rpc("c34_npc_narrative_save_research_v1",{
+    p_character_id:npc,p_patch:patch
+   });
+   if(response.error?.code!=="PGRST202")break;
+   await new Promise(resolve=>setTimeout(resolve,300));
+  }
+  assert.notEqual(response.error?.code,"PGRST202","T36 guarded narrative RPC did not enter PostgREST schema cache");
+  return response;
+ };
+ for(const label of ["ADMIN","GM","DM"]){
+  const updated="T36 "+label+" GUARDED-NARRATIVE";
+  const result=await call(label,{quirk:updated});
+  assert.ifError(result.error);assert.equal(result.data,true);
+  const dossier=await users[label].who.rpc("get_npc_dossier_admin_v1",{p_character_id:npc});
+  assert.ifError(dossier.error);assert.equal(dossier.data?.quirk,updated);
+  console.log("PASS T36-NARRATIVE-WRITER-"+label+
+    ": authenticated current game manager can save only selected narrative with original Stage2 preserved");
+ }
+ const editor=await call("COEDITOR",{quirk:"T36 COEDITOR AUTHORIZED"});
+ assert.ifError(editor.error);assert.equal(editor.data,true,
+  "Original can_edit delegate must retain narrative rights without accessing GM secret");
+ const initialProtected=await users.GM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:npc});
+ assert.ifError(initialProtected.error);
+ for(const label of ["INVONLY","OUTSIDER","UNKNOWN"]){
+  const result=await call(label,{quirk:"T36 FORBIDDEN "+label});
+  assert.equal(result.error?.code,"42501","T36 noneditor denied");
+ }
+ const anonWrite=await client().rpc("c34_npc_narrative_save_research_v1",{
+  p_character_id:npc,p_patch:{quirk:"T36 ANON FORBIDDEN"}
+ });
+ assert.ok(anonWrite.error);
+ const afterProtected=await users.GM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:npc});
+ assert.ifError(afterProtected.error);
+ assert.equal(afterProtected.data?.quirk,initialProtected.data?.quirk);
+ console.log("PASS T36-NARRATIVE-NONMANAGER: player/unknown/inventory-only and anonymous denied, no mutation");
+ for(const forbidden of ["secret","tags","kind","location_id","map_icon_id","updated_at"]){
+  const attack=await call("GM",{[forbidden]:"FORGED"});
+  assert.equal(attack.error?.code,"22023",
+    "T36 narrative writer accepted non-narrative field "+forbidden);
+ }
+ const afterForge=await users.GM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:npc});
+ assert.ifError(afterForge.error);
+ assert.equal(afterForge.data?.secret,secret);
+ assert.equal(afterForge.data?.quirk,initialProtected.data?.quirk);
+ console.log("PASS T36-NARRATIVE-SECRET-DENY: no secret/map/tags/kind/time forgery or bypass");
  const generated=makeT36Source();
  assert.match(generated,/data-c34-t36="source-derived-stage2"/);
  assert.ok(!fs.existsSync(probe),"T36 refuses tracked or preexisting scratch route");
@@ -373,6 +443,11 @@ try {
    // Same actor token, server profile demotion. The UI must evict private
    // dossier, sheet and generated PDF on explicit permission refresh.
    sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(users.ADMIN.id));
+   const revokedNarrative=await users.ADMIN.who.rpc("c34_npc_narrative_save_research_v1",{
+    p_character_id:npc,p_patch:{quirk:"T36 DEMOTED FORBIDDEN"}
+   });
+   assert.equal(revokedNarrative.error?.code,"42501",
+     "T36 same JWT Admin demotion retained write authority");
    await page.getByTestId("t25-refresh-permissions").click();
    await page.getByTestId("t25-sheet-restricted").waitFor({timeout:60000});
    assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0);
@@ -409,6 +484,11 @@ try {
  await page.getByRole("button",{name:"Print Sheet"}).waitFor();
  sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id="+q(npc)+
   " AND user_id="+q(users.COEDITOR.id));
+ const revokedEditor=await users.COEDITOR.who.rpc("c34_npc_narrative_save_research_v1",{
+  p_character_id:npc,p_patch:{quirk:"T36 REVOKED DELEGATE FORBIDDEN"}
+ });
+ assert.equal(revokedEditor.error?.code,"42501",
+  "T36 same JWT collaborator lost can_edit but retained narrative write");
  await page.getByTestId("t25-refresh-permissions").click();
  await page.getByTestId("t25-sheet-restricted").waitFor({timeout:30000});
  assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0,"Revoked editor retained Print Sheet");

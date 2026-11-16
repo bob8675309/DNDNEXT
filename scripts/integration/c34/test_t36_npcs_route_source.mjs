@@ -52,10 +52,33 @@ test("T36-03 generated full manager is exact T35 output plus only a diagnostic r
  const original=read("pages/npcs.js");
  const prior=deriveT35FullManager(original).output;
  const candidate=makeT36Source();
- assert.ok(candidate.includes(prior.replace(
+ const direct='const upd = await supabase.from("characters").update(patch).eq("id", selected.id);';
+ const guarded=[
+  'const narrativePatch = { ...patch };',
+  '                           delete narrativePatch.updated_at;',
+  '                           const upd = await supabase.rpc("c34_npc_narrative_save_research_v1", {',
+  '                             p_character_id: selected.id, p_patch: narrativePatch',
+  '                           });'
+ ].join("\n");
+ const originalWithMarker=prior.replace(
   '<div className="npcs-page-root">',
-  '<div className="npcs-page-root" '+T36_MARKER+'>'
-  )),"T36 must preserve entire T35 full source and all previous security checks");
+  '<div className="npcs-page-root" '+T36_MARKER+'>');
+ const saveStart=originalWithMarker.indexOf('                         // Save narrative fields');
+ const saveEnd=originalWithMarker.indexOf('                         // Save sheet overlay',saveStart);
+ assert.ok(saveStart>0&&saveEnd>saveStart);
+ assert.equal(originalWithMarker.slice(saveStart,saveEnd).split(direct).length-1,1);
+ const expectedBody=originalWithMarker.slice(0,saveStart)+
+   originalWithMarker.slice(saveStart,saveEnd).replace(direct,guarded)+
+   originalWithMarker.slice(saveEnd);
+ assert.ok(candidate.endsWith(expectedBody),
+  "T36 must preserve every original full manager byte apart from the root marker and exactly one guarded narrative writer");
+ const preface=candidate.slice(0,-expectedBody.length);
+ assert.match(preface,/T36 EXACT SOURCE generated from ORIGINAL current NPC manager/);
+ assert.ok(preface.length<240);
+ const saveBlock=candidate.slice(candidate.indexOf('// Save narrative fields'),
+   candidate.indexOf('// Save sheet overlay'));
+ assert.doesNotMatch(saveBlock,/from\("characters"\)\.update\(patch\)/);
+ assert.match(saveBlock,/c34_npc_narrative_save_research_v1/);
  assert.equal((candidate.match(/data-c34-t36="source-derived-stage2"/g)||[]).length,1);
  assert.equal((candidate.match(/\.select\(C34_T25_PUBLIC_ROSTER_FIELDS\)/g)||[]).length,3);
  assert.doesNotMatch(candidate,/\.rpc\("is_admin",\s*\{\s*uid:/);
@@ -88,5 +111,28 @@ test("T36-05 signed real /npcs test must check OFF and ON and never leak generat
  assert.match(t,/for\(const role of \["ADMIN","DM"\]\)/,
   "T36 actual signed manager must exercise both Admin and DM");
  assert.ok(!t.includes('pages/__c34_t35_probe.jsx'));
+});
+test("T36-06 scoped Stage2 narrative writer changes NO original global RLS or other data",()=>{
+ const sql=read("scripts/integration/c34/t36_disposable_npc_narrative_save_pg17.sql");
+ assert.match(sql,/current_database\(\)<>'postgres'/);
+ assert.match(sql,/server_version_num/);
+ assert.match(sql,/has_column_privilege\('authenticated','public.characters','background','SELECT'\)/);
+ assert.match(sql,/private.can_access_character_v1\(p_character_id,'edit'\)/);
+ assert.match(sql,/private.can_access_character_v1\(c.id,'edit'\)/);
+ assert.match(sql,/c.kind IN \('npc','merchant'\)/);
+ assert.match(sql,/auth.uid\(\) IS NULL/);
+ assert.match(sql,/jsonb_each\(p_patch\)/);
+ assert.match(sql,/jsonb_typeof\(fields.value\) NOT IN \('string','null'\)/);
+ assert.match(sql,/fields.key NOT IN/);
+ assert.match(sql,/REVOKE ALL ON FUNCTION public.c34_npc_narrative_save_research_v1/);
+ assert.match(sql,/GRANT EXECUTE ON FUNCTION public.c34_npc_narrative_save_research_v1/);
+ assert.doesNotMatch(sql,/\bALTER\s+TABLE\s+public\.characters\b|\bGRANT\s+(?:ALL|UPDATE|SELECT)\s+ON\s+(?:TABLE\s+)?public\.characters\b/i);
+ const t=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
+ for(const proof of ["T36-NARRATIVE-ORIGINAL-RED","T36-NARRATIVE-WRITER-ADMIN",
+   "T36-NARRATIVE-WRITER-GM","T36-NARRATIVE-WRITER-DM",
+   "T36-NARRATIVE-NONMANAGER","T36-NARRATIVE-SECRET-DENY",
+   "T36-NARRATIVE-GM","T36-REVOCATION"]){
+   assert.ok(t.includes(proof),"Missing signed narrative proof "+proof);
+ }
 });
 console.log("PASS T36-SOURCE: original /npcs bytes intact, local-only default-OFF Next rewrite and full T35 source retained");
