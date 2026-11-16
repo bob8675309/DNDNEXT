@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b32bd512aaad30e7ee8b028e040cf1f0cd313252` |
+| Exact source commit represented by this archive snapshot | `6782d8b0a6fb1f13cc0338fe9307b4b0a6baae87` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source guard accepts dynamic signed Admin+DM marker with explicit role-loop assertion |
+| Last source commit title | fix(c34): Next16 beforeFiles overrides existing /npcs only under local T36 flag |
 | Files changed relative to main | 181 (147 non-docs; 34 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,7 @@
 
 ## Latest source commit paths
 
+- `next.config.mjs`
 - `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 
 ## Research-branch change inventory versus main
