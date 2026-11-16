@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `927667053f06374a64a4ada1076271c8c8c47b14` |
+| Exact source commit represented by this archive snapshot | `2ad563d0fbfa94d4869a8d0f1a33fa6220dce77b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): wait for real Next dev readiness before T33 signed Chromium navigation |
-| Files changed relative to main | 169 (138 non-docs; 31 docs) |
+| Last source commit title | research(c34): T34 signed exact-source campaign setter vs technical site role proof |
+| Files changed relative to main | 171 (139 non-docs; 32 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs`
+- `scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -63,6 +63,7 @@
 - `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
 - `docs/research/C34_T31_OWNER_REVISED_GAME_MASTER_ROLE_EQUIVALENCE_2026-11-16.md`
 - `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
+- `docs/research/C34_T33_TOWN_STAGE2_SAFE_GM_PROFILE_2026-11-16.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `pages/town/[id].js`
@@ -70,8 +71,7 @@
 - `scripts/agents/render_open_pr_index.mjs`
 - `scripts/agents/validate_open_pr_index.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
-- `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
-- … 119 more
+- … 121 more
 
 ## Trust and update procedure
 
