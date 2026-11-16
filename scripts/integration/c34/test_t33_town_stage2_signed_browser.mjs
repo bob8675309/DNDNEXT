@@ -188,12 +188,12 @@ try{
  await town.getByRole("button",{name:"Return to Profile",exact:true}).waitFor({timeout:45000});
  console.log("PASS T33-TOWN-PROFILE-SHOP: current tracked town DM Profile → Shop → Profile → Shop");
  // Same page actor transition. T28 parent must evict entire private panel.
- const signedOut=await page.evaluate(async()=>{const {error}=await window.__t33sb.auth.signOut();return error?.message||null;});
+ const signedOut=await page.evaluate(async()=>{const {error}=await window.__sb.auth.signOut();return error?.message||null;});
  assert.equal(signedOut,null);
  await town.waitFor({state:"detached",timeout:35000});
  const player=roles.player;
  const switched=await page.evaluate(async credentials=>{
-  const {data,error}=await window.__t33sb.auth.signInWithPassword(credentials);
+  const {data,error}=await window.__sb.auth.signInWithPassword(credentials);
   if(error)throw Error(error.message);
   return data.user.id;
  },{email:player.email,password:player.password});
