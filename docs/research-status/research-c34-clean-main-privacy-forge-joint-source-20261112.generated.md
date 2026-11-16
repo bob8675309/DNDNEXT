@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `396996335d932ccabeb435395c176cf31786113b` |
+| Exact source commit represented by this archive snapshot | `eb74c8a9267b33457ce4fdefc3cc5f40c982b9ac` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept full signed GM DM merchant-only and player-wallet permission matrix |
-| Files changed relative to main | 153 (125 non-docs; 28 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | research(c34): T30 strict town role and Stage2-safe NPC profile signed gates (held) |
+| Files changed relative to main | 158 (129 non-docs; 29 docs) |
+| Last source commit | 9 files (6 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,15 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-joint-source-research.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
+- `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
+- `scripts/integration/c34/t30_disposable_town_role_capabilities_pg17.sql`
+- `scripts/integration/c34/test_t30_town_role_profile_signed_pg17.mjs`
+- `scripts/integration/c34/test_t30_town_role_source.mjs`
+- `utils/c34/t30TownRoleProfileCandidate.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -60,6 +66,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 - `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
 - `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
+- `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `pages/town/[id].js`
@@ -72,8 +79,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
 - `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
 - `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
-- `scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql`
-- … 103 more
+- … 108 more
 
 ## Trust and update procedure
 
