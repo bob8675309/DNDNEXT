@@ -63,4 +63,14 @@ test("T35-05 source-original GM/DM game role and site audit remain independent",
  assert.doesNotMatch(read("pages/npcs.js"),/T35/);
  assert.doesNotMatch(read("components/MapPageClient.js"),/T35/);
 });
+test("T35-06 scratch fixture names must never collide with original T25 in same signed database",()=>{
+ const b=read("scripts/integration/c34/test_t35_full_manager_signed_browser.mjs");
+ assert.match(b,/"T35 Probe NPC"/);
+ assert.match(b,/"T35 Probe Merchant"/);
+ assert.doesNotMatch(b,/"T25 Probe NPC"|"T25 Probe Merchant"/);
+ assert.match(b,/C34_T35_BROWSER_CONFIRM:"CURRENT_FULL_MANAGER_THREE_GAME_MASTER_LOCAL_ONLY"/);
+ assert.match(b,/PASS T35-REVOCATION/);
+ assert.match(b,/PASS T35-MANAGER-/);
+ assert.match(b,/PASS T35-UNKNOWN/);
+});
 console.log("PASS T35-SOURCE: FULL original manager unchanged, exact T25 ancestry, Stage2-safe list/sheet and strict verified game masters");
