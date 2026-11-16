@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d03eb244461304fdf0b2b417afa9dbeddba5fd03` |
+| Exact source commit represented by this archive snapshot | `ceaad5bf0dadf565b19d1145b11cda4adc564199` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): derive Stage2-safe T33 town Profile and validated GM interaction shell |
+| Last source commit title | research(c34): gate actual town Stage2-safe profile behind separate default OFF flag |
 | Files changed relative to main | 167 (136 non-docs; 31 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/NpcPanelTownT33Research.jsx`
-- `components/character/CharacterInteractionPanelTownT33Research.js`
+- `pages/town/[id].js`
 
 ## Research-branch change inventory versus main
 
