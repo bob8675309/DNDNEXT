@@ -111,12 +111,6 @@ CREATE TABLE IF NOT EXISTS public.items_catalog(
 ALTER TABLE public.items_catalog
  ADD COLUMN IF NOT EXISTS price_gp numeric,
  ADD COLUMN IF NOT EXISTS merchant_tags text[] DEFAULT ARRAY[]::text[];
--- Existing original Forge materializer catalog rows predate price_gp and
--- therefore have NULL values. The source-original merchant reroll requires
--- merchant_reroll_pick.price_gp NOT NULL. Normalize ONLY these disposable rows
--- to a deterministic 1 GP so the role test exercises real source stock paths.
--- NOT a pricing migration and NOT production/catalog valuation parity.
-UPDATE public.items_catalog SET price_gp=1 WHERE price_gp IS NULL;
 DO $synthetic$
 BEGIN
  IF to_regprocedure('private.merchant_alchemy_crafted_payload_v1(jsonb)') IS NULL THEN
