@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b80def0973bed5eeda6d6204ec9478a8a7c1b28c` |
+| Exact source commit represented by this archive snapshot | `deb90b906993a682c6bfca37e1429440bc8fbd9f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): keep town-only merchant stock tools separate from route administration |
+| Last source commit title | test(c34): normalize old reduced catalog prices only inside T29 disposable PG17 |
 | Files changed relative to main | 153 (125 non-docs; 28 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
@@ -17,8 +17,8 @@
 
 ## Latest source commit paths
 
-- `components/c34/MerchantPanelT28P2Research.jsx`
-- `scripts/integration/c34/test_t29_commerce_role_source.mjs`
+- `scripts/integration/c34/t29_disposable_commerce_role_gate_pg17.sql`
+- `scripts/integration/c34/test_t29_commerce_source_parity.mjs`
 
 ## Research-branch change inventory versus main
 
