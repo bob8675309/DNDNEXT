@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `daccb5cb34b867117c1e6144627575c662ec9d78` |
+| Exact source commit represented by this archive snapshot | `6414abe37cd39f75b8a2454dd97ee86c6c242a62` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): keep T29 role-negative source assertion free of descriptive comment matches |
+| Last source commit title | test(c34): scope T29 negative role match to executable lines |
 | Files changed relative to main | 149 (121 non-docs; 28 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `utils/c34/commerceRolePolicyCandidate.mjs`
+- `scripts/integration/c34/test_t29_commerce_role_source.mjs`
 
 ## Research-branch change inventory versus main
 
