@@ -8,6 +8,8 @@ import { pickId } from "../../utils/townData";
 const CharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanel"), { ssr: false });
 // Only this town route opts its Profile→Shop tab into the guarded candidate.
 const T28_P2_TOWN_SHOP_ENABLED = process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1";
+const GuardedTownCharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanelTownT28P2Research"), { ssr: false });
+const TownProfilePanel = T28_P2_TOWN_SHOP_ENABLED ? GuardedTownCharacterInteractionPanel : CharacterInteractionPanel;
 
 function normalizeMapRow(row) {
   return {
@@ -1123,7 +1125,7 @@ function handleOpenTownProfile(character, initialView = "profile") {
           {activeTownProfileCharacter ? (
             <div className="town-profile-sidepanel-backdrop" onClick={() => setActiveTownProfileCharacter(null)}>
               <aside className="town-profile-sidepanel" onClick={(event) => event.stopPropagation()}>
-                <CharacterInteractionPanel
+                <TownProfilePanel
                   key={activeTownProfileCharacter?.id || "town-profile"}
                   character={activeTownProfileCharacter}
                   isAdmin={isAdmin}
