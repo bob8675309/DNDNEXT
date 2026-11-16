@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `994241280a62c7c6e847089b77b5c316ca6ba836` |
+| Exact source commit represented by this archive snapshot | `665f3621c900a33a684bb9c2f491f3907c152756` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): check true catalog presence independent of regprocedure search_path rendering |
-| Files changed relative to main | 173 (140 non-docs; 33 docs) |
+| Last source commit title | research(c34): T35 exact-original complete NPC manager derived with strict signed GM/DM role and Stage2 |
+| Files changed relative to main | 174 (141 non-docs; 33 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs`
+- `scripts/integration/c34/derive_t35_full_npc_manager.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `scripts/agents/project_health.mjs`
 - `scripts/agents/render_open_pr_index.mjs`
 - `scripts/agents/validate_open_pr_index.mjs`
-- … 123 more
+- … 124 more
 
 ## Trust and update procedure
 
