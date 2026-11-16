@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a160b15bd155159674d90988554eadfab253abc6` |
+| Exact source commit represented by this archive snapshot | `b32bd512aaad30e7ee8b028e040cf1f0cd313252` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): genuine /npcs OFF original vs ON source-derived manager and signed narrative save |
+| Last source commit title | test(c34): source guard accepts dynamic signed Admin+DM marker with explicit role-loop assertion |
 | Files changed relative to main | 181 (147 non-docs; 34 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
+- `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 
 ## Research-branch change inventory versus main
 
