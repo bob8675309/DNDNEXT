@@ -105,7 +105,7 @@ FROM generate_series(1,24) g(n);
 DO $t29_wallet_source$
 BEGIN
  IF to_regprocedure('public.wallet_get(uuid)') IS NULL
- OR strpos(pg_get_functiondef('public.wallet_get(uuid)'::regprocedure),'t28p2_wallet')=0
+ OR strpos(pg_get_functiondef('public.wallet_get(uuid)'::regprocedure),'private.test_admins')=0
  THEN RAISE EXCEPTION 'T29 REFUSE: expected synthetic T28-P2 wallet_get overload'; END IF;
 END $t29_wallet_source$;
 DROP FUNCTION public.wallet_get(uuid);
