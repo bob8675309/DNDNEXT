@@ -281,4 +281,33 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.ok(!existsSync(path.join(root,T36_LOCAL_ROUTE)));
 });
 
+test("T38-P1 original Admin GM DM /npcs Sheet and GM Secret Save with signed source negative coverage",()=>{
+ const browser=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
+ const original=read("pages/npcs.js");
+ const stage3=read("scripts/integration/c34/sources/04_private_story_stage3.sql");
+ const stage2=read("scripts/integration/c34/sources/03_npc_dossier_stage2.sql");
+ assert.equal(blob(original),T25_BASE_BLOB,"T38 must not alter the original /npcs page");
+ for(const marker of ["T38-P1-SHEET-SECRET-","T38-P1-GM-SECRET-NEGATIVES",
+   "T38-P1-SAVE-DIAGNOSTIC","personality?.traits","meta?.creationRequestId",
+   "get_character_secrets_v1","set_character_secret_v1",
+   "get_character_editor_narrative_v1","get_npc_dossier_admin_v1",
+   'for(const [label,role] of [["GM","gm"],["DM","dm"],["ADMIN","admin"]])',
+   "COEDITOR","INVONLY","OUTSIDER","UNKNOWN"])
+  assert.ok(browser.includes(marker),"T38 missing exact signed source guard: "+marker);
+ assert.ok(browser.indexOf("PASS T37-P2-REVOKED:")<
+   browser.indexOf("T38-P1-SHEET-SECRET-"),
+   "T38 must not erase T37 same-JWT revocation acceptance");
+ for(const marker of ["await traitField.fill(nextTraits)","await secretField.fill(nextSecret)",
+   'await page.getByRole("button",{name:"Done",exact:true}).click()',
+   'await page.reload({waitUntil:"domcontentloaded",timeout:90000})',
+   'assert.equal(forbidden.error?.code,"42501"'])
+  assert.ok(browser.includes(marker),"T38 must exercise real UI and fail-closed signed secret API: "+marker);
+ assert.ok(original.includes('await saveCharacterSecret(supabase, selected.id, detailsDraft.secret)'));
+ assert.ok(original.includes('.from("character_sheets")'));
+ assert.ok(original.includes('.upsert({ character_id: selected.id, sheet: nextSheet || {}, updated_at }'));
+ assert.ok(stage3.includes("CREATE OR REPLACE FUNCTION public.set_character_secret_v1"));
+ assert.ok(stage3.includes("private.current_user_is_admin()"));
+ assert.ok(stage2.includes("CREATE OR REPLACE FUNCTION public.get_npc_dossier_admin_v1"));
+ assert.doesNotMatch(browser,/\.click\(\{force:true\}\)/);
+});
 console.log("PASS T36-SOURCE: original /npcs bytes intact, local-only default-OFF Next rewrite and full T35 source retained");

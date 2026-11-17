@@ -861,6 +861,110 @@ try {
  assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id='"+createdId+"'"),"1");
  console.log("PASS T37-P2-REVOKED: same JWT GM->player cannot mint another NPC through original RPC; created sheet unchanged");
 
+ // T38-P1 starts only AFTER every signed T37-P2 success and GM demotion
+ // assertion. Re-authorize these three original management roles in local PG17
+ // solely to exercise the original /npcs Edit->Done Save across current roles.
+ // This is not a production role change or bypass of T37 revocation evidence.
+ for(const [label,role] of [["GM","gm"],["DM","dm"],["ADMIN","admin"]]){
+   sql("UPDATE public.user_profiles SET role='"+role+"' WHERE id="+q(users[label].id));
+   await logout();await login(label);
+   await page.goto(route+"?focus=npc:"+createdId,{waitUntil:"domcontentloaded",timeout:90000});
+   await page.getByTestId("t25-selected-character").waitFor({timeout:60000});
+   assert.equal(await page.getByTestId("t25-selected-character").getAttribute("data-character-id"),createdId,
+     "T38 source-original /npcs selected wrong character for "+label);
+   await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:60000});
+   const beforeSave=await users[label].who.rpc("get_npc_dossier_admin_v1",{p_character_id:createdId});
+   assert.ifError(beforeSave.error);
+   assert.equal(beforeSave.data?.character_sheet?.meta?.creationRequestId,submitted.creation_request_id);
+   const nextTraits="T38 "+label+" SOURCE ORIGINAL SHEET TRAITS";
+   const nextSecret="T38 "+label+" GM PRIVATE SECRET";
+   await page.getByRole("button",{name:"Edit",exact:true}).first().click();
+   const traitField=page.locator(".npc-panel-scroll .small")
+     .filter({hasText:/^Traits$/}).locator("xpath=..").locator("textarea");
+   const secretField=page.locator(".npc-panel-scroll .small")
+     .filter({hasText:/^Secret \(optional\)$/}).locator("xpath=..").locator("input");
+   assert.equal(await traitField.count(),1,
+     "T38 real source-original Sheet personality Traits control missing");
+   assert.equal(await secretField.count(),1,
+     "T38 real source-original GM Secret control missing");
+   await traitField.fill(nextTraits);
+   await secretField.fill(nextSecret);
+   await page.getByRole("button",{name:"Done",exact:true}).click();
+   try {
+     await page.getByRole("button",{name:"Edit",exact:true}).first().waitFor({timeout:18000});
+   } catch(error) {
+     console.error("T38-P1-SAVE-DIAGNOSTIC",JSON.stringify({
+       role:label,
+       visibleErrors:await page.locator(".csheet .alert-danger").allTextContents(),
+       editButtonCount:await page.getByRole("button",{name:"Edit",exact:true}).count()
+     }));
+     throw error;
+   }
+   const afterSave=await users[label].who.rpc("get_npc_dossier_admin_v1",{p_character_id:createdId});
+   assert.ifError(afterSave.error);
+   assert.equal(afterSave.data?.secret,nextSecret,
+     "T38 "+label+" real original /npcs Edit->Done lost GM private Secret");
+   assert.equal(afterSave.data?.character_sheet?.personality?.traits,nextTraits,
+     "T38 "+label+" real original /npcs Edit->Done did not persist canonical Sheet personality");
+   assert.equal(afterSave.data?.character_sheet?.traits,nextTraits,
+     "T38 "+label+" original legacy Sheet personality mirror was lost");
+   assert.equal(afterSave.data?.character_sheet?.meta?.creationRequestId,submitted.creation_request_id,
+     "T38 "+label+" original Sheet creation nonce changed during overlay Save");
+   assert.equal(afterSave.data?.character_sheet?.meta?.createdBy,"npc_forge_v1",
+     "T38 "+label+" original Sheet creator provenance changed during overlay Save");
+   assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id="+q(createdId)),"1");
+   await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+   await page.getByTestId("t25-selected-character").waitFor({timeout:60000});
+   assert.ok((await page.locator(".npc-panel-scroll").innerText()).includes(nextTraits),
+     "T38 "+label+" persisted sheet personality did not reappear after fresh /npcs reload");
+   assert.ok((await page.locator(".npc-panel-scroll").innerText()).includes(nextSecret),
+     "T38 "+label+" fresh manager dossier did not show authorized secret");
+   console.log("PASS T38-P1-SHEET-SECRET-"+label+
+     ": actual original /npcs Edit/Done persisted source Sheet traits, GM secret and unmodified Forge nonce; fresh UI reload");
+ }
+ // Give the original delegated editor real can_edit rights on this new NPC
+ // (rather than conflating it with the previously revoked first NPC), and
+ // prove that delegated edit and inventory-only roles cannot read or mutate
+ // the GM secret despite valid same-account signed JWTs.
+ sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES("+
+   q(createdId)+","+q(users.COEDITOR.id)+",true,false,false),("+
+   q(createdId)+","+q(users.INVONLY.id)+",false,true,false)");
+ const privateBefore=await users.DM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:createdId});
+ assert.ifError(privateBefore.error);
+ assert.equal(privateBefore.data?.secret,"T38 ADMIN GM PRIVATE SECRET");
+ for(const label of ["COEDITOR","INVONLY","OUTSIDER","UNKNOWN"]){
+   const forbidden=await users[label].who.rpc("set_character_secret_v1",{
+     p_character_id:createdId,p_secret:"T38 FORGED SECRET "+label
+   });
+   assert.equal(forbidden.error?.code,"42501",
+     "T38 "+label+" signed actor was able to mutate GM secret");
+   const readSecret=await users[label].who.rpc("get_character_secrets_v1",{p_character_ids:[createdId]});
+   assert.ifError(readSecret.error);
+   assert.equal((readSecret.data||[]).length,0,
+     "T38 "+label+" signed actor retrieved GM-only secret");
+   const readDossier=await users[label].who.rpc("get_npc_dossier_admin_v1",{p_character_id:createdId});
+   assert.equal(readDossier.error?.code,"42501",
+     "T38 "+label+" signed actor retrieved GM-only dossier");
+ }
+ const delegatedNarrative=await users.COEDITOR.who.rpc("get_character_editor_narrative_v1",{
+   p_character_id:createdId
+ });
+ assert.ifError(delegatedNarrative.error);
+ assert.equal(delegatedNarrative.data?.id,createdId,
+   "T38 source-authorized editor must retain nonsecret narrative access");
+ assert.equal(Object.hasOwn(delegatedNarrative.data||{},"secret"),false,
+   "T38 delegated narrative projection leaked GM secret");
+ const anonSecret=await client().rpc("set_character_secret_v1",{
+   p_character_id:createdId,p_secret:"T38 ANON FORGED SECRET"
+ });
+ assert.ok(anonSecret.error,"T38 anonymous actor could mutate original GM secret");
+ const privateAfter=await users.DM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:createdId});
+ assert.ifError(privateAfter.error);
+ assert.equal(privateAfter.data?.secret,privateBefore.data?.secret);
+ assert.equal(privateAfter.data?.character_sheet?.personality?.traits,
+   "T38 ADMIN SOURCE ORIGINAL SHEET TRAITS");
+ console.log("PASS T38-P1-GM-SECRET-NEGATIVES: delegated edit, inventory-only, outsider, unknown, anonymous denied; canonical Sheet and GM secret unchanged");
+
  assert.deepEqual(offsite,[],"T25 attempted an offsite Supabase request");
  assert.deepEqual(errors,[],"T25 browser exceptions "+errors.join("; "));
  console.log("PASS T36-SIGNED-CHROMIUM: actual /npcs OFF/ON, full original manager 3-page PDF, signed Admin/GM/DM, unknown/editor negatives, same-JWT demotion, local only");

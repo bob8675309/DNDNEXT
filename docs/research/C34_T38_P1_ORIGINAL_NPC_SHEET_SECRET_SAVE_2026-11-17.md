@@ -1,0 +1,20 @@
+# C34 T38-P1 — Original NPC Sheet + GM Secret Save (signed pending; production HOLD)
+
+**2026-11-17 CST.** Draft [PR #379](https://github.com/bob8675309/DNDNEXT/pull/379) research only. Based on already successful exact-source T37-P2 original eight-step NPC Forge signed local [run #44179770581](https://github.com/bob8675309/DNDNEXT/actions/runs/44179770581), executable `2fe52abcc600ac99ee1d52cf8406833fa2699570`.
+
+## Original end-to-end source and gap
+
+- The unmodified original `pages/npcs.js` blob `7fc00b9b3ace6233d1648a3d017f8a05e072d722` (T36 locally derived manager with exact anchored narrative writer substitution, default OFF) has one actual Edit→Done `CharacterSheetPanel.onSave(nextSheet)` flow invoking three independent operations in order: original Stage2-safe `c34_npc_narrative_save_research_v1` for eight public narrative fields, original `set_character_secret_v1` for GM secret, and original `character_sheets` upsert with complete `nextSheet`. These are not one transaction. The already passed T37 test proved **narrative** role edits with original secret unchanged; did not prove an edited secret and edited canonical Sheet both persist for all three management roles.
+- Original source `scripts/integration/c34/sources/04_private_story_stage3.sql` requires current `private.current_user_is_admin()` for `set_character_secret_v1`; source-original Stage2 `get_npc_dossier_admin_v1` is a separate GM-only privileged reader. Delegated `get_character_editor_narrative_v1` must remain nonsecret. Stage1 narrows original Sheet SELECT to real `can_access_character_v1(character_id,'edit')` and source privileges remain unchanged.
+- User confirmed Admin / GM / DM are one in-application management tier. This is *not* permission to change external Supabase or GitHub roles.
+
+## Bounded original research-only test addition
+
+- In the existing genuine signed localhost-only T36/T37 `/npcs` Playwright run, **after** T37 nonce/revocation PASS, restore the three scratch test actors' canonical app roles in disposable PG17 and freshly authenticate each role. Focus the T37-created NPC (not an artificial direct-insert replacement); use original Edit, original **Traits** textarea (`sheet.personality.traits` and mirrored `sheet.traits`), original **Secret (optional)** input, and original Done. Require original edit panel close; read via original signed GM dossier, verify stored private secret, both canonical Sheet traits, immutable Forge creationRequestId/createdBy metadata and one Sheet. Fresh full-page reload must show the changed nonsecret traits and private secret to the authorized role.
+- Signed lower-authority **negative** matrix: give a distinct already-created NPC original `can_edit` delegation to COEDITOR and `can_inventory` to INVONLY; both plus OUTSIDER and UNKNOWN may neither read/mutate `set_character_secret_v1`/`get_character_secrets_v1` nor read GM dossier; anonymous cannot set secret. COEDITOR *must* still see its permitted nonsecret editor projection. Confirm all denials leave the full Sheet and secret unchanged.
+- Preserve source-exact T1–T37-P2 (including GM→player same-JWT revoke before this new suite), original role/Sheet/nonce/RLS/negative/PDF/merchant tests, default-OFF route and exact cleanup. No new SQL schema candidate, no source permission GRANT, no source UI edit, no mock, no forced click, no production/hosted service request or deployment. Do not print private secret beyond synthetic disposable marker.
+- **Evidence at commit:** new exact-head signed PG17/GoTrue/PostgREST/Next/Chromium CI **PENDING**. Neither T38-P1 nor later NPC→merchant or delegated inventory accepted until true signed logs prove each independent boundary. Any RED must be inspected, not hidden.
+
+## After T38-P1 signed outcome
+
+If accepted, separately scope T38-P2 original NPC→merchant conversion and stock, then T38-P3 delegated inventory direct DML with actor-switch and same-JWT revocation. All production gates remain: owner approval, stage privacy cutover/original source crosswalk, 22/34 untested legacy account writers, independent encrypted PostgreSQL restore and all 340 Storage objects restored. No merge into main.
