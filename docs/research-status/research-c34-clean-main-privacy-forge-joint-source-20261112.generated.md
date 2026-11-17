@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `26e80a1df64b4624ae10ffdbd8beeedd388195f0` |
+| Exact source commit represented by this archive snapshot | `341c5bb96fe1b8486797ea61b05bc0f7f8b80821` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): owner unifies Admin GM DM app rights; preserve T34 history and chat boundary |
-| Files changed relative to main | 185 (148 non-docs; 37 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): T37-P2 genuine original NPC Forge create/replay/rollback signed research; clarify owner typo |
+| Files changed relative to main | 187 (149 non-docs; 38 docs) |
+| Last source commit | 7 files (3 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,10 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
+- `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
+- `scripts/integration/c34/t37_disposable_original_npc_forge_catalog_pg17.sql`
+- `scripts/integration/c34/test_t36_npcs_route_source.mjs`
+- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,9 +75,9 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T35_FULL_NPC_MANAGER_STAGE2_EQUAL_GAME_MASTERS_SIGNED_2026-11-16.md`
 - `docs/research/C34_T36_ORIGINAL_NPCS_DEFAULT_OFF_ROUTE_RESEARCH_2026-11-16.md`
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
+- `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
-- `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
-- … 135 more
+- … 137 more
 
 ## Trust and update procedure
 
