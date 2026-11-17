@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `242284e28c57d37d34b2def55b93f2172c05cf02` |
+| Exact source commit represented by this archive snapshot | `3aa026b622e75058a1c2ebdce3830eeda497c9a2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record exact-head signed T37-P2 original NPC Forge acceptance |
-| Files changed relative to main | 187 (149 non-docs; 38 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): signed T38-P1 original NPC Sheet and GM secret Save role matrix |
+| Files changed relative to main | 188 (149 non-docs; 39 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
+- `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
+- `scripts/integration/c34/test_t36_npcs_route_source.mjs`
+- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,8 +74,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T36_ORIGINAL_NPCS_DEFAULT_OFF_ROUTE_RESEARCH_2026-11-16.md`
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
-- `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
-- … 137 more
+- `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
+- … 138 more
 
 ## Trust and update procedure
 
