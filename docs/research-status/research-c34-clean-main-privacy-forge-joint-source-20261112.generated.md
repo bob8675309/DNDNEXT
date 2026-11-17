@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `75a633fad3e2dcfd0de5e7b4e4fca44fa75b4186` |
+| Exact source commit represented by this archive snapshot | `15203952b311035d3ad0eeb97928537314023b99` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): use original NPC roster search to select merchant with real pointer after Stage2 Edit |
+| Last source commit title | test(c34): wait for Next teardown before T36 generated route cleanup and explicit shell postcondition |
 | Files changed relative to main | 183 (148 non-docs; 35 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,7 @@
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 - `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
