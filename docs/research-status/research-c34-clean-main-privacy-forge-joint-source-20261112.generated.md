@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `09bac1ea6115d52669fea2d91c84ebfd4667b351` |
+| Exact source commit represented by this archive snapshot | `270e0e63a0030f0b6edf38e07b152a5a42e29a8e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): complete original Astral Fire choices before NPC Forge Continue |
+| Last source commit title | test(c34): observe original Astral Fire completion on choice root |
 | Files changed relative to main | 187 (149 non-docs; 38 docs) |
 | Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
