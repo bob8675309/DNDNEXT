@@ -403,8 +403,18 @@ try {
   "T36 actual /npcs Edit→Done original narrative persistence denied");
  console.log("PASS T36-NARRATIVE-GM: real full manager Edit/Done writes Stage2 narrative via original authorized server path");
 
+ // After narrative editing, a lower roster entry can become covered by
+ // the original detail panel. Use the actual UI search to move the target
+ // into the TOP of the independently scrolling roster before normal click.
+ // No force/DOM handler, so an inaccessible button is still a real failure.
+ await page.getByPlaceholder("Search NPCs & merchants…").fill("T36 Probe Merchant");
+ const targetMerchant=page.locator(".npc-roster-list")
+  .getByRole("button",{name:/T36 Probe Merchant/});
+ await targetMerchant.waitFor({state:"visible",timeout:15000});
+ assert.equal(await page.locator(".npc-roster-list button").count(),1,
+  "T36 expected one merchant after user-visible roster filter");
  try {
- await page.locator(".npc-roster-list").getByRole("button",{name:/T36 Probe Merchant/}).click();
+ await targetMerchant.click();
  } catch(error) {
   const probe=await page.evaluate(async()=>{
    const r=await window.__sb.from("characters")
