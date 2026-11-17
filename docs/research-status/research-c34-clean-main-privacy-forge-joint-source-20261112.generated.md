@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ae7c07990321774c0892e5fd59c0c605addb4b4a` |
+| Exact source commit represented by this archive snapshot | `ae67599353d977ec2e97162f056d404d56b7b17e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T37-P1 real NPC manager Admin/DM saves and creator entry research |
+| Last source commit title | test(c34): repair T37 signed Playwright browser-context field probe |
 | Files changed relative to main | 184 (148 non-docs; 36 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,7 +20,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
-- `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 - `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
