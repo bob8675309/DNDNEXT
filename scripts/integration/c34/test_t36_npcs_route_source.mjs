@@ -183,6 +183,7 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  "T37-P2-SPECIES","npc-forge-catalog-list > button.npc-forge-species-catalog-row",
  "availableSpecies","chosenSpecies","T37-P2-CATALOG-SETTLED",
  "T37-P2-ASTRAL-FIRE","T37-P2-STEP-VALIDATION-DIAGNOSTIC",
+ "T37-P2-BACKGROUND","importedBackgrounds","availableBackgrounds",
  "Astral Fire","Spellcasting ability",
  "character_option_catalog_preferred","Astral Elf",
  'advance("species","background")','advance("background","class")',
@@ -201,6 +202,9 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.match(browser,/astralFeature\.locator\("\.npc-forge-species-choice\.is-required"\)/);
  assert.doesNotMatch(browser,/traitChoices\.locator\("\.npc-forge-species-choice\.(?:is-complete|is-required)"\)/);
  assert.match(browser,/T37-P2-SIGNED-CATALOG-RESPONSE/);
+ assert.match(browser,/importedOptions\.filter\(row=>row\?\.option_type==="background"\)/);
+ assert.match(browser,/availableBackgrounds\.filter\(name=>name===chosenBackground\)\.length,1/);
+ assert.doesNotMatch(browser,/filter\(\{hasText:"Custom \/ No Standard Background"\}\)\.click\(\)/);
  assert.match(browser,/url\.searchParams\.get\("option_type"\)/);
  assert.match(browser,/url\.searchParams\.get\("limit"\)==="5000"/);
  assert.match(browser,/public\.character_option_catalog_preferred/);

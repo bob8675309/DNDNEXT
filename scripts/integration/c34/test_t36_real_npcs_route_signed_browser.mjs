@@ -752,8 +752,27 @@ try {
    }
  };
  await advance("species","background");
- await forge.locator(".npc-forge-step-background .npc-forge-catalog-list > button")
-   .filter({hasText:"Custom / No Standard Background"}).click();
+ // The original preferred catalog can contain genuine source backgrounds, in
+ // which case the original mergePreferredBackgrounds deliberately hides static
+ // "Custom / No Standard Background". Choose a REAL source-backed row when
+ // present; fall back to the original static Custom row only if the authenticated
+ // response truly contains zero imported background options.
+ const importedBackgrounds=importedOptions.filter(row=>row?.option_type==="background");
+ const chosenBackground=importedBackgrounds.find(row=>
+   row.name==="Custom / No Standard Background")?.name
+   ||importedBackgrounds[0]?.name||"Custom / No Standard Background";
+ const backgroundRows=forge.locator(
+   ".npc-forge-step-background .npc-forge-catalog-list > button");
+ await backgroundRows.first().waitFor({state:"visible",timeout:20000});
+ const availableBackgrounds=(await backgroundRows.locator("strong").allTextContents())
+   .map(name=>name.trim());
+ assert.equal(availableBackgrounds.filter(name=>name===chosenBackground).length,1,
+   "T37 original loaded Background options do not contain exactly one chosen source entry: "+
+   JSON.stringify({chosenBackground,availableBackgrounds,
+     imported:importedBackgrounds.map(row=>({name:row.name,source:row.source}))}));
+ await backgroundRows.nth(availableBackgrounds.indexOf(chosenBackground)).click();
+ console.log("PASS T37-P2-BACKGROUND: selected genuine original background "+chosenBackground+
+   " from "+(importedBackgrounds.length?"signed preferred source":"original static fallback"));
  await advance("background","class");
  await forge.locator('.npc-forge-class-catalog-row[data-class-key="civilian"]').click();
  await advance("class","abilities");
