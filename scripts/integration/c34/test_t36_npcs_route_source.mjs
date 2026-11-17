@@ -203,7 +203,13 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.match(fixture,/column_name='name' AND data_type='text'/);
  assert.match(fixture,/column_name='sort_order' AND data_type='integer'/);
  assert.match(fixture,/column_name='overworld_scale' AND data_type='numeric'/);
- assert.doesNotMatch(fixture,/\bADD COLUMN (?:name|sort_order|overworld_scale) (?:text|integer|numeric)/);
+ // Scope negative column checks to their own original table:
+ // the visual-assets picker DOES need a new "name" column.
+ const portraitAlter=fixture.split("ALTER TABLE public.npc_portrait_library\n")[1]?.split(";")[0];
+ const spriteAlter=fixture.split("ALTER TABLE public.npc_visual_assets\n")[1]?.split(";")[0];
+ assert.ok(portraitAlter&&spriteAlter,"Missing T37 local catalog ALTER sections");
+ assert.doesNotMatch(portraitAlter,/\bADD COLUMN (?:name|sort_order) (?:text|integer)/);
+ assert.doesNotMatch(spriteAlter,/\bADD COLUMN overworld_scale numeric/);
  // The actual original portrait picker does one SELECT of every metadata
  // column. Pin all the missing fields to prevent PostgREST 42703 failure.
  const picker=read("components/NpcForgePortraitPickerModal.js");
