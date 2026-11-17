@@ -1,0 +1,18 @@
+# C34 T37-P2 — Original /npcs 8-step NewNpcModal actual creation (SIGNED PENDING; research HOLD)
+
+**2026-11-16 CST.** Draft PR #379, locally signed/disposable only, never production. Owner clarified prior “chat” was a typo for “that”; no chat defect reported. Admin/GM/DM are one application management tier; T34 application website-Admin-only restriction is superseded owner policy, historical signed tests retained.
+
+## Exact original code and essential test boundaries
+
+- Use the exact source-derived original full /npcs and unchanged pages/npcs.js blob 7fc00b9b3ace6233d1648a3d017f8a05e072d722; do NOT directly insert NPCs or patch the original real NewNpcModalV3, controller, read helpers or database functions.
+- The actual NPC Forge has eight source-original stages: Species, Background, Class, Abilities, Training, Identity, Story and Review. The browser must choose source-fallback Orc, Custom / No Standard Background, No Adventuring Class, two nonduplicated ability bonuses, two Class skills and a synthetic local active library portrait, then submit the real “Create NPC” action.
+- Real Playwright request observation MUST see exactly one actual authenticated REST call to original public.create_character_v1, with source nonce and selected portrait ID. Verify persisted characters, character_sheets.meta.createdBy/creationRequestId, canonical portrait and strictly authenticated GM dossier secret/description. Then genuine signed exact nonce replay yields one character/Sheet.
+- Negative verified source endpoints: original create_character_v1 rejects signed ordinary collaborator/inventory-only/outsider/unknown + anonymous; original bad location fails without rows/Sheet/nonce; same-JWT GM→player role demotion denies second create. No global permission GRANT, writer workaround or mocked response.
+- The scratch-only catalog SQL runs **after** original T1–T35 signed tests and T36 ACL writer research, fenced to disposable PG17/GoTrue/PostgREST localhost CI, original create_character_v1 MD5 and retained Stage2 five-column SELECT REVOKE. Original source class_catalog is exposed through a security_invoker research view; original preferred-option static fallback remains in use, which means this is **NOT a proof of full hosted preferred catalog mechanical selections**. An active synthetic library portrait makes the original picker usable. This is expressly not a production migration or policy change.
+- Full inherited signed T1–T37-P1 merchant/PDF/Stage2 and source-negatives must pass with no generated research route after teardown. Record real REDs and fix them narrowly, never bypass permissions or lower original test gates.
+
+## Status / next
+
+**Source candidate; signed CI pending.** This text deliberately makes no signed acceptance claim at commit creation. On CI, verify exact full original local signed run, actual requested T37-P2 log markers and all inherited T1–T37-P1, source audit, handoff-continuity and tactical preservation. Any failure is a genuine diagnostic until resolved and rerun.
+
+**NEXT after signed P2:** separate original Admin/GM/DM secret+Sheet Save, NPC-to-merchant conversion and merchant stock, delegated inventory direct-DML with actor-switch and same-JWT revoke. Final production release needs full original source graph, independently restored PostgreSQL plus all 340 Storage objects, owner review and explicit release go/no-go.

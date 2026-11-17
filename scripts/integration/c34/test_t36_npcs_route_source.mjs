@@ -175,4 +175,31 @@ test("T37-P1 actual /npcs Admin and DM original Forge entry, Stage2 UI narrative
  assert.match(sql,/fields\.key NOT IN/);
  assert.doesNotMatch(sql,/GRANT\s+(?:ALL|SELECT|UPDATE)\s+ON\s+(?:TABLE\s+)?public\.characters/i);
 });
+test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback and unchanged Stage2",()=>{
+ const browser=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
+ for(const marker of ["T37-P2-CATALOG","T37-P2-CREATE-DENIED",
+ "T37-P2-ROLLBACK","T37-P2-FORGE-SUBMIT","T37-P2-NONCE","T37-P2-REVOKED",
+ "npc-forge-step-species","npc-forge-step-background","npc-forge-step-class",
+ "npc-forge-step-abilities","npc-forge-step-training","npc-forge-step-identity",
+ "npc-forge-step-story","npc-forge-step-review","originalCreateRequests",
+ "create_character_v1","get_npc_dossier_admin_v1"])
+  assert.ok(browser.includes(marker),"Missing T37-P2 genuine signed browser evidence: "+marker);
+ assert.match(browser,/page\.on\("request",recordCreate\)/);
+ assert.match(browser,/page\.off\("request",recordCreate\)/);
+ assert.match(browser,/getByRole\("button",\{name:"Create NPC",exact:true\}\)\.click\(\)/);
+ assert.match(browser,/assert\.equal\(originalCreateRequests\.length,1/);
+ assert.match(browser,/assert\.equal\(submitted\?\.portrait_library_id/);
+ const fixture=read("scripts/integration/c34/t37_disposable_original_npc_forge_catalog_pg17.sql");
+ assert.match(fixture,/current_database\(\)<>'postgres'/);
+ assert.match(fixture,/server_version_num/);
+ assert.match(fixture,/md5\(pg_get_functiondef\('public\.create_character_v1/);
+ assert.match(fixture,/has_column_privilege\('authenticated','public\.characters','background','SELECT'\)/);
+ assert.match(fixture,/security_invoker=true/);
+ assert.match(fixture,/T37-P2-LOCAL-CATALOG/);
+ assert.doesNotMatch(fixture,/GRANT\s+(?:ALL|INSERT|UPDATE|DELETE)\s+ON/i);
+ assert.doesNotMatch(fixture,/CREATE OR REPLACE FUNCTION|ALTER POLICY|DISABLE ROW LEVEL SECURITY/i);
+ assert.equal(blob(read("pages/npcs.js")),T25_BASE_BLOB);
+ assert.ok(!existsSync(path.join(root,T36_LOCAL_ROUTE)));
+});
+
 console.log("PASS T36-SOURCE: original /npcs bytes intact, local-only default-OFF Next rewrite and full T35 source retained");

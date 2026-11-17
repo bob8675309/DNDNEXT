@@ -185,6 +185,47 @@ try {
  assert.equal(afterForge.data?.secret,secret);
  assert.equal(afterForge.data?.quirk,initialProtected.data?.quirk);
  console.log("PASS T36-NARRATIVE-SECRET-DENY: no secret/map/tags/kind/time forgery or bypass");
+ // T37-P2: source-owned real Forge browser needs a minimal READ-ONLY
+ // portrait/catalogue fixture. The ORIGINAL canonical create_character_v1
+ // and the Stage2 column REVOKEs stay unchanged, asserted on both sides.
+ const t37Fixture=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-q","-f",
+   path.join(root,"scripts/integration/c34/t37_disposable_original_npc_forge_catalog_pg17.sql")],{
+   env,cwd:root,encoding:"utf8",timeout:60000
+ });
+ assert.equal(t37Fixture.status,0,
+   "T37-P2 isolated Forge catalog preflight: "+t37Fixture.stderr?.slice(-1600));
+ assert.equal(sql("SELECT md5(pg_get_functiondef('public.create_character_v1(jsonb)'::regprocedure))"),
+   "b58311c817d8648ef75ae35b66d831c5");
+ assert.equal(sql("SELECT has_column_privilege('authenticated','public.characters','background','SELECT')::text"),"false");
+ console.log("PASS T37-P2-CATALOG: genuine original NPC Forge gets isolated public catalog, no hosted/RLS writer changes");
+ const t37BeforeNegative=sql("SELECT count(*) FROM public.characters");
+ for(const role of ["COEDITOR","INVONLY","OUTSIDER","UNKNOWN"]){
+   const forbidden="T37 Forbidden "+role;
+   const attempt=await users[role].who.rpc("create_character_v1",{
+     p_payload:{name:forbidden,kind:"npc",creation_request_id:randomUUID(),sheet:{marker:"forbidden"}}
+   });
+   assert.equal(attempt.error?.code,"42501",
+     "T37 forbidden "+role+" must not create NPC via original source");
+ }
+ const anonCreation=await client().rpc("create_character_v1",{
+   p_payload:{name:"T37 Forbidden Anon",kind:"npc",creation_request_id:randomUUID(),sheet:{}}
+ });
+ assert.ok(anonCreation.error,"T37 anonymous NPC creation unexpectedly authorized");
+ assert.equal(sql("SELECT count(*) FROM public.characters"),t37BeforeNegative);
+ console.log("PASS T37-P2-CREATE-DENIED: original create_character_v1 signed delegated-only/player/unknown/anon fail closed");
+ const invalidNonce=randomUUID(),invalidName="T37 Bad Location "+randomUUID().slice(0,8);
+ const invalid=await users.GM.who.rpc("create_character_v1",{
+   p_payload:{name:invalidName,kind:"npc",creation_request_id:invalidNonce,
+     location_id:"999999999",sheet:{marker:"should-rollback"}}
+ });
+ assert.ok(invalid.error,"T37 original create_character_v1 accepted nonexistent location");
+ assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+invalidNonce+"'"),"0");
+ assert.equal(sql("SELECT count(*) FROM public.characters"),t37BeforeNegative,
+   "T37 failed original RPC left a character row");
+ assert.equal(sql("SELECT count(*) FROM public.character_sheets"),"2",
+   "T37 original denied create mutated canonical character sheet population");
+ console.log("PASS T37-P2-ROLLBACK: genuine signed original creator invalid location leaves character/Sheet/nonce absent");
+
  const generated=makeT36Source();
  assert.match(generated,/data-c34-t36="source-derived-stage2"/);
  assert.ok(!fs.existsSync(probe),"T36 refuses tracked or preexisting scratch route");
@@ -553,6 +594,117 @@ try {
  assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0,"Revoked editor retained Print Sheet");
  assert.ok(!(await body()).includes(secret),"Revoked editor saw GM secret");
  console.log("PASS T25-C06 real local permission revocation and explicit refresh clear elevated manager data");
+ // T37-P2: actually submit the ORIGINAL 8-step NPC Forge from the real
+ // flagged-on /npcs Pages Router screen and trace its original create RPC.
+ // No SQL INSERT substitutes for browser creation. All credentials are signed
+ // to the disposable local GoTrue service; no offsite network is allowed.
+ await logout();await login("GM");
+ await page.goto(route,{waitUntil:"domcontentloaded",timeout:90000});
+ await page.getByRole("button",{name:"New NPC",exact:true}).waitFor({timeout:60000});
+ const forgeName="T37 Signed Forge "+randomUUID().slice(0,8);
+ const forgeSecret="T37 PRIVATE NPC CREATOR SECRET";
+ const originalCreateRequests=[];
+ const recordCreate=(request)=>{
+   if(!request.url().includes("/rest/v1/rpc/create_character_v1"))return;
+   try{originalCreateRequests.push(JSON.parse(request.postData()||"{}"));}
+   catch{originalCreateRequests.push({invalidJson:true});}
+ };
+ page.on("request",recordCreate);
+ await page.getByRole("button",{name:"New NPC",exact:true}).click();
+ const forge=page.locator(".npc-forge-modal.is-npc-mode");
+ await forge.waitFor({state:"visible",timeout:30000});
+ await forge.locator(".npc-forge-step-species").waitFor({state:"visible"});
+ // Use original source fallback species and background; no mocked create UI.
+ await forge.locator(".npc-forge-species-catalog-row").filter({hasText:/^Orc\b/}).first().click();
+ const advance=async(from,to)=>{
+   assert.ok(await forge.locator(".npc-forge-step-"+from).isVisible(),
+      "T37 Forge wrong step, expected "+from);
+   await forge.locator(".npc-forge-footer").getByRole("button",{name:"Continue"}).click();
+   await forge.locator(".npc-forge-step-"+to).waitFor({state:"visible",timeout:15000});
+ };
+ await advance("species","background");
+ await forge.locator(".npc-forge-step-background .npc-forge-catalog-list > button")
+   .filter({hasText:"Custom / No Standard Background"}).click();
+ await advance("background","class");
+ await forge.locator('.npc-forge-class-catalog-row[data-class-key="civilian"]').click();
+ await advance("class","abilities");
+ await forge.locator(".npc-forge-ability-bonus-selects select").nth(0).selectOption("str");
+ await forge.locator(".npc-forge-ability-bonus-selects select").nth(1).selectOption("dex");
+ await advance("abilities","training");
+ const skills=forge.locator(".npc-forge-training-step .npc-forge-skill-grid > button:not([disabled])");
+ assert.ok(await skills.count()>=2,"T37 original Civilian requires two source class skills");
+ await skills.nth(0).click();await skills.nth(1).click();
+ await advance("training","identity");
+ await forge.locator(".npc-forge-step-identity .npc-forge-form-grid label")
+   .filter({hasText:"Name *"}).locator("input").first().fill(forgeName);
+ await forge.locator(".npc-forge-step-identity .npc-forge-form-grid label")
+   .filter({hasText:"Role / title *"}).locator("input").first().fill("T37 Local Archivist");
+ await forge.getByRole("button",{name:"Choose portrait",exact:true}).click();
+ const picker=page.getByRole("dialog",{name:"Choose portrait and sprite"});
+ await picker.locator(".portrait-picker-card").filter({hasText:"T37 Synthetic Forge Portrait"})
+   .waitFor({state:"visible",timeout:20000});
+ await picker.locator(".portrait-picker-card").filter({hasText:"T37 Synthetic Forge Portrait"}).click();
+ await picker.getByRole("button",{name:"Use selections"}).click();
+ await picker.waitFor({state:"detached",timeout:15000});
+ await advance("identity","story");
+ await forge.locator(".npc-forge-step-story label").filter({hasText:"Description"})
+   .locator("textarea").first().fill("T37 public original NPC Forge description");
+ await forge.locator(".npc-forge-step-story label").filter({hasText:"Secret"})
+   .locator("textarea").first().fill(forgeSecret);
+ await advance("story","review");
+ assert.ok((await forge.innerText()).includes(forgeName),
+   "T37 real review did not retain submitted identity");
+ await forge.locator(".npc-forge-footer").getByRole("button",{name:"Create NPC",exact:true}).click();
+ try{await forge.waitFor({state:"detached",timeout:28000});}
+ catch(error){
+   console.error("T37-P2-FORGE-SUBMIT-DIAGNOSTIC",JSON.stringify({
+     message:await forge.locator(".npc-forge-error").allTextContents(),
+     stepText:(await forge.innerText()).slice(-2500),
+     observedRequests:originalCreateRequests.length
+   }));
+   throw error;
+ }
+ page.off("request",recordCreate);
+ assert.equal(originalCreateRequests.length,1,
+   "T37 original Forge submission did not call exactly one real create_character_v1");
+ const submitted=originalCreateRequests[0].p_payload;
+ assert.equal(submitted?.name,forgeName);
+ assert.equal(submitted?.kind,"npc");
+ assert.match(submitted?.creation_request_id||"",/^[a-f0-9-]{36}$/i);
+ assert.equal(submitted?.portrait_library_id,"00000000-0000-0000-0000-000000000370");
+ const createdId=sql("SELECT id::text FROM public.characters WHERE name='"+forgeName+"'");
+ assert.match(createdId,/^[a-f0-9-]{36}$/i);
+ assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+
+   submitted.creation_request_id+"'"),"1");
+ assert.equal(sql("SELECT sheet#>>'{meta,createdBy}' FROM public.character_sheets WHERE character_id='"+
+   createdId+"'"),"npc_forge_v1");
+ assert.equal(sql("SELECT sheet#>>'{meta,creationRequestId}' FROM public.character_sheets WHERE character_id='"+
+   createdId+"'"),submitted.creation_request_id);
+ assert.equal(sql("SELECT portrait_library_id::text FROM public.characters WHERE id='"+createdId+"'"),
+   "00000000-0000-0000-0000-000000000370");
+ const createdDossier=await users.GM.who.rpc("get_npc_dossier_admin_v1",{p_character_id:createdId});
+ assert.ifError(createdDossier.error);
+ assert.equal(createdDossier.data?.secret,forgeSecret);
+ assert.equal(createdDossier.data?.description,"T37 public original NPC Forge description");
+ console.log("PASS T37-P2-FORGE-SUBMIT: actual 8-step NPC Forge POST to original source-exact create_character_v1 persisted NPC, nonce, portrait, Sheet and private dossier");
+ const replay=await users.GM.who.rpc("create_character_v1",{p_payload:submitted});
+ assert.ifError(replay.error);assert.equal(replay.data,createdId);
+ assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+
+   submitted.creation_request_id+"'"),"1");
+ assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id='"+
+   createdId+"'"),"1");
+ console.log("PASS T37-P2-NONCE: signed exact original creation-request replay returns same character and one canonical Sheet");
+ sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(users.GM.id));
+ const demotedName="T37 revoked GM "+randomUUID().slice(0,8);
+ const denied=await users.GM.who.rpc("create_character_v1",{
+   p_payload:{name:demotedName,kind:"npc",creation_request_id:randomUUID(),sheet:{}}
+ });
+ assert.equal(denied.error?.code,"42501",
+   "T37 same JWT GM role demotion retained original NPC creation privilege");
+ assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+demotedName+"'"),"0");
+ assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id='"+createdId+"'"),"1");
+ console.log("PASS T37-P2-REVOKED: same JWT GM->player cannot mint another NPC through original RPC; created sheet unchanged");
+
  assert.deepEqual(offsite,[],"T25 attempted an offsite Supabase request");
  assert.deepEqual(errors,[],"T25 browser exceptions "+errors.join("; "));
  console.log("PASS T36-SIGNED-CHROMIUM: actual /npcs OFF/ON, full original manager 3-page PDF, signed Admin/GM/DM, unknown/editor negatives, same-JWT demotion, local only");
