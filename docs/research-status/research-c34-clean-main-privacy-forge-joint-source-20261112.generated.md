@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d9e47755ded25eba50a2acfad7024c05a813d9b0` |
+| Exact source commit represented by this archive snapshot | `ca6ff56078dd04937eec796b70ba98b979aa73d0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append T37-P2 signed DOM-detach diagnostic receipt |
+| Last source commit title | test(c34): wait for genuine imported species before original NPC Forge click |
 | Files changed relative to main | 187 (149 non-docs; 38 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
+- `scripts/integration/c34/test_t36_npcs_route_source.mjs`
+- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
