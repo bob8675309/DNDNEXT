@@ -472,8 +472,10 @@ try {
   console.log("PASS T37-CREATOR-ENTRY-"+role+
     ": real full NewNpcModal opens and cancels without creating a character");
   await page.getByRole("button",{name:"Edit",exact:true}).first().click();
-  const t37Index=await page.locator("textarea").evaluateAll(nodes=>
-    nodes.findIndex(node=>node.value===t37LastBackground));
+  const t37Index=await page.locator("textarea").evaluateAll(
+    (nodes,expectedBackground)=>nodes.findIndex(node=>node.value===expectedBackground),
+    t37LastBackground
+  );
   assert.ok(t37Index>=0,"T37 "+role+" real Sheet Edit missing selected background");
   const t37Next="T37 "+role+" SIGNED ORIGINAL UI SAVE";
   await page.locator("textarea").nth(t37Index).fill(t37Next);
