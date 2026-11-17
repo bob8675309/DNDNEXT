@@ -288,7 +288,8 @@ test("T38-P1 original Admin GM DM /npcs Sheet and GM Secret Save with signed sou
  const stage2=read("scripts/integration/c34/sources/03_npc_dossier_stage2.sql");
  assert.equal(blob(original),T25_BASE_BLOB,"T38 must not alter the original /npcs page");
  for(const marker of ["T38-P1-SHEET-SECRET-","T38-P1-GM-SECRET-NEGATIVES",
-   "T38-P1-SAVE-DIAGNOSTIC","personality?.traits","meta?.creationRequestId",
+   "T38-P1-SAVE-DIAGNOSTIC","T38-P1-RELOAD-DIAGNOSTIC",
+   "personality?.traits","meta?.creationRequestId",
    "get_character_secrets_v1","set_character_secret_v1",
    "get_character_editor_narrative_v1","get_npc_dossier_admin_v1",
    'for(const [label,role] of [["GM","gm"],["DM","dm"],["ADMIN","admin"]])',
@@ -300,6 +301,9 @@ test("T38-P1 original Admin GM DM /npcs Sheet and GM Secret Save with signed sou
  for(const marker of ["await traitField.fill(nextTraits)","await secretField.fill(nextSecret)",
    'await page.getByRole("button",{name:"Done",exact:true}).click()',
    'await page.reload({waitUntil:"domcontentloaded",timeout:90000})',
+   'getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000})',
+   'getByText(nextTraits,{exact:true}).waitFor({state:"visible",timeout:25000})',
+   'getByText(nextSecret,{exact:true}).waitFor({state:"visible",timeout:25000})',
    'assert.equal(forbidden.error?.code,"42501"'])
   assert.ok(browser.includes(marker),"T38 must exercise real UI and fail-closed signed secret API: "+marker);
  assert.ok(original.includes('await saveCharacterSecret(supabase, selected.id, detailsDraft.secret)'));

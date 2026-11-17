@@ -18,3 +18,7 @@
 ## After T38-P1 signed outcome
 
 If accepted, separately scope T38-P2 original NPC→merchant conversion and stock, then T38-P3 delegated inventory direct DML with actor-switch and same-JWT revocation. All production gates remain: owner approval, stage privacy cutover/original source crosswalk, 22/34 untested legacy account writers, independent encrypted PostgreSQL restore and all 340 Storage objects restored. No merge into main.
+
+## First signed RED and exact original async Sheet/dossier readiness correction — 2026-11-17 CST
+
+[Full signed #44190384320](https://github.com/bob8675309/DNDNEXT/actions/runs/44190384320) on `3aa026b622e75058a1c2ebdce3830eeda497c9a2` failed at the first T38 GM **fresh page reload** UI text assertion. Original T37 full Forge creation/nonce/revocation all passed. For GM, all original post-Save source dossier and DB assertions preceding reload passed: changed secret, both canonical Sheet trait locations, unmodified creator and creation nonce, exactly one Sheet. Therefore the source Write persisted. The test read `innerText` immediately after `domcontentloaded`+selection-shell, without waiting for original asynchronous Sheet/dossier fetch. Correction waits for real loaded Print Sheet and exact visible Traits/Secret UI values; if they do not appear, fails with a narrow read-only diagnostic that records current selection, restricted status, sheet error and bounded visible text. Original controls, RPCs and all negatives unchanged. Rerun full signed CI; do not infer success from source-only checks.

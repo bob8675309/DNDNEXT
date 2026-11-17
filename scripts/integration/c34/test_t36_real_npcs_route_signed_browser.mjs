@@ -915,6 +915,26 @@ try {
    assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id="+q(createdId)),"1");
    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
    await page.getByTestId("t25-selected-character").waitFor({timeout:60000});
+   // The selected roster shell can render before its authenticated Sheet and
+   // private dossier finish loading. Keep the full original UI persistence
+   // requirement, but wait for the real Sheet panel and exact visible values.
+   await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000});
+   try {
+     await page.locator(".npc-panel-scroll")
+       .getByText(nextTraits,{exact:true}).waitFor({state:"visible",timeout:25000});
+     await page.locator(".npc-panel-scroll")
+       .getByText(nextSecret,{exact:true}).waitFor({state:"visible",timeout:25000});
+   } catch(error){
+     const snapshot=await page.evaluate(()=>({
+       selected:document.querySelector('[data-testid="t25-selected-character"]')
+         ?.getAttribute("data-character-id")||null,
+       sheetRestricted:!!document.querySelector('[data-testid="t25-sheet-restricted"]'),
+       sheetLoadError:document.querySelector('[role="alert"]')?.textContent?.trim()?.slice(0,500)||null,
+       visibleText:document.querySelector(".npc-panel-scroll")?.innerText?.slice(0,1800)||null,
+     })).catch(e=>({snapshotError:String(e)}));
+     console.error("T38-P1-RELOAD-DIAGNOSTIC",JSON.stringify({role:label,...snapshot}));
+     throw error;
+   }
    assert.ok((await page.locator(".npc-panel-scroll").innerText()).includes(nextTraits),
      "T38 "+label+" persisted sheet personality did not reappear after fresh /npcs reload");
    assert.ok((await page.locator(".npc-panel-scroll").innerText()).includes(nextSecret),
