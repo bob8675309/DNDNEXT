@@ -900,6 +900,11 @@ try {
      }));
      throw error;
    }
+   // The original handler reloads the selected signed dossier after all three
+   // writes. View mode must show the NEW private secret from that actor-bound
+   // Stage2 dossier rather than the intentionally stripped public roster.
+   await page.locator(".npc-panel-scroll")
+     .getByText(nextSecret,{exact:true}).waitFor({state:"visible",timeout:12000});
    const afterSave=await users[label].who.rpc("get_npc_dossier_admin_v1",{p_character_id:createdId});
    assert.ifError(afterSave.error);
    assert.equal(afterSave.data?.secret,nextSecret,

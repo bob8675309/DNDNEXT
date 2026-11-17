@@ -69,11 +69,22 @@ test("T36-03 generated full manager is exact T35 output plus only a diagnostic r
  const saveEnd=originalWithMarker.indexOf('// Save sheet overlay',saveStart);
  assert.ok(saveStart>0&&saveEnd>saveStart);
  assert.equal(originalWithMarker.slice(saveStart,saveEnd).split(direct).length-1,1);
- const expectedBody=originalWithMarker.slice(0,saveStart)+
+ const expectedBeforeSecret=originalWithMarker.slice(0,saveStart)+
    originalWithMarker.slice(saveStart,saveEnd).replace(direct,guarded)+
    originalWithMarker.slice(saveEnd);
+ // T38 protected selected GM dossier now feeds the original *read-only*
+ // Secret field. T25's public roster intentionally excludes old secrets.
+ const oldSecretDisplay="{selected.secret || <span className=\"npc-muted\">—</span>}";
+ const sourceBoundSecretDisplay="{(isAdmin && selectedPrivateResult?.dossier ? selectedPrivateResult.dossier.secret : null) || <span className=\"npc-muted\">—</span>}";
+ assert.equal(expectedBeforeSecret.split(oldSecretDisplay).length-1,1,
+   "T38 must match exactly one original read-only secret field");
+ const expectedBody=expectedBeforeSecret.replace(oldSecretDisplay,sourceBoundSecretDisplay);
  assert.ok(candidate.endsWith(expectedBody),
-  "T36 must preserve every original full manager byte apart from the root marker and exactly one guarded narrative writer");
+  "T36 must preserve every original full manager byte except root marker, guarded narrative writer and one signed dossier-only secret display");
+ assert.equal(candidate.split(oldSecretDisplay).length-1,0,
+  "T38 public roster secret reference remained in rendered source");
+ assert.equal(candidate.split(sourceBoundSecretDisplay).length-1,1,
+  "T38 signed GM-only selected dossier display absent or duplicated");
  const preface=candidate.slice(0,-expectedBody.length);
  assert.match(preface,/T36 EXACT SOURCE generated from ORIGINAL current NPC manager/);
  assert.ok(preface.length<240);
@@ -289,6 +300,7 @@ test("T38-P1 original Admin GM DM /npcs Sheet and GM Secret Save with signed sou
  assert.equal(blob(original),T25_BASE_BLOB,"T38 must not alter the original /npcs page");
  for(const marker of ["T38-P1-SHEET-SECRET-","T38-P1-GM-SECRET-NEGATIVES",
    "T38-P1-SAVE-DIAGNOSTIC","T38-P1-RELOAD-DIAGNOSTIC",
+   "sourceBoundSecretDisplay","selectedPrivateResult?.dossier",
    "personality?.traits","meta?.creationRequestId",
    "get_character_secrets_v1","set_character_secret_v1",
    "get_character_editor_narrative_v1","get_npc_dossier_admin_v1",

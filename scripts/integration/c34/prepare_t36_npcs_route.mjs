@@ -59,6 +59,20 @@ export function makeT36Source(){
     '                           });'
   ].join("\n");
   code=code.slice(0,start)+narrative.replace(originalWrite,securedWrite)+code.slice(end);
+  // T38-P1: T25 intentionally strips GM secrets from the PUBLIC roster.
+  // The unchanged original view-only Secret field still referenced
+  // selected.secret, which is now always absent after reload. Read only the
+  // actor/character-bound original Stage2 GM dossier, already fetched by the
+  // T31 signed capability-validated selected reader. Never restore bulk roster
+  // secret reads or broaden an authenticated role's grants.
+  const oldSecretDisplay="{selected.secret || <span className=\"npc-muted\">—</span>}";
+  const sourceBoundSecretDisplay="{(isAdmin && selectedPrivateResult?.dossier ? selectedPrivateResult.dossier.secret : null) || <span className=\"npc-muted\">—</span>}";
+  assert.equal(code.split(oldSecretDisplay).length-1,1,
+    "T38 source-original public-roster secret display changed; STOP");
+  code=code.replace(oldSecretDisplay,sourceBoundSecretDisplay);
+  assert.ok(code.includes(sourceBoundSecretDisplay));
+  assert.equal(code.split(oldSecretDisplay).length-1,0,
+    "T38 must not keep a GM secret fallback from the public roster");
   assert.match(code,/readTownGameManagerNpcProfileCandidate\(supabase, id/);
   assert.match(code,/c34_npc_narrative_save_research_v1/);
   assert.doesNotMatch(code,/\.rpc\("is_admin",\s*\{\s*uid:/);
