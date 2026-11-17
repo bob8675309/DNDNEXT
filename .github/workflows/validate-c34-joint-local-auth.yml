@@ -443,8 +443,12 @@ jobs:
           test ! -e pages/__c34_t36_npcs.jsx
           node --check scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs
           node scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs
-          test ! -e pages/__c34_t36_npcs.jsx
-          echo 'PASS T36: full /npcs original OFF and derived ON, canonical roles, original save/PDF, no production'
+          echo 'T36 signed Node test returned; checking exact generated route absent'
+          if test -e pages/__c34_t36_npcs.jsx; then
+            echo 'FAIL T36: disposable NPC Manager page regenerated after cleanup'
+            exit 1
+          fi
+          echo 'PASS T36: full /npcs original OFF and derived ON, canonical roles, original save/PDF and cleanup, no production'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4

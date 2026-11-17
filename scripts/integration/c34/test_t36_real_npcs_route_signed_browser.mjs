@@ -510,9 +510,26 @@ try {
  console.log("PASS T36-SIGNED-CHROMIUM: actual /npcs OFF/ON, full original manager 3-page PDF, signed Admin/GM/DM, unknown/editor negatives, same-JWT demotion, local only");
 }finally {
  if(browser)await browser.close().catch(()=>{});
- if(server?.pid){try{process.kill(-server.pid,"SIGTERM")}catch{server.kill("SIGTERM")}}
+ // Next dev may still be compiling after SIGTERM; if cleanup happens
+ // before its process group exits, the watcher can regenerate the untracked
+ // Pages Router alias. Wait for process teardown before exact-source deletion.
+ if(server?.pid){
+  try{process.kill(-server.pid,"SIGTERM")}catch{server.kill("SIGTERM")}
+  if(server.exitCode===null && server.signalCode===null){
+   await Promise.race([
+    new Promise(resolve=>{
+     server.once("close",resolve);
+     if(server.exitCode!==null||server.signalCode!==null)resolve();
+    }),
+    new Promise(resolve=>setTimeout(resolve,8000))
+   ]);
+  }
+ }
  // Source-verified cleanup is stricter than unlink: cannot delete unknown files.
  reconcileT36Route({...env,NEXT_PUBLIC_C34_T36_NPCS_RESEARCH:"0"});
  fs.rmSync(pdfDir,{recursive:true,force:true});
  assert.ok(!fs.existsSync(probe),"T36 generated Pages Router alias must be absent after signed test");
+ await new Promise(resolve=>setTimeout(resolve,1100));
+ assert.ok(!fs.existsSync(probe),"T36 Next watcher regenerated generated route after teardown");
+ console.log("PASS T36-ROUTE-CLEANUP: Next terminated; exact generated page remains absent");
 }
