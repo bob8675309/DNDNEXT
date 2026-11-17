@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a63beacfea9e4e7d63b2bd9c0500ccb33e8a73aa` |
+| Exact source commit represented by this archive snapshot | `a2d66a5d4730a077a40c9a8feb356582e1ffa65a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): scope T37-P2 duplicate-column source guard to corresponding tables |
+| Last source commit title | test(c34): T37-P2 reuse inherited original Forge/T29 item catalog in signed scratch DB |
 | Files changed relative to main | 187 (149 non-docs; 38 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
+- `scripts/integration/c34/t37_disposable_original_npc_forge_catalog_pg17.sql`
 - `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 
 ## Research-branch change inventory versus main
