@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3aa026b622e75058a1c2ebdce3830eeda497c9a2` |
+| Exact source commit represented by this archive snapshot | `1c0e859843aa1fe750d9f9932126fb770ac84969` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed T38-P1 original NPC Sheet and GM secret Save role matrix |
+| Last source commit title | test(c34): await real NPC Sheet and private dossier after T38 reload |
 | Files changed relative to main | 188 (149 non-docs; 39 docs) |
 | Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
