@@ -181,7 +181,8 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  "T37-P2-ROLLBACK","T37-P2-FORGE-SUBMIT","T37-P2-NONCE","T37-P2-REVOKED",
  "npc-forge-step-species","npc-forge-step-background",
  "T37-P2-SPECIES","npc-forge-catalog-list > button.npc-forge-species-catalog-row",
- "availableSpecies","chosenSpecies",
+ "availableSpecies","chosenSpecies","T37-P2-CATALOG-SETTLED",
+ "character_option_catalog_preferred","Astral Elf",
  'advance("species","background")','advance("background","class")',
  'advance("class","abilities")','advance("abilities","training")',
  'advance("training","identity")','advance("identity","story")',
@@ -191,6 +192,13 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  "create_character_v1","get_npc_dossier_admin_v1"])
   assert.ok(browser.includes(marker),"Missing T37-P2 genuine signed browser evidence: "+marker);
  assert.match(browser,/page\.on\("request",recordCreate\)/);
+ assert.match(browser,/const catalogReply=await catalogPromise/);
+ assert.match(browser,/await page\.waitForFunction\(/);
+ assert.ok(browser.indexOf("const catalogReply=await catalogPromise")<
+   browser.indexOf("const availableSpecies="),
+   "T37 must await the original source catalog before selecting a species");
+ assert.match(browser,/source==="AAG"/);
+ assert.doesNotMatch(browser,/actualSpecies\.click\(\{\s*force\s*:\s*true/);
  assert.match(browser,/page\.off\("request",recordCreate\)/);
  assert.match(browser,/getByRole\("button",\{name:"Create NPC",exact:true\}\)\.click\(\)/);
  assert.match(browser,/assert\.equal\(originalCreateRequests\.length,1/);

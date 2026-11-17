@@ -611,20 +611,50 @@ try {
    catch{originalCreateRequests.push({invalidJson:true});}
  };
  page.on("request",recordCreate);
+ // The original controller asynchronously replaces the temporary static Orc
+ // fallback when the authenticated preferred source catalog arrives. Start
+ // observing that exact real request BEFORE opening the original NPC Forge.
+ const catalogPromise=page.waitForResponse(response=>
+   response.request().method()==="GET" &&
+   response.url().startsWith(env.DNDNEXT_C34_LOCAL_URL+
+     "/rest/v1/character_option_catalog_preferred?"),{timeout:45000});
  await page.getByRole("button",{name:"New NPC",exact:true}).click();
  const forge=page.locator(".npc-forge-modal.is-npc-mode");
  await forge.waitFor({state:"visible",timeout:30000});
  await forge.locator(".npc-forge-step-species").waitFor({state:"visible"});
+ const catalogReply=await catalogPromise;
+ assert.equal(catalogReply.status(),200,
+   "T37 original signed preferred species catalog did not load successfully");
+ const importedOptions=await catalogReply.json();
+ assert.ok(Array.isArray(importedOptions) &&
+   importedOptions.some(row=>row?.option_type==="species" &&
+     row?.name==="Astral Elf" && row?.source==="AAG"),
+   "T37 inherited T11 AAG Astral Elf source specimen missing from original preferred catalog");
+ // Wait until the unchanged original UI settles on the imported source list,
+ // rather than clicking an Orc fallback which will be unmounted mid-click.
+ // This is read-only test synchronization, not a source catalog override.
+ await page.waitForFunction(()=>{
+   const modal=document.querySelector(".npc-forge-modal.is-npc-mode");
+   const availability=modal?.querySelector(
+     ".npc-forge-step-species .npc-forge-catalog-toolbar > div > span"
+   )?.textContent?.trim() || "";
+   const names=[...(modal?.querySelectorAll(
+     ".npc-forge-step-species .npc-forge-species-catalog-row strong"
+   )||[])].map(el=>el.textContent?.trim());
+   return /^\d+ species available$/.test(availability) && names.includes("Astral Elf");
+ },null,{timeout:20000});
+ console.log("PASS T37-P2-CATALOG-SETTLED: source-identified AAG Astral Elf loaded into original Forge");
  // Select a named, ACTUAL original species row. The catalog button contains
  // portrait/summary metadata, so regex anchoring its entire text to "^Orc"
  // is not the canonical identity contract; use the source <strong> label.
- // Prefer simple 2024 species with no extra lineage choices for this bounded
- // civilian NPC, and fail visibly if none are available from the real source.
+ // Prefer a simple original species if imported; the reduced genuine T11
+ // source fixture includes Astral Elf (AAG) rather than static Orc fallback.
+ // Fail visibly if no supported species remains in the loaded catalog.
  const speciesRows=forge.locator(
    ".npc-forge-step-species .npc-forge-catalog-list > button.npc-forge-species-catalog-row");
  await speciesRows.first().waitFor({state:"visible",timeout:20000});
  const availableSpecies=(await speciesRows.locator("strong").allTextContents()).map(x=>x.trim());
- const chosenSpecies=["Orc","Dwarf","Halfling","Aasimar"].find(x=>availableSpecies.includes(x));
+ const chosenSpecies=["Orc","Dwarf","Halfling","Aasimar","Astral Elf"].find(x=>availableSpecies.includes(x));
  assert.ok(chosenSpecies,
    "T37 original species catalogue has no supported simple species: "+JSON.stringify(availableSpecies));
  const actualSpecies=speciesRows.filter({
