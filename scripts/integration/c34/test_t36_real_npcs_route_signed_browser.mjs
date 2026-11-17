@@ -437,6 +437,7 @@ try {
  await page.getByText("T36 Probe Merchant",{exact:true}).first().waitFor();
  assert.ok(!(await body()).includes(secret),"NPC dossier remained after merchant switch");
  console.log("PASS T25-C04 merchant roster switch clears NPC secret and retains original manager controls");
+ let t37LastBackground=modified;
  // T35: full current NPC manager and current signed server-role check for
  // owner-approved game administrators ADMIN and DM, not just historical GM.
  for(const role of ["ADMIN","DM"]){
@@ -457,6 +458,38 @@ try {
   assert.equal(verified.canManage,true);assert.equal(verified.dossierCode,null);
   assert.equal(verified.dossierId,npc);assert.equal(verified.secret,secret);
   console.log("PASS T36-MANAGER-"+role+": actual /npcs full manager, signed original Stage2 dossier and Sheet");
+  // T37-P1 extends the proven real-route GM UI Save to BOTH other game
+  // managers. This runs against the actual source-derived /npcs page, not a
+  // mocked editor or broad characters-column GRANT.
+  await page.getByText(t37LastBackground,{exact:true}).first().waitFor({timeout:30000});
+  await page.getByRole("button",{name:"New NPC",exact:true}).click();
+  const forge=page.locator(".npc-forge-modal");
+  await forge.waitFor({state:"visible",timeout:30000});
+  assert.ok((await forge.innerText()).includes("Species"),
+    "T37 full source-original NewNpcModal did not render the actual Forge steps");
+  await forge.getByRole("button",{name:"Cancel",exact:true}).click();
+  await forge.waitFor({state:"detached",timeout:30000});
+  console.log("PASS T37-CREATOR-ENTRY-"+role+
+    ": real full NewNpcModal opens and cancels without creating a character");
+  await page.getByRole("button",{name:"Edit",exact:true}).first().click();
+  const t37Index=await page.locator("textarea").evaluateAll(nodes=>
+    nodes.findIndex(node=>node.value===t37LastBackground));
+  assert.ok(t37Index>=0,"T37 "+role+" real Sheet Edit missing selected background");
+  const t37Next="T37 "+role+" SIGNED ORIGINAL UI SAVE";
+  await page.locator("textarea").nth(t37Index).fill(t37Next);
+  await page.getByRole("button",{name:"Done",exact:true}).click();
+  await page.getByRole("button",{name:"Edit",exact:true}).first().waitFor({timeout:30000});
+  const t37Saved=await users[role].who.rpc("get_npc_dossier_admin_v1",{
+    p_character_id:npc
+  });
+  assert.ifError(t37Saved.error);
+  assert.equal(t37Saved.data?.background,t37Next,
+    "T37 "+role+" actual /npcs UI narrative save failed original Stage2 readback");
+  assert.equal(t37Saved.data?.secret,secret,
+    "T37 "+role+" narrative edit unexpectedly changed the GM-only secret");
+  t37LastBackground=t37Next;
+  console.log("PASS T37-NARRATIVE-"+role+
+    ": real Edit/Done persists original NPC background, secret unchanged");
   if(role==="ADMIN"){
    // Same actor token, server profile demotion. The UI must evict private
    // dossier, sheet and generated PDF on explicit permission refresh.
@@ -469,6 +502,9 @@ try {
    await page.getByTestId("t25-refresh-permissions").click();
    await page.getByTestId("t25-sheet-restricted").waitFor({timeout:60000});
    assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0);
+   assert.equal(await page.getByRole("button",{name:"New NPC",exact:true}).count(),0,
+     "T37 revoked Admin retained NPC creator entry");
+   console.log("PASS T37-CREATOR-REVOKED: same-JWT Admin->player loses real New NPC action");
    assert.ok(!(await body()).includes(secret));
    assert.ok(!(await body()).includes("T25 PRIVATE MOTIVATION"));
    console.log("PASS T36-REVOCATION: real /npcs same-JWT Admin→player evicts dossier/Sheet/PDF");
@@ -487,6 +523,9 @@ try {
  },npc);
  assert.equal(unknown.role,"unknown");
  assert.equal(unknown.canManage,false);assert.equal(unknown.blocked,true);
+ assert.equal(await page.getByRole("button",{name:"New NPC",exact:true}).count(),0,
+   "T37 unknown actor saw original Forge creator entry");
+ console.log("PASS T37-CREATOR-UNKNOWN: unknown role cannot open original NPC Forge");
  assert.ok(!(await body()).includes(secret));
  console.log("PASS T36-UNKNOWN: real /npcs unknown role denied despite legacy is_admin(uid)");
 

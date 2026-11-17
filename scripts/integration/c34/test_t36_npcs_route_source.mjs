@@ -158,4 +158,21 @@ test("T36-06 read-only Next config cannot regenerate a generated route",()=>{
  assert.throws(()=>reconcileT36Route(env),/explicit --prepare/);
  assert.ok(!existsSync(path.join(root,T36_LOCAL_ROUTE)));
 });
+test("T37-P1 actual /npcs Admin and DM original Forge entry, Stage2 UI narrative saves and revocation",()=>{
+ const browser=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
+ for(const required of [
+  "T37-CREATOR-ENTRY-","T37-NARRATIVE-","T37-CREATOR-REVOKED",
+  "T37-CREATOR-UNKNOWN","get_npc_dossier_admin_v1",
+  "t37LastBackground=t37Next","forge.getByRole"
+ ])assert.ok(browser.includes(required),"T37 genuine browser assertion absent: "+required);
+ assert.match(browser,/for\(const role of \["ADMIN","DM"\]\)/);
+ assert.match(browser,/await page\.getByRole\("button",\{name:"Done",exact:true\}\)\.click\(\)/);
+ assert.match(browser,/assert\.equal\(t37Saved\.data\?\.secret,secret/);
+ assert.match(browser,/await forge\.waitFor\(\{state:"detached"/);
+ assert.equal(blob(read("pages/npcs.js")),T25_BASE_BLOB);
+ assert.equal(existsSync(path.join(root,T36_LOCAL_ROUTE)),false);
+ const sql=read("scripts/integration/c34/t36_disposable_npc_narrative_save_pg17.sql");
+ assert.match(sql,/fields\.key NOT IN/);
+ assert.doesNotMatch(sql,/GRANT\s+(?:ALL|SELECT|UPDATE)\s+ON\s+(?:TABLE\s+)?public\.characters/i);
+});
 console.log("PASS T36-SOURCE: original /npcs bytes intact, local-only default-OFF Next rewrite and full T35 source retained");
