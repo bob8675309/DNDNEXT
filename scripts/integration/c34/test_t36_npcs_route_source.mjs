@@ -193,6 +193,10 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
   assert.ok(browser.includes(marker),"Missing T37-P2 genuine signed browser evidence: "+marker);
  assert.match(browser,/page\.on\("request",recordCreate\)/);
  assert.match(browser,/const catalogReply=await catalogPromise/);
+ assert.match(browser,/T37-P2-SIGNED-CATALOG-RESPONSE/);
+ assert.match(browser,/url\.searchParams\.get\("option_type"\)/);
+ assert.match(browser,/url\.searchParams\.get\("limit"\)==="5000"/);
+ assert.match(browser,/public\.character_option_catalog_preferred/);
  assert.match(browser,/await page\.waitForFunction\(/);
  assert.ok(browser.indexOf("const catalogReply=await catalogPromise")<
    browser.indexOf("const availableSpecies="),

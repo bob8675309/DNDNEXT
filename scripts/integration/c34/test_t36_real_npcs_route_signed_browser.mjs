@@ -614,10 +614,17 @@ try {
  // The original controller asynchronously replaces the temporary static Orc
  // fallback when the authenticated preferred source catalog arrives. Start
  // observing that exact real request BEFORE opening the original NPC Forge.
- const catalogPromise=page.waitForResponse(response=>
-   response.request().method()==="GET" &&
-   response.url().startsWith(env.DNDNEXT_C34_LOCAL_URL+
-     "/rest/v1/character_option_catalog_preferred?"),{timeout:45000});
+ const catalogPromise=page.waitForResponse(response=>{
+   if(response.request().method()!=="GET")return false;
+   const url=new URL(response.url());
+   // Other views/components can query this table; require the exact original
+   // controller's all-option projection and 4-type preferred catalog read.
+   return url.origin===env.DNDNEXT_C34_LOCAL_URL &&
+     url.pathname==="/rest/v1/character_option_catalog_preferred" &&
+     (url.searchParams.get("select")||"").startsWith("id,option_key,option_type,name,source,") &&
+     (url.searchParams.get("option_type")||"").startsWith("in.") &&
+     url.searchParams.get("limit")==="5000";
+ },{timeout:45000});
  await page.getByRole("button",{name:"New NPC",exact:true}).click();
  const forge=page.locator(".npc-forge-modal.is-npc-mode");
  await forge.waitFor({state:"visible",timeout:30000});
@@ -626,10 +633,22 @@ try {
  assert.equal(catalogReply.status(),200,
    "T37 original signed preferred species catalog did not load successfully");
  const importedOptions=await catalogReply.json();
- assert.ok(Array.isArray(importedOptions) &&
-   importedOptions.some(row=>row?.option_type==="species" &&
-     row?.name==="Astral Elf" && row?.source==="AAG"),
-   "T37 inherited T11 AAG Astral Elf source specimen missing from original preferred catalog");
+ const importedSpecies=Array.isArray(importedOptions)
+   ? importedOptions.filter(row=>row?.option_type==="species")
+     .map(row=>({name:row.name,source:row.source,id:row.id}))
+   : [];
+ // Independent original source proof; no creation of a synthetic T37 row.
+ assert.equal(sql("SELECT count(*) FROM public.character_option_catalog_preferred "+
+   "WHERE name='Astral Elf' AND source='AAG' AND option_type='species'"),"1",
+   "T37 source-identified inherited Astral Elf missing in original preferred view");
+ console.log("T37-P2-SIGNED-CATALOG-RESPONSE",JSON.stringify({
+   status:catalogReply.status(),
+   query:new URL(catalogReply.url()).searchParams.toString(),
+   options:Array.isArray(importedOptions)?importedOptions.length:null,
+   species:importedSpecies.slice(0,20)
+ }));
+ assert.ok(importedSpecies.some(row=>row.name==="Astral Elf" && row.source==="AAG"),
+   "T37 authenticated source catalog response omitted original AAG Astral Elf: "+JSON.stringify(importedSpecies.slice(0,12)));
  // Wait until the unchanged original UI settles on the imported source list,
  // rather than clicking an Orc fallback which will be unmounted mid-click.
  // This is read-only test synchronization, not a source catalog override.
