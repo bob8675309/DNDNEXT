@@ -199,6 +199,14 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.match(fixture,/md5\(pg_get_functiondef\('public\.create_character_v1/);
  assert.match(fixture,/has_column_privilege\('authenticated','public\.characters','background','SELECT'\)/);
  assert.match(fixture,/security_invoker=true/);
+ // Original J154 starting-spell fixture already installed an XPHB-only
+ // 5-column class_catalog_preferred view; preserve its original leading
+ // columns/filter and append only the real /npcs browser projection.
+ assert.match(fixture,/to_regclass\('public.class_catalog_preferred'\) IS NULL/);
+ assert.match(fixture,/CREATE OR REPLACE VIEW public.class_catalog_preferred WITH \(security_invoker=true\)/);
+ assert.match(fixture,/SELECT id,class_key,class_name,source,spellcasting_ability,/);
+ assert.match(fixture,/FROM public.class_catalog WHERE source='XPHB'/);
+ assert.doesNotMatch(fixture,/\bCREATE VIEW public.class_catalog_preferred/);
  // The original Forge materializer and T29 merchant test already installed
  // items_catalog. Never create an empty replacement for those inherited rows.
  assert.match(fixture,/to_regclass\('public.items_catalog'\) IS NULL/);

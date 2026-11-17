@@ -32,3 +32,7 @@ The first source verification of the prior fixture repair, [44010106192](https:/
 ## Original Ability method validated-path correction (signed PENDING)
 
 The original NPC Forge defaults to 4d6 rolls, and the unchanged source controller requires all six dice allocated before advancing. T37-P2 now selects the original **Standard Class Array** button and asserts it is active before its +2 STR/+1 DEX species bonuses, preserving genuine validation and all downstream original creation actions. No source gameplay or SQL modification, signed rerun pending.
+
+## Source-exact original J154 preferred class view reuse — local-only (signed pending)
+
+A second original-source view conflict remained after item-catalog reuse: J154 `forge_starting_spells_local_auth_pg17.sql` already creates `public.class_catalog_preferred` as a five-column `WHERE source='XPHB'` view. First T37 fixture required its absence and attempted `CREATE VIEW`, explaining why preflight still refused on earlier signed runs. Narrow scratch-only fix validates the inherited first five columns and XPHB filter and extends them **at the end** using `CREATE OR REPLACE VIEW` with `security_invoker=true` for the actual original NPC Forge read projection. No source-original spell rules/rows/Forge mutation or production rollout; full browser acceptance remains unproven until fresh signed run.

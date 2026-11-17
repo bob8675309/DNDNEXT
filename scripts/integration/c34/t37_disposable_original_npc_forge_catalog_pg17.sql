@@ -18,7 +18,16 @@ BEGIN
   OR to_regclass('public.npc_visual_assets') IS NULL
   OR to_regclass('public.class_catalog') IS NULL
   OR to_regclass('public.character_option_catalog_preferred') IS NOT NULL
-  OR to_regclass('public.class_catalog_preferred') IS NOT NULL
+  -- Original J154 starting-spells research already creates this XPHB-only
+  -- five-column view. Require its actual columns and XPHB source restriction.
+  -- T37 may extend the read projection at the END, never discard its filter.
+  OR to_regclass('public.class_catalog_preferred') IS NULL
+  OR (SELECT count(*) FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='class_catalog_preferred')<>5
+  OR (SELECT count(*) FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='class_catalog_preferred'
+        AND column_name IN ('id','class_key','class_name','source','spellcasting_ability'))<>5
+  OR coalesce(position('XPHB' in pg_get_viewdef(to_regclass('public.class_catalog_preferred'),true)),0)=0
   -- Original signed T1..T35 and T29 merchant tests ALREADY install
   -- public.items_catalog, including original populated inventory records.
   -- Reuse it read-only; never recreate or truncate the prior source fixture.
@@ -49,17 +58,18 @@ BEGIN
  THEN RAISE EXCEPTION 'T37 REFUSE: must be disposable original signed PG17 + intact T36 Stage2 ACL'; END IF;
 END;
 $t37_scope$;
--- Original NPC/Player Forge already defines static-fallback SPECIES and
--- BACKGROUND data. Serve the real source-owned class_catalog rows through an
--- explicit invoker-view, with empty preferred options so ORIGINAL fallbacks run.
--- The signed test must NOT claim complete hosted preferred catalogs.
-CREATE VIEW public.class_catalog_preferred WITH (security_invoker=true) AS
- SELECT id,class_key,class_name,source,ruleset,'2024'::text AS edition,
-        hit_die,NULL::text[] AS primary_abilities,
-        NULL::text[] AS saving_throws,spellcasting_ability,
+-- Original J154 installed a five-column XPHB-only preferred-view BEFORE
+-- T37. Retain its original leading column order and WHERE source='XPHB'
+-- semantics while appending only the read metadata required by the unchanged
+-- original NPC Forge UI. This remains a disposable PG17 test-only adapter,
+-- NOT the full hosted preferred catalog, nor a production migration.
+CREATE OR REPLACE VIEW public.class_catalog_preferred WITH (security_invoker=true) AS
+ SELECT id,class_key,class_name,source,spellcasting_ability,
+        ruleset,'2024'::text AS edition,hit_die,
+        NULL::text[] AS primary_abilities,NULL::text[] AS saving_throws,
         NULL::text AS caster_progression,''::text AS summary,
         '{}'::jsonb AS raw_payload
- FROM public.class_catalog;
+ FROM public.class_catalog WHERE source='XPHB';
 CREATE VIEW public.character_option_catalog_preferred WITH (security_invoker=true) AS
  SELECT NULL::uuid AS id,NULL::text AS option_key,NULL::text AS option_type,
         NULL::text AS name,NULL::text AS source,NULL::text AS category,
