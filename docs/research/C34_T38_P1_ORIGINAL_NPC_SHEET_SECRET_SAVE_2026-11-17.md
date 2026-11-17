@@ -1,4 +1,6 @@
-# C34 T38-P1 — Original NPC Sheet + GM Secret Save (signed pending; production HOLD)
+# C34 T38-P1 — Original NPC Sheet + GM Secret Save (SIGNED RESEARCH ACCEPTED; production HOLD)
+
+> **2026-11-17 CST FINAL SIGNED T38-P1 RESEARCH ACCEPTANCE:** [Full signed #44195098692](https://github.com/bob8675309/DNDNEXT/actions/runs/44195098692), executable `992dccacccdc0f755138a659c19ef7ff266335d0`, **SUCCESS with 6/6 exact-head workflows**. Original real /npcs Edit→Done for signed Admin, GM, DM persisted changed canonical Sheet Traits and private GM secret (both visible after fresh UI reload), preserved one Sheet and Forge creation nonce/creator, with denied signed editor/inventory-only/outsider/unknown/anon GM-secret mutation/read/dossier; all inherited T37 creation, nonce/revocation, manager PDF and route cleanup PASS. Original production page, hosted SQL/RLS, world map and main not edited. Previous authentic REDs below remain source history; production release remains HELD. Next separate [T38-P2 conversion/stock scope](C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md) is audit only, not tested.
 
 **2026-11-17 CST.** Draft [PR #379](https://github.com/bob8675309/DNDNEXT/pull/379) research only. Based on already successful exact-source T37-P2 original eight-step NPC Forge signed local [run #44179770581](https://github.com/bob8675309/DNDNEXT/actions/runs/44179770581), executable `2fe52abcc600ac99ee1d52cf8406833fa2699570`.
 
