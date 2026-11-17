@@ -702,11 +702,51 @@ try {
    throw error;
  }
  console.log("PASS T37-P2-SPECIES: selected real original source catalogue "+chosenSpecies);
+ // T11 supplies AAG Astral Elf with its original Astral Fire choice. NPC
+ // creation requires that source trait's cantrip and casting-ability choices:
+ // NewNpcModalV3's capture-phase Continue guard correctly rejects incomplete
+ // species feature rules even in NPC mode. Exercise the actual rule buttons
+ // inside the original species dossier instead of skipping validation.
+ if(chosenSpecies==="Astral Elf"){
+   const astralFeature=forge.locator(".npc-forge-species-feature-list details")
+     .filter({hasText:"Astral Fire"});
+   assert.equal(await astralFeature.count(),1,
+     "T37 original source Astral Fire trait must have exactly one original feature card");
+   if(!(await astralFeature.evaluate(el=>el.open)))
+     await astralFeature.locator("summary").click();
+   const traitChoices=astralFeature.locator(".npc-forge-species-choice");
+   await traitChoices.waitFor({state:"visible",timeout:10000});
+   const cantripField=traitChoices.locator(".npc-forge-species-choice-field")
+     .filter({hasText:"Choose cantrip"});
+   const abilityField=traitChoices.locator(".npc-forge-species-choice-field")
+     .filter({hasText:"Spellcasting ability"});
+   assert.equal(await cantripField.count(),1,
+     "T37 original Astral Fire must offer a source cantrip choice");
+   assert.equal(await abilityField.count(),1,
+     "T37 original Astral Fire must offer source casting-ability choice");
+   await cantripField.getByRole("button",{name:"Light",exact:true}).click();
+   await abilityField.getByRole("button",{name:"Wisdom",exact:true}).click();
+   await traitChoices.locator(".npc-forge-species-choice.is-complete")
+     .waitFor({state:"visible",timeout:10000});
+   assert.equal(await traitChoices.locator(".npc-forge-species-choice.is-required").count(),0,
+     "T37 source-required Astral Fire selections were not completed");
+   console.log("PASS T37-P2-ASTRAL-FIRE: original feature UI selected source cantrip Light and casting ability Wisdom");
+ }
  const advance=async(from,to)=>{
    assert.ok(await forge.locator(".npc-forge-step-"+from).isVisible(),
       "T37 Forge wrong step, expected "+from);
    await forge.locator(".npc-forge-footer").getByRole("button",{name:"Continue"}).click();
-   await forge.locator(".npc-forge-step-"+to).waitFor({state:"visible",timeout:15000});
+   try{await forge.locator(".npc-forge-step-"+to).waitFor({state:"visible",timeout:15000});}
+   catch(error){
+     // A genuine source validation gate must remain visible, not be bypassed.
+     console.error("T37-P2-STEP-VALIDATION-DIAGNOSTIC",JSON.stringify({
+       from,to,
+       errorText:await forge.locator(".npc-forge-error").allTextContents(),
+       requiredSpeciesChoices:await forge.locator(".npc-forge-species-choice.is-required").count(),
+       stepLabels:await forge.locator(".npc-forge-steps .is-current").allTextContents()
+     }));
+     throw error;
+   }
  };
  await advance("species","background");
  await forge.locator(".npc-forge-step-background .npc-forge-catalog-list > button")
