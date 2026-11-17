@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `39aad8b5c715602f1fde1eab26c326deee548091` |
+| Exact source commit represented by this archive snapshot | `8223d5400cdfab0854b8852219865e245859f286` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): preserve eight original Forge sprite columns in T37 picker fixture |
+| Last source commit title | test(c34): T37-P2 exercise original Standard Class Array before NPC Forge submit |
 | Files changed relative to main | 187 (149 non-docs; 38 docs) |
-| Last source commit | 4 files (2 non-docs; 2 authored docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,8 +19,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/integration/c34/t37_disposable_original_npc_forge_catalog_pg17.sql`
+- `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `scripts/integration/c34/test_t36_npcs_route_source.mjs`
+- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
