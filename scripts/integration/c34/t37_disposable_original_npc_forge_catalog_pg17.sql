@@ -19,7 +19,13 @@ BEGIN
   OR to_regclass('public.class_catalog') IS NULL
   OR to_regclass('public.character_option_catalog_preferred') IS NOT NULL
   OR to_regclass('public.class_catalog_preferred') IS NOT NULL
-  OR to_regclass('public.items_catalog') IS NOT NULL
+  -- Original signed T1..T35 and T29 merchant tests ALREADY install
+  -- public.items_catalog, including original populated inventory records.
+  -- Reuse it read-only; never recreate or truncate the prior source fixture.
+  OR to_regclass('public.items_catalog') IS NULL
+  OR (SELECT count(*) FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='items_catalog'
+        AND column_name IN ('item_name','item_key','item_type','item_rarity','payload'))<>5
   OR to_regclass('public.portrait_sprite_suggestions') IS NOT NULL
   -- Prior signed ORIGINAL Forge fixtures already add these actual schema
   -- fields: portrait name/sort_order (J133) and asset overworld_scale
@@ -52,9 +58,8 @@ CREATE VIEW public.character_option_catalog_preferred WITH (security_invoker=tru
         NULL::text AS description,NULL::text AS prerequisite_text,
         NULL::text[] AS tags,NULL::jsonb AS metadata,NULL::jsonb AS raw_payload
  WHERE false;
-CREATE TABLE public.items_catalog (
- item_name text,item_key text,item_type text,item_rarity text,payload jsonb
-);
+-- Original T29 merchant and original Forge fixtures already created/seeded
+-- public.items_catalog. The existing source rows are not touched.
 -- Restore source-shaped public-library metadata only in this scratch DB.
 -- Original create_character_v1 still verifies active portrait id on server.
 -- name and sort_order are already present from the signed original portrait

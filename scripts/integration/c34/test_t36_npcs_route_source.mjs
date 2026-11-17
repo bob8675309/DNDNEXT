@@ -198,6 +198,11 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.match(fixture,/md5\(pg_get_functiondef\('public\.create_character_v1/);
  assert.match(fixture,/has_column_privilege\('authenticated','public\.characters','background','SELECT'\)/);
  assert.match(fixture,/security_invoker=true/);
+ // The original Forge materializer and T29 merchant test already installed
+ // items_catalog. Never create an empty replacement for those inherited rows.
+ assert.match(fixture,/to_regclass\('public.items_catalog'\) IS NULL/);
+ assert.doesNotMatch(fixture,/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?public\.items_catalog/i);
+ assert.match(fixture,/table_name='items_catalog'/);
  // Existing signed original fixtures add portrait name/sort_order and sprite
  // overworld_scale earlier; the T37 scratch fixture MUST NOT add them twice.
  assert.match(fixture,/column_name='name' AND data_type='text'/);
