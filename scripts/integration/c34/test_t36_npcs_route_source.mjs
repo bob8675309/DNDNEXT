@@ -198,6 +198,23 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.match(fixture,/md5\(pg_get_functiondef\('public\.create_character_v1/);
  assert.match(fixture,/has_column_privilege\('authenticated','public\.characters','background','SELECT'\)/);
  assert.match(fixture,/security_invoker=true/);
+ // Existing signed original fixtures add portrait name/sort_order and sprite
+ // overworld_scale earlier; the T37 scratch fixture MUST NOT add them twice.
+ assert.match(fixture,/column_name='name' AND data_type='text'/);
+ assert.match(fixture,/column_name='sort_order' AND data_type='integer'/);
+ assert.match(fixture,/column_name='overworld_scale' AND data_type='numeric'/);
+ assert.doesNotMatch(fixture,/\bADD COLUMN (?:name|sort_order|overworld_scale) (?:text|integer|numeric)/);
+ // The actual original portrait picker does one SELECT of every metadata
+ // column. Pin all the missing fields to prevent PostgREST 42703 failure.
+ const picker=read("components/NpcForgePortraitPickerModal.js");
+ const assetSelect=picker.match(/\.from\("npc_visual_assets"\)\s*\.select\("([^"]+)"\)/);
+ assert.ok(assetSelect,"Original portrait sprite SELECT source drift");
+ const preexisting=new Set(["id","is_active","portrait_library_id","sprite_path","default_scale","overworld_scale"]);
+ for(const column of assetSelect[1].split(",")){
+   if(preexisting.has(column))continue;
+   assert.ok(new RegExp("\\bADD COLUMN "+column+"\\s").test(fixture),
+     "T37 scratch visual asset picker column missing: "+column);
+ }
  assert.match(fixture,/T37-P2-LOCAL-CATALOG/);
  assert.doesNotMatch(fixture,/GRANT\s+(?:ALL|INSERT|UPDATE|DELETE)\s+ON/i);
  assert.doesNotMatch(fixture,/CREATE OR REPLACE FUNCTION|ALTER POLICY|DISABLE ROW LEVEL SECURITY/i);

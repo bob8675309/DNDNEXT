@@ -21,6 +21,16 @@ BEGIN
   OR to_regclass('public.class_catalog_preferred') IS NOT NULL
   OR to_regclass('public.items_catalog') IS NOT NULL
   OR to_regclass('public.portrait_sprite_suggestions') IS NOT NULL
+  -- Prior signed ORIGINAL Forge fixtures already add these actual schema
+  -- fields: portrait name/sort_order (J133) and asset overworld_scale
+  -- (C33 sprite guard). Never add them twice or mask source drift.
+  OR (SELECT count(*) FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='npc_portrait_library'
+        AND ((column_name='name' AND data_type='text')
+          OR (column_name='sort_order' AND data_type='integer')))<>2
+  OR NOT EXISTS(SELECT 1 FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='npc_visual_assets'
+      AND column_name='overworld_scale' AND data_type='numeric')
   OR has_column_privilege('authenticated','public.characters','background','SELECT')
  THEN RAISE EXCEPTION 'T37 REFUSE: must be disposable original signed PG17 + intact T36 Stage2 ACL'; END IF;
 END;
@@ -47,8 +57,9 @@ CREATE TABLE public.items_catalog (
 );
 -- Restore source-shaped public-library metadata only in this scratch DB.
 -- Original create_character_v1 still verifies active portrait id on server.
+-- name and sort_order are already present from the signed original portrait
+-- trigger fixture. Add only this picker-specific local read projection.
 ALTER TABLE public.npc_portrait_library
- ADD COLUMN name text,
  ADD COLUMN bucket text DEFAULT 'npc-portraits',
  ADD COLUMN category text DEFAULT 'npc',
  ADD COLUMN tags text[] DEFAULT '{}'::text[],
@@ -58,8 +69,7 @@ ALTER TABLE public.npc_portrait_library
  ADD COLUMN width integer,
  ADD COLUMN height integer,
  ADD COLUMN aspect_ratio text,
- ADD COLUMN recommended_use text,
- ADD COLUMN sort_order integer;
+ ADD COLUMN recommended_use text;
 INSERT INTO public.npc_portrait_library
  (id,is_active,storage_path,public_url,name,bucket,category,tags,
   species_tags,profession_tags,theme_tags,width,height,aspect_ratio,
@@ -69,9 +79,20 @@ INSERT INTO public.npc_portrait_library
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==',
   'T37 Synthetic Forge Portrait','npc-portraits','character',ARRAY['npc'],
   ARRAY['orc'],ARRAY['ranger'],ARRAY['test'],1,1,'3:4','npc',1);
+-- Previous original sprite-guard research already added overworld_scale.
+-- The ORIGINAL NpcForgePortraitPickerModal SELECT requires the full read
+-- shape below, even when the synthetic asset list itself is empty. These
+-- columns are scratch metadata, NOT new production capabilities.
 ALTER TABLE public.npc_visual_assets
  ADD COLUMN name text,
- ADD COLUMN overworld_scale numeric,
+ ADD COLUMN sprite_bucket text,
+ ADD COLUMN sprite_format text,
+ ADD COLUMN frame_width integer,
+ ADD COLUMN frame_height integer,
+ ADD COLUMN direction_order text[],
+ ADD COLUMN idle_frame integer,
+ ADD COLUMN walk_frames integer[],
+ ADD COLUMN fps numeric,
  ADD COLUMN tactical_scale numeric,
  ADD COLUMN species_tags text[] DEFAULT '{}'::text[],
  ADD COLUMN role_tags text[] DEFAULT '{}'::text[],
