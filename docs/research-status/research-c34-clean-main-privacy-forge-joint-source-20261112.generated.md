@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `049cf80108a74201ae1ac73a5f3a532275e22dd9` |
+| Exact source commit represented by this archive snapshot | `358220c1e5303e49d468cb359834f28ea80e6d44` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T37-P2 reuse original J154 XPHB class view with additive NPC read projection |
+| Last source commit title | test(c34): preserve original preferred option catalog in T37 signed NPC Forge research |
 | Files changed relative to main | 187 (149 non-docs; 38 docs) |
 | Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
