@@ -197,7 +197,9 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.match(browser,/const catalogReply=await catalogPromise/);
  assert.match(browser,/cantripField\.getByRole\("button",\{name:"Light",exact:true\}\)\.click\(\)/);
  assert.match(browser,/abilityField\.getByRole\("button",\{name:"Wisdom",exact:true\}\)\.click\(\)/);
- assert.match(browser,/traitChoices\.locator\("\.npc-forge-species-choice\.is-complete"\)/);
+ assert.match(browser,/astralFeature\.locator\("\.npc-forge-species-choice\.is-complete"\)/);
+ assert.match(browser,/astralFeature\.locator\("\.npc-forge-species-choice\.is-required"\)/);
+ assert.doesNotMatch(browser,/traitChoices\.locator\("\.npc-forge-species-choice\.(?:is-complete|is-required)"\)/);
  assert.match(browser,/T37-P2-SIGNED-CATALOG-RESPONSE/);
  assert.match(browser,/url\.searchParams\.get\("option_type"\)/);
  assert.match(browser,/url\.searchParams\.get\("limit"\)==="5000"/);

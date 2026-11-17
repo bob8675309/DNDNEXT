@@ -726,9 +726,12 @@ try {
      "T37 original Astral Fire must offer source casting-ability choice");
    await cantripField.getByRole("button",{name:"Light",exact:true}).click();
    await abilityField.getByRole("button",{name:"Wisdom",exact:true}).click();
-   await traitChoices.locator(".npc-forge-species-choice.is-complete")
+   // The original rule toggles is-complete on THIS choice container, not on
+   // a nested descendant: the previous self-descendant locator could never
+   // match, even after authentic cantrip and ability button selections.
+   await astralFeature.locator(".npc-forge-species-choice.is-complete")
      .waitFor({state:"visible",timeout:10000});
-   assert.equal(await traitChoices.locator(".npc-forge-species-choice.is-required").count(),0,
+   assert.equal(await astralFeature.locator(".npc-forge-species-choice.is-required").count(),0,
      "T37 source-required Astral Fire selections were not completed");
    console.log("PASS T37-P2-ASTRAL-FIRE: original feature UI selected source cantrip Light and casting ability Wisdom");
  }
