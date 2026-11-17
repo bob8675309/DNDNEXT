@@ -199,6 +199,7 @@ try {
  assert.equal(sql("SELECT has_column_privilege('authenticated','public.characters','background','SELECT')::text"),"false");
  console.log("PASS T37-P2-CATALOG: genuine original NPC Forge gets isolated public catalog, no hosted/RLS writer changes");
  const t37BeforeNegative=sql("SELECT count(*) FROM public.characters");
+ const t37BeforeSheets=sql("SELECT count(*) FROM public.character_sheets");
  for(const role of ["COEDITOR","INVONLY","OUTSIDER","UNKNOWN"]){
    const forbidden="T37 Forbidden "+role;
    const attempt=await users[role].who.rpc("create_character_v1",{
@@ -222,7 +223,7 @@ try {
  assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+invalidNonce+"'"),"0");
  assert.equal(sql("SELECT count(*) FROM public.characters"),t37BeforeNegative,
    "T37 failed original RPC left a character row");
- assert.equal(sql("SELECT count(*) FROM public.character_sheets"),"2",
+ assert.equal(sql("SELECT count(*) FROM public.character_sheets"),t37BeforeSheets,
    "T37 original denied create mutated canonical character sheet population");
  console.log("PASS T37-P2-ROLLBACK: genuine signed original creator invalid location leaves character/Sheet/nonce absent");
 

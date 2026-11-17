@@ -179,9 +179,12 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  const browser=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
  for(const marker of ["T37-P2-CATALOG","T37-P2-CREATE-DENIED",
  "T37-P2-ROLLBACK","T37-P2-FORGE-SUBMIT","T37-P2-NONCE","T37-P2-REVOKED",
- "npc-forge-step-species","npc-forge-step-background","npc-forge-step-class",
- "npc-forge-step-abilities","npc-forge-step-training","npc-forge-step-identity",
- "npc-forge-step-story","npc-forge-step-review","originalCreateRequests",
+ "npc-forge-step-species","npc-forge-step-background",
+ 'advance("species","background")','advance("background","class")',
+ 'advance("class","abilities")','advance("abilities","training")',
+ 'advance("training","identity")','advance("identity","story")',
+ 'advance("story","review")',
+ "npc-forge-step-identity","npc-forge-step-story","originalCreateRequests",
  "create_character_v1","get_npc_dossier_admin_v1"])
   assert.ok(browser.includes(marker),"Missing T37-P2 genuine signed browser evidence: "+marker);
  assert.match(browser,/page\.on\("request",recordCreate\)/);
