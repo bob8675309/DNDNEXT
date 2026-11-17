@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `358220c1e5303e49d468cb359834f28ea80e6d44` |
+| Exact source commit represented by this archive snapshot | `ce40321ec3dadcc105583f96c83d91d4087aaa63` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): preserve original preferred option catalog in T37 signed NPC Forge research |
+| Last source commit title | test(c34): T37-P2 select original NPC Forge species by canonical visible row name |
 | Files changed relative to main | 187 (149 non-docs; 38 docs) |
 | Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
@@ -20,8 +20,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
-- `scripts/integration/c34/t37_disposable_original_npc_forge_catalog_pg17.sql`
 - `scripts/integration/c34/test_t36_npcs_route_source.mjs`
+- `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
