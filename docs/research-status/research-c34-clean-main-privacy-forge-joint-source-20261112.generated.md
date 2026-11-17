@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1c0e859843aa1fe750d9f9932126fb770ac84969` |
+| Exact source commit represented by this archive snapshot | `61b6cb25dc506d8684b1c148895d2141417521e8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): await real NPC Sheet and private dossier after T38 reload |
+| Last source commit title | fix(c34): bind research NPC GM secret view to authorized selected dossier |
 | Files changed relative to main | 188 (149 non-docs; 39 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
+- `scripts/integration/c34/prepare_t36_npcs_route.mjs`
 - `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 - `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
