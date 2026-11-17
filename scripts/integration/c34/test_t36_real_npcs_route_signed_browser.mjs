@@ -628,7 +628,7 @@ try {
  assert.ok(chosenSpecies,
    "T37 original species catalogue has no supported simple species: "+JSON.stringify(availableSpecies));
  const actualSpecies=speciesRows.filter({
-   has:forge.locator("strong").filter({hasText:new RegExp("^"+chosenSpecies+"$")})
+   has:page.locator("strong").filter({hasText:new RegExp("^"+chosenSpecies+"$")})
  });
  assert.equal(await actualSpecies.count(),1,
    "T37 original selected species must resolve to exactly one real catalog row");
