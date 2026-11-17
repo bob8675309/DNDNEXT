@@ -632,7 +632,26 @@ try {
  });
  assert.equal(await actualSpecies.count(),1,
    "T37 original selected species must resolve to exactly one real catalog row");
- await actualSpecies.click();
+ try {
+   await actualSpecies.click();
+ } catch (error) {
+   // Diagnostic-only: preserve Playwright's normal actionable click and
+   // original exact-one assertion. Observe the DOM after a genuine failure.
+   const snapshot=await page.evaluate(() => ({
+     path:location.pathname,
+     modalCount:document.querySelectorAll(".npc-forge-modal.is-npc-mode").length,
+     visibleStepNames:[...document.querySelectorAll(".npc-forge-modal.is-npc-mode [class*='npc-forge-step-']")]
+       .filter(el=>el.getClientRects().length>0)
+       .map(el=>[...el.classList].filter(c=>c.startsWith("npc-forge-step-")))
+       .flat().filter((v,i,a)=>a.indexOf(v)===i).slice(0,12),
+     speciesRowCount:document.querySelectorAll(".npc-forge-step-species .npc-forge-catalog-list > button.npc-forge-species-catalog-row").length,
+     speciesNames:[...document.querySelectorAll(".npc-forge-step-species .npc-forge-species-catalog-row strong")]
+       .map(el=>el.textContent?.trim()).slice(0,20),
+     dialogCount:document.querySelectorAll('[role="dialog"]').length
+   })).catch(e=>({snapshotError:String(e)}));
+   console.error("T37-P2-SPECIES-DETACH-DIAGNOSTIC",JSON.stringify(snapshot));
+   throw error;
+ }
  console.log("PASS T37-P2-SPECIES: selected real original source catalogue "+chosenSpecies);
  const advance=async(from,to)=>{
    assert.ok(await forge.locator(".npc-forge-step-"+from).isVisible(),
