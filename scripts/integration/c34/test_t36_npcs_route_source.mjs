@@ -180,6 +180,8 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  for(const marker of ["T37-P2-CATALOG","T37-P2-CREATE-DENIED",
  "T37-P2-ROLLBACK","T37-P2-FORGE-SUBMIT","T37-P2-NONCE","T37-P2-REVOKED",
  "npc-forge-step-species","npc-forge-step-background",
+ "T37-P2-SPECIES","npc-forge-catalog-list > button.npc-forge-species-catalog-row",
+ "availableSpecies","chosenSpecies",
  'advance("species","background")','advance("background","class")',
  'advance("class","abilities")','advance("abilities","training")',
  'advance("training","identity")','advance("identity","story")',

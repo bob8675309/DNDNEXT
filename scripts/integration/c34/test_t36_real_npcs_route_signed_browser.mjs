@@ -615,8 +615,25 @@ try {
  const forge=page.locator(".npc-forge-modal.is-npc-mode");
  await forge.waitFor({state:"visible",timeout:30000});
  await forge.locator(".npc-forge-step-species").waitFor({state:"visible"});
- // Use original source fallback species and background; no mocked create UI.
- await forge.locator(".npc-forge-species-catalog-row").filter({hasText:/^Orc\b/}).first().click();
+ // Select a named, ACTUAL original species row. The catalog button contains
+ // portrait/summary metadata, so regex anchoring its entire text to "^Orc"
+ // is not the canonical identity contract; use the source <strong> label.
+ // Prefer simple 2024 species with no extra lineage choices for this bounded
+ // civilian NPC, and fail visibly if none are available from the real source.
+ const speciesRows=forge.locator(
+   ".npc-forge-step-species .npc-forge-catalog-list > button.npc-forge-species-catalog-row");
+ await speciesRows.first().waitFor({state:"visible",timeout:20000});
+ const availableSpecies=(await speciesRows.locator("strong").allTextContents()).map(x=>x.trim());
+ const chosenSpecies=["Orc","Dwarf","Halfling","Aasimar"].find(x=>availableSpecies.includes(x));
+ assert.ok(chosenSpecies,
+   "T37 original species catalogue has no supported simple species: "+JSON.stringify(availableSpecies));
+ const actualSpecies=speciesRows.filter({
+   has:forge.locator("strong").filter({hasText:new RegExp("^"+chosenSpecies+"$")})
+ });
+ assert.equal(await actualSpecies.count(),1,
+   "T37 original selected species must resolve to exactly one real catalog row");
+ await actualSpecies.click();
+ console.log("PASS T37-P2-SPECIES: selected real original source catalogue "+chosenSpecies);
  const advance=async(from,to)=>{
    assert.ok(await forge.locator(".npc-forge-step-"+from).isVisible(),
       "T37 Forge wrong step, expected "+from);
