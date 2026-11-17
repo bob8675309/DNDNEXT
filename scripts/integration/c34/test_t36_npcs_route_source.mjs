@@ -215,12 +215,21 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.ok(portraitAlter&&spriteAlter,"Missing T37 local catalog ALTER sections");
  assert.doesNotMatch(portraitAlter,/\bADD COLUMN (?:name|sort_order) (?:text|integer)/);
  assert.doesNotMatch(spriteAlter,/\bADD COLUMN overworld_scale numeric/);
+ for(const originalName of ["sprite_bucket","sprite_format","frame_width","frame_height",
+   "direction_order","idle_frame","walk_frames","fps"]){
+   assert.doesNotMatch(spriteAlter,new RegExp("\\bADD COLUMN "+originalName+"\\s"),
+      "T37 fixture duplicated original Forge sprite column "+originalName);
+ }
+ assert.match(fixture,/column_name IN \('sprite_bucket','sprite_format'\)/);
+ assert.match(fixture,/column_name='walk_frames' AND udt_name='_int4'/);
  // The actual original portrait picker does one SELECT of every metadata
  // column. Pin all the missing fields to prevent PostgREST 42703 failure.
  const picker=read("components/NpcForgePortraitPickerModal.js");
  const assetSelect=picker.match(/\.from\("npc_visual_assets"\)\s*\.select\("([^"]+)"\)/);
  assert.ok(assetSelect,"Original portrait sprite SELECT source drift");
- const preexisting=new Set(["id","is_active","portrait_library_id","sprite_path","default_scale","overworld_scale"]);
+ const preexisting=new Set(["id","is_active","portrait_library_id","sprite_path","default_scale","overworld_scale",
+   "sprite_bucket","sprite_format","frame_width","frame_height",
+   "direction_order","idle_frame","walk_frames","fps"]);
  for(const column of assetSelect[1].split(",")){
    if(preexisting.has(column))continue;
    assert.ok(new RegExp("\\bADD COLUMN "+column+"\\s").test(fixture),

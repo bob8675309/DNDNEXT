@@ -37,6 +37,14 @@ BEGIN
   OR NOT EXISTS(SELECT 1 FROM information_schema.columns
       WHERE table_schema='public' AND table_name='npc_visual_assets'
       AND column_name='overworld_scale' AND data_type='numeric')
+  -- The original source-owned Forge setup ALREADY adds these eight sprite
+  -- format columns; verify them instead of attempting duplicate ALTERs.
+  OR (SELECT count(*) FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='npc_visual_assets'
+        AND ((column_name IN ('sprite_bucket','sprite_format') AND data_type='text')
+          OR (column_name IN ('frame_width','frame_height','idle_frame','fps') AND data_type='integer')
+          OR (column_name='direction_order' AND udt_name='_text')
+          OR (column_name='walk_frames' AND udt_name='_int4')))<>8
   OR has_column_privilege('authenticated','public.characters','background','SELECT')
  THEN RAISE EXCEPTION 'T37 REFUSE: must be disposable original signed PG17 + intact T36 Stage2 ACL'; END IF;
 END;
@@ -90,14 +98,6 @@ INSERT INTO public.npc_portrait_library
 -- columns are scratch metadata, NOT new production capabilities.
 ALTER TABLE public.npc_visual_assets
  ADD COLUMN name text,
- ADD COLUMN sprite_bucket text,
- ADD COLUMN sprite_format text,
- ADD COLUMN frame_width integer,
- ADD COLUMN frame_height integer,
- ADD COLUMN direction_order text[],
- ADD COLUMN idle_frame integer,
- ADD COLUMN walk_frames integer[],
- ADD COLUMN fps numeric,
  ADD COLUMN tactical_scale numeric,
  ADD COLUMN species_tags text[] DEFAULT '{}'::text[],
  ADD COLUMN role_tags text[] DEFAULT '{}'::text[],
