@@ -28,3 +28,7 @@ The first source verification of the prior fixture repair, [44010106192](https:/
 ## Actual first signed T37-P2 catalog preflight RED and source-safe fix
 
 [Full signed 44009219711](https://github.com/bob8675309/DNDNEXT/actions/runs/44009219711), job `133791892177` at initial T37-P2 code `341c5bb96fe1b8486797ea61b05bc0f7f8b80821`, reached original T36 signed narrative and then failed `T37 REFUSE: must be disposable original signed PG17 + intact T36 Stage2 ACL`, **before the new NPC Forge browser ran**. Source inspection confirms original Forge materializer/T29 merchant fixture already owns and seeds `public.items_catalog`; first T37 fixture falsely required its absence and attempted to create it again. The scoped correction **reuses the preexisting catalog**, checks its five source picker columns, never drops/recreates/empties earlier source inventory, and leaves all original SQL/Stage2/negative assertions in force. This preserves actual RED evidence and does not claim acceptance; fresh full signed CI still required.
+
+## Original Ability method validated-path correction (signed PENDING)
+
+The original NPC Forge defaults to 4d6 rolls, and the unchanged source controller requires all six dice allocated before advancing. T37-P2 now selects the original **Standard Class Array** button and asserts it is active before its +2 STR/+1 DEX species bonuses, preserving genuine validation and all downstream original creation actions. No source gameplay or SQL modification, signed rerun pending.

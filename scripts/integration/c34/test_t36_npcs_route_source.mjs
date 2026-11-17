@@ -184,6 +184,7 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  'advance("class","abilities")','advance("abilities","training")',
  'advance("training","identity")','advance("identity","story")',
  'advance("story","review")',
+ "npc-forge-ability-methods",'name:"Standard Class Array",exact:true',
  "npc-forge-step-identity","npc-forge-step-story","originalCreateRequests",
  "create_character_v1","get_npc_dossier_admin_v1"])
   assert.ok(browser.includes(marker),"Missing T37-P2 genuine signed browser evidence: "+marker);

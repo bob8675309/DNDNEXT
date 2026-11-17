@@ -629,6 +629,14 @@ try {
  await advance("background","class");
  await forge.locator('.npc-forge-class-catalog-row[data-class-key="civilian"]').click();
  await advance("class","abilities");
+ // Original NPC Forge defaults to 4d6, which requires assigning all six
+ // rolls. Select the legitimate alternate standard class array via the real
+ // source UI rather than bypassing ability-step validation.
+ const standardArray=forge.locator(".npc-forge-ability-methods")
+   .getByRole("button",{name:"Standard Class Array",exact:true});
+ await standardArray.click();
+ assert.ok(await standardArray.evaluate(node=>node.classList.contains("is-active")),
+   "T37 original ability method is not Standard Class Array");
  await forge.locator(".npc-forge-ability-bonus-selects select").nth(0).selectOption("str");
  await forge.locator(".npc-forge-ability-bonus-selects select").nth(1).selectOption("dex");
  await advance("abilities","training");
