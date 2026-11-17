@@ -5,20 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5a423c824972ce4bff641fb7db0aa1b48cb75b56` |
+| Exact source commit represented by this archive snapshot | `ae7c07990321774c0892e5fd59c0c605addb4b4a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): make Next T36 route validation read-only and move explicit source preparation to signed harness |
-| Files changed relative to main | 183 (148 non-docs; 35 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): T37-P1 real NPC manager Admin/DM saves and creator entry research |
+| Files changed relative to main | 184 (148 non-docs; 36 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `next.config.mjs`
-- `scripts/integration/c34/prepare_t36_npcs_route.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `scripts/integration/c34/test_t36_npcs_route_source.mjs`
 - `scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs`
 
@@ -70,11 +71,11 @@
 - `docs/research/C34_T34_GAME_MANAGER_CAMPAIGN_VS_SITE_AUTH_2026-11-16.md`
 - `docs/research/C34_T35_FULL_NPC_MANAGER_STAGE2_EQUAL_GAME_MASTERS_SIGNED_2026-11-16.md`
 - `docs/research/C34_T36_ORIGINAL_NPCS_DEFAULT_OFF_ROUTE_RESEARCH_2026-11-16.md`
+- `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T7_OPEN_PR_NO_LOST_WORK_REGISTER_2026-11-13.md`
 - `docs/research/OWNER_RELEASE_AND_INTEGRATION_DECISIONS_2026-11-13.md`
 - `next.config.mjs`
-- `pages/town/[id].js`
-- … 133 more
+- … 134 more
 
 ## Trust and update procedure
 
