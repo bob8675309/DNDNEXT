@@ -298,9 +298,19 @@ test("T38-P1 original Admin GM DM /npcs Sheet and GM Secret Save with signed sou
  const stage3=read("scripts/integration/c34/sources/04_private_story_stage3.sql");
  const stage2=read("scripts/integration/c34/sources/03_npc_dossier_stage2.sql");
  assert.equal(blob(original),T25_BASE_BLOB,"T38 must not alter the original /npcs page");
+ // The new T36 LOCAL generator owns the signed, actor-bound view projection,
+ // NOT this signed Chromium test. Independently pin the generator and the
+ // exact source-rendering proof (also checked by T36-03).
+ const derivedGenerator=read("scripts/integration/c34/prepare_t36_npcs_route.mjs");
+ const generated=makeT36Source();
+ assert.match(derivedGenerator,/sourceBoundSecretDisplay/);
+ assert.ok(generated.includes("selectedPrivateResult?.dossier") &&
+   generated.includes("selectedPrivateResult.dossier.secret"),
+   "T38 generated original view-only field must use bound signed GM dossier");
+ assert.doesNotMatch(generated,/\{selected\.secret \|\| <span className="npc-muted">—<\/span>\}/,
+   "T38 original roster-only Secret consumer must not survive derivation");
  for(const marker of ["T38-P1-SHEET-SECRET-","T38-P1-GM-SECRET-NEGATIVES",
    "T38-P1-SAVE-DIAGNOSTIC","T38-P1-RELOAD-DIAGNOSTIC",
-   "sourceBoundSecretDisplay","selectedPrivateResult?.dossier",
    "personality?.traits","meta?.creationRequestId",
    "get_character_secrets_v1","set_character_secret_v1",
    "get_character_editor_narrative_v1","get_npc_dossier_admin_v1",
