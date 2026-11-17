@@ -199,6 +199,11 @@ test("T37-P2 source-original NPC Forge submit, nonce, signed denial, rollback an
  assert.match(fixture,/md5\(pg_get_functiondef\('public\.create_character_v1/);
  assert.match(fixture,/has_column_privilege\('authenticated','public\.characters','background','SELECT'\)/);
  assert.match(fixture,/security_invoker=true/);
+ // Original authority fixture already provides a real preferred option view.
+ // Retain its source-qualified feat/skill rows; do not create an empty stub.
+ assert.match(fixture,/to_regclass\('public.character_option_catalog_preferred'\) IS NULL/);
+ assert.match(fixture,/table_name='character_option_catalog_preferred'/);
+ assert.doesNotMatch(fixture,/CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+public\.character_option_catalog_preferred/i);
  // Original J154 starting-spell fixture already installed an XPHB-only
  // 5-column class_catalog_preferred view; preserve its original leading
  // columns/filter and append only the real /npcs browser projection.

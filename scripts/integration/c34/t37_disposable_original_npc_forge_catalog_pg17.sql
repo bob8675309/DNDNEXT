@@ -17,7 +17,14 @@ BEGIN
   OR to_regclass('public.npc_portrait_library') IS NULL
   OR to_regclass('public.npc_visual_assets') IS NULL
   OR to_regclass('public.class_catalog') IS NULL
-  OR to_regclass('public.character_option_catalog_preferred') IS NOT NULL
+  -- Original progression-authority local source already installed the
+  -- complete character_option_catalog_preferred view with actual feat and
+  -- skill rows. Reuse that original view; never replace it with an empty test.
+  OR to_regclass('public.character_option_catalog_preferred') IS NULL
+  OR (SELECT count(*) FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='character_option_catalog_preferred'
+        AND column_name IN ('id','option_key','option_type','name','source',
+          'category','description','prerequisite_text','tags','metadata','raw_payload'))<>11
   -- Original J154 starting-spells research already creates this XPHB-only
   -- five-column view. Require its actual columns and XPHB source restriction.
   -- T37 may extend the read projection at the END, never discard its filter.
@@ -70,12 +77,8 @@ CREATE OR REPLACE VIEW public.class_catalog_preferred WITH (security_invoker=tru
         NULL::text AS caster_progression,''::text AS summary,
         '{}'::jsonb AS raw_payload
  FROM public.class_catalog WHERE source='XPHB';
-CREATE VIEW public.character_option_catalog_preferred WITH (security_invoker=true) AS
- SELECT NULL::uuid AS id,NULL::text AS option_key,NULL::text AS option_type,
-        NULL::text AS name,NULL::text AS source,NULL::text AS category,
-        NULL::text AS description,NULL::text AS prerequisite_text,
-        NULL::text[] AS tags,NULL::jsonb AS metadata,NULL::jsonb AS raw_payload
- WHERE false;
+-- The original character_option_catalog_preferred view and its seeded
+-- source-owned feat/skill rows remain unchanged (no synthetic empty view).
 -- Original T29 merchant and original Forge fixtures already created/seeded
 -- public.items_catalog. The existing source rows are not touched.
 -- Restore source-shaped public-library metadata only in this scratch DB.
