@@ -226,6 +226,13 @@ try {
   if(offServer?.pid){try{process.kill(-offServer.pid,"SIGTERM")}catch{offServer.kill("SIGTERM")}}
   await new Promise(resolve=>setTimeout(resolve,1100));
  }
+ // Prepare ON exactly once in this test process. Next config merely
+ // validates the pre-generated source and can never regenerate it on exit.
+ const signedOn={...env,NEXT_PUBLIC_C34_T36_NPCS_RESEARCH:"1",
+  C34_T36_LOCAL_CONFIRM:"SIGNED_LOCAL_PG17_T36_ONLY"};
+ assert.ok(reconcileT36Route(signedOn,{prepare:true}),
+  "T36 signed source preparation failed");
+ assert.ok(fs.existsSync(probe),"T36 prepared route missing before Next startup");
  const nextPort=await freePort(),origin="http://127.0.0.1:"+nextPort;
  server=spawn(process.execPath,[nextBin,"dev","--webpack","-H","127.0.0.1","-p",String(nextPort)],{
   cwd:root,detached:true,stdio:["ignore","pipe","pipe"],
@@ -526,7 +533,7 @@ try {
   }
  }
  // Source-verified cleanup is stricter than unlink: cannot delete unknown files.
- reconcileT36Route({...env,NEXT_PUBLIC_C34_T36_NPCS_RESEARCH:"0"});
+ reconcileT36Route({...env,NEXT_PUBLIC_C34_T36_NPCS_RESEARCH:"0"},{cleanup:true});
  fs.rmSync(pdfDir,{recursive:true,force:true});
  assert.ok(!fs.existsSync(probe),"T36 generated Pages Router alias must be absent after signed test");
  await new Promise(resolve=>setTimeout(resolve,1100));

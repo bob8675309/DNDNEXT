@@ -3,6 +3,8 @@
 // original shared _app, map, town, merchant and Forge behavior byte-for-byte.
 // This file NEVER allows a hosted/Vercel production feature activation.
 import {reconcileT36Route,T36_REWRITE} from "./scripts/integration/c34/prepare_t36_npcs_route.mjs";
+// Source is explicitly prepared by signed CI BEFORE Next starts. This
+// config only verifies the content; no watcher may create or delete files.
 const t36Enabled=reconcileT36Route(process.env);
 export default {
   async rewrites(){

@@ -7,7 +7,7 @@ import {createHash} from "node:crypto";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {
- makeT36Source,t36ResearchEnabled,T36_LOCAL_ROUTE,T36_MARKER,
+ makeT36Source,t36ResearchEnabled,reconcileT36Route,T36_LOCAL_ROUTE,T36_MARKER,
  T36_REWRITE,T36_FLAG,T36_RESEARCH_CONFIRM,
 } from "./prepare_t36_npcs_route.mjs";
 import {deriveT35FullManager} from "./derive_t35_full_npc_manager.mjs";
@@ -137,5 +137,25 @@ test("T36-06 scoped Stage2 narrative writer changes NO original global RLS or ot
  }
  assert.match(t,/for\(const label of \["ADMIN","GM","DM"\]\)/,
   "T36 signed narrative writer must test every owner-approved game manager");
+});
+test("T36-06 read-only Next config cannot regenerate a generated route",()=>{
+ const config=read("next.config.mjs");
+ assert.match(config,/reconcileT36Route\(process\.env\)/);
+ assert.doesNotMatch(config,/\{prepare:true\}|\{cleanup:true\}/);
+ const source=read("scripts/integration/c34/prepare_t36_npcs_route.mjs");
+ assert.match(source,/\{prepare=false,cleanup=false\}/);
+ assert.match(source,/assert\.ok\(prepare,/);
+ assert.match(source,/assert\.ok\(cleanup,/);
+ const b=read("scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs");
+ assert.ok(b.includes("reconcileT36Route(signedOn,{prepare:true})"));
+ assert.ok(b.includes('reconcileT36Route({...env,NEXT_PUBLIC_C34_T36_NPCS_RESEARCH:"0"},{cleanup:true})'));
+ assert.ok(!existsSync(path.join(root,T36_LOCAL_ROUTE)));
+ const env={CI:"true",GITHUB_ACTIONS:"true",PGHOST:"127.0.0.1",
+  PGPORT:"54322",PGDATABASE:"postgres",
+  DNDNEXT_C34_LOCAL_URL:"http://127.0.0.1:54321",
+  C34_T36_LOCAL_CONFIRM:T36_RESEARCH_CONFIRM,
+  [T36_FLAG]:"1",VERCEL:"0"};
+ assert.throws(()=>reconcileT36Route(env),/explicit --prepare/);
+ assert.ok(!existsSync(path.join(root,T36_LOCAL_ROUTE)));
 });
 console.log("PASS T36-SOURCE: original /npcs bytes intact, local-only default-OFF Next rewrite and full T35 source retained");

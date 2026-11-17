@@ -65,23 +65,26 @@ export function makeT36Source(){
   return "// T36 EXACT SOURCE generated from ORIGINAL current NPC manager / T25 / T35.\n"+
     "// LOCALHOST-only, unsigned production build MUST NOT contain this page.\n"+code;
 }
-export function reconcileT36Route(env=process.env){
+export function reconcileT36Route(env=process.env,{prepare=false,cleanup=false}={}){
   const enabled=t36ResearchEnabled(env);
   const pathname=path.join(root,T36_LOCAL_ROUTE);
-  if(!enabled && !fs.existsSync(pathname))return false;
-  const expected=makeT36Source();
+  // Next config invokes this with neither option: validate only, NEVER write.
+  // A background Next watcher must not re-create the route after teardown.
   if(!enabled){
-    // Never leave a generated public alias available after switching flag off.
-    // Never delete an unknown file or a tracked source artifact.
-    assert.equal(fs.readFileSync(pathname,"utf8"),expected,
-      "T36 refuses to delete an unknown/corrupted candidate route");
+    if(!fs.existsSync(pathname))return false;
+    assert.ok(cleanup,
+      "T36 refuses default-OFF startup with leftover generated NPC route");
+    assert.equal(fs.readFileSync(pathname,"utf8"),makeT36Source(),
+      "T36 refuses deletion of unknown/corrupted candidate route");
     fs.unlinkSync(pathname);
     return false;
   }
+  const expected=makeT36Source();
   if(fs.existsSync(pathname)){
     assert.equal(fs.readFileSync(pathname,"utf8"),expected,
       "T36 refuses stale/mismatched cached manager source");
   }else{
+    assert.ok(prepare,"T36 ON requires explicit --prepare before read-only Next config");
     fs.writeFileSync(pathname,expected,{flag:"wx",mode:0o600});
   }
   assert.equal(fs.readFileSync(pathname,"utf8"),expected);
@@ -98,10 +101,10 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
    console.log("PASS T36-PREPARE-SOURCE: original NPC manager exact derivation, default OFF and source provenance");
  }else if(flag==="--cleanup"){
    assert.equal(t36ResearchEnabled({...process.env,[T36_FLAG]:"0"}),false);
-   reconcileT36Route({...process.env,[T36_FLAG]:"0"});
+   reconcileT36Route({...process.env,[T36_FLAG]:"0"},{cleanup:true});
    console.log("PASS T36-ROUTE-CLEANUP: generated page absent; original /npcs still exists");
  }else {
-   assert.ok(reconcileT36Route(),"T36 --prepare requires explicit signed local gate");
+   assert.ok(reconcileT36Route(process.env,{prepare:true}),"T36 --prepare requires explicit signed local gate");
    console.log("PASS T36-ROUTE-GENERATED: source-derived original full manager only for local research");
  }
 }
