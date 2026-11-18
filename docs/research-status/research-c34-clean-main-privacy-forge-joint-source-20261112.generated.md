@@ -5,21 +5,18 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f8ab9ee8a61df7323cb961ad5e593c2e385fd56c` |
+| Exact source commit represented by this archive snapshot | `f409eb10c6f8ff200cbc5a13db806e4baceecc7e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): inspect original Shop row Qty span rather than flattened listbox text |
+| Last source commit title | test(c34): correct literal regex escapes in row-level merchant Qty assertion |
 | Files changed relative to main | 200 (160 non-docs; 40 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md`
 - `scripts/integration/c34/test_t38_p2_r5_merchant_profile_shop_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
