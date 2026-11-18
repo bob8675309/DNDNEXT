@@ -69,14 +69,18 @@ assert.notEqual(sql("SELECT md5(pg_get_functiondef('public.set_character_kind(uu
 const users={
  GM:await actor("gm","gm"),
  EDITOR:await actor("editor","player"),
- UNKNOWN:await actor("unknown","unknown")
+ UNKNOWN:await actor("unknown","unknown"),
+ CONVERTER:await actor("converter","player")
 };
 sql("INSERT INTO private.test_admins(id) VALUES("+q(users.GM.id)+") ON CONFLICT DO NOTHING");
 const npc=await create(users.GM,"T38 R3 Original UI NPC","npc");
 const editorMerchant=await create(users.GM,"T38 R3 Editor Merchant","merchant");
+const convertOnlyNpc=await create(users.GM,"T38 R4 Original Convert-Only NPC","npc");
 sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES("+
- q(editorMerchant)+","+q(users.EDITOR.id)+",true,false,false)");
-const original=canonical(npc),editorOriginal=canonical(editorMerchant);
+ q(editorMerchant)+","+q(users.EDITOR.id)+",true,false,false),("+
+ q(convertOnlyNpc)+","+q(users.CONVERTER.id)+",false,false,true)");
+const original=canonical(npc),editorOriginal=canonical(editorMerchant),
+ convertOnlyOriginal=canonical(convertOnlyNpc);
 let server=null,browser=null,serverLog="";
 try {
  assert.ok(makeT36Source().includes(T36_MARKER));
@@ -215,6 +219,19 @@ try {
  await logout();await login("UNKNOWN",editorMerchant,"merchant");
  assert.equal(await page.getByRole("button",{name:/^Kind:\s*(NPC|Merchant)/}).count(),0);
  assert.equal(sql("SELECT kind FROM public.characters WHERE id="+q(editorMerchant)),"merchant");
+ // Genuine original UI RED: convert-only can call the signed strict R2 RPC,
+ // but its character Sheet is restricted so original KindPicker is unreachable.
+ await logout();await login("CONVERTER",convertOnlyNpc,"npc");
+ assert.equal(await page.getByRole("button",{name:"Edit",exact:true}).count(),0);
+ assert.equal(await page.getByRole("button",{name:/^Kind:\s*(NPC|Merchant)/}).count(),0);
+ assert.equal(await page.getByRole("button",{name:"Print Sheet"}).count(),0);
+ const permitted=await users.CONVERTER.who.rpc("set_character_kind",{
+  p_character_id:convertOnlyNpc,p_target:"merchant"
+ });
+ assert.ifError(permitted.error);
+ assert.equal(sql("SELECT kind FROM public.characters WHERE id="+q(convertOnlyNpc)),"merchant");
+ assert.equal(canonical(convertOnlyNpc),convertOnlyOriginal);
+ console.log("PASS T38-P2-R4-ORIGINAL-UI-RED: signed can_convert-only RPC works, original Sheet-restricted /npcs has no KindPicker");
  assert.deepEqual(offsite,[]);assert.deepEqual(errors,[]);assert.deepEqual(dialogs,[]);
  console.log("PASS T38-P2-R3-REAL-SIGNED-BROWSER: original Next /npcs manager, no hosted traffic or UI exceptions");
 }finally {
