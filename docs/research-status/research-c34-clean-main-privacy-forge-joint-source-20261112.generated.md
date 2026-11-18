@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3a594608f2a4207a3c7cd3ea8ecdb8d5f52a25d0` |
+| Exact source commit represented by this archive snapshot | `4ec15d9c9315f06b20a684269d294d2dbbf17933` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): sign original merchant Profile Shop purchase and inventory parity in disposable PG17 |
+| Last source commit title | test(c34): reproduce live anon-denied merchant stock SELECT in disposable R5 |
 | Files changed relative to main | 200 (160 non-docs; 40 docs) |
 | Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
@@ -17,10 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md`
+- `scripts/integration/c34/test_t38_p2_r5_merchant_profile_shop_signed_browser.mjs`
 - `scripts/integration/c34/test_t38_p2_r5_source.mjs`
 
 ## Research-branch change inventory versus main
