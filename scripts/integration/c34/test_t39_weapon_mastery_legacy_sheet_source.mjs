@@ -86,7 +86,11 @@ test("T39-N02 original canonical target scoping cannot be changed to an unscoped
 
 test("T39-N03 historical authorization and per-character row lock cannot disappear unnoticed", () => {
   for (const anchor of [permission, rowLock]) {
-    const mutated = source.replace(anchor, "-- removed in-memory");
+    // The GET function above repeats this permission guard. Only mutate the
+    // configure-function suffix so the negative targets the actual writer.
+    const configureStart = source.indexOf("create or replace function public.configure_character_weapon_mastery_v1(");
+    const mutated = source.slice(0, configureStart)
+      + source.slice(configureStart).replace(anchor, "-- removed in-memory");
     assert.notEqual(mutated, source);
     assert.throws(() => auditOriginal(mutated), /source contract drift/);
   }
