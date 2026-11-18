@@ -53,3 +53,15 @@ test("T38-R4 signed source cannot be generated on production or unsigned hosts",
   ["C34_T38_R4_BROWSER_CONFIRM","wrong"]])
   assert.throws(()=>t38R4LocalOnly({...signed,[field]:val}));
 });
+
+test("T38-R4 source candidate browser must remain signed local, private-safe, single original handler",()=>{
+ const testRun=read("scripts/integration/c34/test_t38_p2_convert_only_signed_browser.mjs");
+ for(const marker of ["T38_R4_CONFIRM","NEXT_PUBLIC_C34_T36_NPCS_RESEARCH",
+ "T38-P2-R4-PRE-RUNTIME","T38-P2-R4-CONVERT-ONLY-UI",
+ "T38-P2-R4-NPC-TO-MERCHANT","T38-P2-R4-MERCHANT-TO-NPC",
+ "T38-P2-R4-SAME-JWT-REVOKE","T38-P2-R4-REAL-SIGNED-BROWSER",
+ "T38-P2-R4-CLEANUP"])assert.ok(testRun.includes(marker),marker);
+ assert.match(testRun,/get_npc_dossier_admin_v1/);
+ assert.match(testRun,/can_convert=false/);
+ assert.doesNotMatch(testRun,/https:\/\/[^/]*supabase\.co|service_role/);
+});

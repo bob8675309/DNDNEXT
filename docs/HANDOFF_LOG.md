@@ -1273,3 +1273,8 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 ## 2026-11-17 CST — R3 signed original conversion UI accepted; R4 source candidate and original UI negative staged
 - PR #379 exact-head `d018a4358a665ab477737d1d9449b84fa9221191` signed [44223129263](https://github.com/bob8675309/DNDNEXT/actions/runs/44223129263) SUCCESS: R1 original source defect RED and R2 strict correction GREEN preserved plus R3 real source-derived original `/npcs` KindPicker GM→merchant→NPC one RPC each, canonical stock/Sheet/secret/nonce, lower-role negatives and clean generated route.
 - R4 limited source-only step: detect genuine original convert-only UI gap without granting Sheet; source-extract original one JSX handler and place a convert-only control at selected public Profile heading in an entirely separate, default-absent, direct-only local test page. Signed baseline UI RED added to R3; no R4 candidate browser GREEN yet, no original app/source/DB/Map production changes.
+
+## 2026-11-17 CST — R4 source-only candidate static success; genuine signed browser RED→GREEN queued
+
+- GitHub source-only tests at R4 candidate `c1b158faac8cb9b548ae8848df4b2d7c1269f734` PASS; exact original KindPicker async handler extracted ONCE, public selected Profile slot shown only to current subject's can_convert-only actor, no active rewrite or original file changes.
+- Added full signed R4 browser step after inherited T1–T38-P1 / original R1 RED / strict R2 GREEN / genuine R3 manager UI and original convert-only UI RED. Probe must reject Sheet/private access; real signed NPC→merchant→NPC, stock, storefront, same-JWT can_convert revoke, lower-role and cleanup. **Do not claim R4 UI success until exact-head Actions evidence**.
