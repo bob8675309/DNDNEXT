@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fc35cba8f49ed46edefc0c43c428db3053da98ab` |
+| Exact source commit represented by this archive snapshot | `7948baa5a68dea63f1580473c29b65888b8f9458` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): preserve service-role blocker while narrowing R4 static credential scan |
+| Last source commit title | test(c34): assert RLS Sheet denial by zero rows and immutable canonical data |
 | Files changed relative to main | 198 (158 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t38_convert_only_source.mjs`
+- `scripts/integration/c34/test_t38_p2_convert_only_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
