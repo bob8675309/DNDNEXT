@@ -40,7 +40,7 @@ const canonical=id=>sql("SELECT md5(sheet::text) FROM public.character_sheets WH
  sql("SELECT coalesce(secret,'') FROM public.characters WHERE id="+q(id))+"|"+
  sql("SELECT creation_request_id::text FROM public.characters WHERE id="+q(id));
 async function actor(label,role){
- const who=client(),email="t38-r5-"+label+"-"+randomUUID()+"@example.invalid",password="T38r3-"+randomUUID()+"!";
+ const who=client(),email="t38-r5-"+label+"-"+randomUUID()+"@example.invalid",password="T38r5-"+randomUUID()+"!";
  assert.ifError((await who.auth.signUp({email,password})).error);
  assert.ifError((await who.auth.signInWithPassword({email,password})).error);
  const identity=await who.auth.getUser();assert.ifError(identity.error);
@@ -86,7 +86,7 @@ assert.equal(initialInventory,"1");
 // constrained by existence of a referenced public.characters row.
 // The inherited I1C fixture explicitly *revoked* stock SELECT, so install
 // only the exact live-shaped read rule, never a production migration.
-assert.equal(sql("SELECT current_database() || '|' || current_setting('server_version_num')::int >= 170000"),"postgres|t");
+assert.equal(sql("SELECT current_database() || '|' || (current_setting('server_version_num')::int >= 170000)::text"),"postgres|true");
 sql("GRANT SELECT ON public.character_stock TO authenticated");
 sql("DO $r5$ BEGIN IF NOT EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='character_stock' AND policyname='character_stock_select_authenticated') THEN CREATE POLICY character_stock_select_authenticated ON public.character_stock FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.characters c WHERE c.id=character_stock.character_id)); END IF; END $r5$");
 assert.equal(sql("SELECT has_table_privilege('authenticated','public.character_stock','SELECT')"),"t");
