@@ -1252,3 +1252,8 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 - Resumed exactly after T38-P1 acceptance; source read-only hosted MD5 `04588d4b433b13c92e612039a7c7e56e` / alias `1a6ab5aa4bc58eceace51ad3803ed961`; no hosted data mutation.
 - Add-only original PG17 conversion fixture, genuine signed R1 role/stock test, exact full-manager/static parity and inherited workflow steps. No original runtime/DB migration, world map or main merge.
 - **One next:** inspect exact source and signed CI. On green original RED, propose source-preserving scratch-only fixed conversion/RLS and real original KindPicker regression. Incomplete independent restore, 22/34 legacy writers and owner production hold remain.
+
+## 2026-11-17 CST — T38-P2 original RED signed PASS; R2 correction staged pending signed proof
+
+- Exact-head `24616385020742a5bc79b93b87248fdc81b1c16b`: source parity, original ancestry, tactical, handoff, and entire real signed local C34 suite green. Local PG17 [run 44210948682](https://github.com/bob8675309/DNDNEXT/actions/runs/44210948682) confirms all four specific T38-P2 source-original unauthorized/stock RED markers and controls. This is isolated characterization, **not a hosted production exploit**.
+- R2 adds candidate security SQL separately after original RED, signed strict actor/alias/stock/noop/direct-DML and fresh-revocation tests. Narrow column GRANT change preserves original Store toggle; compatibility alias and original page/Map remain byte-identical. R2 exact-head workflow result pending. Do not merge/deploy while independent restore and authorizations remain blocked.

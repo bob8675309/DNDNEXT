@@ -32,3 +32,22 @@ test("T38 signed baseline retains original RED and lower-role control markers",(
  assert.ok(signed.includes("ORIGINAL_CONVERSION_DISPOSABLE_RED_ONLY"));
  assert.doesNotMatch(signed,/supabase\.co|service_role/i);
 });
+
+test("T38-R2 strict research-only candidate requires exact RED before GREEN",()=>{
+ const candidate=read("scripts/integration/c34/t38_p2_disposable_conversion_hardening_candidate_pg17.sql");
+ const green=read("scripts/integration/c34/test_t38_p2_conversion_hardening_signed_pg17.mjs");
+ for(const marker of ["T38_P2_HARDENING_DISPOSABLE_CONFIRMED",
+  "04588d4b433b13c92e612039a7c7e56e",
+  "1a6ab5aa4bc58eceace51ad3803ed961",
+  "97b5e6b059e6467e24c4283fe420c83e",
+  "REVOKE UPDATE (kind)", "WHEN 'convert' THEN cp.can_convert",
+  "FOR SHARE","FOR UPDATE","IF v_from=v_target THEN RETURN",
+  "DELETE FROM public.character_stock","storefront_enabled=true",
+  "storefront_enabled=false"])assert.ok(candidate.includes(marker),"Lost candidate rule "+marker);
+ assert.doesNotMatch(candidate,/DROP TABLE|TRUNCATE|DROP POLICY/i);
+ for(const marker of ["STRICT_CONVERSION_DISPOSABLE_GREEN_ONLY",
+  "T38-P2-R2-DIRECT-DML","T38-P2-R2-SAME-KIND",
+  "T38-P2-R2-DELEGATE","T38-P2-R2-STOREFRONT-TOGGLE",
+  "T38-P2-R2-MANAGER-","T38-P2-R2-INVALID-INPUT",
+  "T38-P2-R2-REVOKED"])assert.ok(green.includes(marker),"Lost signed GREEN marker "+marker);
+});
