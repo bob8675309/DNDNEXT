@@ -5,19 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5185782e24f9a0d0dd654c420bbd354f04374e72` |
+| Exact source commit represented by this archive snapshot | `cd283106cbd6ddf7e12bae5050bf8da098243baf` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append T39 source-only CI receipt and next signed account isolation gate |
-| Files changed relative to main | 202 (161 non-docs; 41 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): reproduce original Weapon Mastery account overwrite and sign Option A isolation |
+| Files changed relative to main | 203 (162 non-docs; 41 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +72,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
-- … 152 more
+- … 153 more
 
 ## Trust and update procedure
 
