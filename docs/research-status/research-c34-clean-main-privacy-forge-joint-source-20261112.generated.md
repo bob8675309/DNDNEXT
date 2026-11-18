@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4ec15d9c9315f06b20a684269d294d2dbbf17933` |
+| Exact source commit represented by this archive snapshot | `b46ace620e0cd46227cbfbbfd55f4c0d3d999a9d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): reproduce live anon-denied merchant stock SELECT in disposable R5 |
+| Last source commit title | test(c34): accept hidden original Profile on Close in merchant R5 browser |
 | Files changed relative to main | 200 (160 non-docs; 40 docs) |
 | Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
