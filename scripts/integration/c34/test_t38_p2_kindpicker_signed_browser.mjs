@@ -178,11 +178,11 @@ try {
   try {
    await page.locator(".csheet--edit").waitFor({state:"visible",timeout:15000});
    await page.getByRole("button",{name:"Done",exact:true}).first().waitFor({state:"visible",timeout:15000});
-   await page.getByRole("button",{name:/^Kind: (NPC|Merchant)/}).waitFor({state:"visible",timeout:15000});
+   await page.getByRole("button",{name:/^Kind:\s*(NPC|Merchant)/}).waitFor({state:"visible",timeout:15000});
   }catch(err){await diagnosePicker(label);throw err}
  }
  async function chooseKind(target){
-  const picker=page.getByRole("button",{name:/^Kind: (NPC|Merchant)/});
+  const picker=page.getByRole("button",{name:/^Kind:\s*(NPC|Merchant)/});
   await picker.waitFor({state:"visible",timeout:15000});
   await picker.click();
   await page.getByRole("menuitem",{name:new RegExp("^"+(target==="merchant"?"Merchant":"NPC"))}).click();
@@ -208,12 +208,12 @@ try {
  await logout();await login("EDITOR",editorMerchant,"merchant");
  await page.getByRole("button",{name:"Edit",exact:true}).first().waitFor({timeout:30000});
  await page.getByRole("button",{name:"Edit",exact:true}).first().click();
- assert.equal(await page.getByRole("button",{name:/^Kind: (NPC|Merchant)/}).count(),0);
+ assert.equal(await page.getByRole("button",{name:/^Kind:\s*(NPC|Merchant)/}).count(),0);
  assert.equal(sql("SELECT kind FROM public.characters WHERE id="+q(editorMerchant)),"merchant");
  assert.equal(canonical(editorMerchant),editorOriginal);
  console.log("PASS T38-P2-R3-EDITOR-KIND-HIDDEN: delegated can_edit alone never exposes original conversion picker");
  await logout();await login("UNKNOWN",editorMerchant,"merchant");
- assert.equal(await page.getByRole("button",{name:/^Kind: (NPC|Merchant)/}).count(),0);
+ assert.equal(await page.getByRole("button",{name:/^Kind:\s*(NPC|Merchant)/}).count(),0);
  assert.equal(sql("SELECT kind FROM public.characters WHERE id="+q(editorMerchant)),"merchant");
  assert.deepEqual(offsite,[]);assert.deepEqual(errors,[]);assert.deepEqual(dialogs,[]);
  console.log("PASS T38-P2-R3-REAL-SIGNED-BROWSER: original Next /npcs manager, no hosted traffic or UI exceptions");
