@@ -39,6 +39,7 @@ test("R5 genuine signed local browser uses exact official stock SELECT policy an
   "REVOKE SELECT ON public.character_stock FROM PUBLIC, anon",
   "GRANT SELECT ON public.character_stock TO authenticated",
   "character_stock_select_authenticated","current_database()",
+  'state:"hidden"',
   "T38-P2-R5-NPC-PROFILE","T38-P2-R5-CONVERTED-SHOP",
   "T38-P2-R5-PROFILE-SHOP-PROFILE","T38-P2-R5-ORIGINAL-PURCHASE",
   "T38-P2-R5-REVERT-TO-NPC","T38-P2-R5-ROLE-ISOLATION","T38-P2-R5-CLEANUP",

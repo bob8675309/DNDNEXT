@@ -169,7 +169,7 @@ try{
  }
  async function closeProfile(){
   await shell.locator(".npc-panel-header").getByRole("button",{name:"Close",exact:true}).click();
-  await shell.waitFor({state:"detached",timeout:25000});
+  await shell.waitFor({state:"hidden",timeout:25000});
  }
  async function chooseKind(target){
   await page.getByRole("button",{name:"Edit",exact:true}).first().waitFor({timeout:40000});
