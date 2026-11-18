@@ -20,3 +20,9 @@
 5. Do not merge to main, alter original page/world-map/hosted SQL, run conversions on production characters, remove stock, deploy, or close original PRs. Owner release and recovery holds: independently encrypted PostgreSQL restore and all 340 Storage objects, original 22/34 legacy Sheet writers, source/role/full browser integration and owner go/no-go.
 
 **Status:** T38-P2 source-audit completed; actual source-original signed RED/GREEN and production fix **NOT IMPLEMENTED OR ACCEPTED**. The security gaps need real isolated verification before any SQL can be considered for release.
+
+## T38-P2-R1 — Exact-source signed original RED fixture authored, CI PENDING (November 17 CST)
+
+- Preserved the **actual current hosted** read-only `pg_get_functiondef` definitions and MD5s for `set_character_kind` and the compatibility alias, with their CRLF function bodies intact, inside a PG17/localhost-only, schema-guarded disposable fixture. Only metadata was read from hosted DnDWeb; no hosted SQL DDL/DML or user records.
+- Appended a new genuine GoTrue/PostgREST R1 regression **after all T1–T38-P1 signed steps**. Intentional original REDs: unknown-role merchant conversion, legacy alias, same-kind destructive stock deletion and editor-only direct kind UPDATE under hosted-shaped narrow column grants. Independent Admin/GM/DM, normal player/anon and same-JWT demotion controls retain original character UUID, Sheet, secret and Forge nonce.
+- **No T38 signed outcome yet; no security fix, UI conversion acceptance or release.** Real source and test MD5 assertions must pass before reporting reproduced behavior. The candidate authorization/stock fix belongs in a subsequent separately validated scratch-only increment.
