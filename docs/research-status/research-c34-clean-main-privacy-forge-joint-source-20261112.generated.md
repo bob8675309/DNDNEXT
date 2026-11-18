@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c1b158faac8cb9b548ae8848df4b2d7c1269f734` |
+| Exact source commit represented by this archive snapshot | `38bd2dd7f7e284cd628621898c713a493943e7f4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): accept signed R3 and source-lock convert-only Profile action with original UI negative |
-| Files changed relative to main | 197 (157 non-docs; 40 docs) |
-| Last source commit | 7 files (4 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): add genuine signed convert-only Profile browser red-green after original KindPicker |
+| Files changed relative to main | 198 (158 non-docs; 40 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,13 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md`
-- `scripts/integration/c34/prepare_t38_convert_only_npcs_route.mjs`
 - `scripts/integration/c34/test_t38_convert_only_source.mjs`
-- `scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs`
+- `scripts/integration/c34/test_t38_p2_convert_only_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -77,7 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
-- … 147 more
+- … 148 more
 
 ## Trust and update procedure
 
