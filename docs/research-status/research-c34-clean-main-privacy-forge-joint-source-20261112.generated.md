@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d123807d9a8b446fd1d7ecbead341c212a41cf31` |
+| Exact source commit represented by this archive snapshot | `25059ed51b2b115ea8f5c199edd72659647a87ac` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): verify original T38-P2 KindPicker with signed local browser after conversion RED-GREEN |
+| Last source commit title | test(c34): diagnose original T38 KindPicker signed browser after full Sheet hydration |
 | Files changed relative to main | 195 (155 non-docs; 40 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md`
-- `scripts/integration/c34/test_t38_p2_conversion_source.mjs`
 - `scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
