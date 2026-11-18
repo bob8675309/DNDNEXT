@@ -88,10 +88,14 @@ sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_
 const denyDossier=await users.CONVERTER.who.rpc("get_npc_dossier_admin_v1",{p_character_id:subject});
 assert.equal(denyDossier.error?.code,"42501");
 const unauthorizedSheet=await users.CONVERTER.who.from("character_sheets")
- .update({sheet:{marker:"FORGED"}}).eq("character_id",subject);
-assert.ok(unauthorizedSheet.error,
- "Convert-only actor unexpectedly able to write canonical Sheet directly");
-assert.equal(canonical(subject),initial);
+ .update({sheet:{marker:"FORGED"}}).eq("character_id",subject)
+ .select("character_id");
+// PostgREST may return zero updated rows without an error when RLS denies.
+// That is a denial, provided the canonical Sheet/secret/nonce stays unchanged.
+assert.ok(unauthorizedSheet.error || (unauthorizedSheet.data||[]).length===0,
+ "Convert-only actor unexpectedly modified a canonical Sheet row");
+assert.equal(canonical(subject),initial,
+ "A denied RLS zero-row UPDATE must preserve original Sheet, secret and creation nonce");
 console.log("PASS T38-P2-R4-PRE-RUNTIME: exact convert-only delegated actor cannot edit Sheet or GM dossier");
 let server=null,browser=null,serverLog="";
 try{
