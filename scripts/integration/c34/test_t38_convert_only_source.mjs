@@ -63,5 +63,9 @@ test("T38-R4 source candidate browser must remain signed local, private-safe, si
  "T38-P2-R4-CLEANUP"])assert.ok(testRun.includes(marker),marker);
  assert.match(testRun,/get_npc_dossier_admin_v1/);
  assert.match(testRun,/can_convert=false/);
- assert.doesNotMatch(testRun,/https:\/\/[^/]*supabase\.co|service_role/);
+ // The browser deliberately BLOCKS requests mentioning service_role;
+ // a static text ban must not mistake that defensive guard for a credential.
+ assert.doesNotMatch(testRun,/https:\/\/[^/]*supabase\.co|SUPABASE_SERVICE_ROLE_KEY|serviceRoleKey|createClient\([^)]*service_role/i);
+ assert.ok(testRun.includes(String.raw`if(/supabase\.co|supabase\.in|service_role/i.test(url))`),
+  "R4 must continue rejecting any hosted Supabase/service-role requests");
 });
