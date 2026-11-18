@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ac14b3c5849fbc3b55363f8b40c9bcb5b0bdf7c8` |
+| Exact source commit represented by this archive snapshot | `5185782e24f9a0d0dd654c420bbd354f04374e72` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): promote source-verified T39 legacy mirror audit to active handoff |
+| Last source commit title | docs(c34): append T39 source-only CI receipt and next signed account isolation gate |
 | Files changed relative to main | 202 (161 non-docs; 41 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
