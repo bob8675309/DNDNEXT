@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `684bdf767c0af3dbf44d50f863c53d3abfb1fecf` |
+| Exact source commit represented by this archive snapshot | `383f628b3d321e80f65d34b525e005ea855f808e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): source and live-metadata audit T40 Rage action plus coupled Rest HOLD |
+| Last source commit title | docs(c34): accept exact signed T40 Rage action RED and scoped Option A GREEN; rest remains HOLD |
 | Files changed relative to main | 206 (164 non-docs; 42 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
