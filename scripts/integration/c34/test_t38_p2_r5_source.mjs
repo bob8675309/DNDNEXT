@@ -36,6 +36,7 @@ test("R5 original Profile first Shop, stock, wallet and character-inventory path
 test("R5 genuine signed local browser uses exact official stock SELECT policy and refuses hosted traffic",()=>{
  for(const val of ["ORIGINAL_MERCHANT_SHOP_INVENTORY_DISPOSABLE_ONLY",
   "makeT36Source","reconcileT36Route","T36_LOCAL_ROUTE",
+  "REVOKE SELECT ON public.character_stock FROM PUBLIC, anon",
   "GRANT SELECT ON public.character_stock TO authenticated",
   "character_stock_select_authenticated","current_database()",
   "T38-P2-R5-NPC-PROFILE","T38-P2-R5-CONVERTED-SHOP",

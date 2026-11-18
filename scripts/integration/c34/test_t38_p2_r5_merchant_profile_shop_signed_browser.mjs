@@ -87,6 +87,7 @@ assert.equal(initialInventory,"1");
 // The inherited I1C fixture explicitly *revoked* stock SELECT, so install
 // only the exact live-shaped read rule, never a production migration.
 assert.equal(sql("SELECT current_database() || '|' || (current_setting('server_version_num')::int >= 170000)::text"),"postgres|true");
+sql("REVOKE SELECT ON public.character_stock FROM PUBLIC, anon");
 sql("GRANT SELECT ON public.character_stock TO authenticated");
 sql("DO $r5$ BEGIN IF NOT EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='character_stock' AND policyname='character_stock_select_authenticated') THEN CREATE POLICY character_stock_select_authenticated ON public.character_stock FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.characters c WHERE c.id=character_stock.character_id)); END IF; END $r5$");
 assert.equal(sql("SELECT has_table_privilege('authenticated','public.character_stock','SELECT')"),"t");
