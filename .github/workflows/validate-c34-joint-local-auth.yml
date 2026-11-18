@@ -569,6 +569,23 @@ jobs:
           node --check scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs
           node scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs
           echo 'PASS T39 signed source-original RED + explicitly non-original local Option A GREEN; no release'
+      - name: T40 source-original Rage action signed two-account RED + explicit NON-ORIGINAL Option A GREEN (local PG17)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T40_SIGNED_CONFIRM=SIGNED_ORIGINAL_RAGE_ACTION_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t40_rage_action_signed_pg17.mjs
+          node scripts/integration/c34/test_t40_rage_action_signed_pg17.mjs
+          echo 'PASS T40 standalone Rage original RED + isolated action-only Option A GREEN; separate rest mirror HOLD'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4

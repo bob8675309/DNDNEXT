@@ -146,6 +146,10 @@ jobs:
         run: |
           node --check scripts/integration/c34/test_t39_weapon_mastery_legacy_sheet_source.mjs
           node --test scripts/integration/c34/test_t39_weapon_mastery_legacy_sheet_source.mjs
+      - name: T40 exact source Rage standalone action, real NPC Sheet consumers and coupled REST writer HOLD
+        run: |
+          node --check scripts/integration/c34/test_t40_rage_action_legacy_mirror_source.mjs
+          node --test scripts/integration/c34/test_t40_rage_action_legacy_mirror_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
