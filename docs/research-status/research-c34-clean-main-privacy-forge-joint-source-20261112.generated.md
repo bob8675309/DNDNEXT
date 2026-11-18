@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8d554c9fd9d608fdec5ddca700882981b28f6c82` |
+| Exact source commit represented by this archive snapshot | `452aa1a1a05816097efd02eb6490bb077e8ca29b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): promote signed T40 Rage account isolation and rest-path release HOLD |
+| Last source commit title | docs(c34): append signed original T40 RED/Option A GREEN and live rest dependency receipt |
 | Files changed relative to main | 206 (164 non-docs; 42 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
