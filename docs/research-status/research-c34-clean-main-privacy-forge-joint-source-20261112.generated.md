@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f409eb10c6f8ff200cbc5a13db806e4baceecc7e` |
+| Exact source commit represented by this archive snapshot | `821315a0d66b750d294605d17b7369c1c19a4a19` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): correct literal regex escapes in row-level merchant Qty assertion |
+| Last source commit title | test(c34): match original stock Qty 7 case-insensitively in R5 row |
 | Files changed relative to main | 200 (160 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
