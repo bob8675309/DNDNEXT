@@ -142,6 +142,10 @@ jobs:
           node --check scripts/integration/c34/test_t38_convert_only_source.mjs
           node scripts/integration/c34/prepare_t38_convert_only_npcs_route.mjs --verify
           node --test scripts/integration/c34/test_t38_convert_only_source.mjs
+      - name: T39 source-original Weapon Mastery linked-account mirror risk (historical SOURCE audit only)
+        run: |
+          node --check scripts/integration/c34/test_t39_weapon_mastery_legacy_sheet_source.mjs
+          node --test scripts/integration/c34/test_t39_weapon_mastery_legacy_sheet_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
