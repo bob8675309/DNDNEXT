@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1091a709c4c6fdb8eb8e2d2655207d879a41386e` |
+| Exact source commit represented by this archive snapshot | `2436cf7a1a946bea7ced34a41595817266cb93b2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record signed T38 R5 purchase acceptance and release hold |
+| Last source commit title | docs(c34): append verified R5 signed acceptance and remaining release gates |
 | Files changed relative to main | 200 (160 non-docs; 40 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
