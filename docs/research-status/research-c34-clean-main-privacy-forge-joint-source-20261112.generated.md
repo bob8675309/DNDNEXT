@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3ab1cabc885230493e70069fd093319deaccc144` |
+| Exact source commit represented by this archive snapshot | `9fec9578808d1d42d5d7cc6fc377ad3b5a74a41d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): execute T39 source-only Weapon Mastery linked-account regression characterization |
+| Last source commit title | test(c34): correct T39 targeted negative to mutate configure RPC only |
 | Files changed relative to main | 201 (161 non-docs; 40 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t39_weapon_mastery_legacy_sheet_source.mjs`
 
 ## Research-branch change inventory versus main
 
