@@ -218,7 +218,7 @@ try{
  // Read the source-original row's own Qty span, not the entire multirow
  // listbox's layout-dependent innerText/newlines. Keep the exact value check.
  const stockRowFacts=await stockOption.locator(".merchant-stock-row-meta span").allInnerTexts();
- assert.ok(stockRowFacts.some(text=>/^Qty\\s*7$/.test(String(text).replace(/\\s+/g," ").trim())),
+ assert.ok(stockRowFacts.some(text=>/^Qty\s*7$/.test(String(text).replace(/\s+/g," ").trim())),
   "Original Shop Qty 7 not shown in the selected source row; spans="+JSON.stringify(stockRowFacts));
  assert.equal(sql("SELECT qty::text FROM public.character_stock WHERE id="+q(stockId)),"7");
  console.log("PASS T38-P2-R5-CONVERTED-SHOP: original Profile->Shop renders exact live-RLS-backed stock and quantity");
