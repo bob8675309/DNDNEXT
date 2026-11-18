@@ -51,3 +51,19 @@ test("T38-R2 strict research-only candidate requires exact RED before GREEN",()=
   "T38-P2-R2-MANAGER-","T38-P2-R2-INVALID-INPUT",
   "T38-P2-R2-REVOKED"])assert.ok(green.includes(marker),"Lost signed GREEN marker "+marker);
 });
+
+test("T38-R3 reuses original KindPicker inside real default-OFF source-derived Next /npcs, no production page patch",()=>{
+ const browser=read("scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs");
+ const picker=read("components/KindPicker.js");
+ const original=read("pages/npcs.js");
+ assert.match(original,/nameRight={sheetEditMode \? \(/);
+ assert.match(original,/canConvertKind = !!isAdmin \|\| !!charPerm\?\.can_convert/);
+ assert.match(picker,/role="menuitem"/);
+ for(const marker of ["ORIGINAL_KINDPICKER_DISPOSABLE_ONLY",
+  "makeT36Source","reconcileT36Route","T36_LOCAL_ROUTE",
+  "T38-P2-R3-REAL-KINDPICKER-TO-MERCHANT",
+  "T38-P2-R3-REAL-KINDPICKER-TO-NPC",
+  "T38-P2-R3-EDITOR-KIND-HIDDEN",
+  "T38-P2-R3-CLEANUP"])assert.ok(browser.includes(marker),"Missing source-original KindPicker acceptance "+marker);
+ assert.doesNotMatch(browser,/https:\/\/[^/]*supabase\.co/);
+});

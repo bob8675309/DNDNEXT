@@ -484,6 +484,28 @@ jobs:
           node --test scripts/integration/c34/test_t38_p2_conversion_source.mjs
           node scripts/integration/c34/test_t38_p2_conversion_hardening_signed_pg17.mjs
           echo 'PASS T38-P2-R2 strict signed candidate GREEN, no production migration'
+      - name: T38-P2-R3 genuine original NPC KindPicker UI signed GM and editor negatives (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T38_P2_BROWSER_CONFIRM=ORIGINAL_KINDPICKER_DISPOSABLE_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t36_npcs.jsx
+          node --check scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs
+          node --test scripts/integration/c34/test_t38_p2_conversion_source.mjs
+          node scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs
+          test ! -e pages/__c34_t36_npcs.jsx
+          echo 'PASS T38-P2-R3 genuine original KindPicker signed browser; no production route'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
