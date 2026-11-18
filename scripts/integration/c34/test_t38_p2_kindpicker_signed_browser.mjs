@@ -145,18 +145,50 @@ try {
   }
   throw Error("T38-R3 UI did not persist kind "+expected);
  }
+ const diagnosePicker=async(label)=>{
+  const browser=await page.evaluate(async()=>{
+   const root=document.querySelector(".npcs-page-root");
+   const sheet=document.querySelector(".csheet");
+   const header=document.querySelector(".csheet-head");
+   const identity=document.querySelector('[data-testid="t25-selected-character"]');
+   const actors=await window.__sb?.auth?.getUser();
+   const capability=await window.__sb?.rpc?.("c34_game_manager_capabilities_research_v1");
+   const id=identity?.getAttribute("data-character-id");
+   const permission=id?await window.__sb?.rpc?.("get_npc_dossier_admin_v1",{p_character_id:id}):null;
+   return {actorId:actors?.data?.user?.id||null,
+    selectedId:id||null,sheetClass:sheet?.className||null,
+    sheetHeader:header?.innerText?.slice(0,1300)||null,
+    editButtons:[...document.querySelectorAll("button")].filter(b=>/^(Edit|Done)$/.test(b.innerText.trim())).map(b=>({text:b.innerText,disabled:b.disabled})),
+    kindButtons:[...document.querySelectorAll("button")].filter(b=>b.innerText.includes("Kind:")).map(b=>({text:b.innerText,visible:!!b.getClientRects().length})),
+    capability:capability?.data||null,capabilityError:capability?.error?.code||null,
+    dossierError:permission?.error?.code||null,
+    hasProtectedDossier:!!permission?.data?.id,
+    publicText:root?.innerText?.slice(0,1400)||null};
+  }).catch(e=>({diagnosticException:String(e)}));
+  console.error("T38-P2-R3-PICKER-DIAG",JSON.stringify({label,browser,pageErrors:errors,offsite,serverLog:serverLog.slice(-5000)}));
+ };
+ async function enterOriginalEdit(label){
+  // Original T36 source has independent asynchronous Sheet/private dossier loads.
+  // Do not confuse the always-rendered Print Sheet button with an authorized
+  // fully hydrated Sheet; await the source-authorized selected private Secret.
+  await page.locator(".npc-panel-scroll")
+   .getByText("T38 R3 PRIVATE",{exact:true}).waitFor({state:"visible",timeout:40000});
+  await page.getByRole("button",{name:"Edit",exact:true}).first().waitFor({state:"visible",timeout:30000});
+  await page.getByRole("button",{name:"Edit",exact:true}).first().click();
+  try {
+   await page.locator(".csheet--edit").waitFor({state:"visible",timeout:15000});
+   await page.getByRole("button",{name:"Done",exact:true}).first().waitFor({state:"visible",timeout:15000});
+   await page.getByRole("button",{name:/^Kind: (NPC|Merchant)/}).waitFor({state:"visible",timeout:15000});
+  }catch(err){await diagnosePicker(label);throw err}
+ }
  async function chooseKind(target){
   const picker=page.getByRole("button",{name:/^Kind: (NPC|Merchant)/});
-  if(await picker.count()===0)
-   await page.getByRole("button",{name:"Edit",exact:true}).first().click();
-  await picker.waitFor({state:"visible",timeout:30000});
+  await picker.waitFor({state:"visible",timeout:15000});
   await picker.click();
   await page.getByRole("menuitem",{name:new RegExp("^"+(target==="merchant"?"Merchant":"NPC"))}).click();
  }
  await login("GM",npc,"npc");
- await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000});
- await page.getByRole("button",{name:"Edit",exact:true}).first().click();
- await page.getByRole("button",{name:/^Kind: NPC/}).waitFor({state:"visible",timeout:30000});
+ await enterOriginalEdit("GM initial NPC source-owned Sheet/Edit");
  await chooseKind("merchant");await waitKind(npc,"merchant");
  assert.equal(calls.length,1,"Original KindPicker must invoke exactly one signed RPC");
  assert.equal(calls[0].p_character_id,npc);assert.equal(calls[0].p_target,"merchant");
@@ -167,7 +199,7 @@ try {
   q(randomUUID())+","+q(npc)+",8,'T38 R3 SHOP','{}'::jsonb,10,'t38_r3_item')");
  await page.goto(route+"?focus=merchant:"+npc,{waitUntil:"domcontentloaded",timeout:90000});
  await page.getByTestId("t25-selected-character").waitFor({timeout:60000});
- await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000});
+ await enterOriginalEdit("GM converted merchant Sheet/Edit");
  await chooseKind("npc");await waitKind(npc,"npc");
  assert.equal(calls.length,2);assert.equal(calls[1].p_target,"npc");
  assert.equal(sql("SELECT count(*) FROM public.character_stock WHERE character_id="+q(npc)),"0");
