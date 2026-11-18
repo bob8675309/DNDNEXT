@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b46ace620e0cd46227cbfbbfd55f4c0d3d999a9d` |
+| Exact source commit represented by this archive snapshot | `f8ab9ee8a61df7323cb961ad5e593c2e385fd56c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): accept hidden original Profile on Close in merchant R5 browser |
+| Last source commit title | test(c34): inspect original Shop row Qty span rather than flattened listbox text |
 | Files changed relative to main | 200 (160 non-docs; 40 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -21,7 +21,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md`
 - `scripts/integration/c34/test_t38_p2_r5_merchant_profile_shop_signed_browser.mjs`
-- `scripts/integration/c34/test_t38_p2_r5_source.mjs`
 
 ## Research-branch change inventory versus main
 
