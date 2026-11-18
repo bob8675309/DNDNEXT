@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0246231988da69919c74050c9e393daee9df2937` |
+| Exact source commit represented by this archive snapshot | `3a594608f2a4207a3c7cd3ea8ecdb8d5f52a25d0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept T38 R1–R4 signed research; gate original shop/inventory R5 |
-| Files changed relative to main | 198 (158 non-docs; 40 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): sign original merchant Profile Shop purchase and inventory parity in disposable PG17 |
+| Files changed relative to main | 200 (160 non-docs; 40 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-joint-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md`
+- `scripts/integration/c34/test_t38_p2_r5_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
-- … 148 more
+- … 150 more
 
 ## Trust and update procedure
 
