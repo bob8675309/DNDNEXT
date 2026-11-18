@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `25059ed51b2b115ea8f5c199edd72659647a87ac` |
+| Exact source commit represented by this archive snapshot | `d018a4358a665ab477737d1d9449b84fa9221191` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): diagnose original T38 KindPicker signed browser after full Sheet hydration |
+| Last source commit title | test(c34): fix KindPicker DOM-space selector after genuine signed GM diagnosis |
 | Files changed relative to main | 195 (155 non-docs; 40 docs) |
 | Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
