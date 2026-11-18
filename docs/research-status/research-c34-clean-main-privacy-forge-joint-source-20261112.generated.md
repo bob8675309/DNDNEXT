@@ -5,20 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `cd283106cbd6ddf7e12bae5050bf8da098243baf` |
+| Exact source commit represented by this archive snapshot | `1069282a85b5f073369c299de062f13fc67a59ba` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): reproduce original Weapon Mastery account overwrite and sign Option A isolation |
+| Last source commit title | docs(c34): accept exact signed T39 source-original account RED and local Option A GREEN |
 | Files changed relative to main | 203 (162 non-docs; 41 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs`
+- `docs/research/C34_T39_WEAPON_MASTERY_LEGACY_ACCOUNT_MIRROR_SOURCE_AUDIT_2026-11-18.md`
 
 ## Research-branch change inventory versus main
 
