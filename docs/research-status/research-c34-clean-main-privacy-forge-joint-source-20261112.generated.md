@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `821315a0d66b750d294605d17b7369c1c19a4a19` |
+| Exact source commit represented by this archive snapshot | `ab9ba57f5f3bf40d7943739b86b00d942c780d79` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): match original stock Qty 7 case-insensitively in R5 row |
+| Last source commit title | docs(c34): append R5 quantity case mismatch RED and correction receipt |
 | Files changed relative to main | 200 (160 non-docs; 40 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t38_p2_r5_merchant_profile_shop_signed_browser.mjs`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
