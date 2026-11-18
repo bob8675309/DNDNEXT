@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1069282a85b5f073369c299de062f13fc67a59ba` |
+| Exact source commit represented by this archive snapshot | `d22b83904329eab85ad5f72cc2c979511ec891b6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept exact signed T39 source-original account RED and local Option A GREEN |
+| Last source commit title | docs(c34): promote signed T39 RED/GREEN and next legacy-writer handoff |
 | Files changed relative to main | 203 (162 non-docs; 41 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T39_WEAPON_MASTERY_LEGACY_ACCOUNT_MIRROR_SOURCE_AUDIT_2026-11-18.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
