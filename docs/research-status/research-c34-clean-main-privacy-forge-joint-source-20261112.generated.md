@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7acd398b22dd375c98bbf640c0da7aff40383b49` |
+| Exact source commit represented by this archive snapshot | `d123807d9a8b446fd1d7ecbead341c212a41cf31` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add strict disposable T38-P2 conversion GREEN candidate after signed original RED |
-| Files changed relative to main | 194 (154 non-docs; 40 docs) |
-| Last source commit | 7 files (4 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): verify original T38-P2 KindPicker with signed local browser after conversion RED-GREEN |
+| Files changed relative to main | 195 (155 non-docs; 40 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -21,9 +21,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T38_P2_NPC_MERCHANT_CONVERSION_AUTH_STOCK_SCOPE_2026-11-17.md`
-- `scripts/integration/c34/t38_p2_disposable_conversion_hardening_candidate_pg17.sql`
-- `scripts/integration/c34/test_t38_p2_conversion_hardening_signed_pg17.mjs`
 - `scripts/integration/c34/test_t38_p2_conversion_source.mjs`
+- `scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -77,7 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
-- … 144 more
+- … 145 more
 
 ## Trust and update procedure
 
