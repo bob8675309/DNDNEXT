@@ -552,6 +552,23 @@ jobs:
           node scripts/integration/c34/test_t38_p2_r5_merchant_profile_shop_signed_browser.mjs
           test ! -e pages/__c34_t36_npcs.jsx
           echo 'PASS T38-P2-R5 original merchant Profile Shop wallet inventory parity (no production route)'
+      - name: T39 source-original Weapon Mastery signed two-account RED and NON-ORIGINAL Option A GREEN (disposable PG17 only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T39_SIGNED_CONFIRM=SIGNED_ORIGINAL_WEAPON_MASTERY_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs
+          node scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs
+          echo 'PASS T39 signed source-original RED + explicitly non-original local Option A GREEN; no release'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
