@@ -24,6 +24,7 @@ assert.notEqual(env.VERCEL,"1");
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const protectedFiles={
  "sql/20260710_02_character_progression_foundation.sql":"b1b9781e06e9210a30c520b7f531bce7cbdbd82a",
+ "sql/20260710_04_character_xp_level_up_review.sql":"81bce9bec9c59b3b673aeaada913cd054e4b74c7",
  "sql/20260721_01_character_data_rls_phase_1.sql":"5d9a53590a030ac15a45be654016dbbe00651fff",
  "scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql":"8269b57301a92751937c0a6a0c9529e8e7eb6848",
  "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql":"9c479d3f044268f73da3a5515d229096ce03f94a",
@@ -90,6 +91,9 @@ assert.equal(sql("SELECT md5(pg_get_functiondef('private.current_user_is_admin()
 sql(origFunction(originals["scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql"],"private.can_access_character_v1"));
 sql(origFunction(originals["sql/20260710_02_character_progression_foundation.sql"],"public.xp_threshold_for_level_v1"));
 sql(origFunction(originals["sql/20260710_02_character_progression_foundation.sql"],"public.get_character_progression_v1"));
+sql(origFunction(originals["sql/20260710_04_character_xp_level_up_review.sql"],"public.can_manage_character_progression_v1"));
+sql("REVOKE ALL ON FUNCTION public.can_manage_character_progression_v1(uuid) FROM PUBLIC,anon");
+sql("GRANT EXECUTE ON FUNCTION public.can_manage_character_progression_v1(uuid) TO authenticated");
 sql("REVOKE ALL ON FUNCTION public.get_character_progression_v1(uuid) FROM PUBLIC,anon");
 sql("GRANT EXECUTE ON FUNCTION public.get_character_progression_v1(uuid) TO authenticated");
 sql("GRANT USAGE ON SCHEMA private TO authenticated");
