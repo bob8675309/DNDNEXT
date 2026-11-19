@@ -1,0 +1,101 @@
+name: C34 T43 original earned v5 Sorcerer and Warlock linked-account research (local only)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t43_*'
+      - '.github/workflows/validate-c34-t43-original-earned-v5.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t43_*'
+      - '.github/workflows/validate-c34-t43-original-earned-v5.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  exact-original-v5-signed-extra-class-research:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+      DNDNEXT_T43_SOURCE_V5_CONFIRM: T43_DISPOSABLE_P13_ORIGINAL_V5_SORCERER_WARLOCK
+    steps:
+      - name: Checkout unchanged original progression graph plus T43 tests
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Source-exact original v5/v4/v3/base, three independent writer contracts and JS syntax
+        run: |
+          node --check scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs
+          node --check scripts/integration/c34/test_t43_earned_v5_source.mjs
+          node --test scripts/integration/c34/test_t43_earned_v5_source.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+      - name: Install existing lockfile dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Create isolated PostgreSQL17 and auth services
+        run: |
+          mkdir -p "$RUNNER_TEMP/t43-original-v5/supabase"
+          cat > "$RUNNER_TEMP/t43-original-v5/supabase/config.toml" <<'TOML'
+          project_id = "t43-earned-v5-auth-scratch"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local GoTrue, PostgREST and PostgreSQL 17
+        run: |
+          cd "$RUNNER_TEMP/t43-original-v5"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Run UNCHANGED P1.3 original F06-F28 signed level-up, race and merchant inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM" = P13_SOURCE_V5_LOCAL_AUTH_ONLY
+          (cd "$RUNNER_TEMP/t43-original-v5" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/t43-env"
+          set -a
+          source "$RUNNER_TEMP/t43-env"
+          set +a
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          node scripts/test_p1_3_levelup_v5_real_jwt_local.mjs
+          echo 'PASS T43-INHERITED: unchanged P1.3 source-original signed F06-F28'
+      - name: T43 actual original public earned-v5 Sorcerer + Warlock RED and separate 3-writer local Option A GREEN
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_T43_SOURCE_V5_CONFIRM" = T43_DISPOSABLE_P13_ORIGINAL_V5_SORCERER_WARLOCK
+          source "$RUNNER_TEMP/t43-env"
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          node scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs
+          echo 'PASS T43 signed full original public v5 integration in reduced source-shaped PG17 fixture; no release'
+      - name: Destroy disposable local services and scratch users
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/t43-original-v5"
+          npx --yes supabase@2.120.0 stop --no-backup || true
