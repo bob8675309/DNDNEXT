@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `48e14a903de2977b36f4791fd8e12ff2050c7cf1` |
+| Exact source commit represented by this archive snapshot | `5e49b6260e70154c3681844ccc582c2878d01678` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): stage original public can_manage RPC in T46 baseline before signed role assertions |
+| Last source commit title | test(c34): reuse inherited P1.3 source-owned user_profiles fixture in T46 local role checks |
 | Files changed relative to main | 232 (184 non-docs; 48 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
