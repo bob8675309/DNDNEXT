@@ -111,7 +111,8 @@ const sources=[
 for(const [file,names] of sources)for(const name of names){
  sql(originalFunction(file,name));
  assert.ok(sql("SELECT pg_get_functiondef("+lit(name+"("+
-  (name.endsWith("highest_spell_level_from_slots_v1")?"jsonb":
+  (name.endsWith("xp_threshold_for_level_v1")?"integer":
+  name.endsWith("highest_spell_level_from_slots_v1")?"jsonb":
   name.endsWith("level_has_feature_v1")?"jsonb,text":
   name.endsWith("unsupported_level_choice_features_v1")?"jsonb":
   name.endsWith("cancel_invalid_level_up_session_v1")?"":"uuid")+")")+"::regprocedure)").toLowerCase().includes(name.toLowerCase()),
