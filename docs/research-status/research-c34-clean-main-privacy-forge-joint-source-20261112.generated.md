@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5e49b6260e70154c3681844ccc582c2878d01678` |
+| Exact source commit represented by this archive snapshot | `5503a54bff2376b5a1cb299dfcc3edeb58c2c72b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): reuse inherited P1.3 source-owned user_profiles fixture in T46 local role checks |
+| Last source commit title | test(c34): respect inherited original sheet-to-progression trigger when seeding T46 disposable character |
 | Files changed relative to main | 232 (184 non-docs; 48 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
