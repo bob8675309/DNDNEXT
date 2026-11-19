@@ -5,21 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `905fddbf6292ca6566d5fb076b09a79bb6b59d8b` |
+| Exact source commit represented by this archive snapshot | `1139bb0345801d62bd463adedf1eeb4c6981e0db` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record T41 signed Rest RED/Option A GREEN and hand off next writer |
-| Files changed relative to main | 210 (167 non-docs; 43 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): source-pin T42 Sorcerer metamagic account-mirror helper research |
+| Files changed relative to main | 212 (169 non-docs; 43 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T41_RAGE_REST_LEGACY_ACCOUNT_MIRROR_2026-11-18.md`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs`
+- `scripts/integration/c34/test_t42_additional_class_choices_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
-- … 160 more
+- … 162 more
 
 ## Trust and update procedure
 
