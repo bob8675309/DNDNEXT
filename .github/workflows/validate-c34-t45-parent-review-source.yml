@@ -1,0 +1,38 @@
+name: C34 T45-P0 original Level Up parent review source custody (static only)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t45_parent_review_source.mjs'
+      - '.github/workflows/validate-c34-t45-parent-review-source.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t45_parent_review_source.mjs'
+      - '.github/workflows/validate-c34-t45-parent-review-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-original-parent-review-boundary:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Checkout exact research branch without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: T45-P0 original parent read, begin, get, cancel and ACL contracts (NO local or hosted SQL)
+        run: |
+          node --check scripts/integration/c34/test_t45_parent_review_source.mjs
+          node --test scripts/integration/c34/test_t45_parent_review_source.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+          node --test scripts/integration/c34/test_t43_earned_v5_source.mjs
+          node --test scripts/integration/c34/test_t44_level_up_browser_source.mjs
+          echo 'PASS T45-P0 source-only custody; signed parent/browser lifecycle NOT YET ACCEPTED; release HOLD'
