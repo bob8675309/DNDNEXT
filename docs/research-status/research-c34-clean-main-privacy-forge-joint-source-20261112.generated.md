@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b6387c74963fefa5cf05db48c30736dd930432f8` |
+| Exact source commit represented by this archive snapshot | `322c2d3815207897e49cb1444827d40644e11ca4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): render only source-original Stage3 GM-published clue beside server-scoped progression intel |
+| Last source commit title | test(c34): evict signed Next print receipt on same-JWT permission refresh or actor transition |
 | Files changed relative to main | 237 (188 non-docs; 49 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@
 
 ## Latest source commit paths
 
-- `components/c34/DiscoveredProgressionIntel.jsx`
-- `scripts/integration/c34/test_t46_p2_profile_source.mjs`
+- `scripts/integration/c34/test_t46_p2_real_next_profile_signed.mjs`
 
 ## Research-branch change inventory versus main
 
