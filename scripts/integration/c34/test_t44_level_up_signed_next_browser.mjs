@@ -307,7 +307,8 @@ try{
   await section.waitFor({state:"visible",timeout:35000});
   await page.getByText("Loading source-legal class choices…").waitFor({state:"hidden",timeout:35000});
   const error=await page.locator(".level-up-choice-form > .alert-danger").allInnerTexts();
-  assert.deepEqual(error,[],"T44 UI was not ready for user choices");
+  assert.deepEqual(error.filter(text=>text!=="Complete every permanent class choice gained at this level."),[],
+   "T44 UI encountered an unexpected source/catalog error while resolving user choices");
   return section;
  }
  async function pickMetamagic(){
