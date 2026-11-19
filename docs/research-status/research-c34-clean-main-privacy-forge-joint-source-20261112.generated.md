@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `322c2d3815207897e49cb1444827d40644e11ca4` |
+| Exact source commit represented by this archive snapshot | `d93f72405f53537715b5e714fea695545537dc5b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): evict signed Next print receipt on same-JWT permission refresh or actor transition |
-| Files changed relative to main | 237 (188 non-docs; 49 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record signed T46-P2 exact original NPC privacy/Next discovery and release HOLD |
+| Files changed relative to main | 238 (188 non-docs; 50 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p2_real_next_profile_signed.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P2_EXACT_NPC_PRIVACY_CURRENT_NEXT_BROWSER_2026-11-19.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +73,7 @@
 - `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
 - `docs/research/C34_T31_OWNER_REVISED_GAME_MASTER_ROLE_EQUIVALENCE_2026-11-16.md`
 - `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
-- … 187 more
+- … 188 more
 
 ## Trust and update procedure
 
