@@ -150,6 +150,11 @@ jobs:
         run: |
           node --check scripts/integration/c34/test_t40_rage_action_legacy_mirror_source.mjs
           node --test scripts/integration/c34/test_t40_rage_action_legacy_mirror_source.mjs
+      - name: T41 Rest canonical resource and encounter guard source + explicit no-mirror research contract
+        run: |
+          node --check scripts/integration/c34/test_t41_rest_action_signed_pg17.mjs
+          node --check scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs
+          node --test scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |
