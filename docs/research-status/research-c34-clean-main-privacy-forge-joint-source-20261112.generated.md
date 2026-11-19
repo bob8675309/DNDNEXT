@@ -5,20 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `88e8c988287843fc63f3c5a386f928978f199ebd` |
+| Exact source commit represented by this archive snapshot | `ba59db681cdff88258fd7ad10ed1a2ce19c91c94` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): remount synthetic T44 probe between signed identities on same review session |
-| Files changed relative to main | 220 (175 non-docs; 45 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): accept scoped T44 signed current Next Level Up browser and hand off T45 review parent |
+| Files changed relative to main | 221 (175 non-docs; 46 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t44_level_up_browser_source.mjs`
-- `scripts/integration/c34/test_t44_level_up_signed_next_browser.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T44_REAL_NEXT_LEVEL_UP_COMPONENT_SIGNED_BROWSER_2026-11-18.md`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +73,7 @@
 - `docs/research/C34_T35_FULL_NPC_MANAGER_STAGE2_EQUAL_GAME_MASTERS_SIGNED_2026-11-16.md`
 - `docs/research/C34_T36_ORIGINAL_NPCS_DEFAULT_OFF_ROUTE_RESEARCH_2026-11-16.md`
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
-- … 170 more
+- … 171 more
 
 ## Trust and update procedure
 
