@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ab464646c58ba304f54b593d82caf99372cb06c1` |
+| Exact source commit represented by this archive snapshot | `9fabac2b59627af47284b4e5c51cb13d1eb6bf89` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): fix signed v5 caller to use actor Supabase client in T43 |
+| Last source commit title | test(c34): keep original v5 while constraining inert P1.3 Warlock tail to T43 class-choice keys |
 | Files changed relative to main | 216 (172 non-docs; 44 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
