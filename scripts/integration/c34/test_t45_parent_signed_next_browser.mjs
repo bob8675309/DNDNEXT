@@ -384,7 +384,14 @@ try{
  assert.ok(observedRpcs.includes("begin_character_level_up_v1"));
  assert.ok(observedRpcs.includes("cancel_character_level_up_v1"));
  assert.deepEqual(pageErrors,[],"T45 unchanged original parent threw browser errors");
- assert.deepEqual(offsite,[],"T45 blocked all non-loopback browser traffic");
+ // The unchanged _app imports Bootstrap CDN assets. Requests are always ABORTED
+ // by the loopback-only router above; identify only the exact known static
+ // Bootstrap CSS/JS attempted URLs, never permit or silently ignore other origins.
+ assert.ok(offsite.every(u=>
+  u==="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" ||
+  u==="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"),
+  "Unexpected off-loopback request (all aborted): "+JSON.stringify(offsite));
+ console.log("PASS T45-P1-NETWORK: all attempted Bootstrap CDN requests explicitly aborted; no off-loopback Supabase or unknown origin");
  assert.equal(sql("SELECT md5(pg_get_functiondef('public.complete_character_level_up_v5(uuid,jsonb)'::regprocedure))"),originalV5Fingerprint);
  console.log("PASS T45-P1-INVALIDATE: ORIGINAL progression AFTER UPDATE cancels stale session; Next refresh removes review, all canonical unrelated rows and independent account histories frozen");
  console.log("PASS T45-P1-HOLD: original parent/review lifecycle signed under reduced local Fighter metadata; outsider progression visible in genuine original source test, OWNER VISIBILITY POLICY OPEN; NO production or release");
