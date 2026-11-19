@@ -62,6 +62,8 @@ test("T44-04 real browser and signed RPC, negative and local-only guard, no prox
  ])assert.ok(run.toLowerCase().includes(token.toLowerCase()),"T44 behavior/provenance missing "+token);
  assert.doesNotMatch(run,/t42_local_additional_choice_probe_v1\("/);
  assert.match(run,/fs\.rmSync\(routePath\)/);
+ assert.match(run,/key=\{data\.review\.session\.id\+"-"\+data\.mountNonce\}/);
+ assert.match(run,/window\.__t44Nonce/);
  assert.match(run,/source-original|ORIGINAL public v5/i);
 });
 test("T44-05 new signed Next workflow preserves exact F06-F28 AND T43",()=>{
