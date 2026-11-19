@@ -155,6 +155,11 @@ jobs:
           node --check scripts/integration/c34/test_t41_rest_action_signed_pg17.mjs
           node --check scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs
           node --test scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs
+      - name: T42 additional Sorcerer/Warlock original helper and active v5 source provenance; NO DB
+        run: |
+          node --check scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs
+          node --check scripts/integration/c34/test_t42_additional_class_choices_source.mjs
+          node --test scripts/integration/c34/test_t42_additional_class_choices_source.mjs
       - name: Assert this research cannot pass as a release candidate
         shell: bash
         run: |

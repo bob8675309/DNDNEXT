@@ -604,6 +604,24 @@ jobs:
           node --test scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs
           node scripts/integration/c34/test_t41_rest_action_signed_pg17.mjs
           echo 'PASS T41 source-original rest RED and deliberate one-clause Rest Option A GREEN; release HOLD'
+      - name: T42 original Sorcerer additional choices signed three-account RED and local Option A GREEN (helper-only; NOT earned v5)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T42_SIGNED_CONFIRM=ADDITIONAL_CLASS_CHOICES_ORIGINAL_HELPER_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs
+          node --test scripts/integration/c34/test_t42_additional_class_choices_source.mjs
+          node scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs
+          echo 'PASS T42 signed original helper RED + non-original Option A GREEN; v5/UI still HOLD'
       - name: Preserve only synthetic PDF/page image evidence (no real user records)
         if: always()
         uses: actions/upload-artifact@v4
