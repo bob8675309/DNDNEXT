@@ -5,21 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ba59db681cdff88258fd7ad10ed1a2ce19c91c94` |
+| Exact source commit represented by this archive snapshot | `9b2204b3a8d452c902a44f7812043cc33375fb04` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept scoped T44 signed current Next Level Up browser and hand off T45 review parent |
-| Files changed relative to main | 221 (175 non-docs; 46 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): T45-P0 source-lock original Level Up parent review ACL and session graph |
+| Files changed relative to main | 223 (177 non-docs; 46 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T44_REAL_NEXT_LEVEL_UP_COMPONENT_SIGNED_BROWSER_2026-11-18.md`
+- `.github/workflows/validate-c34-t45-parent-review-source.yml`
+- `scripts/integration/c34/test_t45_parent_review_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -28,6 +27,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `.github/workflows/validate-c34-t43-original-earned-v5.yml`
 - `.github/workflows/validate-c34-t44-real-level-up-browser.yml`
+- `.github/workflows/validate-c34-t45-parent-review-source.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
 - `components/c34/MerchantPanelT28P2Research.jsx`
@@ -72,8 +72,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T34_GAME_MANAGER_CAMPAIGN_VS_SITE_AUTH_2026-11-16.md`
 - `docs/research/C34_T35_FULL_NPC_MANAGER_STAGE2_EQUAL_GAME_MASTERS_SIGNED_2026-11-16.md`
 - `docs/research/C34_T36_ORIGINAL_NPCS_DEFAULT_OFF_ROUTE_RESEARCH_2026-11-16.md`
-- `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
-- … 171 more
+- … 173 more
 
 ## Trust and update procedure
 
