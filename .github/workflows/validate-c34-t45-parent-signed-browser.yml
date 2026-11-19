@@ -1,0 +1,109 @@
+name: C34 T45-P1 signed source-original Level Up parent review lifecycle (disposable only)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t45_parent_signed_next_browser.mjs'
+      - 'scripts/integration/c34/test_t45_parent_signed_source.mjs'
+      - '.github/workflows/validate-c34-t45-parent-signed-browser.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t45_parent_signed_next_browser.mjs'
+      - 'scripts/integration/c34/test_t45_parent_signed_source.mjs'
+      - '.github/workflows/validate-c34-t45-parent-signed-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-original-parent-local-auth-next-browser:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 34
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+      DNDNEXT_T43_SOURCE_V5_CONFIRM: T43_DISPOSABLE_P13_ORIGINAL_V5_SORCERER_WARLOCK
+      DNDNEXT_T44_SIGNED_BROWSER_CONFIRM: CURRENT_NEXT_EXACT_COMPONENT_LOCAL_ONLY
+      DNDNEXT_T45_PARENT_CONFIRM: T45_ORIGINAL_REVIEW_PARENT_LOCAL_PG17
+    steps:
+      - name: Checkout exact research branch without retained credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22 pinned
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Preserve original T45-P0, T43, T44 and new T45-P1 source, syntax and security negatives
+        run: |
+          node --check scripts/integration/c34/test_t45_parent_signed_next_browser.mjs
+          node --check scripts/integration/c34/test_t45_parent_signed_source.mjs
+          node --test scripts/integration/c34/test_t45_parent_signed_source.mjs
+          node --test scripts/integration/c34/test_t45_parent_review_source.mjs
+          node --test scripts/integration/c34/test_t44_level_up_browser_source.mjs
+          node --test scripts/integration/c34/test_t43_earned_v5_source.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+      - name: Install current Next application from exact lockfile
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install local Chromium controller (no remote browser)
+        run: |
+          mkdir -p "$RUNNER_TEMP/t45-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/t45-browser-tools" --no-save --package-lock=false --no-audit --no-fund --no-progress playwright-core@1.56.1 esbuild@0.25.12
+      - name: Configure disposable PostgreSQL 17 with GoTrue/PostgREST
+        run: |
+          mkdir -p "$RUNNER_TEMP/t45-parent/supabase"
+          cat > "$RUNNER_TEMP/t45-parent/supabase/config.toml" <<'TOML'
+          project_id = "t45-source-original-parent-review"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable isolated local auth and PostgreSQL 17
+        run: |
+          cd "$RUNNER_TEMP/t45-parent"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Run inherited P1.3, T43, T44 unchanged signed source-original regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd "$RUNNER_TEMP/t45-parent" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/t45-env"
+          set -a
+          source "$RUNNER_TEMP/t45-env"
+          set +a
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/t45-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME" || { echo 'Local Chromium missing; no remote fallback' >&2; exit 1; }
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          node scripts/test_p1_3_levelup_v5_real_jwt_local.mjs
+          node scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs
+          node scripts/integration/c34/test_t44_level_up_signed_next_browser.mjs
+          test ! -e pages/__c34_t44_level_up_probe.jsx
+          echo 'PASS T45-P1-INHERITED: original P1.3, T43, actual T44 Next child signed regressions preserved'
+      - name: Source-original parent progression/read/can-manage/begin/get/cancel/invalidation signed Next Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "$RUNNER_TEMP/t45-env"
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/t45-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          node scripts/integration/c34/test_t45_parent_signed_next_browser.mjs
+          test ! -e pages/__c34_t45_parent_probe.jsx
+          echo 'PASS T45-P1 disposable original parent browser with cross-character progression observation; RELEASE HOLD'
+      - name: Stop and delete all disposable PostgreSQL, Auth, user and browser state
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/t45-parent"
+          npx --yes supabase@2.120.0 stop --no-backup || true
