@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0d7a375f7ff5bba5e1a687a88ce25df4ef3e2b5f` |
+| Exact source commit represented by this archive snapshot | `48e14a903de2977b36f4791fd8e12ff2050c7cf1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): stage T46 signed per-viewer character discovery, original reader/Sheet RED and research-only restricted candidate |
+| Last source commit title | test(c34): stage original public can_manage RPC in T46 baseline before signed role assertions |
 | Files changed relative to main | 232 (184 non-docs; 48 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-progression-discovery.yml`
-- `scripts/integration/c34/candidates/t46_progression_visibility_discovery_pg17.sql`
 - `scripts/integration/c34/test_t46_progression_visibility_signed_pg17.mjs`
-- `scripts/integration/c34/test_t46_progression_visibility_source.mjs`
 
 ## Research-branch change inventory versus main
 
