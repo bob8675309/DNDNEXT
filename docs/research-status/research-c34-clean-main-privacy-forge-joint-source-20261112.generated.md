@@ -5,20 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9fabac2b59627af47284b4e5c51cb13d1eb6bf89` |
+| Exact source commit represented by this archive snapshot | `7c30a1035796fc6725f1417e98e4bc93aa6c77ab` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): keep original v5 while constraining inert P1.3 Warlock tail to T43 class-choice keys |
-| Files changed relative to main | 216 (172 non-docs; 44 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record signed T43 original earned-v5 RED and 3-writer Option A GREEN handoff |
+| Files changed relative to main | 217 (172 non-docs; 45 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs`
-- `scripts/integration/c34/test_t43_earned_v5_source.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T43_REAL_EARNED_V5_SORCERER_WARLOCK_LEGACY_MIRROR_2026-11-18.md`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +73,7 @@
 - `docs/research/C34_T36_ORIGINAL_NPCS_DEFAULT_OFF_ROUTE_RESEARCH_2026-11-16.md`
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
-- … 166 more
+- … 167 more
 
 ## Trust and update procedure
 
