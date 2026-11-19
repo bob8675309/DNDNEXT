@@ -202,6 +202,29 @@ sql([
 "RAISE EXCEPTION 'T43 fixture restricts non-Fighter tails to Sorcerer 2 / Warlock 11';",
 "END IF; END $t43$;"
 ].join("\n"));
+// Explicitly NON-ORIGINAL reduced P1.3 invocation-replacement tail:
+// v5 passes its WHOLE class choice object to this Warlock-specific helper.
+// The existing Fighter-only test tail rejects even unrelated legitimate
+// Sorcerer/Warlock additional groups. Admit ONLY those two source-owned keys
+// in the *scratch inert invocation branch*; actual additional chooser is source
+// ORIGINAL and still validates keys/options/levels in v3.
+sql([
+"CREATE OR REPLACE FUNCTION private.apply_level_up_warlock_invocation_replacement_v2(",
+" p_character_id uuid,p_to_level integer,p_replacement jsonb,p_all_class jsonb,p_feat_instances jsonb)",
+"RETURNS jsonb LANGUAGE plpgsql AS $t43$ DECLARE k text;",
+"BEGIN",
+"PERFORM private.p13_only_plain_fighter(p_character_id,p_to_level);",
+"PERFORM private.p13_only_empty(p_replacement);",
+"PERFORM private.p13_only_empty(p_feat_instances);",
+"IF jsonb_typeof(coalesce(p_all_class,'{}'::jsonb))<>'object' THEN",
+" RAISE EXCEPTION 'T43 invalid reduced class choice object'; END IF;",
+"FOR k IN SELECT key FROM jsonb_each(coalesce(p_all_class,'{}'::jsonb)) LOOP",
+" IF k NOT IN ('sorcerer-metamagic','warlock-mystic-arcanum-6') THEN",
+"  RAISE EXCEPTION 'T43 unrelated class or invocation replacement is not staged'; END IF;",
+"END LOOP;",
+"RETURN '[]'::jsonb;",
+"END $t43$;"
+].join("\n"));
 sql([
 "CREATE OR REPLACE FUNCTION private.sync_character_eldritch_invocations_v1(p_character_id uuid)",
 "RETURNS void LANGUAGE plpgsql AS $t43$ DECLARE n integer;",

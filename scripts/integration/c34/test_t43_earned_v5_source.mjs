@@ -66,6 +66,8 @@ test("T43-04 new integration tests call original public v5, no helper proxy",()=
  ])assert.ok(signed.includes(token),"missing genuine signed v5 proof "+token);
  assert.doesNotMatch(signed,/t42_local_additional_choice_probe_v1/);
  assert.match(signed,/reduced synthetic fixtures/);
+ assert.match(signed,/unrelated class or invocation replacement is not staged/);
+ assert.match(signed,/IF k NOT IN \('sorcerer-metamagic','warlock-mystic-arcanum-6'\)/);
 });
 test("T43-05 three distinctly scoped Option A omissions, no production SQL",()=>{
  const signed=read("scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs");
