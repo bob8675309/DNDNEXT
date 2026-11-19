@@ -33,7 +33,10 @@ test("T46-P2-01: all inherited exact original #345 and current Level Up assets p
  assert.match(sourceStage,/character_public_secret_revelations/);
  const old=read("sql/20260710_02_character_progression_foundation.sql");
  assert.match(old,/create or replace function public.get_character_progression_v1/);
- assert.doesNotMatch(old,/if not private.can_manage_character_progression_v1\(p_character_id\)/);
+ const readerStart=old.indexOf("create or replace function public.get_character_progression_v1");
+ assert.ok(readerStart>=0);
+ const originalReader=old.slice(readerStart,old.indexOf("$;",readerStart)+3);
+ assert.doesNotMatch(originalReader,/if not private.can_manage_character_progression_v1\(p_character_id\)/);
 });
 test("T46-P2-02: only research component; strict sanitized per-character data and race guards",()=>{
  const s=read("components/c34/DiscoveredProgressionIntel.jsx");

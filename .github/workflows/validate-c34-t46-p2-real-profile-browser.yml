@@ -100,5 +100,9 @@ jobs:
       - name: Remove disposable database/Auth/role data and temporary route
         if: always()
         run: |
-          cd "$RUNNER_TEMP/t46-p2-signed"
-          npx --yes supabase@2.120.0 stop --no-backup || true
+          if [ -d "$RUNNER_TEMP/t46-p2-signed" ]; then
+            cd "$RUNNER_TEMP/t46-p2-signed"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          else
+            echo "No disposable services were created; teardown not needed"
+          fi
