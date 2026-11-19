@@ -44,10 +44,13 @@ test("T46-P2-02: only research component; strict sanitized per-character data an
   "sanitizeDiscoveredProgression","const ID=","characterId","p_character_id:characterId",
   "get_progression_discoveries","c34_t46_get_progression_discoveries_v1",
   "sequence.current","auth.onAuthStateChange","SIGNED_OUT","TOKEN_REFRESHED",
-  "client.auth.getUser()","last.data?.user?.id!==actor","setResult(response.error?null:",
+  "client.auth.getUser()","last.data?.user?.id!==actor","setResult({", "published:publicProfile.error?null:sanitizeStage3PublishedClue",
   "No progression details discovered.","Discovered Intel"])
   assert.ok(s.includes(token),token);
- assert.doesNotMatch(s,/get_character_progression_v1|character_sheets|service_role|gmNotes|secret_text|(?:window|document)\./);
+ assert.doesNotMatch(s,/get_character_progression_v1|client\.from\(|service_role|gmNotes|secret_text|(?:window|document)\./);
+ assert.match(s,/get_npc_profile_visible_v1/);
+ assert.match(s,/sanitizeStage3PublishedClue/);
+ assert.match(s,/public\.character_public_secret_revelations/);
  assert.match(s,/if\(raw.class&&typeof raw.class==="object"/);
  assert.match(s,/if\(own\(raw,"level"\)&&Number.isSafeInteger/);
  assert.match(s,/if\(own\(raw,"xp"\)&&Number.isSafeInteger/);

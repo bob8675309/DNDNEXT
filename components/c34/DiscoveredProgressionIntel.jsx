@@ -1,7 +1,7 @@
 // C34 T46-P2: UNMOUNTED research-only player-specific discovery display.
 // This module is never imported by the production /npcs, map, town or _app.
 // The existing source-original PR #345 NPC profile and private dossier are
-// separate authority surfaces. This uses only the T46 per-user safe projection.
+// separate authority surfaces. This uses the T46 per-user safe projection\n// AND ONLY the published public clue from source-original #345 Stage3.\n// A deployment MUST atomically install Stage3; Stage1's legacy secret field\n// is unsafe. This candidate is intentionally unmounted until that cutover.
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -24,6 +24,18 @@ export function sanitizeDiscoveredProgression(raw,requestedId) {
   if(own(raw,"xp")&&Number.isSafeInteger(raw.xp)&&raw.xp>=0)
     next.xp=raw.xp;
   return Object.keys(next).length?next:null;
+}
+
+// This property is curated by original #345 Stage3 from
+// public.character_public_secret_revelations, NOT characters.secret and
+// NOT character_sheets.sheet.profileReveal.secret. Its server function must
+// be source-verified as Stage3 BEFORE this research UI is ever mounted.
+export function sanitizeStage3PublishedClue(raw,requestedId) {
+  if(!raw||typeof raw!=="object"||Array.isArray(raw)||
+     String(raw.id||"").toLowerCase()!==String(requestedId||"").toLowerCase())
+    return null;
+  const clue=raw.lore?.secret;
+  return typeof clue==="string"&&clue.trim()?clue.trim().slice(0,1200):null;
 }
 
 export default function DiscoveredProgressionIntel({client,characterId}) {
@@ -64,13 +76,24 @@ export default function DiscoveredProgressionIntel({client,characterId}) {
         const first=await client.auth.getUser();
         const actor=first?.data?.user?.id;
         if(!isId(actor)||first.error)return;
-        const response=await client.rpc("c34_t46_get_progression_discoveries_v1",{
-          p_character_id:characterId
-        });
+        // Both responses come from signed server functions. Only Stage3's
+        // sanitized, explicitly GM-PUBLISHED clue is considered; the raw
+        // character, GM dossier, private Story and Sheet are NEVER queried.
+        const [response,publicProfile]=await Promise.all([
+          client.rpc("c34_t46_get_progression_discoveries_v1",{
+            p_character_id:characterId
+          }),
+          client.rpc("get_npc_profile_visible_v1",{
+            p_character_id:characterId
+          })
+        ]);
         const last=await client.auth.getUser();
         if(!active||sequence.current!==generation||
            last.error||last.data?.user?.id!==actor)return;
-        setResult(response.error?null:sanitizeDiscoveredProgression(response.data,characterId));
+        setResult({
+          intel:response.error?null:sanitizeDiscoveredProgression(response.data,characterId),
+          published:publicProfile.error?null:sanitizeStage3PublishedClue(publicProfile.data,characterId)
+        });
       } catch { /* fail closed; do not surface raw SQL/auth errors */ }
       finally {
         if(active&&sequence.current===generation)setLoading(false);
@@ -87,15 +110,21 @@ export default function DiscoveredProgressionIntel({client,characterId}) {
           onClick={()=>{clear();setRefresh(n=>n+1);}}>Refresh discoveries</button>
       </header>
       <div className="card-body">
-        {loading?<p role="status">Checking discovered details…</p>:result?
-          <dl className="mb-0">
-            {result.class?<><dt>Class</dt><dd>{result.class.name}</dd></>:null}
-            {own(result,"level")?<><dt>Level</dt><dd>{result.level}</dd></>:null}
-            {own(result,"xp")?<><dt>Experience points</dt><dd>{result.xp.toLocaleString("en-US")}</dd></>:null}
-          </dl>:
-          <p data-testid="t46-undiscovered" className="small text-secondary mb-0">
-            No progression details discovered.
-          </p>}
+        {loading?<p role="status">Checking discovered details…</p>:<>
+          {result?.published?
+            <p data-testid="t46-curated-public-clue" className="small mb-3">
+              <strong>Discovered clue:</strong> {result.published}
+            </p>:null}
+          {result?.intel?
+            <dl className="mb-0">
+              {result.intel.class?<><dt>Class</dt><dd>{result.intel.class.name}</dd></>:null}
+              {own(result.intel,"level")?<><dt>Level</dt><dd>{result.intel.level}</dd></>:null}
+              {own(result.intel,"xp")?<><dt>Experience points</dt><dd>{result.intel.xp.toLocaleString("en-US")}</dd></>:null}
+            </dl>:
+            <p data-testid="t46-undiscovered" className="small text-secondary mb-0">
+              No progression details discovered.
+            </p>}
+        </>}
       </div>
     </section>
   );
