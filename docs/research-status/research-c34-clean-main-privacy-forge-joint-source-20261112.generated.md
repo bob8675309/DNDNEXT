@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `266343fefd4d4fec142c98fb140253fcf4ad8a67` |
+| Exact source commit represented by this archive snapshot | `7b29f9e53852004c9ef2940be799d7ce71a92290` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add T46-P2 held PR345 Stage1-3 signed current Next Profile and per-viewer Intel research |
+| Last source commit title | test(c34): scope T46-P2 original-reader static check and protect early-failure disposable teardown |
 | Files changed relative to main | 237 (188 non-docs; 49 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,9 +18,7 @@
 ## Latest source commit paths
 
 - `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
-- `components/c34/DiscoveredProgressionIntel.jsx`
 - `scripts/integration/c34/test_t46_p2_profile_source.mjs`
-- `scripts/integration/c34/test_t46_p2_real_next_profile_signed.mjs`
 
 ## Research-branch change inventory versus main
 
