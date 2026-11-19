@@ -82,7 +82,7 @@ sql("ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS is_hidden boolean NO
 sql("ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS tags text[] NOT NULL DEFAULT '{}'::text[]");
 for(const field of ["can_inventory","can_convert"])
  sql("ALTER TABLE public.character_permissions ADD COLUMN IF NOT EXISTS "+field+" boolean NOT NULL DEFAULT false");
-sql("CREATE TABLE public.user_profiles(id uuid PRIMARY KEY REFERENCES auth.users(id),role text NOT NULL DEFAULT 'player')");
+sql("CREATE TABLE IF NOT EXISTS public.user_profiles(id uuid PRIMARY KEY REFERENCES auth.users(id),role text NOT NULL DEFAULT 'player')");
 sql("ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY");
 sql("REVOKE ALL ON public.user_profiles FROM PUBLIC,anon,authenticated");
 sql(origFunction(originals["scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql"],"private.current_user_is_admin"));
