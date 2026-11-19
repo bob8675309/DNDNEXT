@@ -5,19 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `452aa1a1a05816097efd02eb6490bb077e8ca29b` |
+| Exact source commit represented by this archive snapshot | `5a2712343cd0e4ff7d18f0ec8323f8da8081273e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append signed original T40 RED/Option A GREEN and live rest dependency receipt |
-| Files changed relative to main | 206 (164 non-docs; 42 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): add source-locked T41 rest RED and scoped Option A signed regression |
+| Files changed relative to main | 208 (166 non-docs; 42 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs`
+- `scripts/integration/c34/test_t41_rest_action_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
-- … 156 more
+- … 158 more
 
 ## Trust and update procedure
 
