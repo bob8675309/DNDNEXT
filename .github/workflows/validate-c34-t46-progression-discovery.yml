@@ -1,0 +1,86 @@
+name: C34 T46 signed progression visibility and GM-adjudicated discoveries (disposable)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/candidates/t46_progression_visibility_discovery_pg17.sql'
+      - 'scripts/integration/c34/test_t46_progression_visibility_*.mjs'
+      - '.github/workflows/validate-c34-t46-progression-discovery.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/candidates/t46_progression_visibility_discovery_pg17.sql'
+      - 'scripts/integration/c34/test_t46_progression_visibility_*.mjs'
+      - '.github/workflows/validate-c34-t46-progression-discovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  local-source-original-red-isolated-candidate-green:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+      DNDNEXT_T46_VISIBILITY_CONFIRM: T46_LOCAL_REVEAL_PROGRESSION_SOURCE_ORIGINAL_RED_SCRATCH_GREEN
+    steps:
+      - name: Checkout code without retained write credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Pin original PR #345 and original progression source, maintain inherited T45/T44/T43 static checks
+        run: |
+          node --check scripts/integration/c34/test_t46_progression_visibility_signed_pg17.mjs
+          node --check scripts/integration/c34/test_t46_progression_visibility_source.mjs
+          node --test scripts/integration/c34/test_t46_progression_visibility_source.mjs
+          node --test scripts/integration/c34/test_t45_parent_review_source.mjs
+          node --test scripts/integration/c34/test_t44_level_up_browser_source.mjs
+          node --test scripts/integration/c34/test_t43_earned_v5_source.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+      - name: Install lockfile-pinned Next and signed client
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure disposable local PostgreSQL17 GoTrue and PostgREST
+        run: |
+          mkdir -p "$RUNNER_TEMP/t46-progress-discovery/supabase"
+          cat > "$RUNNER_TEMP/t46-progress-discovery/supabase/config.toml" <<'TOML'
+          project_id = "t46-signed-discovery-src-pg17"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local services (never hosted)
+        run: |
+          cd "$RUNNER_TEMP/t46-progress-discovery"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Preserve signed original P1.3 level-up F06-F28 then signed visibility RED/GREEN
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd "$RUNNER_TEMP/t46-progress-discovery" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/t46-env"
+          set -a
+          source "$RUNNER_TEMP/t46-env"
+          set +a
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          node scripts/test_p1_3_levelup_v5_real_jwt_local.mjs
+          node scripts/integration/c34/test_t46_progression_visibility_signed_pg17.mjs
+          echo 'PASS T46 disposable signed original progression + Sheet leakage RED and limited GM discovery candidate GREEN; prod HOLD'
+      - name: Tear down all disposable Postgres/Auth/users/session data
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/t46-progress-discovery"
+          npx --yes supabase@2.120.0 stop --no-backup || true
