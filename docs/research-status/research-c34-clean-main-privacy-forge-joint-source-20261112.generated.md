@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ebe45cc7928575afcb5147d2b8e02bbd526c4470` |
+| Exact source commit represented by this archive snapshot | `396d243a20a00187f1d49277d01884445759ad3c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): T44 actual current Next Level Up signed browser against original public v5 |
+| Last source commit title | test(c34): retain expected incomplete-choice UI warning during subsequent T44 selection |
 | Files changed relative to main | 220 (175 non-docs; 45 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t44-real-level-up-browser.yml`
-- `scripts/integration/c34/test_t44_level_up_browser_source.mjs`
 - `scripts/integration/c34/test_t44_level_up_signed_next_browser.mjs`
 
 ## Research-branch change inventory versus main
