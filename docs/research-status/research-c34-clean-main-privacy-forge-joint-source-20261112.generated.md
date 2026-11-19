@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7b29f9e53852004c9ef2940be799d7ce71a92290` |
+| Exact source commit represented by this archive snapshot | `b6387c74963fefa5cf05db48c30736dd930432f8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): scope T46-P2 original-reader static check and protect early-failure disposable teardown |
+| Last source commit title | test(c34): render only source-original Stage3 GM-published clue beside server-scoped progression intel |
 | Files changed relative to main | 237 (188 non-docs; 49 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
+- `components/c34/DiscoveredProgressionIntel.jsx`
 - `scripts/integration/c34/test_t46_p2_profile_source.mjs`
 
 ## Research-branch change inventory versus main
