@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `396d243a20a00187f1d49277d01884445759ad3c` |
+| Exact source commit represented by this archive snapshot | `88e8c988287843fc63f3c5a386f928978f199ebd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): retain expected incomplete-choice UI warning during subsequent T44 selection |
+| Last source commit title | test(c34): remount synthetic T44 probe between signed identities on same review session |
 | Files changed relative to main | 220 (175 non-docs; 45 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,7 @@
 
 ## Latest source commit paths
 
+- `scripts/integration/c34/test_t44_level_up_browser_source.mjs`
 - `scripts/integration/c34/test_t44_level_up_signed_next_browser.mjs`
 
 ## Research-branch change inventory versus main
