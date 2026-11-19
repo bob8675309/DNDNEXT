@@ -5,21 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e77ab47f9b80a6a7f562f5e539cee39ae656ef7b` |
+| Exact source commit represented by this archive snapshot | `0d7a375f7ff5bba5e1a687a88ce25df4ef3e2b5f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record signed T45-P1 parent review, source-original outsider visibility and release HOLD |
-| Files changed relative to main | 228 (180 non-docs; 48 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): stage T46 signed per-viewer character discovery, original reader/Sheet RED and research-only restricted candidate |
+| Files changed relative to main | 232 (184 non-docs; 48 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T45_P1_SIGNED_ORIGINAL_PARENT_REVIEW_2026-11-19.md`
+- `.github/workflows/validate-c34-t46-progression-discovery.yml`
+- `scripts/integration/c34/candidates/t46_progression_visibility_discovery_pg17.sql`
+- `scripts/integration/c34/test_t46_progression_visibility_signed_pg17.mjs`
+- `scripts/integration/c34/test_t46_progression_visibility_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -30,6 +31,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t44-real-level-up-browser.yml`
 - `.github/workflows/validate-c34-t45-parent-review-source.yml`
 - `.github/workflows/validate-c34-t45-parent-signed-browser.yml`
+- `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
 - `components/c34/MerchantPanelT28P2Research.jsx`
@@ -72,8 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
 - `docs/research/C34_T33_TOWN_STAGE2_SAFE_GM_PROFILE_2026-11-16.md`
 - `docs/research/C34_T34_GAME_MANAGER_CAMPAIGN_VS_SITE_AUTH_2026-11-16.md`
-- `docs/research/C34_T35_FULL_NPC_MANAGER_STAGE2_EQUAL_GAME_MASTERS_SIGNED_2026-11-16.md`
-- … 178 more
+- … 182 more
 
 ## Trust and update procedure
 
