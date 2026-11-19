@@ -31,6 +31,15 @@ test("T41-01 original migration, resources and encounter SQL remain immutable",(
  assert.equal(blob(resourceFile),"f96a3788334fe306374dfd4b5fdf4e00992d3924");
  assert.equal(blob(guardFile),"be7844fe16b14b73f4fb03f68069f9eb0af3dbf8");
 });
+test("T41-01B historic #364 deployed resource-profile helper is source-pinned separately",()=>{
+ const fixture="scripts/integration/c34/fixtures/t41_original_live_rest_resource_profile_pg17.sql";
+ assert.equal(blob(fixture),"1c1278f22396ee5805dd0e70c02d9ebcbc0f4388");
+ const body=read(fixture);
+ assert.match(body,/039868c4ac5cdd62e0efc1e46f584df2bdc34a9c/);
+ assert.match(body,/2c798f8351282d80e63ab8e9e9019272/);
+ assert.match(body,/CREATE OR REPLACE FUNCTION private\.character_sheet_resource_profile_json_v1/);
+ assert.match(body,/REVOKE ALL ON FUNCTION private\.character_sheet_resource_profile_json_v1/);
+});
 test("T41-02 private original Rest has exactly one legacy mirror and source-original rules",()=>{
  const rest=read(restFile);
  assert.equal(rest.split(mirror).length,2);

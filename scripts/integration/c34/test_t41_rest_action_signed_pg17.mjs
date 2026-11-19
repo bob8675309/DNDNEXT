@@ -175,7 +175,13 @@ sql("ALTER TABLE public.character_rest_log ENABLE ROW LEVEL SECURITY");
 sql("REVOKE ALL ON public.character_spell_slots FROM PUBLIC,anon,authenticated");
 sql("REVOKE ALL ON public.character_rest_log FROM PUBLIC,anon,authenticated");
 installOriginal(resources,"private.sync_character_spell_slots_v1");
-installOriginal(resources,"private.character_sheet_resource_profile_json_v1");
+// The August 2 repository resource helper is pre-live and differs from the
+// source-original helper verified in #364. Never silently use it as deployed.
+const exactLiveProfile=source(
+  "scripts/integration/c34/fixtures/t41_original_live_rest_resource_profile_pg17.sql",
+  "1c1278f22396ee5805dd0e70c02d9ebcbc0f4388"
+);
+sql(exactLiveProfile);
 
 // Install the original log/slot/use encounter veto handlers, NOT a fake veto.
 // Only minimum scratch encounter tables are added for this inherited C34 fixture.
