@@ -141,7 +141,9 @@ function character(id,name,hidden,player=false){
   lit(JSON.stringify({marker:"T46_CANONICAL_"+name,classKey:"fighter",level:1,
    xp:300,privateNpcStory:"DO NOT EVER RETURN VIA CLUE READER"}))+"::jsonb)");
  sql("INSERT INTO public.character_progression(character_id,class_id,class_level,experience_points,pending_level_up,created_by)"+
-  " VALUES("+q(id)+","+classId+",1,300,true,"+q(a.owner.id)+")");
+  " VALUES("+q(id)+","+classId+",1,300,true,"+q(a.owner.id)+")"+
+  " ON CONFLICT(character_id) DO UPDATE SET class_id=excluded.class_id,class_level=excluded.class_level,"+
+  "experience_points=excluded.experience_points,pending_level_up=excluded.pending_level_up,created_by=excluded.created_by");
  sql("INSERT INTO public.character_level_events(character_id,event_type,details,created_by) VALUES("+
   q(id)+",'secret_gm_event',"+lit(JSON.stringify({gmNote:"DO NOT RETURN VIA CLUE READER"}))+"::jsonb,"+q(a.owner.id)+")");
 }
