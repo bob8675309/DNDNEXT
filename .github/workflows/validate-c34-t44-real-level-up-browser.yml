@@ -1,0 +1,114 @@
+name: C34 T44 actual current Next Level Up component signed original v5 browser (disposable only)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t44_*'
+      - '.github/workflows/validate-c34-t44-real-level-up-browser.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t44_*'
+      - '.github/workflows/validate-c34-t44-real-level-up-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-next-component-signed-browser:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+      DNDNEXT_T43_SOURCE_V5_CONFIRM: T43_DISPOSABLE_P13_ORIGINAL_V5_SORCERER_WARLOCK
+      DNDNEXT_T44_SIGNED_BROWSER_CONFIRM: CURRENT_NEXT_EXACT_COMPONENT_LOCAL_ONLY
+    steps:
+      - name: Checkout research branch, no credentials retained
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Source-exact original UI and v5 custody, T44 safety and syntax
+        run: |
+          node --check scripts/integration/c34/test_t44_level_up_signed_next_browser.mjs
+          node --check scripts/integration/c34/test_t44_level_up_browser_source.mjs
+          node --test scripts/integration/c34/test_t44_level_up_browser_source.mjs
+          node --check scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs
+          node --test scripts/integration/c34/test_t43_earned_v5_source.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+      - name: Install lockfile-pinned current Next application
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install Chromium browser controller in a separate temporary directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/t44-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/t44-browser-tools" --no-save --package-lock=false --no-audit --no-fund --no-progress playwright-core@1.56.1 esbuild@0.25.12
+      - name: Configure disposable PostgreSQL17 local GoTrue/PostgREST
+        run: |
+          mkdir -p "$RUNNER_TEMP/t44-earned-v5/supabase"
+          cat > "$RUNNER_TEMP/t44-earned-v5/supabase/config.toml" <<'TOML'
+          project_id = "t44-signed-next-levelup-original-v5"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start entirely local GoTrue, PostgREST and PostgreSQL 17
+        run: |
+          cd "$RUNNER_TEMP/t44-earned-v5"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Run UNCHANGED P1.3 F06-F28 and accepted source-original signed T43 RED/GREEN
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM" = P13_SOURCE_V5_LOCAL_AUTH_ONLY
+          test "$DNDNEXT_T43_SOURCE_V5_CONFIRM" = T43_DISPOSABLE_P13_ORIGINAL_V5_SORCERER_WARLOCK
+          (cd "$RUNNER_TEMP/t44-earned-v5" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/t44-env"
+          set -a
+          source "$RUNNER_TEMP/t44-env"
+          set +a
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          node scripts/test_p1_3_levelup_v5_real_jwt_local.mjs
+          node scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs
+          echo 'PASS T44-INHERITED: unchanged original P1.3 F06-F28 and actual signed public v5 T43 RED/GREEN'
+      - name: T44 actual current Next 16 component signed Chromium → source-original public v5 RED, distinct local 3-writer Option A GREEN
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_T44_SIGNED_BROWSER_CONFIRM" = CURRENT_NEXT_EXACT_COMPONENT_LOCAL_ONLY
+          source "$RUNNER_TEMP/t44-env"
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/t44-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME" || { echo 'T44 local Chromium unavailable; never use remote browser' >&2; exit 1; }
+          node scripts/integration/c34/test_t44_level_up_signed_next_browser.mjs
+          test ! -e pages/__c34_t44_level_up_probe.jsx
+          echo 'PASS T44: original current Next component signed source-v5 browser, separate historical-account RED/GREEN; no app route retained or deployed'
+      - name: Destroy all disposable PostgreSQL, GoTrue, browser users and local data
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/t44-earned-v5"
+          npx --yes supabase@2.120.0 stop --no-backup || true
