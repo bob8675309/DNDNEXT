@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5a2712343cd0e4ff7d18f0ec8323f8da8081273e` |
+| Exact source commit represented by this archive snapshot | `cf0a0af1196eaa6b5f343dc390dcc33f792a4b60` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add source-locked T41 rest RED and scoped Option A signed regression |
-| Files changed relative to main | 208 (166 non-docs; 42 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit title | test(c34): restore exact #364 live Rest resource helper for T41 signed fixture |
+| Files changed relative to main | 209 (167 non-docs; 42 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `.github/workflows/validate-c34-joint-source-research.yml`
+- `scripts/integration/c34/fixtures/t41_original_live_rest_resource_profile_pg17.sql`
 - `scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs`
 - `scripts/integration/c34/test_t41_rest_action_signed_pg17.mjs`
 
@@ -74,7 +73,7 @@
 - `docs/research/C34_T37_P1_REAL_NPCS_ROLE_EDITOR_CREATOR_ENTRY_2026-11-16.md`
 - `docs/research/C34_T37_P2_ORIGINAL_NPC_FORGE_SUBMISSION_2026-11-16.md`
 - `docs/research/C34_T38_P1_ORIGINAL_NPC_SHEET_SECRET_SAVE_2026-11-17.md`
-- … 158 more
+- … 159 more
 
 ## Trust and update procedure
 
