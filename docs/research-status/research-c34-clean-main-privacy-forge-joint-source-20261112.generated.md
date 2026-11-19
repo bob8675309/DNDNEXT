@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ea674f553799ef73ac47308c33b781f370c93c19` |
+| Exact source commit represented by this archive snapshot | `e176e1b19cb52ee9c53570c9937251f3f407177b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): correct source-original XP threshold regprocedure signature in T45 preflight |
+| Last source commit title | test(c34): classify blocked first-party Bootstrap CDN asset attempts without allowing any off-loopback traffic |
 | Files changed relative to main | 227 (180 non-docs; 47 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
