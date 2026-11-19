@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1139bb0345801d62bd463adedf1eeb4c6981e0db` |
+| Exact source commit represented by this archive snapshot | `1e08f7c0c87d4f498bea69b1259244e3594c14dc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-pin T42 Sorcerer metamagic account-mirror helper research |
+| Last source commit title | test(c34): reference inherited P1.3 fixture rather than held #364-only file |
 | Files changed relative to main | 212 (169 non-docs; 43 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `.github/workflows/validate-c34-joint-source-research.yml`
-- `scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs`
 - `scripts/integration/c34/test_t42_additional_class_choices_source.mjs`
 
 ## Research-branch change inventory versus main
