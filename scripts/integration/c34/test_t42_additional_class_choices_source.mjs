@@ -37,9 +37,11 @@ test("T42-03 class choice path source UI to live v5-v3 to private",()=>{
  assert.match(v3,/private\.apply_additional_level_class_choices_v1/);
 });
 test("T42-04 older earned v5 does NOT assert Sorcerer options",()=>{
- const prev=read("scripts/test_i1p_earned_rest_local_auth.mjs");
+ const prev=read("scripts/test_p1_3_levelup_v5_real_jwt_local.mjs");
  const signed=read("scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs");
- assert.match(prev,/Fighter B 1->2/);
+ // Original #364 I1-P is held on its own PR branch (blob 4c9a0935),
+ // not copied into this C34 research tree; inherited P1.3 remains here.
+ assert.match(prev,/Only featureless Fighter 1→2 tails/);
  assert.doesNotMatch(prev,/sorcerer-metamagic|Mystic Arcanum/);
  assert.match(signed,/C34_T42_SIGNED_CONFIRM/);
  assert.match(signed,/full earned-v5, Warlock and browser release HOLD/);
