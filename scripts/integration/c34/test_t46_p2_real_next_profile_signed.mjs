@@ -219,7 +219,7 @@ console.log("PASS T46-P2-SIGNED-COMBINED: ORIGINAL #345 Stage3 safe public Profi
 const routeFile="pages/__c34_t46_p2_profile_probe.jsx",routePath=path.join(root,routeFile);
 assert.ok(!fs.existsSync(routePath),"Refuse overwriting production or another probe");
 const pageSource=[
- 'import {useEffect,useState} from "react";',
+ 'import {useEffect,useRef,useState} from "react";',
  'import dynamic from "next/dynamic";',
  'import {supabase} from "../utils/supabaseClient";',
  'import NonMapNpcProfileResearchShell from "../components/c34/NonMapNpcProfileResearchShell";',
@@ -227,6 +227,7 @@ const pageSource=[
  'const ClassPanel=dynamic(()=>import("../components/CharacterClassPanel"),{ssr:false});',
  'export default function T46P2(){',
  ' const [uid,setUid]=useState(null);',
+ ' const priorActor=useRef(null);',
  ' const [authEpoch,setAuthEpoch]=useState(0);',
  ' const [selected,setSelected]=useState("");',
  ' const [classMode,setClassMode]=useState(false);',
@@ -234,8 +235,10 @@ const pageSource=[
  ' useEffect(()=>{',
  '  const {data}=supabase.auth.onAuthStateChange((_event,session)=>{',
  '   const next=session?.user?.id||null;',
+ '   const actorChanged=priorActor.current!==next;',
+ '   priorActor.current=next;',
  '   setUid(next);setAuthEpoch(n=>n+1);',
- '   if(!next){setReceipt(null);setClassMode(false);}',
+ '   if(actorChanged||!next){setReceipt(null);setClassMode(false);}',
  '  });',
  '  window.__t46p2={',
  '   login:async(email,password)=>{const x=await supabase.auth.signInWithPassword({email,password});if(x.error)throw Error(x.error.message);return x.data.user.id;},',
@@ -243,7 +246,7 @@ const pageSource=[
  '   choose:(id)=>{setSelected(id);setReceipt(null);setClassMode(false);return true;},',
  '   class:()=>{setClassMode(true);return true;},',
  '   profile:()=>{setClassMode(false);return true;},',
- '   refresh:()=>{setAuthEpoch(n=>n+1);return true;}',
+ '   refresh:()=>{setReceipt(null);setClassMode(false);setAuthEpoch(n=>n+1);return true;}',
  '  };return()=>{data.subscription.unsubscribe();delete window.__t46p2;};',
  ' },[]);',
  ' return <main data-testid="t46-p2-current-next" className="container py-3">',
@@ -394,7 +397,7 @@ try {
  await op("refresh");
  await page.getByRole("heading",{name:"T46 Arcane Scholar"}).waitFor({timeout:30000});
  // A source-owned can_edit revocation is authoritative even with a valid JWT.
- await page.getByText("Profile unavailable to this session.").waitFor({timeout:30000}).catch(()=>{});
+ await page.getByRole("button",{name:"Print authorized Sheet"}).waitFor({state:"hidden",timeout:30000});
  assert.equal(await page.getByRole("button",{name:"Print authorized Sheet"}).count(),0);
  assert.equal(await page.getByTestId("t46-print-receipt").count(),0);
  console.log("PASS T46-P2-EDITOR-REVOKE: real original class/Sheet/Print under signed coeditor, same-JWT source edit revocation clears authorized Sheet/Print on identity refresh");
