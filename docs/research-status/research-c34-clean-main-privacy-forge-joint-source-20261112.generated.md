@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7c7fd04b7f1e20622344aefa5e8d42098206c4b5` |
+| Exact source commit represented by this archive snapshot | `ea674f553799ef73ac47308c33b781f370c93c19` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): stage T45-P1 original parent signed lifecycle research, release HOLD |
+| Last source commit title | test(c34): correct source-original XP threshold regprocedure signature in T45 preflight |
 | Files changed relative to main | 227 (180 non-docs; 47 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t45-parent-signed-browser.yml`
 - `scripts/integration/c34/test_t45_parent_signed_next_browser.mjs`
-- `scripts/integration/c34/test_t45_parent_signed_source.mjs`
 
 ## Research-branch change inventory versus main
 
