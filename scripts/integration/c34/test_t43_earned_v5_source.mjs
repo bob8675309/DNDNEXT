@@ -58,7 +58,7 @@ test("T43-04 new integration tests call original public v5, no helper proxy",()=
  const signed=read("scripts/integration/c34/test_t43_earned_v5_signed_pg17.mjs");
  for(const token of [
   "DNDNEXT_T43_SOURCE_V5_CONFIRM",
-  'const level=(who,id,choices)=>rpc(who,"complete_character_level_up_v5"',
+  'const level=(actor,id,choices)=>rpc(actor.who,"complete_character_level_up_v5"',
   "PASS T43-ORIGINAL-V5-SORCERER-RED",
   "PASS T43-ORIGINAL-V5-WARLOCK-RED",
   "PASS T43-OPTION-A-SORCERER",

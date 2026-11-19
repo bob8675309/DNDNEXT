@@ -125,7 +125,7 @@ const input=(kind,choice)=>({
 });
 const sorcererInput=input("sorcerer",["quickened-spell","subtle-spell"]);
 const warlockInput=input("warlock",["spell-"+spellId]);
-const level=(who,id,choices)=>rpc(who,"complete_character_level_up_v5",{p_character_id:id,p_selections:choices});
+const level=(actor,id,choices)=>rpc(actor.who,"complete_character_level_up_v5",{p_character_id:id,p_selections:choices});
 const progress=id=>Number(sql("SELECT class_level FROM public.character_progression WHERE character_id="+uuid(id)));
 const canon=id=>sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id="+uuid(id));
 const legacy=who=>sql("SELECT md5(sheet::text) FROM public.players WHERE user_id="+uuid(who.id));
