@@ -5,20 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6400dfedf75cc4df58fd5c07c059b4ab47bc73c1` |
+| Exact source commit represented by this archive snapshot | `68b9179298b146bd666329830613ece8923e5e4c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): signed actual town Bazaar and held NPC Profile-first candidate, disposable only |
-| Files changed relative to main | 272 (217 non-docs; 55 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34): signed P4B town original ACL/roster and real Bazaar/Profile browser handoff |
+| Files changed relative to main | 273 (217 non-docs; 56 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-b-real-town-browser.yml`
-- `scripts/integration/c34/test_t46_p3_p4b_b_real_town_browser_signed.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4B_TOWN_SIGNED_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +73,7 @@
 - `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
 - `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
-- … 222 more
+- … 223 more
 
 ## Trust and update procedure
 
