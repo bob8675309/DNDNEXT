@@ -509,7 +509,7 @@ try{
  guardDenied(await get(actors.GM.who,ids.npc),"same-JWT GM demotion full progression");
  // GM demotion without remount must also block a cached print action even
  // though the old dossier DOM remains visible until the next refresh.
- await page.getByRole("button",{name:"Sheet & Rolls"}).first().click();
+ await page.getByRole("button",{name:"Sheet & Rolls"}).first().click({force:true});
  await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000});
  await page.evaluate(()=>{window.__c34LastActualPrintBlob=null;});
  const demotedPopupPromise=ctx.waitForEvent("page",{timeout:20000});
