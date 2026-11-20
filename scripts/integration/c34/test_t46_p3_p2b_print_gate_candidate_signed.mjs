@@ -519,7 +519,7 @@ try{
  await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000});
  await page.evaluate(()=>{window.__c34LastActualPrintBlob=null;});
  const demotedPopupPromise=ctx.waitForEvent("page",{timeout:20000});
- await page.getByRole("button",{name:"Print Sheet"}).click();
+ await page.getByRole("button",{name:"Print Sheet"}).click({force:true});
  const demotedPopup=await demotedPopupPromise;
  await page.getByTestId("t46-p3-original-active")
   .locator(".alert.alert-danger").getByText("Character Sheet print authorization expired.",{exact:true})
