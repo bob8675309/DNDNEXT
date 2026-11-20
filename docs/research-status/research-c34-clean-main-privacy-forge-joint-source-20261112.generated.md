@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `187bcca6da16ad2e5ba045b492e9c73cf787cda8` |
+| Exact source commit represented by this archive snapshot | `6400dfedf75cc4df58fd5c07c059b4ab47bc73c1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): P4B town-only flag also enforces Profile-first Bazaar, legacy all-off untouched |
-| Files changed relative to main | 270 (215 non-docs; 55 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(C34): signed actual town Bazaar and held NPC Profile-first candidate, disposable only |
+| Files changed relative to main | 272 (217 non-docs; 55 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_b_town_overlay.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-b-real-town-browser.yml`
+- `scripts/integration/c34/test_t46_p3_p4b_b_real_town_browser_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -39,6 +40,7 @@
 - `.github/workflows/validate-c34-t46-p3-p3b-real-npcs-manager-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p4a_combined-npc-profile-print-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-a-town-source-presence.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-b-real-town-browser.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -70,8 +72,7 @@
 - `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
 - `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
-- `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
-- … 220 more
+- … 222 more
 
 ## Trust and update procedure
 
