@@ -222,9 +222,9 @@ const MERCHANT_COLS="id,name,kind,race,role,affiliation,status,state,location_id
 
 const townSource=fs.readFileSync(path.join(root,"pages/town/[id].js"),"utf8");
 const townSheetSource=fs.readFileSync(path.join(root,"components/TownSheet.js"),"utf8");
-assert.equal(gitBlob(townSource),"c66508b798645e189bb900e63bc17b85b8662e10",
+assert.equal(gitBlob(Buffer.from(townSource)),"c66508b798645e189bb900e63bc17b85b8662e10",
  "Original current town route source changed");
-assert.equal(gitBlob(townSheetSource),"5399097e48f548956807cd93476fefe03e4dee28",
+assert.equal(gitBlob(Buffer.from(townSheetSource)),"5399097e48f548956807cd93476fefe03e4dee28",
  "Original Bazaar/Crafters source changed");
 assert.equal(gitBlob(fs.readFileSync(path.join(root,"components/MapPageClient.js"))),
  "61f8738da2ca3d8635b5a413bfdc18c094228a0a",
