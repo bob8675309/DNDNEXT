@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `33e546df6343a17e5f236556db76c52fd09cee29` |
+| Exact source commit represented by this archive snapshot | `565a45a85cf96a5eba63f7da4cfb41186a44c440` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): add signed nonmap admin/gm/dm identity RPC for manager capability |
+| Last source commit title | test(C34): sign-verify global GM/DM/admin identity and same-JWT downgrade |
 | Files changed relative to main | 258 (205 non-docs; 53 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p3_nonmap_manager_roster_pg17.sql`
+- `scripts/integration/c34/test_t46_p3_p3a_roster_authority_signed.mjs`
 
 ## Research-branch change inventory versus main
 
