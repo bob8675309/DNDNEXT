@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c98cbc0a464fe83cd99dbe7849f982c4f6c4d08b` |
+| Exact source commit represented by this archive snapshot | `62506426097abe84e6b9f571df57bd72998942a7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): treat expected revoked Print as normal UI denial, not Next dev runtime error |
-| Files changed relative to main | 254 (202 non-docs; 52 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34): authored signed P3-P2 original PDF leak, Print guard and actual manager cache gates |
+| Files changed relative to main | 255 (202 non-docs; 53 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p2b_print_gate_candidate_signed.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P2_SIGNED_PDF_CACHE_2026-11-19.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +73,7 @@
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
 - `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
 - `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
-- … 204 more
+- … 205 more
 
 ## Trust and update procedure
 
