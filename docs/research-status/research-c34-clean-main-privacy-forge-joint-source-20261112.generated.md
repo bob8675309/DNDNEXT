@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1e8968d597d210f16882b74b1fd77b082fd13c46` |
+| Exact source commit represented by this archive snapshot | `2ac65ab4a1d626bd990705167fab04158c2bce17` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): verify merchant Return to Profile via real profile content and report exact blocker |
-| Files changed relative to main | 265 (211 non-docs; 54 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34): signed P4A complete composite NPC Profile/Print/Intel/merchant acceptance and P4B handoff |
+| Files changed relative to main | 266 (211 non-docs; 55 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4a_real_manager_profile_print_intel_signed.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4A_SIGNED_COMBINED_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +73,7 @@
 - `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
 - `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
-- … 215 more
+- … 216 more
 
 ## Trust and update procedure
 
