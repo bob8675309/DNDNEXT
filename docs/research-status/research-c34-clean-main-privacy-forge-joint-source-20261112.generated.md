@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6fbb38339f0ddf34c04813d06b1048df45cf40f8` |
+| Exact source commit represented by this archive snapshot | `16c62067cd72ea1143cb27ccfceca3741ed2c32a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): source-lock T46-P3 active NPC, Sheet and Print consumer privacy gates |
+| Last source commit title | docs(C34): record exact T46-P3-P0 source preflight and next signed consumer gate |
 | Files changed relative to main | 241 (190 non-docs; 51 docs) |
-| Last source commit | 3 files (2 non-docs; 1 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
-- `docs/research/C34_T46_P3_P0_ACTIVE_CONSUMER_SOURCE_PREFLIGHT_2026-11-19.md`
-- `scripts/integration/c34/test_t46_p3_active_consumer_source.mjs`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
