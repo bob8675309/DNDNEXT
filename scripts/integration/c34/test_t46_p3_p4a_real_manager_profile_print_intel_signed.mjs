@@ -357,10 +357,16 @@ try{
  async function clickActualPdfAndVerify(label,button){
   await page.evaluate(()=>{window.__p4LastPdf=null;});
   await button.waitFor({timeout:55000});
-  await page.waitForFunction(()=>{
-   const b=Array.from(document.querySelectorAll("button")).find(x=>x.textContent?.trim()==="Print Sheet");
-   return !!b&&!b.disabled;
-  },null,{timeout:55000});
+  let enabled=false;
+  for(let i=0;i<100;i++){
+   if(await button.isEnabled()){enabled=true;break;}
+   await sleep(350);
+  }
+  if(!enabled)console.error("T46-P4A PRINT DISABLED",label,
+    (await page.locator(".npc-page-profile-panel-backdrop").count()
+     ?(await page.locator(".npc-page-profile-panel-backdrop").first().innerText()).slice(0,1300)
+     :"<no Profile modal>"),errors.slice(-5));
+  assert.ok(enabled,label+" actual scoped Print Sheet control never enabled");
   const popupPromise=ctx.waitForEvent("page",{timeout:24000});
   await button.click({force:true});
   const popup=await popupPromise;
