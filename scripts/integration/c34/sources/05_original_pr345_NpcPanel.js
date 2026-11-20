@@ -1,0 +1,962 @@
+/* components/NpcPanel.js */
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
+import { supabase } from "../utils/supabaseClient";
+import { resolveCharacterPortrait } from "../utils/characterPortraits";
+import CharacterSheetPanel from "./CharacterSheetPanel";
+import CharacterSheetRollResult from "./CharacterSheetRollResult";
+import CreatorBackstoryPanel from "./CreatorBackstoryPanel";
+import PortraitPickerModal from "./PortraitPickerModal";
+import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
+import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
+import { formatInventoryEquipmentText } from "../utils/characterSheetActions";
+import { buildCharacterSheetFeatures } from "../utils/characterSheetFeatures";
+
+const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
+
+const PROFILE_REVEAL_KEYS = [
+  { key: "description", label: "Description", group: "Overview", hint: "Player-facing first impression and short profile summary.", alwaysPublic: true },
+  { key: "background", label: "Background", group: "Origin & History", hint: "Where they come from; ties; history; why they matter." },
+  { key: "traits", label: "Traits", group: "Personality" },
+  { key: "ideals", label: "Ideals", group: "Personality" },
+  { key: "bonds", label: "Bonds", group: "Personality" },
+  { key: "flaws", label: "Flaws", group: "Personality" },
+  { key: "motivation", label: "Motivation / Want", group: "Quick hooks" },
+  { key: "quirk", label: "Personality / Quirk", group: "Quick hooks" },
+  { key: "mannerism", label: "Mannerism / Voice", group: "Quick hooks" },
+  { key: "secret", label: "Secret", group: "DM-only / Discovery" },
+];
+
+function locName(locations, id) {
+  if (!id) return "";
+  const loc = (locations || []).find((l) => String(l.id) === String(id));
+  return loc?.name || "";
+}
+
+function safeStr(v) {
+  return String(v ?? "").trim();
+}
+
+function deepClone(obj) {
+  try {
+    return structuredClone(obj ?? {});
+  } catch {
+    return JSON.parse(JSON.stringify(obj ?? {}));
+  }
+}
+
+function pickItemName(row) {
+  const payload = row?.card_payload || {};
+  return safeStr(payload.item_name || payload.name || row?.item_name || row?.name || "");
+}
+
+function profileRevealFromSheet(sheet) {
+  const s = sheet && typeof sheet === "object" ? sheet : {};
+  const reveal = s.profileReveal && typeof s.profileReveal === "object" ? s.profileReveal : s.npcProfileReveal;
+  return reveal && typeof reveal === "object" ? reveal : {};
+}
+
+function loreFieldsFor(view, sheet) {
+  const s = sheet && typeof sheet === "object" ? sheet : {};
+  const personality = s.personality && typeof s.personality === "object" ? s.personality : {};
+
+  return {
+    description: safeStr(view?.description || s.description),
+    background: safeStr(view?.background || s.background),
+    traits: safeStr(s.traits ?? personality.traits),
+    ideals: safeStr(s.ideals ?? personality.ideals),
+    bonds: safeStr(s.bonds ?? personality.bonds),
+    flaws: safeStr(s.flaws ?? personality.flaws),
+    motivation: safeStr(view?.motivation || s.motivation),
+    quirk: safeStr(view?.quirk || s.quirk),
+    mannerism: safeStr([view?.mannerism || s.mannerism, view?.voice || s.voice].filter(Boolean).join(" • ")),
+    secret: safeStr(view?.secret || s.secret),
+  };
+}
+
+function ownerTypeFor(view, fallback) {
+  const kind = safeStr(view?.kind || fallback?.kind || fallback?.type || "npc").toLowerCase();
+  return kind === "merchant" ? "merchant" : "npc";
+}
+
+function normalizePanelView(value) {
+  const v = safeStr(value || "profile").toLowerCase();
+  return ["profile", "sheet", "inventory", "shop", "craft"].includes(v) ? v : "profile";
+}
+
+export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, initialView = "profile", interactionView = null, interactionTabs = null, setInteractionView = null, renderInteractionTabs = null, renderCraftView = null, craftProfession = "", hasCraftCapability = false }) {
+  const router = useRouter();
+
+  const [fullNpc, setFullNpc] = useState(null);
+  const [pillIconUrl, setPillIconUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+  const [activeView, setActiveView] = useState(() => normalizePanelView(initialView));
+  const [sheet, setSheet] = useState(null);
+  const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetErr, setSheetErr] = useState("");
+  const [equippedRows, setEquippedRows] = useState([]);
+  const [inventoryRows, setInventoryRows] = useState([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [inventoryErr, setInventoryErr] = useState("");
+  const [spellActions, setSpellActions] = useState([]);
+  const [spellActionsLoading, setSpellActionsLoading] = useState(false);
+  const [sheetFeatures, setSheetFeatures] = useState([]);
+  const [sheetFeaturesLoading, setSheetFeaturesLoading] = useState(false);
+  const [sheetActionBusyKey, setSheetActionBusyKey] = useState("");
+  const [inventoryAccess, setInventoryAccess] = useState({ checked: false, canView: false, canManage: false, canEdit: false });
+  const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);
+  const [transferTargets, setTransferTargets] = useState([]);
+  const [lastRoll, setLastRoll] = useState(null);
+  const [revealBusyKey, setRevealBusyKey] = useState("");
+
+  const npcId = npc?.id || null;
+
+  useEffect(() => {
+    setActiveView(normalizePanelView(initialView));
+  }, [npcId, initialView]);
+
+  const setPanelView = useCallback((nextView) => {
+    const normalized = normalizePanelView(nextView);
+    setActiveView(normalized);
+    if (typeof setInteractionView === "function") setInteractionView(normalized);
+  }, [setInteractionView]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (!npcId) return;
+      setLoading(true);
+      setFullNpc(null);
+      setErr("");
+
+      // The only general NPC read path: player-safe server projection.
+      // GM-only full dossier access is checked inside a separate SQL RPC.
+      // Do not fall back to a raw characters/character_sheets SELECT on error.
+      const { data, error } = await supabase.rpc(
+        isAdmin ? "get_npc_dossier_admin_v1" : "get_npc_profile_visible_v1",
+        { p_character_id: npcId }
+      );
+      if (cancelled) return;
+      if (error || !data) {
+        setErr(error?.message || "This character's Profile is not available to your account.");
+        setFullNpc(null);
+      } else {
+        setFullNpc(data);
+      }
+      setLoading(false);
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [npcId, isAdmin]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function run() {
+      if (!npcId) {
+        setSheet(null);
+        setEquippedRows([]);
+        setInventoryRows([]);
+        setSpellActions([]);
+        setSheetFeatures([]);
+        setLastRoll(null);
+        return;
+      }
+
+      // A public Profile never needs canonical raw sheet JSON. Only GM or
+      // a current can_edit editor may ask for it; SQL RLS remains authoritative.
+      if (!isAdmin && (!inventoryAccess.checked || !inventoryAccess.canEdit)) {
+        setSheet(null);
+        setSheetErr("");
+        setSheetLoading(false);
+        return;
+      }
+
+      setSheetLoading(true);
+      setSheetErr("");
+      setLastRoll(null);
+
+      const sheetRes = await supabase.from("character_sheets").select("sheet").eq("character_id", npcId).maybeSingle();
+
+      if (cancelled) return;
+
+      if (sheetRes.error) {
+        setSheetErr(sheetRes.error.message || "Failed to load character sheet.");
+        setSheet(null);
+      } else {
+        setSheet(sheetRes.data?.sheet || null);
+      }
+
+      setSheetLoading(false);
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [npcId, isAdmin, inventoryAccess.checked, inventoryAccess.canEdit]);
+
+  const ownerType = ownerTypeFor(fullNpc || npc, npc);
+  const isMerchantView = String((fullNpc || npc)?.kind || (fullNpc || npc)?.type || "").toLowerCase() === "merchant";
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function run() {
+      if (!npcId) {
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
+        return;
+      }
+
+      if (isAdmin) {
+        setInventoryAccess({ checked: true, canView: true, canManage: true, canEdit: true });
+        return;
+      }
+
+      if (ownerType !== "npc") {
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
+        return;
+      }
+
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth?.user?.id || null;
+      if (!userId) {
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("character_permissions")
+        .select("can_inventory,can_edit")
+        .eq("character_id", npcId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
+        return;
+      }
+
+      const canInventory = !!data?.can_inventory || !!data?.can_edit;
+      setInventoryAccess({ checked: true, canView: canInventory, canManage: canInventory, canEdit: !!data?.can_edit });
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [npcId, ownerType, isAdmin]);
+
+  const loadInventoryRows = useCallback(async () => {
+    if (!npcId || !inventoryAccess.canView) {
+      setInventoryRows([]);
+      setInventoryLoading(false);
+      return;
+    }
+
+    setInventoryLoading(true);
+    setInventoryErr("");
+
+    const { data, error } = await supabase.rpc("get_character_inventory_v1", {
+      p_character_id: npcId,
+    });
+
+    if (error) {
+      setInventoryErr(error.message || "Failed to load inventory.");
+      setInventoryRows([]);
+    } else {
+      const rows = data || [];
+      setInventoryRows(rows);
+      setEquippedRows(rows.filter((row) => !!row.is_equipped));
+    }
+
+    setInventoryLoading(false);
+  }, [npcId, ownerType, inventoryAccess.canView]);
+
+  useEffect(() => {
+    if (!inventoryAccess.checked) return;
+    loadInventoryRows();
+  }, [inventoryAccess.checked, loadInventoryRows]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSpellActions() {
+      if (!npcId || !inventoryAccess.checked || !inventoryAccess.canView) {
+        setSpellActions([]);
+        setSpellActionsLoading(false);
+        return;
+      }
+
+      setSpellActionsLoading(true);
+      const assignmentResult = await supabase
+        .from("character_spells")
+        .select("id,spell_id,prepared,always_available,casting_stat,save_dc_override,attack_bonus_override,uses_max,uses_remaining,recharge")
+        .eq("character_id", npcId);
+
+      if (cancelled) return;
+      if (assignmentResult.error || !assignmentResult.data?.length) {
+        setSpellActions([]);
+        setSpellActionsLoading(false);
+        return;
+      }
+
+      const spellIds = [...new Set(assignmentResult.data.map((row) => row.spell_id).filter(Boolean))];
+      const catalogResult = await supabase
+        .from("spells_catalog")
+        .select("id,name,level,attack_type,saving_throw_abilities,damage_dice,damage_types,healing_dice,casting_time,range_text,duration_text,description")
+        .in("id", spellIds);
+
+      if (cancelled) return;
+      if (catalogResult.error) {
+        setSpellActions([]);
+      } else {
+        const catalogById = new Map((catalogResult.data || []).map((row) => [String(row.id), row]));
+        setSpellActions(assignmentResult.data.map((row) => ({
+          ...row,
+          spell: catalogById.get(String(row.spell_id)) || null,
+        })).filter((row) => row.spell));
+      }
+      setSpellActionsLoading(false);
+    }
+
+    loadSpellActions();
+    return () => { cancelled = true; };
+  }, [inventoryAccess.canView, inventoryAccess.checked, npcId]);
+
+  const sheetFeatureSignature = useMemo(() => JSON.stringify({
+    classKey: sheet?.classKey || sheet?.meta?.classKey || sheet?.className || sheet?.class || "",
+    classSource: sheet?.classSource || sheet?.meta?.classSource || sheet?.rulesetSource || sheet?.meta?.rulesetSource || "",
+    level: sheet?.level || sheet?.meta?.level || 1,
+    subclass: sheet?.subclass || sheet?.meta?.subclass || "",
+    subclassSource: sheet?.subclassSource || sheet?.meta?.subclassSource || "",
+    species: sheet?.species || sheet?.race || sheet?.meta?.species || "",
+    feats: sheet?.feats || [],
+    speciesTraits: sheet?.speciesTraits || [],
+    classFeatures: sheet?.classFeatures || [],
+    featsTraits: sheet?.featsTraits || "",
+  }), [sheet]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSheetFeatures() {
+      if (!npcId || !sheet) {
+        setSheetFeatures([]);
+        setSheetFeaturesLoading(false);
+        return;
+      }
+
+      setSheetFeaturesLoading(true);
+      const classKey = safeStr(sheet?.classKey || sheet?.meta?.classKey || sheet?.className || sheet?.class)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const speciesName = safeStr(sheet?.species || sheet?.race || sheet?.meta?.species);
+      const classFeaturePromise = classKey
+        ? supabase
+          .from("class_feature_catalog")
+          .select("id,feature_key,feature_type,name,source,class_key,class_name,class_source,subclass_name,subclass_short_name,level,description,raw_payload")
+          .eq("class_key", classKey)
+          .order("level", { ascending: true })
+          .order("name", { ascending: true })
+          .limit(5000)
+        : Promise.resolve({ data: [], error: null });
+      const speciesPromise = speciesName
+        ? supabase
+          .from("character_option_catalog_preferred")
+          .select("id,option_key,option_type,name,source,description,metadata,raw_payload")
+          .eq("option_type", "species")
+          .ilike("name", speciesName)
+          .limit(1)
+          .maybeSingle()
+        : Promise.resolve({ data: null, error: null });
+
+      const [grantResult, progressionResult, classFeatureResult, speciesResult] = await Promise.all([
+        supabase.rpc("get_character_option_grants_v1", { p_character_id: npcId }),
+        supabase.rpc("get_character_progression_v1", { p_character_id: npcId }),
+        classFeaturePromise,
+        speciesPromise,
+      ]);
+      if (cancelled) return;
+
+      setSheetFeatures(buildCharacterSheetFeatures({
+        sheet,
+        grantedOptions: grantResult.error ? [] : grantResult.data || [],
+        progression: progressionResult.error ? null : progressionResult.data?.progression || null,
+        classRow: progressionResult.error ? null : progressionResult.data?.class || null,
+        classFeatureRows: classFeatureResult.error ? [] : classFeatureResult.data || [],
+        speciesOption: speciesResult.error ? null : speciesResult.data || null,
+      }));
+      setSheetFeaturesLoading(false);
+    }
+
+    loadSheetFeatures();
+    return () => { cancelled = true; };
+    // The signature intentionally excludes transient actionState changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [npcId, sheetFeatureSignature]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTransferTargets() {
+      if (!inventoryAccess.checked) {
+        setTransferTargets([]);
+        return;
+      }
+
+      const { data, error } = await supabase.rpc("list_item_send_targets_v1");
+      if (cancelled) return;
+
+      if (error) {
+        console.warn("Failed to load item send targets", error.message || error);
+        setTransferTargets([]);
+        return;
+      }
+
+      setTransferTargets(
+        (data || []).map((row) => ({
+          key: `${row.kind}:${row.id}`,
+          label: row.name || row.id || "Target",
+          group: row.kind === "player" ? "Players" : row.kind === "merchant" ? "Merchants" : "NPCs",
+        }))
+      );
+    }
+
+    loadTransferTargets();
+    return () => {
+      cancelled = true;
+    };
+  }, [inventoryAccess.checked]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      const mapIconId = (fullNpc || npc)?.map_icon_id;
+      if (!mapIconId) {
+        if (!cancelled) setPillIconUrl("");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("map_icons")
+        .select("storage_path, storage_bucket")
+        .eq("id", mapIconId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (error || !data?.storage_path) {
+        setPillIconUrl("");
+        return;
+      }
+
+      const bucket = data.storage_bucket || "map-icons";
+      const url = supabase.storage.from(bucket).getPublicUrl(data.storage_path).data?.publicUrl;
+      setPillIconUrl(url || "");
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [npcId, fullNpc?.map_icon_id, npc?.map_icon_id]);
+
+  const view = fullNpc || npc || {};
+
+  const status = safeStr(view.status).toLowerCase() || "unknown";
+  const role = view.role ? String(view.role) : "";
+  const affiliation = view.affiliation ? String(view.affiliation) : "";
+  const lastSeen = useMemo(
+    () => locName(locations, view.last_known_location_id),
+    [locations, view.last_known_location_id]
+  );
+
+  const subline = useMemo(() => {
+    const parts = [];
+    if (role) parts.push(role);
+    if (affiliation) parts.push(affiliation);
+    if (lastSeen) parts.push(`Last seen: ${lastSeen}`);
+    return parts.join(" • ");
+  }, [role, affiliation, lastSeen]);
+
+  const blurb = safeStr(view.description);
+  const portrait = useMemo(() => resolveCharacterPortrait(view, supabase, { includeDefault: false }), [view]);
+  const canChangePortrait = !!isAdmin || !!inventoryAccess.canEdit;
+  const inventoryEquipmentText = useMemo(() => formatInventoryEquipmentText(inventoryRows), [inventoryRows]);
+  const { effects: equippedEffects, breakdown: equippedBreakdown } = useMemo(() => deriveEquippedItemEffects(equippedRows), [equippedRows]);
+  const effectsKey = useMemo(() => `${npcId || ""}|${hashEquippedRowsForKey(equippedRows)}`, [npcId, equippedRows]);
+  const sheetMetaLine = [view.race, role, affiliation].filter(Boolean).join(" • ");
+
+  const profileReveal = useMemo(() => profileRevealFromSheet(sheet), [sheet]);
+  const loreFields = useMemo(() => {
+    if (isAdmin) return loreFieldsFor(view, sheet);
+    // Non-GM lore is already filtered inside get_npc_profile_visible_v1.
+    // Never derive private descriptions, secrets or reveal flags from raw sheet.
+    const publicLore = view?.lore && typeof view.lore === "object" ? view.lore : {};
+    return {
+      description: safeStr(view?.description),
+      ...Object.fromEntries(PROFILE_REVEAL_KEYS
+        .filter((entry) => entry.key !== "description")
+        .map((entry) => [entry.key, safeStr(publicLore[entry.key])]))
+    };
+  }, [view, sheet, isAdmin]);
+  // Only use the server-authorized public/revealed Profile for non-GMs.
+  // An editor's permission to print a sheet must never promote them to GM
+  // dossier/secret access. The NPC page passes this print metadata explicitly.
+  const printableProfile = {
+    name: safeStr(view.name) || "Character",
+    kind: ownerType,
+    race: safeStr(view.race),
+    role,
+    affiliation,
+    status,
+    description: blurb,
+    background: isAdmin ? safeStr(view.background) : safeStr(loreFields.background),
+    motivation: isAdmin ? safeStr(view.motivation) : safeStr(loreFields.motivation),
+    quirk: isAdmin ? safeStr(view.quirk) : safeStr(loreFields.quirk),
+    mannerism: isAdmin ? safeStr(view.mannerism) : safeStr(loreFields.mannerism),
+    voice: isAdmin ? safeStr(view.voice) : "",
+    secret: isAdmin ? safeStr(view.secret) : "",
+    portraitUrl: portrait.url || "",
+  };
+  const visibleLoreFields = useMemo(() => {
+    return PROFILE_REVEAL_KEYS.filter((entry) => {
+      const value = loreFields[entry.key];
+      if (isAdmin) return true;
+      if (!value) return false;
+      return true; // The server has already selected public/revealed lore.
+    });
+  }, [isAdmin, loreFields, profileReveal]);
+  const filledLoreCount = useMemo(() => PROFILE_REVEAL_KEYS.filter((entry) => !!loreFields[entry.key]).length, [loreFields]);
+
+  function handlePortraitSelected(patch) {
+    if (!patch || typeof patch !== "object") return;
+    setFullNpc((current) => ({ ...(current || view || {}), ...patch }));
+  }
+
+  async function toggleReveal(key) {
+    if (!isAdmin || !npcId || !key || key === "secret") return;
+
+    setRevealBusyKey(key);
+    const nextSheet = deepClone(sheet || {});
+    const nextReveal = {
+      ...profileRevealFromSheet(nextSheet),
+      [key]: !profileReveal[key],
+    };
+    nextSheet.profileReveal = nextReveal;
+
+    const { error } = await supabase
+      .from("character_sheets")
+      .upsert(
+        {
+          character_id: npcId,
+          sheet: nextSheet,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "character_id" }
+      );
+
+    if (error) {
+      alert(error.message || "Failed to update player reveal state.");
+    } else {
+      setSheet(nextSheet);
+    }
+    setRevealBusyKey("");
+  }
+
+  async function toggleEquipped(rowId, nextVal) {
+    if (!inventoryAccess.canManage) return;
+
+    const row = inventoryRows.find((entry) => String(entry.id) === String(rowId));
+    const occupied = new Set(
+      inventoryRows
+        .filter((entry) => entry.is_equipped && String(entry.id) !== String(rowId))
+        .map((entry) => entry.equip_slot)
+        .filter(Boolean)
+    );
+    const patch = {
+      is_equipped: nextVal,
+      equip_slot: nextVal ? (row?.equip_slot || inferEquipmentSlot(row, occupied)) : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase.rpc("set_character_inventory_equipment_v1", {
+      p_character_id: npcId,
+      p_item_id: rowId,
+      p_is_equipped: nextVal,
+      p_equip_slot: patch.equip_slot,
+    });
+    if (error) {
+      alert(error.message || "Failed to update item.");
+      return;
+    }
+    await loadInventoryRows();
+  }
+
+  async function assignEquipSlot(rowId, nextSlot) {
+    if (!inventoryAccess.canManage) return;
+    if (!EQUIPMENT_SLOTS.some((slot) => slot.key === nextSlot)) return;
+
+    const { error } = await supabase.rpc("set_character_inventory_equipment_v1", {
+      p_character_id: npcId,
+      p_item_id: rowId,
+      p_is_equipped: true,
+      p_equip_slot: nextSlot,
+    });
+
+    if (error) {
+      alert(error.message || "Failed to place item.");
+      return;
+    }
+    await loadInventoryRows();
+  }
+
+  const handleSheetActionCommand = useCallback(async (action, operation) => {
+    if (!npcId || action?.kind !== "feature-toggle" || !action?.actionKey) return;
+    setSheetActionBusyKey(action.id);
+    const { data, error } = await supabase.rpc("update_character_sheet_action_state_v1", {
+      p_character_id: npcId,
+      p_action_key: action.actionKey,
+      p_operation: operation,
+    });
+    if (error) {
+      setLastRoll({ label: action.label, summary: `${action.label}: ${error.message || "Could not update this feature."}` });
+      setSheetActionBusyKey("");
+      return;
+    }
+    if (data?.sheet) setSheet(data.sheet);
+    const remaining = Number(data?.usesRemaining ?? data?.uses_remaining);
+    const maximum = Number(data?.usesMax ?? data?.uses_max);
+    const active = Boolean(data?.active);
+    const stateText = operation === "reset" ? "uses reset" : active ? "active" : "ended";
+    setLastRoll({
+      label: action.label,
+      summary: `${action.label}: ${stateText}${Number.isFinite(remaining) && Number.isFinite(maximum) ? ` • ${remaining}/${maximum} uses remaining` : ""}`,
+    });
+    setSheetActionBusyKey("");
+  }, [npcId]);
+
+  function parseTargetKey(key) {
+    const value = safeStr(key);
+    const idx = value.indexOf(":");
+    if (idx <= 0) return null;
+    const type = value.slice(0, idx);
+    const id = value.slice(idx + 1);
+    if (!type || !id) return null;
+    return { type, id };
+  }
+
+  async function transferInventoryItem(rowId, targetKey) {
+    const target = parseTargetKey(targetKey);
+    if (!target) throw new Error("Choose a target.");
+
+    const { error } = await supabase.rpc("transfer_inventory_item_v1", {
+      p_item_id: rowId,
+      p_target_type: target.type,
+      p_target_id: target.id,
+    });
+
+    if (error) throw error;
+    await loadInventoryRows();
+  }
+
+  function renderLoreCard() {
+    return (
+      <div className="npc-card" style={{ gridColumn: "1 / -1", marginTop: 0 }}>
+        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
+          <div>
+            <div className="npc-card-title mb-0">{isAdmin ? "NPC Dossier & Player Reveals" : "Known Lore"}</div>
+            <div className="small text-muted">
+              {isAdmin
+                ? `Admin checklist: ${filledLoreCount}/${PROFILE_REVEAL_KEYS.length} fields filled. Toggle completed fields when players discover them.`
+                : "More details can be uncovered through dialogue, checks, and rumors."}
+            </div>
+          </div>
+        </div>
+
+        {visibleLoreFields.some((entry) => entry.key !== "description") ? (
+          <div className="row g-2">
+            {visibleLoreFields.filter((entry) => entry.key !== "description").map((entry) => {
+              const value = loreFields[entry.key];
+              const hasValue = !!value;
+              const revealed = !!entry.alwaysPublic || !!profileReveal[entry.key];
+              return (
+                <div key={entry.key} className="col-12 col-xl-6">
+                  <div className="p-2 rounded-3" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", minHeight: 92 }}>
+                    <div className="d-flex align-items-start justify-content-between gap-2">
+                      <div className="min-w-0">
+                        {entry.group ? <div className="small text-muted">{entry.group}</div> : null}
+                        <div className="fw-semibold">{entry.label}</div>
+                      </div>
+                      {isAdmin ? (
+                        entry.alwaysPublic ? (
+                          <span className="badge bg-secondary">Public</span>
+                        ) : entry.key === "secret" ? (
+                          <span className="badge bg-secondary" title="Publish a separate, curated clue from NPC Admin; never publish the private GM Secret">
+                            GM-only source
+                          </span>
+                        ) : hasValue ? (
+                          <button
+                            type="button"
+                            className={`btn btn-sm ${revealed ? "btn-success" : "btn-outline-warning"}`}
+                            disabled={revealBusyKey === entry.key}
+                            onClick={() => toggleReveal(entry.key)}
+                            title={revealed ? "Hide this detail from players" : "Reveal this detail to players"}
+                          >
+                            {revealed ? "Visible" : "Reveal"}
+                          </button>
+                        ) : (
+                          <button type="button" className="btn btn-sm btn-outline-secondary" disabled title="Add content before revealing this field">
+                            Needs content
+                          </button>
+                        )
+                      ) : null}
+                    </div>
+                    {entry.hint ? <div className="small text-muted mt-1">{entry.hint}</div> : null}
+                    {hasValue ? (
+                      <div className="npc-text mt-2" style={{ whiteSpace: "pre-wrap" }}>{value}</div>
+                    ) : (
+                      <div className="text-muted fst-italic mt-2">Not filled yet.</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-muted fst-italic">No additional public lore has been revealed yet.</div>
+        )}
+      </div>
+    );
+  }
+
+  function renderShopPanel() {
+    if (!isMerchantView) {
+      return <div className="npc-card"><div className="text-muted">This character does not have a storefront.</div></div>;
+    }
+
+    return (
+      <div className="npc-panel-shop-view">
+        <MerchantPanel merchant={view} isAdmin={isAdmin} locations={locations} showTravelTools={false} onBackToProfile={() => setPanelView("profile")} />
+      </div>
+    );
+  }
+
+  function renderInventoryPanel() {
+    if (!inventoryAccess.checked || inventoryLoading) {
+      return <div className="npc-card"><div className="text-muted">Loading inventory…</div></div>;
+    }
+
+    if (!inventoryAccess.canView) {
+      return <div className="npc-card"><div className="text-warning">You do not have permission to view this inventory.</div></div>;
+    }
+
+    const currentOwnerKey = npcId ? `${ownerType}:${npcId}` : "";
+    const panelTransferTargets = transferTargets.filter((target) => target.key !== currentOwnerKey);
+
+    return (
+      <div className="npc-panel-inventory-workbench">
+        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2 px-1">
+          <div>
+            <div className="fw-semibold">Inventory</div>
+            <div className="small text-muted">Manage this character without leaving the map.</div>
+          </div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={loadInventoryRows} disabled={inventoryLoading}>
+            Refresh
+          </button>
+        </div>
+
+        {inventoryErr ? <div className="alert alert-danger py-2">{inventoryErr}</div> : null}
+
+        <EquipmentDiagram
+          rows={inventoryRows}
+          ownerName={view.name || "Character"}
+          canManage={inventoryAccess.canManage}
+          canTransfer={inventoryAccess.canManage || isAdmin}
+          transferTargets={panelTransferTargets}
+          onTransferItem={transferInventoryItem}
+          onUnequip={(rowId) => toggleEquipped(rowId, false)}
+          onAssignEquipSlot={assignEquipSlot}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="npc-panel-inner">
+      <div className="npc-panel-header">
+        <div className="d-flex align-items-start justify-content-between gap-3">
+          <div className="min-w-0">
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              {pillIconUrl ? (
+                <span
+                  className={`npc-kind-pill kind-${String(view.kind || "npc")}`}
+                  title={String(view.kind || "").toUpperCase()}
+                >
+                  <img
+                    src={pillIconUrl}
+                    alt=""
+                    onError={(e) => {
+                      if (e?.currentTarget) e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </span>
+              ) : null}
+              <h3 className="npc-name m-0 text-truncate">{view.name || "NPC"}</h3>
+              <span className={`badge npc-status badge-${status}`}>{status}</span>
+            </div>
+            {subline ? <div className="npc-subline text-truncate">{subline}</div> : null}
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-wrap justify-content-end flex-shrink-0">
+            {typeof renderInteractionTabs === "function" ? renderInteractionTabs() : (
+              <div className="btn-group btn-group-sm" role="tablist" aria-label="NPC profile views">
+                <button type="button" className={`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setPanelView("profile")}>Profile</button>
+                <button type="button" className={`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setPanelView("sheet")}>Sheet & Rolls</button>
+                <button type="button" className={`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setPanelView("inventory")}>Inventory</button>
+                {isMerchantView ? <button type="button" className={`btn ${activeView === "shop" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setPanelView("shop")}>Shop</button> : null}
+              </div>
+            )}
+
+            {isAdmin ? (
+              <>
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={() => { if (npcId) router.push(`/npcs?focus=npc:${encodeURIComponent(npcId)}`); }}>Open NPC page</button>
+                {typeof onOpenDrawer === "function" ? <button type="button" className="btn btn-sm btn-outline-light" onClick={() => { if (npcId) onOpenDrawer(npcId); }} title="Open Character Drawer">Drawer</button> : null}
+              </>
+            ) : null}
+
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={() => onClose?.()} aria-label="Close" title="Close">✕</button>
+          </div>
+        </div>
+      </div>
+
+      {activeView === "craft" && hasCraftCapability && typeof renderCraftView === "function" ? (
+        <div className="npc-panel-body d-block">
+          {renderCraftView()}
+        </div>
+      ) : activeView === "sheet" ? (
+        <div className="npc-panel-body d-block">
+          <div className="p-2">
+            {sheetLoading ? (
+              <div className="npc-card"><div className="text-muted">Loading character sheet…</div></div>
+            ) : sheetErr ? (
+              <div className="npc-card"><div className="text-danger">{sheetErr}</div></div>
+            ) : sheet ? (
+              <>
+                <CharacterSheetRollResult roll={lastRoll} className="mb-2" />
+                <CharacterSheetPanel
+                  sheet={sheet || {}}
+                  characterName={view.name || "Character"}
+                  metaLine={sheetMetaLine}
+                  printProfile={printableProfile}
+                  inventoryHref=""
+                  inventoryText="Inventory"
+                  storeText="Shop"
+                  onOpenStore={isMerchantView ? () => setPanelView("shop") : null}
+                  editable={false}
+                  canSave={false}
+                  onRoll={setLastRoll}
+                  itemBonuses={equippedEffects}
+                  equipmentOverride={inventoryEquipmentText}
+                  equipmentBreakdown={equippedBreakdown}
+                  effectsKey={effectsKey}
+                  inventoryItems={inventoryRows}
+                  spellActions={spellActions}
+                  featureRows={sheetFeatures}
+                  actionsLoading={!inventoryAccess.checked || inventoryLoading || spellActionsLoading || sheetFeaturesLoading}
+                  onActionCommand={isAdmin || inventoryAccess.canEdit ? handleSheetActionCommand : null}
+                  actionBusyKey={sheetActionBusyKey}
+                />
+              </>
+            ) : (
+              <div className="npc-card"><div className="text-muted">No character sheet has been created for this character yet.</div></div>
+            )}
+          </div>
+        </div>
+      ) : activeView === "inventory" ? (
+        <div className="npc-panel-body d-block">
+          {renderInventoryPanel()}
+        </div>
+      ) : activeView === "shop" ? (
+        <div className="npc-panel-body d-block">
+          {renderShopPanel()}
+        </div>
+      ) : (
+        <div className="npc-panel-body">
+          <div className="npc-left">
+            <div className="npc-card npc-profile-description-card">
+              <div className="npc-card-title">Description</div>
+              <div className="npc-profile-description-with-portrait">
+                <div
+                  className={`npc-profile-description-thumb ${canChangePortrait ? "can-change-portrait" : ""}`}
+                  role={canChangePortrait ? "button" : undefined}
+                  tabIndex={canChangePortrait ? 0 : undefined}
+                  title={canChangePortrait ? "Double-click to change portrait" : undefined}
+                  onDoubleClick={() => canChangePortrait ? setPortraitPickerOpen(true) : null}
+                  onKeyDown={(event) => {
+                    if (!canChangePortrait) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setPortraitPickerOpen(true);
+                    }
+                  }}
+                >
+                  {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
+                </div>
+                <div className="npc-profile-description-text">
+                  {loading && !blurb ? <div className="text-muted">Loading…</div> : err && !blurb ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="npc-right">
+            <div className="npc-card">
+              <div className="npc-card-title">Talk</div>
+              <div className="npc-dialogue">
+                {isMerchantView ? (
+                  <button type="button" className="btn btn-sm btn-warning" onClick={() => setPanelView("shop")}>Let me browse your wares.</button>
+                ) : null}
+                <button type="button" className="btn btn-sm btn-primary" disabled>Ask about rumors</button>
+                <button type="button" className="btn btn-sm btn-primary" disabled>Ask about work</button>
+                <button type="button" className="btn btn-sm btn-primary" disabled>Ask about the area</button>
+              </div>
+              <div className="npc-dialogue-hint text-muted">Dialogue options will be added later.</div>
+            </div>
+
+            <div className="npc-card">
+              <div className="npc-card-title">Details</div>
+              <div className="npc-details">
+                {view.race ? <div><span className="text-muted">Race:</span> {view.race}</div> : null}
+                {role ? <div><span className="text-muted">Role:</span> {role}</div> : null}
+                {affiliation ? <div><span className="text-muted">Affiliation:</span> {affiliation}</div> : null}
+                {lastSeen ? <div><span className="text-muted">Last known:</span> {lastSeen}</div> : null}
+              </div>
+            </div>
+          </div>
+
+          {renderLoreCard()}
+          <CreatorBackstoryPanel key={npcId} characterId={npcId} />
+        </div>
+      )}
+
+      <PortraitPickerModal
+        show={portraitPickerOpen}
+        characterId={npcId}
+        characterName={view.name || "Character"}
+        canEdit={canChangePortrait}
+        currentStoragePath={view.portrait_storage_path || ""}
+        currentUrl={portrait.url || ""}
+        preferredUseCase={view.storefront_enabled || view.kind === "merchant" ? "merchant" : view.kind || ""}
+        onClose={() => setPortraitPickerOpen(false)}
+        onSelected={handlePortraitSelected}
+      />
+    </div>
+  );
+}
