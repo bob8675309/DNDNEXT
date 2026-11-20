@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `343e5592454fa3bd6f1382cd43afe6273692b73d` |
+| Exact source commit represented by this archive snapshot | `b3803972fe83947dc6bc5e5fbeb082519b2d48fc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): signed local original current NPC/Interaction privacy RED on exact Stage1-3 |
-| Files changed relative to main | 243 (192 non-docs; 51 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit title | test(C34): signed actual Interaction with exact held PR345 Profile overlay and same-JWT revoke candidate |
+| Files changed relative to main | 247 (196 non-docs; 51 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,10 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p1-active-npc-red-browser.yml`
-- `scripts/integration/c34/test_t46_p3_p1_active_npc_red_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p1b-exact-pr345-active-browser.yml`
+- `scripts/integration/c34/sources/05_original_pr345_NpcPanel.js`
+- `scripts/integration/c34/sources/06_original_pr345_CreatorBackstoryPanel.js`
+- `scripts/integration/c34/test_t46_p3_p1b_exact_pr345_active_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -32,6 +34,7 @@
 - `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
 - `.github/workflows/validate-c34-t46-p3-p1-active-npc-red-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-p1b-exact-pr345-active-browser.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -71,8 +74,7 @@
 - `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 - `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
 - `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
-- `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
-- … 193 more
+- … 197 more
 
 ## Trust and update procedure
 
