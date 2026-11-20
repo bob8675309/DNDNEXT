@@ -93,7 +93,13 @@ ${legacy}        }
 
 `;
  once(hook,recheck+hook,"focus/role revalidation");
- // The default OFF route still contains the source-original queries.
- if(!source.includes('const merchantSelect = [')||!source.includes('T28_P2_TOWN_SHOP_ENABLED && requestedView === "shop"'))throw Error("Original Bazaar content lost");
+ // A town route opted into the new privacy contract remains Profile-first,
+ // even when legacy T28/T33 research flags are disabled. All flags OFF
+ // still uses the unmodified legacy navigation semantics.
+ const profileFirst='T28_P2_TOWN_SHOP_ENABLED && requestedView === "shop" ? "profile" : requestedView';
+ if(source.split(profileFirst).length!==2)throw Error("Original Bazaar Profile-first source drift");
+ source=source.replace(profileFirst,
+  '(T28_P2_TOWN_SHOP_ENABLED || T46_P4B_TOWN_PRESENCE_ENABLED) && requestedView === "shop" ? "profile" : requestedView');
+ if(!source.includes('const merchantSelect = ['))throw Error("Original Bazaar data source lost");
  return source;
 };
