@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c42824fd3468b710f1885a33f1bef10fe73c20d5` |
+| Exact source commit represented by this archive snapshot | `1e8968d597d210f16882b74b1fd77b082fd13c46` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): scope open/close Profile to actual NpcPanel, excluding persistent Forge shell |
+| Last source commit title | test(C34): verify merchant Return to Profile via real profile content and report exact blocker |
 | Files changed relative to main | 265 (211 non-docs; 54 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
