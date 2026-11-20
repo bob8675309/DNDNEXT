@@ -507,7 +507,9 @@ try{
  await page.getByText(fixtures.npc.secret,{exact:false}).first().waitFor({timeout:55000});
  // Keep the actually authorized private Sheet tab mounted THROUGH the
  // same-JWT role demotion; changing tabs after revocation may itself clear it.
- await page.getByRole("button",{name:"Sheet & Rolls"}).first().click();
+ // Next dev-only portal retains an overlay from the earlier DENIED print;
+ // force a real Playwright user click on the already visible tab.
+ await page.getByRole("button",{name:"Sheet & Rolls"}).first().click({force:true});
  await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:40000});
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(actors.GM.id));
  guardDenied(await get(actors.GM.who,ids.npc),"same-JWT GM demotion full progression");
