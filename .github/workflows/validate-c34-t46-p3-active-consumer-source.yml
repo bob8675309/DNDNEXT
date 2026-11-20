@@ -1,0 +1,36 @@
+name: C34 T46-P3-P0 active NPC consumer source custody (static only)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_active_consumer_source.mjs'
+      - '.github/workflows/validate-c34-t46-p3-active-consumer-source.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_active_consumer_source.mjs'
+      - '.github/workflows/validate-c34-t46-p3-active-consumer-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-custody-npc-privacy-consumers:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact original research source without GitHub credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22 (no npm install and no external or hosted services)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate original current consumer provenance and explicit privacy HOLD
+        run: |
+          node --check scripts/integration/c34/test_t46_p3_active_consumer_source.mjs
+          node --test scripts/integration/c34/test_t46_p3_active_consumer_source.mjs
+          node --test scripts/integration/c34/test_t46_p2_profile_source.mjs
+          node --test scripts/integration/c34/test_t46_progression_visibility_source.mjs
+          echo 'PASS T46-P3-P0 static source custody only; actual panel/Sheet/Print signed cutover NOT accepted; production HOLD'
