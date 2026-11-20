@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6645cf6363c1cb761835227fbb6915e468534f68` |
+| Exact source commit represented by this archive snapshot | `e40b935ab9fb6a33876ddc9097f85401c1df6a5d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): address main Sheet Profile trigger exactly and diagnose real NPC popup mount |
+| Last source commit title | test(C34): target actual NPC modal, not same-named hidden Forge shell |
 | Files changed relative to main | 265 (211 non-docs; 54 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
