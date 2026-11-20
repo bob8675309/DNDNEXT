@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d8f47e255460a9d922d3f0ed42f501423fac9098` |
+| Exact source commit represented by this archive snapshot | `c98cbc0a464fe83cd99dbe7849f982c4f6c4d08b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): issue trusted GM revoked-Print click through disposable Next error portal |
+| Last source commit title | test(C34): treat expected revoked Print as normal UI denial, not Next dev runtime error |
 | Files changed relative to main | 254 (202 non-docs; 52 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
