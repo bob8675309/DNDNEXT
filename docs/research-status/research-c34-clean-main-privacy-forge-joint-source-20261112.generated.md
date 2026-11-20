@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1efc575f2c28527966253327773d5a16233e4f52` |
+| Exact source commit represented by this archive snapshot | `5e5b8546686d3efd9e95f531a0f631cc66877805` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): signed real NPC manager temporary secure roster, lazy Sheet and focus revoke |
+| Last source commit title | test(C34): ensure Node runner starts with its original interpreter line |
 | Files changed relative to main | 261 (208 non-docs; 53 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p3b-real-npcs-manager-browser.yml`
 - `scripts/integration/c34/test_t46_p3_p3b_real_manager_candidate_signed.mjs`
 
 ## Research-branch change inventory versus main
