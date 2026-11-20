@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dc7844be58faa01fb8b62c1e9dd803571ac5263e` |
+| Exact source commit represented by this archive snapshot | `5c56393c20a6d6e2e538d9eb23481cc003957de0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): expose existing MerchantPanel profile-return callback in disposable candidate |
-| Files changed relative to main | 263 (209 non-docs; 54 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(C34): signed real manager plus held NPC Profile, T46 Intel, dual PDF auth, merchant return |
+| Files changed relative to main | 265 (211 non-docs; 54 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4a_composed_overlays.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4a_combined-npc-profile-print-browser.yml`
+- `scripts/integration/c34/test_t46_p3_p4a_real_manager_profile_print_intel_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -37,6 +38,7 @@
 - `.github/workflows/validate-c34-t46-p3-p2c-real-npcs-manager-red-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p3a-roster-authority-signed.yml`
 - `.github/workflows/validate-c34-t46-p3-p3b-real-npcs-manager-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-p4a_combined-npc-profile-print-browser.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -70,8 +72,7 @@
 - `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
 - `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
-- `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
-- … 213 more
+- … 215 more
 
 ## Trust and update procedure
 
