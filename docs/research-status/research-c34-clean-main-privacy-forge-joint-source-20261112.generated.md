@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `06f50de8ca2694b2840aba8144dfe1409e02b733` |
+| Exact source commit represented by this archive snapshot | `33e546df6343a17e5f236556db76c52fd09cee29` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): signed source-staged nonmap NPC roster and actor authority candidate |
+| Last source commit title | research(C34): add signed nonmap admin/gm/dm identity RPC for manager capability |
 | Files changed relative to main | 258 (205 non-docs; 53 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p3a-roster-authority-signed.yml`
 - `scripts/integration/c34/candidates/t46_p3_p3_nonmap_manager_roster_pg17.sql`
-- `scripts/integration/c34/test_t46_p3_p3a_roster_authority_signed.mjs`
 
 ## Research-branch change inventory versus main
 
