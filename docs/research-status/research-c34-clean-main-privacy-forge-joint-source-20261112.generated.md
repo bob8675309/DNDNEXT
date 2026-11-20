@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ec85b4383d128248532705cfbb42eed5b31e0578` |
+| Exact source commit represented by this archive snapshot | `f596898083f1cbf38802c2c0a5b4403d2c70296e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): keep GM's authorized Sheet tab mounted across same-JWT role revocation |
+| Last source commit title | test(C34): keep pre-demotion private Sheet tab open despite disposable Next dev portal |
 | Files changed relative to main | 254 (202 non-docs; 52 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
