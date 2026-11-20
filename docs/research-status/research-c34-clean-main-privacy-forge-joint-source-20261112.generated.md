@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `16c62067cd72ea1143cb27ccfceca3741ed2c32a` |
+| Exact source commit represented by this archive snapshot | `dd89d75bbd5c29ac01b24bd90bec4bc642dfb3b1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): record exact T46-P3-P0 source preflight and next signed consumer gate |
+| Last source commit title | docs(C34): append T46-P3-P0 source and CI evidence receipt |
 | Files changed relative to main | 241 (190 non-docs; 51 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
