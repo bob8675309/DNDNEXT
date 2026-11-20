@@ -75,3 +75,14 @@ export const buildManagerWithGuard = function buildManagerWithGuard(src){
  src=src.replace(bypass,'setProfilePanelInitialView("profile"); setProfilePanelOpen(true);');
  return src;
 };
+
+// Original MerchantPanel accepts onBackToProfile but never renders its control.
+// Preserve every source-original stock/action and add only the missing explicit
+// Profile return when the parent supplies the callback (disposable CI ONLY).
+export function buildMerchantReturnToProfile(src) {
+ const anchor='      headerActions={<>\n';
+ if(src.split(anchor).length!==2)throw Error("Merchant original header action anchor drift");
+ src=src.replace(anchor,anchor+
+  '        {typeof onBackToProfile === "function" ? <button type="button" className="btn btn-sm btn-outline-light" onClick={onBackToProfile}>Return to Profile</button> : null}\n');
+ return src;
+}
