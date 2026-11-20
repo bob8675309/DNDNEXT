@@ -76,4 +76,18 @@ REVOKE ALL ON FUNCTION public.c34_t46_get_npc_manager_authority_v1(uuid)
  FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.c34_t46_get_npc_manager_authority_v1(uuid)
  TO authenticated;
+-- No browser-supplied uid/role is trusted. This replaces the legacy
+-- admin-only UI helper without widening the existing is_admin RPC itself.
+CREATE OR REPLACE FUNCTION public.c34_t46_get_npc_manager_identity_v1()
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $npc_identity$
+SELECT auth.uid() IS NOT NULL AND auth.role()='authenticated'
+  AND private.current_user_is_admin();
+$npc_identity$;
+REVOKE ALL ON FUNCTION public.c34_t46_get_npc_manager_identity_v1()
+ FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.c34_t46_get_npc_manager_identity_v1()
+ TO authenticated;
 COMMIT;
