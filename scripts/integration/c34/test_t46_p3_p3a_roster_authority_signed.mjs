@@ -234,6 +234,7 @@ for(let i=0;i<25;i++){
  await sleep(250);
 }
 const roster=who=>who.rpc("c34_t46_get_npc_manager_roster_v1");
+const identity=who=>who.rpc("c34_t46_get_npc_manager_identity_v1");
 const authority=(who,id)=>who.rpc("c34_t46_get_npc_manager_authority_v1",{p_character_id:id});
 const safeId=s=>(s||[]).map(x=>x.id);
 const checkNoPrivate=(items,label)=>{
@@ -247,6 +248,7 @@ const checkNoPrivate=(items,label)=>{
  assert.ok(!serialized.includes("experience_points"),label+" returned raw XP");
 };
 for(const role of ["GM","ADMIN","DM"]){
+ const ident=await identity(actors[role].who);assert.ifError(ident.error);assert.equal(ident.data,true,role+" missing GM status");
  const res=await roster(actors[role].who);assert.ifError(res.error);
  assert.equal(res.data.length,4,role+" GM roster not complete");
  assert.ok(safeId(res.data).includes(ids.hidden),role+" missing hidden NPC");
@@ -257,6 +259,7 @@ for(const role of ["GM","ADMIN","DM"]){
 }
 console.log("PASS T46-P3-P3A-SIGNED-GM: actual signed admin/gm/dm server-authorized roster includes hidden/private GM metadata, but NEVER canonical Sheet in roster JSON");
 for(const role of ["OUTSIDER","OTHER","EDITOR","VIEWER"]){
+ const ident=await identity(actors[role].who);assert.ifError(ident.error);assert.equal(ident.data,false,role+" promoted");
  const res=await roster(actors[role].who);assert.ifError(res.error);
  assert.equal(res.data.length,3,role+" public roster unexpected size");
  assert.ok(!safeId(res.data).includes(ids.hidden),role+" hidden NPC leak");
@@ -282,6 +285,7 @@ assert.equal(revoked.data?.can_edit,false);
 const editorSheet=await actors.EDITOR.who.from("character_sheets").select("sheet").eq("character_id",ids.npc).maybeSingle();
 assert.ifError(editorSheet.error);assert.equal(editorSheet.data,null,"Editor cannot read private Sheet after revoke");
 sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(actors.GM.id));
+const identityAfter=await identity(actors.GM.who);assert.ifError(identityAfter.error);assert.equal(identityAfter.data,false,"same-JWT downgraded GM identity stale");
 const noLongerGm=await authority(actors.GM.who,ids.npc);assert.ifError(noLongerGm.error);
 assert.equal(noLongerGm.data?.is_gm,false,"GM role downgrade not reflected same JWT");
 assert.equal(noLongerGm.data?.can_edit,false,"GM private Sheet authority survived role downgrade");
