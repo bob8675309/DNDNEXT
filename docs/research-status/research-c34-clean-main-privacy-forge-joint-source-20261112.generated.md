@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5e5b8546686d3efd9e95f531a0f631cc66877805` |
+| Exact source commit represented by this archive snapshot | `e947626346ffbe1fa69f9df5f1b13ade2b7e5dcc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): ensure Node runner starts with its original interpreter line |
-| Files changed relative to main | 261 (208 non-docs; 53 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34): handoff signed T46-P3-P3 roster/lazy Sheet and full-source P4 integration holds |
+| Files changed relative to main | 262 (208 non-docs; 54 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p3b_real_manager_candidate_signed.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P3_SIGNED_MANAGER_RESEARCH_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +73,7 @@
 - `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
-- … 211 more
+- … 212 more
 
 ## Trust and update procedure
 
