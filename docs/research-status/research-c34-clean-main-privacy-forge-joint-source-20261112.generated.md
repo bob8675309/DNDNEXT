@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5c56393c20a6d6e2e538d9eb23481cc003957de0` |
+| Exact source commit represented by this archive snapshot | `6645cf6363c1cb761835227fbb6915e468534f68` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): signed real manager plus held NPC Profile, T46 Intel, dual PDF auth, merchant return |
+| Last source commit title | test(C34): address main Sheet Profile trigger exactly and diagnose real NPC popup mount |
 | Files changed relative to main | 265 (211 non-docs; 54 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4a_combined-npc-profile-print-browser.yml`
 - `scripts/integration/c34/test_t46_p3_p4a_real_manager_profile_print_intel_signed.mjs`
 
 ## Research-branch change inventory versus main
