@@ -61,5 +61,17 @@ export const buildManagerWithGuard = function buildManagerWithGuard(src){
  const target="                    <CharacterSheetPanel\n";
  if(src.split(target).length!==2)throw Error("Current manager Sheet source anchor drift");
  src=src.replace(target,target+'                      freshPrintAuthorizationCharacterId={selected?.id || null}\n');
+ // A player denied the private Sheet still needs access to a sanitized
+ // public Profile. Never weaken RLS to populate the private Sheet instead.
+ const denied='                        <button type="button" className="btn btn-sm btn-outline-light" onClick={retrySelectedSheet}>\n                          Retry sheet\n                        </button>';
+ if(src.split(denied).length!==2)throw Error("Manager denied Sheet navigation drift");
+ src=src.replace(denied,
+  '                        <button type="button" className="btn btn-sm btn-outline-light" onClick={() => {setProfilePanelInitialView("profile");setProfilePanelOpen(true);}}>Open public Profile</button>\n'+
+  '                        {canEditCharacter ? <button type="button" className="btn btn-sm btn-outline-light ms-2" onClick={retrySelectedSheet}>Retry sheet</button> : null}');
+ // No storefront bypasses the NPC Profile. Its original Talk button permits
+ // explicit user navigation to Shop and Back to Profile.
+ const bypass='setProfilePanelInitialView("shop"); setProfilePanelOpen(true);';
+ if(src.split(bypass).length!==2)throw Error("Manager merchant direct Shop navigation drift");
+ src=src.replace(bypass,'setProfilePanelInitialView("profile"); setProfilePanelOpen(true);');
  return src;
 };
