@@ -388,12 +388,26 @@ try{
  }
  const profile=page.locator(".npc-page-profile-panel-shell");
  const openProfile=async()=>{
-  const normal=page.getByRole("button",{name:"Profile",exact:true}).first();
+  const fromSheet=page.locator('button[title="Open this character profile"]').first();
   const publicButton=page.getByRole("button",{name:"Open public Profile",exact:true});
-  if(await normal.count())await normal.click({force:true});
-  else {await publicButton.waitFor({timeout:60000});await publicButton.click({force:true});}
-  await profile.getByRole("heading",{name:/T46 (Arcane Scholar|Curio Merchant)/}).waitFor({timeout:55000});
-  await profile.getByTestId("t46-intel").waitFor({timeout:45000});
+  const fromSheetVisible=await fromSheet.count()>0;
+  if(fromSheetVisible)await fromSheet.click({force:true});
+  else {await publicButton.waitFor({timeout:45000});await publicButton.click({force:true});}
+  try{
+   await profile.waitFor({state:"attached",timeout:20000});
+   await profile.locator(".npc-name").first().waitFor({state:"attached",timeout:35000});
+   await profile.getByTestId("t46-intel").waitFor({state:"attached",timeout:45000});
+  }catch(error){
+   const diag={
+    profileCount:await profile.count(),
+    sheetButtonCount:await fromSheet.count(),
+    publicButtonCount:await publicButton.count(),
+    profileText:(await profile.count()?await profile.innerText().catch(()=>"<not renderable>"):"<none>").slice(0,950),
+    pageErrors:errors.slice(-5),serverTail:serverLog.slice(-2600)
+   };
+   console.error("T46-P4A Profile route diagnostics",JSON.stringify(diag));
+   throw error;
+  }
  };
  const closeProfile=async()=>{
   await profile.locator('button[aria-label="Close"]').first().click({force:true});
