@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d93f72405f53537715b5e714fea695545537dc5b` |
+| Exact source commit represented by this archive snapshot | `6fbb38339f0ddf34c04813d06b1048df45cf40f8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record signed T46-P2 exact original NPC privacy/Next discovery and release HOLD |
-| Files changed relative to main | 238 (188 non-docs; 50 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | research(C34): source-lock T46-P3 active NPC, Sheet and Print consumer privacy gates |
+| Files changed relative to main | 241 (190 non-docs; 51 docs) |
+| Last source commit | 3 files (2 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P2_EXACT_NPC_PRIVACY_CURRENT_NEXT_BROWSER_2026-11-19.md`
+- `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
+- `docs/research/C34_T46_P3_P0_ACTIVE_CONSUMER_SOURCE_PREFLIGHT_2026-11-19.md`
+- `scripts/integration/c34/test_t46_p3_active_consumer_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -31,6 +31,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t45-parent-review-source.yml`
 - `.github/workflows/validate-c34-t45-parent-signed-browser.yml`
 - `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -72,8 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
 - `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
 - `docs/research/C34_T31_OWNER_REVISED_GAME_MASTER_ROLE_EQUIVALENCE_2026-11-16.md`
-- `docs/research/C34_T32_GAME_MASTER_ROLE_CONSUMER_AND_RELEASE_AUDIT_2026-11-16.md`
-- … 188 more
+- … 191 more
 
 ## Trust and update procedure
 
