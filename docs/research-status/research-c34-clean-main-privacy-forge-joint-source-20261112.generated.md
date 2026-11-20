@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `565a45a85cf96a5eba63f7da4cfb41186a44c440` |
+| Exact source commit represented by this archive snapshot | `9c13447d15fd0bbdfacb059eb849de59b28f5cfc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): sign-verify global GM/DM/admin identity and same-JWT downgrade |
-| Files changed relative to main | 258 (205 non-docs; 53 docs) |
+| Last source commit title | research(C34): source-exact disposable NPC manager lazy Sheet and auth-invalidation candidate |
+| Files changed relative to main | 259 (206 non-docs; 53 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p3a_roster_authority_signed.mjs`
+- `scripts/integration/c34/candidates/t46_p3_p3_manager_overlay.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
 - `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
-- … 208 more
+- … 209 more
 
 ## Trust and update procedure
 
