@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0139a45d4ffd037c6a2523e357e874967dda9318` |
+| Exact source commit represented by this archive snapshot | `9a12969265ffa44269e4f8464cf36ae8cabb0c0f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): unmounted composition of held #345 Profile, per-user intel and both Print guards |
+| Last source commit title | research(C34): allow public Profile on private Sheet deny, preserve merchant Profile-first |
 | Files changed relative to main | 263 (209 non-docs; 54 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
