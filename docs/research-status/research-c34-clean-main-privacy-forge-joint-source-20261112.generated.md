@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3204d52d872d9cdc2ba6ab8f1e684dfe5e0c8781` |
+| Exact source commit represented by this archive snapshot | `0df0934b1a831dfcdc90eaaa5d67915145969d1c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): feed exact town source bytes to Git blob fingerprint helper |
-| Files changed relative to main | 269 (214 non-docs; 55 docs) |
+| Last source commit title | research(C34): default-off town-only source-preserving signed presence and role refresh candidate |
+| Files changed relative to main | 270 (215 non-docs; 55 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_a_town_source_presence_signed.mjs`
+- `scripts/integration/c34/candidates/t46_p3_p4b_b_town_overlay.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
 - `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
 - `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
-- … 219 more
+- … 220 more
 
 ## Trust and update procedure
 
