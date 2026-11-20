@@ -489,7 +489,8 @@ try{
  const blockedPopupPromise=ctx.waitForEvent("page",{timeout:20000});
  await page.getByRole("button",{name:"Print Sheet"}).click();
  const blockedPopup=await blockedPopupPromise;
- await page.getByText("Character Sheet print authorization expired.",{exact:false})
+ await page.getByTestId("t46-p3-original-active")
+  .locator(".alert.alert-danger").getByText("Character Sheet print authorization expired.",{exact:true})
   .waitFor({timeout:30000});
  assert.equal(await page.evaluate(()=>window.__c34LastActualPrintBlob?.size||0),0,
   "Revoked editor generated new Sheet PDF despite signed check");
@@ -520,7 +521,8 @@ try{
  const demotedPopupPromise=ctx.waitForEvent("page",{timeout:20000});
  await page.getByRole("button",{name:"Print Sheet"}).click();
  const demotedPopup=await demotedPopupPromise;
- await page.getByText("Character Sheet print authorization expired.",{exact:false})
+ await page.getByTestId("t46-p3-original-active")
+  .locator(".alert.alert-danger").getByText("Character Sheet print authorization expired.",{exact:true})
   .waitFor({timeout:30000});
  assert.equal(await page.evaluate(()=>window.__c34LastActualPrintBlob?.size||0),0,
   "Demoted GM generated new private Sheet PDF after same-JWT role change");
