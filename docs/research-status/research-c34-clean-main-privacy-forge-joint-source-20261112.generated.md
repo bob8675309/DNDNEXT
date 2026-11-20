@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2afd7ff9c125c0890f9bbb763aa4e5536f618392` |
+| Exact source commit represented by this archive snapshot | `ebea9a06d7c11d5877c273bc980f644558ebdee4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): signed source-original town roster/merchant ACL negative and scoped presence RPC |
+| Last source commit title | test(C34): assert default-off town flag without treating undefined as a string |
 | Files changed relative to main | 269 (214 non-docs; 55 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-a-town-source-presence.yml`
-- `scripts/integration/c34/candidates/t46_p3_p4b_town_presence_pg17.sql`
 - `scripts/integration/c34/test_t46_p3_p4b_a_town_source_presence_signed.mjs`
 
 ## Research-branch change inventory versus main
