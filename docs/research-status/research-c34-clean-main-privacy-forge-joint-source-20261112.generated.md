@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0df0934b1a831dfcdc90eaaa5d67915145969d1c` |
+| Exact source commit represented by this archive snapshot | `187bcca6da16ad2e5ba045b492e9c73cf787cda8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): default-off town-only source-preserving signed presence and role refresh candidate |
+| Last source commit title | research(C34): P4B town-only flag also enforces Profile-first Bazaar, legacy all-off untouched |
 | Files changed relative to main | 270 (215 non-docs; 55 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
