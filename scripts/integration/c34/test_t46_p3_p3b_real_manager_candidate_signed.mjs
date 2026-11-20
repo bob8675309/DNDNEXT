@@ -1,5 +1,5 @@
-import {buildSecureManagerCandidate} from "./candidates/t46_p3_p3_manager_overlay.mjs";
 #!/usr/bin/env node
+import {buildSecureManagerCandidate} from "./candidates/t46_p3_p3_manager_overlay.mjs";
 // C34 T46-P3-P3B: source-exact actual /npcs roster & lazy Sheet signed disposable candidate
 // C34 non-map NPC research shell against exact held #345 Stage1/2/3 PRIVACY SQL,
 // combined with source-derived T46 research-only character progression disclosure.
