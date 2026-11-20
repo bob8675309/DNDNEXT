@@ -505,11 +505,14 @@ try{
  console.log("PASS T46-P3-P1B-EDITOR-REVOKE: active original safe parent revalidated after same-JWT can_edit revoke; private Sheet/Print not rendered");
  await logout();await login("GM");await choose(ids.npc);
  await page.getByText(fixtures.npc.secret,{exact:false}).first().waitFor({timeout:55000});
+ // Keep the actually authorized private Sheet tab mounted THROUGH the
+ // same-JWT role demotion; changing tabs after revocation may itself clear it.
+ await page.getByRole("button",{name:"Sheet & Rolls"}).first().click();
+ await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:40000});
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(actors.GM.id));
  guardDenied(await get(actors.GM.who,ids.npc),"same-JWT GM demotion full progression");
  // GM demotion without remount must also block a cached print action even
  // though the old dossier DOM remains visible until the next refresh.
- await page.getByRole("button",{name:"Sheet & Rolls"}).first().click({force:true});
  await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:30000});
  await page.evaluate(()=>{window.__c34LastActualPrintBlob=null;});
  const demotedPopupPromise=ctx.waitForEvent("page",{timeout:20000});
