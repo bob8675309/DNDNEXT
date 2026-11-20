@@ -5,21 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `62506426097abe84e6b9f571df57bd72998942a7` |
+| Exact source commit represented by this archive snapshot | `06f50de8ca2694b2840aba8144dfe1409e02b733` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): authored signed P3-P2 original PDF leak, Print guard and actual manager cache gates |
-| Files changed relative to main | 255 (202 non-docs; 53 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | research(C34): signed source-staged nonmap NPC roster and actor authority candidate |
+| Files changed relative to main | 258 (205 non-docs; 53 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P3_P2_SIGNED_PDF_CACHE_2026-11-19.md`
+- `.github/workflows/validate-c34-t46-p3-p3a-roster-authority-signed.yml`
+- `scripts/integration/c34/candidates/t46_p3_p3_nonmap_manager_roster_pg17.sql`
+- `scripts/integration/c34/test_t46_p3_p3a_roster_authority_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -37,6 +37,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t46-p3-p2a-actual-print-red-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p2b-print-gate-green-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p2c-real-npcs-manager-red-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-p3a-roster-authority-signed.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -72,8 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
 - `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
-- `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
-- … 205 more
+- … 208 more
 
 ## Trust and update procedure
 
