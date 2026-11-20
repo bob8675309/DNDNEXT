@@ -5,19 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dd89d75bbd5c29ac01b24bd90bec4bc642dfb3b1` |
+| Exact source commit represented by this archive snapshot | `343e5592454fa3bd6f1382cd43afe6273692b73d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): append T46-P3-P0 source and CI evidence receipt |
-| Files changed relative to main | 241 (190 non-docs; 51 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(C34): signed local original current NPC/Interaction privacy RED on exact Stage1-3 |
+| Files changed relative to main | 243 (192 non-docs; 51 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `.github/workflows/validate-c34-t46-p3-p1-active-npc-red-browser.yml`
+- `scripts/integration/c34/test_t46_p3_p1_active_npc_red_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -30,6 +31,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t45-parent-signed-browser.yml`
 - `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
+- `.github/workflows/validate-c34-t46-p3-p1-active-npc-red-browser.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -70,8 +72,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
 - `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
 - `docs/research/C34_T30_TOWN_ROLE_STAGE2_SAFE_PROFILE_2026-11-16.md`
-- `docs/research/C34_T31_OWNER_REVISED_GAME_MASTER_ROLE_EQUIVALENCE_2026-11-16.md`
-- … 191 more
+- … 193 more
 
 ## Trust and update procedure
 
