@@ -5,21 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2ac65ab4a1d626bd990705167fab04158c2bce17` |
+| Exact source commit represented by this archive snapshot | `2afd7ff9c125c0890f9bbb763aa4e5536f618392` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): signed P4A complete composite NPC Profile/Print/Intel/merchant acceptance and P4B handoff |
-| Files changed relative to main | 266 (211 non-docs; 55 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | research(C34): signed source-original town roster/merchant ACL negative and scoped presence RPC |
+| Files changed relative to main | 269 (214 non-docs; 55 docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P3_P4A_SIGNED_COMBINED_2026-11-20.md`
+- `.github/workflows/validate-c34-t46-p3-p4b-a-town-source-presence.yml`
+- `scripts/integration/c34/candidates/t46_p3_p4b_town_presence_pg17.sql`
+- `scripts/integration/c34/test_t46_p3_p4b_a_town_source_presence_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -40,6 +40,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t46-p3-p3a-roster-authority-signed.yml`
 - `.github/workflows/validate-c34-t46-p3-p3b-real-npcs-manager-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p4a_combined-npc-profile-print-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-a-town-source-presence.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -72,8 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
 - `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
 - `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
-- `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
-- … 216 more
+- … 219 more
 
 ## Trust and update procedure
 
