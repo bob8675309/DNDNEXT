@@ -423,6 +423,13 @@ try{
  assert.equal(guardedSheet.split(beforeObjectUrl).length,2,"Original final PDF exposure drift");
  guardedSheet=guardedSheet.replace(beforeObjectUrl,
   '      const pdfBytes = await buildOfficialCharacterSheetPdf({ model });\n      await recheckServerPrintPermission();\n      const blob = new Blob(');
+ // An expected, user-visible 42501 denial is not a runtime error; logging it
+ // through Next dev's console.error handler installs a portal that intercepts
+ // subsequent click tests. Preserve logging for every unexpected PDF error.
+ const originalLog='      console.error("Printable official character sheet failed", error);';
+ assert.equal(guardedSheet.split(originalLog).length,2,"Original PDF error logging drift");
+ guardedSheet=guardedSheet.replace(originalLog,
+  '      if (error?.message !== "Character Sheet print authorization expired.") console.error("Printable official character sheet failed", error);');
  fs.writeFileSync(currentSheetPanelPath,guardedSheet);
  sheetGuardApplied=true;
  // This is only an additive per-actor action guard; it does NOT fix the
@@ -508,9 +515,10 @@ try{
  await page.getByText(fixtures.npc.secret,{exact:false}).first().waitFor({timeout:55000});
  // Keep the actually authorized private Sheet tab mounted THROUGH the
  // same-JWT role demotion; changing tabs after revocation may itself clear it.
- // Next dev-only portal retains an overlay from the earlier DENIED print;
- // force a real Playwright user click on the already visible tab.
- await page.getByRole("button",{name:"Sheet & Rolls"}).first().click({force:true});
+ // Clear any disposable Next dev-only error portal left by the earlier
+ // exact-source hot swap; never touch application elements or overlays.
+ await page.evaluate(()=>document.querySelectorAll("nextjs-portal").forEach(e=>e.remove()));
+ await page.getByRole("button",{name:"Sheet & Rolls"}).first().click();
  await page.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:40000});
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(actors.GM.id));
  guardDenied(await get(actors.GM.who,ids.npc),"same-JWT GM demotion full progression");
