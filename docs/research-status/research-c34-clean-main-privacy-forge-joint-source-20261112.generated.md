@@ -5,21 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `453bbcffc1482c3fa200057922d5acc407d4bc3a` |
+| Exact source commit represented by this archive snapshot | `0807ff4afef06cee20fb88747603680e9ab6bf15` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): record signed original current NPC RED to exact held PR345 candidate GREEN and P3-P2 gate |
-| Files changed relative to main | 248 (196 non-docs; 52 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(C34): signed clicked 3-page original Sheet PDF and same-JWT revoked-print negative |
+| Files changed relative to main | 250 (198 non-docs; 52 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P3_P1_ACTIVE_NPC_SIGNED_2026-11-19.md`
+- `.github/workflows/validate-c34-t46-p3-p2a-actual-print-red-browser.yml`
+- `scripts/integration/c34/test_t46_p3_p2a_actual_print_revoke_red_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -34,6 +33,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
 - `.github/workflows/validate-c34-t46-p3-p1-active-npc-red-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p1b-exact-pr345-active-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-p2a-actual-print-red-browser.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -72,8 +72,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
 - `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 - `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
-- `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
-- … 198 more
+- … 200 more
 
 ## Trust and update procedure
 
