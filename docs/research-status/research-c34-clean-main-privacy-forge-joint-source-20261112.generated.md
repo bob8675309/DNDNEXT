@@ -5,21 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e947626346ffbe1fa69f9df5f1b13ade2b7e5dcc` |
+| Exact source commit represented by this archive snapshot | `0139a45d4ffd037c6a2523e357e874967dda9318` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): handoff signed T46-P3-P3 roster/lazy Sheet and full-source P4 integration holds |
-| Files changed relative to main | 262 (208 non-docs; 54 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | research(C34): unmounted composition of held #345 Profile, per-user intel and both Print guards |
+| Files changed relative to main | 263 (209 non-docs; 54 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P3_P3_SIGNED_MANAGER_RESEARCH_2026-11-20.md`
+- `scripts/integration/c34/candidates/t46_p3_p4a_composed_overlays.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
-- … 212 more
+- … 213 more
 
 ## Trust and update procedure
 
