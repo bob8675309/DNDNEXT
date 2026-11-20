@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9c13447d15fd0bbdfacb059eb849de59b28f5cfc` |
+| Exact source commit represented by this archive snapshot | `1efc575f2c28527966253327773d5a16233e4f52` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): source-exact disposable NPC manager lazy Sheet and auth-invalidation candidate |
-| Files changed relative to main | 259 (206 non-docs; 53 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | test(C34): signed real NPC manager temporary secure roster, lazy Sheet and focus revoke |
+| Files changed relative to main | 261 (208 non-docs; 53 docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p3_manager_overlay.mjs`
+- `.github/workflows/validate-c34-t46-p3-p3b-real-npcs-manager-browser.yml`
+- `scripts/integration/c34/test_t46_p3_p3b_real_manager_candidate_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -36,6 +37,7 @@
 - `.github/workflows/validate-c34-t46-p3-p2b-print-gate-green-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p2c-real-npcs-manager-red-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p3a-roster-authority-signed.yml`
+- `.github/workflows/validate-c34-t46-p3-p3b-real-npcs-manager-browser.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -70,8 +72,7 @@
 - `docs/research/C34_T25_DERIVED_CURRENT_MANAGER_SOURCE_AND_BROWSER_2026-11-14.md`
 - `docs/research/C34_T26_CURRENT_MERCHANT_SHOP_SIGNED_RACES_2026-11-15.md`
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
-- `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
-- … 209 more
+- … 211 more
 
 ## Trust and update procedure
 
