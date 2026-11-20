@@ -509,8 +509,23 @@ try{
  await openProfile();
  await profile.getByRole("button",{name:"Let me browse your wares."}).click({force:true});
  await profile.getByRole("button",{name:"Return to Profile"}).waitFor({timeout:50000});
- await profile.getByRole("button",{name:"Return to Profile"}).click({force:true});
- await profile.getByTestId("t46-intel").waitFor({timeout:40000});
+ // Next dev can retain an unrelated error portal over the merchant header;
+ // remove only that disposable dev overlay, never the application UI.
+ await page.evaluate(()=>document.querySelectorAll("nextjs-portal").forEach(x=>x.remove()));
+ await profile.getByRole("button",{name:"Return to Profile"}).click();
+ try{
+  await profile.locator(".npc-profile-description-card").waitFor({state:"visible",timeout:12000});
+  await profile.getByTestId("t46-intel").waitFor({state:"attached",timeout:12000});
+ }catch(error){
+  console.error("P4A MERCHANT RETURN DIAGNOSTIC",JSON.stringify({
+   profileText:(await profile.innerText().catch(()=>"<not renderable>")).slice(0,1400),
+   returnButtons:await profile.getByRole("button",{name:"Return to Profile"}).count(),
+   profileTab:await profile.getByRole("button",{name:"Profile",exact:true}).count(),
+   intel:await profile.getByTestId("t46-intel").count(),
+   errors:errors.slice(-5)
+  }));
+  throw error;
+ }
  assert.ok((await profile.innerText()).includes("T46 Curio Merchant"));
  assert.ok(!(await profile.innerText()).includes(fixtures.npc.secret));
  await closeProfile();
