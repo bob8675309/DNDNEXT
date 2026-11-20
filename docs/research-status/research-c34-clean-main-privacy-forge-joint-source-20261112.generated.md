@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9a12969265ffa44269e4f8464cf36ae8cabb0c0f` |
+| Exact source commit represented by this archive snapshot | `dc7844be58faa01fb8b62c1e9dd803571ac5263e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(C34): allow public Profile on private Sheet deny, preserve merchant Profile-first |
+| Last source commit title | research(C34): expose existing MerchantPanel profile-return callback in disposable candidate |
 | Files changed relative to main | 263 (209 non-docs; 54 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
