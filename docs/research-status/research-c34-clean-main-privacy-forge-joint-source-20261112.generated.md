@@ -5,22 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b3803972fe83947dc6bc5e5fbeb082519b2d48fc` |
+| Exact source commit represented by this archive snapshot | `453bbcffc1482c3fa200057922d5acc407d4bc3a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): signed actual Interaction with exact held PR345 Profile overlay and same-JWT revoke candidate |
-| Files changed relative to main | 247 (196 non-docs; 51 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34): record signed original current NPC RED to exact held PR345 candidate GREEN and P3-P2 gate |
+| Files changed relative to main | 248 (196 non-docs; 52 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p1b-exact-pr345-active-browser.yml`
-- `scripts/integration/c34/sources/05_original_pr345_NpcPanel.js`
-- `scripts/integration/c34/sources/06_original_pr345_CreatorBackstoryPanel.js`
-- `scripts/integration/c34/test_t46_p3_p1b_exact_pr345_active_signed.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P1_ACTIVE_NPC_SIGNED_2026-11-19.md`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +73,7 @@
 - `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
 - `docs/research/C34_T28_P2_TOWN_ROLE_INVENTORY_ROLLBACK_REVIEW_2026-11-15.md`
 - `docs/research/C34_T29_OWNER_APPROVED_COMMERCE_ROLE_CONTRACT_2026-11-15.md`
-- … 197 more
+- … 198 more
 
 ## Trust and update procedure
 
