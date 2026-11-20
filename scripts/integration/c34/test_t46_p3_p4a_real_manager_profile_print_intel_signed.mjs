@@ -386,7 +386,7 @@ try{
   await popup.close().catch(()=>{});
   console.log("PASS "+label+": same JWT authorized viewer downgraded, NEW PDF blocked with panel still open");
  }
- const profile=page.locator(".npc-page-profile-panel-shell");
+ const profile=page.locator(".npc-page-profile-panel-backdrop > .npc-page-profile-panel-shell").first();
  const openProfile=async()=>{
   const fromSheet=page.locator('button[title="Open this character profile"]').first();
   const publicButton=page.getByRole("button",{name:"Open public Profile",exact:true});
