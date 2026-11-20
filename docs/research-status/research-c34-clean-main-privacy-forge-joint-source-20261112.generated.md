@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `33ecc2fc853d183b4fe1b18c7cd26d5c0fa3bd62` |
+| Exact source commit represented by this archive snapshot | `e14eddd47e06b01d0f9de4cf84fb18987da14412` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): signed cached-sheet Print action server revalidation candidate for revoked editor/GM |
-| Files changed relative to main | 252 (200 non-docs; 52 docs) |
+| Last source commit title | test(C34): signed actual NPC manager raw bulk Sheet preload and same-JWT role negative |
+| Files changed relative to main | 254 (202 non-docs; 52 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,8 +17,8 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p2b-print-gate-green-browser.yml`
-- `scripts/integration/c34/test_t46_p3_p2b_print_gate_candidate_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p2c-real-npcs-manager-red-browser.yml`
+- `scripts/integration/c34/test_t46_p3_p2c_real_npcs_manager_bulk_sheet_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -35,6 +35,7 @@
 - `.github/workflows/validate-c34-t46-p3-p1b-exact-pr345-active-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p2a-actual-print-red-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p2b-print-gate-green-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-p2c-real-npcs-manager-red-browser.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -71,8 +72,7 @@
 - `docs/research/C34_T27_SHARED_PROFILE_SHOP_STOCK_WALLET_CONSUMER_MATRIX_2026-11-15.md`
 - `docs/research/C34_T28_NONMAP_LATE_STOCK_WALLET_EPOCH_CANDIDATE_2026-11-15.md`
 - `docs/research/C34_T28_P1_GENUINE_PERSISTENT_STOCK_WALLET_SIGNED_BROWSER_2026-11-15.md`
-- `docs/research/C34_T28_P2_SELECTED_WALLET_STOCK_GUARD_SOURCE_2026-11-15.md`
-- … 202 more
+- … 204 more
 
 ## Trust and update procedure
 
