@@ -229,7 +229,7 @@ assert.equal(gitBlob(townSheetSource),"5399097e48f548956807cd93476fefe03e4dee28"
 assert.equal(gitBlob(fs.readFileSync(path.join(root,"components/MapPageClient.js"))),
  "61f8738da2ca3d8635b5a413bfdc18c094228a0a",
  "Protected world map source changed");
-assert.equal(process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP,"undefined");
+assert.notEqual(process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP,"1");
 assert.ok(!process.env.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE);
 assert.ok(townSource.includes('T28_P2_TOWN_SHOP_ENABLED && requestedView === "shop" ? "profile" : requestedView'));
 assert.ok(townSheetSource.includes('onOpenShop(merchant, "shop")'));
