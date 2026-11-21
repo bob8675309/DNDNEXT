@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `32f40feb8b8107412b73a7f81a6ad65fa7e53599` |
+| Exact source commit represented by this archive snapshot | `139e27dcc3f7e20cf16001ec14d9caafd24ad58a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record owner rule merchants sell while moving, preserve map roster and guard, camping separate |
+| Last source commit title | docs(c34): append owner moving merchant sale policy, scope and required signed travel regression |
 | Files changed relative to main | 303 (239 non-docs; 64 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
