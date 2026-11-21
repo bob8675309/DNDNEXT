@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `26e289f2ea7a16932b14df7568cb9bc0f227bb50` |
+| Exact source commit represented by this archive snapshot | `2329f037788d3e01e74b90ae683a43229e25d574` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: disambiguate original public.is_admin() vs is_admin(uuid) source overloads |
+| Last source commit title | C34 B14-P1: preserve C33 scratch is_admin(uuid) default while testing exact historical role body |
 | Files changed relative to main | 334 (260 non-docs; 74 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
