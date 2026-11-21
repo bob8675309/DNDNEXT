@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8db5617a9b1e20aca5f67001e50589dbca42ff88` |
+| Exact source commit represented by this archive snapshot | `277d7dbb732aba83a3d8d24163b30c01fde9c256` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): match exact source-original multiline NPC-kind condition in consent bypass RED audit |
-| Files changed relative to main | 362 (279 non-docs; 83 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record accepted source-only NPC consent bypass RED crosswalk and safe versioned dispatcher design without runtime edits |
+| Files changed relative to main | 363 (279 non-docs; 84 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs`
+- `docs/research/C34_B14_P8_NPC_CONSENT_CUTOVER_SOURCE_RED_AND_ROUTING_PLAN_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -66,12 +66,12 @@
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
 - `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
+- `docs/research/C34_B14_P8_NPC_CONSENT_CUTOVER_SOURCE_RED_AND_ROUTING_PLAN_2026-11-21.md`
 - `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
 - `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
-- `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
-- … 312 more
+- … 313 more
 
 ## Trust and update procedure
 
