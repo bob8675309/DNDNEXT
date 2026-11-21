@@ -5,28 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ffeda187bcfafb92529cea5aea32c9f4dea5563b` |
+| Exact source commit represented by this archive snapshot | `613d41cc882cd920ea954b69e1cee125a42198d0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): signed slim NPC context and lazy P7 gear adapter, preserve P8 release hold |
+| Last source commit title | test(c34): validate executable P9 SQL only and accept P7 persisted worn gear |
 | Files changed relative to main | 368 (283 non-docs; 85 docs) |
-| Last source commit | 10 files (7 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P9_SLIM_NPC_CONTEXT_LAZY_BACKPACK_RESEARCH_2026-11-21.md`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_slim_npc_context_pg17.sql`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs`
 - `scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs`
 
 ## Research-branch change inventory versus main
 
