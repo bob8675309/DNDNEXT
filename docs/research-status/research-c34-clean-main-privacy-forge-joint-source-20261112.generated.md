@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8e7021cb3912133104e1d3bd2f2e4ba7cf904ed0` |
+| Exact source commit represented by this archive snapshot | `dff9eb3169064530c1aca011ce883d5e51916700` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): signed B10 manual add remove dump and bulk future-tech source rollback tests |
+| Last source commit title | ci(c34): run B10 signed seller stock manual/bulk source tests |
 | Files changed relative to main | 314 (247 non-docs; 67 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b10_stock_writers_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
