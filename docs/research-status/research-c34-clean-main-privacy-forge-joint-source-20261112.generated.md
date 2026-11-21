@@ -5,20 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fd66fb068252d633d3b0156fae7d1ad38a71db1b` |
+| Exact source commit represented by this archive snapshot | `31c36e9f3d8c177680287c4a0f855ba71fd7f62e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): hand off proposed tiered NPC interaction and encounter-only spell control RFC before inventory UI cutover |
-| Files changed relative to main | 351 (270 non-docs; 81 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | research(c34): stage additive P6 NPC tier flags and pending-offer/GM-consent versus explicit companion auto-accept SQL |
+| Files changed relative to main | 352 (271 non-docs; 81 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p6_npc_capabilities_and_offers_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
-- … 301 more
+- … 302 more
 
 ## Trust and update procedure
 
