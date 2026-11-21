@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c05e51880578e61b4729a4e789eca89ae1e238e3` |
+| Exact source commit represented by this archive snapshot | `334b14f6d0c85f5d9e88549ee4157a42770e1717` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B12: signed local Next B8 quantity and B9 reroll held-response actor/merchant races |
+| Last source commit title | C34 C2-B12: require source syntax and signed B8/B9 race suite in PG17 CI |
 | Files changed relative to main | 325 (255 non-docs; 70 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b12_qty_reroll_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
