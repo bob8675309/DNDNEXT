@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dc2c7ade1015371a37b2e1c18cfbd4dede62c488` |
+| Exact source commit represented by this archive snapshot | `53ed027adab7b56acc3e1d7beffe627f093a51c0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: append signed fixture failures, agents OFF and independent CI Issue389 accepted research |
+| Last source commit title | C34 B14-P1: assert new signed actor, not intentionally logged-out inherited B2–B12 outsider |
 | Files changed relative to main | 335 (260 non-docs; 75 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_inventory_roles_signed.mjs`
 
 ## Research-branch change inventory versus main
 
