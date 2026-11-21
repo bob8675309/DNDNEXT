@@ -5,21 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5ccabc9d23b8d61609bafb53e8486be13faa6e1c` |
+| Exact source commit represented by this archive snapshot | `e1839e0a9ff123fa56f119a564f72284a4814bb1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): guard P7 item→NPC lock order against P6 offer deadlock; signed distinct-item same-slot race |
-| Files changed relative to main | 361 (278 non-docs; 83 docs) |
-| Last source commit | 3 files (2 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): source-lock NPC offer consent bypass crosswalk as explicit expected legacy/P2/page RED gates |
+| Files changed relative to main | 362 (279 non-docs; 83 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_page_and_equipment_pg17.sql`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
-- … 311 more
+- … 312 more
 
 ## Trust and update procedure
 
