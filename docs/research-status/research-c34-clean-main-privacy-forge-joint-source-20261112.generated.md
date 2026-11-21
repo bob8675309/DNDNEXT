@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `04134cba7149052a3b92e1c33a914458903b438c` |
+| Exact source commit represented by this archive snapshot | `85c34237779a90a833dc456b7db77a323af68112` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: add both-merchant source-locked static and negative regression tests |
+| Last source commit title | C34 B11: remove old reroll fallback before unambiguous atomic stock source substitution |
 | Files changed relative to main | 317 (249 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs`
 
 ## Research-branch change inventory versus main
 
