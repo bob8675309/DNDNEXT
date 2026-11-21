@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0723fcbd2cf1fb5c75d50ebf48a2ac8cbb873383` |
+| Exact source commit represented by this archive snapshot | `a86a292d6c7a67ec6fb405096fe02e9519b906c5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: promote genuine six-user original RLS/transfer signed PASS and hold release |
+| Last source commit title | C34 B14-P1: append 92K genuine signed role/transfer PASS, historical failures, independent CI success and one next |
 | Files changed relative to main | 335 (260 non-docs; 75 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
