@@ -85,7 +85,19 @@ export async function runC34C2B14InventoryRolesSigned({
  sql("GRANT USAGE ON SCHEMA private TO authenticated");
  sql(roleFns[0]);
  sql(roleFns[1]);
- sql(uuidFn);
+ // Earlier C33 signed privacy fixture defines is_admin(uid uuid DEFAULT NULL),
+ // whereas June's exact original body omits the default. PostgreSQL refuses
+ // CREATE OR REPLACE when doing so would REMOVE the existing argument default.
+ // Preserve the earlier fixture's default only in scratch, keeping all of the
+ // exact checked-in original body/role predicates unchanged.
+ assert.equal(sql("SELECT pg_get_function_arguments('public.is_admin(uuid)'::regprocedure) ILIKE '%DEFAULT%'"),"t",
+  "B14 scratch preflight expected original C33 is_admin(uid) default");
+ const oldSignature="public.is_admin(uid uuid)";
+ assert.equal(uuidFn.split(oldSignature).length,2,"B14 UUID source signature drift");
+ const compatibleUuidFn=uuidFn.replace(oldSignature,
+  "public.is_admin(uid uuid DEFAULT NULL)");
+ assert.ok(compatibleUuidFn.includes("RETURN COALESCE(target_role, 'player') <> 'player'"));
+ sql(compatibleUuidFn);
  // The old RLS policies are first dropped ONLY in this disposable fixture.
  // No production or original code is modified; B2–B12 has already passed.
  sql("DO $b14$ DECLARE p record; BEGIN FOR p IN SELECT policyname FROM pg_policies "+
