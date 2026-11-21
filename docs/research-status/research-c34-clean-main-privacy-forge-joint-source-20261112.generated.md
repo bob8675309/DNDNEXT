@@ -5,19 +5,24 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `951ce2ad6dffbd8b68606c7a403b4d25e6d87e23` |
+| Exact source commit represented by this archive snapshot | `ccc6fd3f61f097ac33bb1ec4097a3f54f6c5e415` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): P10 signed Chromium uses fresh disposable Next server after B4 stops old origin |
-| Files changed relative to main | 372 (286 non-docs; 86 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(c34): type-safe no-fallback P8 transfer intent client, preserve original RED |
+| Files changed relative to main | 375 (288 non-docs; 87 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P8_TYPED_INTENT_CLIENT_CONTRACT_SOURCE_ONLY_2026-11-21.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -69,9 +74,9 @@
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
 - `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
 - `docs/research/C34_B14_P8_NPC_CONSENT_CUTOVER_SOURCE_RED_AND_ROUTING_PLAN_2026-11-21.md`
+- `docs/research/C34_B14_P8_TYPED_INTENT_CLIENT_CONTRACT_SOURCE_ONLY_2026-11-21.md`
 - `docs/research/C34_B14_P9_SLIM_NPC_CONTEXT_LAZY_BACKPACK_RESEARCH_2026-11-21.md`
-- `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
-- … 322 more
+- … 325 more
 
 ## Trust and update procedure
 
