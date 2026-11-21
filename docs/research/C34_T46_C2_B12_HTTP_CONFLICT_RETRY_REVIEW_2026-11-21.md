@@ -1,0 +1,25 @@
+# C34 C2-B12 — PostgREST stale-CAS conflict and automatic retry release review
+
+**2026-11-21 CST. Design review ONLY. No SQL applied. No runtime client upgrade. No hosted Supabase query, grant, deployment, release, or PR merge.** Draft PR #379 is held; exact full B12 signed browser result remains a separate acceptance gate.
+
+## Observed source truth
+
+1. The **accepted disposable B8/B10 server candidates** raise PostgreSQL SQLSTATE `40001` on a stale quantity, whole-row or whole-shelf snapshot. Signed local PostgREST returned JSON error `{"code":"40001",...}` and **HTTP 500**, which was verified in B11 run [#44887345533](https://github.com/bob8675309/DNDNEXT/actions/runs/44887345533). This is not proof of the unknown installed hosted function body.
+2. The official Supabase [PostgREST error-code guide](https://supabase.com/docs/guides/api/rest/postgrest-error-codes) maps database `40*` (transaction rollback) to **HTTP 500**, authenticated `42501` to HTTP 403 and `PGRST202` missing RPC to HTTP 404. The signed local C34 tests validate the first two mappings and deliberately simulate PGRST202.
+3. Actual connected GitHub branch `package-lock.json` Git blob `5eebe9b6be13f233a7d8c6311ed6e55aec57fa7a` locks **`@supabase/supabase-js@2.84.0`** and **`@supabase/postgrest-js@2.84.0`** (Next `16.1.6`). This is the pinned current app, not the latest public SDK.
+4. The current Supabase guide [Automatic retries with supabase-js](https://supabase.com/docs/guides/api/automatic-retries-in-supabase-js) describes automatic PostgREST retries starting **supabase-js 2.102.0**, **enabled by default**, for HTTP **408, 409, 503, 504** and network failures, **including POST requests to PostgREST RPCs**, with jitter/backoff. This guide warns about exhausting connection pools with overly aggressive retries. **Do not infer that this default exists in the currently pinned 2.84.0 client.**
+5. Consequently, a naïve `RAISE ... ERRCODE='PT409'` to change a stale-CAS error to HTTP409 **may trigger automatic duplicate RPC attempts after a future SDK upgrade**. This is especially sensitive for manual add, quantity delta, and randomly generated rerolls. Do not change B8/B10 SQLSTATE40001/HTTP500 or existing accepted RED/positive fixtures solely for cosmetic HTTP semantics.
+
+## Owner-reviewed release design options, NOT decisions
+
+- **Keep `40001` as implemented** until final integration: teach every relevant client and log layer to recognize exact `error.code === "40001"` as a stale snapshot requiring **refresh and deliberate user retry**, rather than interpreting generic HTTP500 as irreversible production failure. Preserve fail-closed UI state on missing/denied RPC. This is closest to tested source behavior, but a generic 500 may still be undesirable for telemetry.
+- **Consider a versioned HTTP412 precondition-failed boundary**, not 409, only after confirming PostgREST `PT412` semantics and client retry behavior with the exact installed and anticipated upgraded SDK. Explicitly classify stale full-row/full-shelf revisions as precondition failures and do not auto-reissue non-idempotent writes.
+- **Alternatively consider a discriminated typed RPC result** with explicit `ok:false,code:"stale_snapshot"`, but only if ALL readers explicitly check it. A 200 HTTP status otherwise risks silently displaying a rejected action as success; do not retrofit it into existing successful source contracts.
+- If choosing **HTTP409**, prove explicit RPC-level retry disablement or robust idempotency keys across every call site and a real upgraded-SDK browser test. Repeated randomized rerolls or server-side stock adds must never commit twice without intentional user action. This proposal is not approved by owner and is not staged as SQL.
+- Distinguish a client that received a late response **after a successful committed RPC** from a request revoked/denied **before reaching SQL**. Frontend epoch gating prevents stale painting; it does not abort a committed transaction or provide SQL-level deduplication.
+
+## Mandatory future signed test matrix
+
+Preserve the accepted source exactness and negative receipts. Test unchanged and upgraded lockfile SDKs, a real PostgREST API with intentional `40001` conflicts, network interruption, lost success response, authenticated role revoked mid-flight, moving/camping merchants, simultaneous buyer/delta/reroll and repeated HTTP POST. Capture **request count, transaction commit count, server stock/wallet/inventory hashes, error codes/status and UI refresh semantics**. Require no raw stock-table mutation fallback, no accidental client retry, no double stock addition/reroll, and valid final permission state.
+
+**Boundaries:** All SQL experiments must be disposable PostgreSQL 17 with GoTrue/PostgREST. Hosted function body/grant inspection requires separate owner approval for read-only SQL, and a production change requires full original PR authorization/feature parity, independent encrypted PG17+all 340 Storage object bytes restore and owner release GO. No world-map or paid-agent changes.
