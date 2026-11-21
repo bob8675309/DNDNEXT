@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `971cf541f2b2469e2e61bb941775938b9e6c5ef0` |
+| Exact source commit represented by this archive snapshot | `e162a88aa1242a35cc9fd5bfcf7faf056afe31f9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): add disposable B10 seller-first manual stock atomic RPC with snapshot CAS |
-| Files changed relative to main | 312 (245 non-docs; 67 docs) |
+| Last source commit title | research(c34): source-pin bulk future-tech reroll role and deterministic merchant order |
+| Files changed relative to main | 313 (246 non-docs; 67 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b10_manual_stock_pg17.sql`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b10_bulk_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- … 262 more
+- … 263 more
 
 ## Trust and update procedure
 
