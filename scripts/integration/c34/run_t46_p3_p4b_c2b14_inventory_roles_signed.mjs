@@ -147,8 +147,12 @@ export async function runC34C2B14InventoryRolesSigned({
   assert.equal(x.data,strict[name],"strict admin mismatch "+name);
   assert.equal(y.data,byRole[name],"UUID helper mismatch "+name);
  }
- const anon=await actors.OUTSIDER.who.auth.getUser();
- assert.ifError(anon.error);
+ // Earlier B2-B12 tests intentionally sign out their ORIGINAL browser users.
+ // B14 must never assume that inherited actor remains authenticated.
+ // Assert only the newly signed role-matrix outsider's real GoTrue identity.
+ const signedOutsider=await users.OUTSIDER.who.auth.getUser();
+ assert.ifError(signedOutsider.error);
+ assert.equal(signedOutsider.data?.user?.id,users.OUTSIDER.id);
  console.log("PASS T46-C2B14-P1-ROLE-RED: REAL signed admin strict=true, GM/DM strict=false but UUID helper=true; unknown observer role UUID helper=true, player=false");
 
  // Independently seed only local test characters, player addresses and items.
