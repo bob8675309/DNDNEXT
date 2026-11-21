@@ -29,14 +29,14 @@ for(const [file,expected] of Object.entries(must)){
  assert.equal(gitBlob(raw(file)),expected,"C2-B13 source blob drift: "+file);
 }
 const codeTypes=/\.(?:js|jsx|ts|tsx|mjs)$/;
-function walk(dir){
+function walk(dir,extensions=codeTypes){
  if(!fs.existsSync(path.join(root,dir)))return [];
  const results=[];
  for(const item of fs.readdirSync(path.join(root,dir),{withFileTypes:true})){
   if(item.name==="node_modules"||item.name===".next")continue;
   const rel=dir+"/"+item.name;
   if(item.isDirectory())results.push(...walk(rel));
-  else if(codeTypes.test(item.name))results.push(rel);
+  else if(extensions.test(item.name))results.push(rel);
  }
  return results;
 }
@@ -106,7 +106,7 @@ assert.ok(sql.includes("WHERE storefront_enabled=true")&&!sql.includes("WHERE st
 const movement=raw("supabase/advance_all_characters_v3.sql").toString("utf8");
 assert.match(movement,/perform public\.reroll_merchant_inventory_v2\(/i);
 const sqlStockDml=[];
-for(const file of walk("sql").concat(walk("supabase")).filter(f=>/\.(?:sql|js|mjs)$/.test(f))){
+for(const file of [...walk("sql",/\.sql$/),...walk("supabase",/\.sql$/)]){
  const src=raw(file).toString("utf8");
  for(const m of src.matchAll(/\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+(?:public\.)?character_stock\b/gi))
   sqlStockDml.push({file,line:lines(src,m.index),kind:m[1].toUpperCase().replace(/\s+/g," ")});
