@@ -205,7 +205,8 @@ export async function runT46C2B10StockWritersSigned({
   await tx.send("COMMIT;");
   const [result,receipt,qty]=await within(Promise.all([clearPromise,purchase,delta]),"dump/buy/delta race",35000);
   assert.ifError(result.error);
-  deny(receipt,"P0002","buyer of removed row after dump");
+  deny(receipt,"P0001","original buyer of removed row after dump");
+  assert.match(receipt.error.message,/Stock not found/,"original buyer reason must be exact missing UUID");
   deny(qty,"P0002","B8 delta of removed row after dump");
   assert.equal(stockQty(heldRow),"gone");
   assert.equal(walletOf(buyer.id),walletBeforeRace);
