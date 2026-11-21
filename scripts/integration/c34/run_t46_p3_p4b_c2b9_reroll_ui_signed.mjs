@@ -107,6 +107,10 @@ export async function runT46C2B9RerollUiSigned({
    RETURNS jsonb LANGUAGE sql IMMUTABLE SET search_path TO pg_catalog, public, private
    AS $$ SELECT coalesce(p_payload,'{}'::jsonb) $$;`);
  }
+ // The original October reroll INSERT writes note. The older B2 disposable
+ // merchant fixture deliberately omitted this later column; add only in
+ // scratch to match the hosted generated-type table shape.
+ sql("ALTER TABLE public.character_stock ADD COLUMN IF NOT EXISTS note text");
  const grant=`REVOKE ALL ON FUNCTION public.reroll_merchant_inventory_v2(uuid,text,integer) FROM PUBLIC, anon, authenticated;
  GRANT EXECUTE ON FUNCTION public.reroll_merchant_inventory_v2(uuid,text,integer) TO authenticated;
  NOTIFY pgrst, 'reload schema';`;
