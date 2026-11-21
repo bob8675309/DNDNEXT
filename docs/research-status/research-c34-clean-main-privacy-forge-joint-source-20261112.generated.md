@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e058e07db2f07b4cb22762d9c4dffa6991e4beac` |
+| Exact source commit represented by this archive snapshot | `eb3242ebd8a92be3ad0b69c62c1bb335ca47fc8e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: record source-provenance, genuine signed browser partial PASS and failure chronology |
+| Last source commit title | C34 B11: document exact signed browser PASS and remaining actor-switch release gate |
 | Files changed relative to main | 320 (251 non-docs; 69 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
