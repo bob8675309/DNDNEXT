@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a2f60f8d427358afc6345c3f6fb93851994c1e68` |
+| Exact source commit represented by this archive snapshot | `4b5fc2347bbcb7d7cdc01d9b169361e7863270e3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin original Forge v3 signed acceptance, Town craft owner alignment, distinct character scope and target-list RED |
+| Last source commit title | ci(c34): run cheap Node-only B14 Forge/Town original-owner contract crosswalk without full PG17 startup |
 | Files changed relative to main | 342 (265 non-docs; 77 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p2_forge_town_bridge_source.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
