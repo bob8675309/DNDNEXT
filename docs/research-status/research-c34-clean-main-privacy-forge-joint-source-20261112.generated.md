@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b8f2150f6af8ac1f0d713d2da111b7ee9a2702d4` |
+| Exact source commit represented by this archive snapshot | `3f91336726656a456f39059067f2e7f1248ae9fd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): close B8 signed research acceptance and set next bounded B9 |
+| Last source commit title | docs(c34): append final signed B8 success receipt and B9 next task |
 | Files changed relative to main | 308 (242 non-docs; 66 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
