@@ -805,7 +805,7 @@ for(const [name,id] of Object.entries(ids))
  await runC34C2B14InventoryRolesSigned({
    env,actors,newActor:actor,sql,q,lit
  });
- await runC34C2B14P2InventorySigned({env,newActor:actor,sql,q,lit});
+ await runC34C2B14P2InventorySigned({env,newActor:actor,sql,q,lit,browser,origin});
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
  assert.ok(!/seller\.(?:state|location_id|home_location_id)/.test(guardedBuyerSql));

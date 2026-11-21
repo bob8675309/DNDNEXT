@@ -30,6 +30,8 @@ on:
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_slim_npc_context_pg17.sql'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs'
+      - 'components/c34/NonMapNpcInventoryP10ResearchShell.jsx'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_brace_pending_rpc_overlay.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs'
@@ -80,6 +82,8 @@ on:
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_slim_npc_context_pg17.sql'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs'
+      - 'components/c34/NonMapNpcInventoryP10ResearchShell.jsx'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_brace_pending_rpc_overlay.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs'
@@ -136,6 +140,7 @@ jobs:
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p6_npc_offers_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p2_inventory_client.mjs
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b11_brace_pending_rpc_overlay.mjs

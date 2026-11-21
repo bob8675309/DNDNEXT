@@ -13,7 +13,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..")
 const sourcePath="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p2_inventory_authority_pg17.sql";
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
-export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
+export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit,browser,origin}){
  for(const [key,value] of Object.entries({
   CI:"true",GITHUB_ACTIONS:"true",PGHOST:"127.0.0.1",PGPORT:"54322",
   PGUSER:"postgres",PGDATABASE:"postgres",
@@ -401,7 +401,7 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
 
  await runC34B14P4ControlledGearSigned({env,sql,q,lit,roles});
  await runC34B14P6NpcOffersSigned({env,sql,q,lit,roles});
- await runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles});
+ await runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles,browser,origin});
 
  const demotedItem=seed("GM role revoked","player",roles.OUTSIDER.id,roles.OUTSIDER.id);
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(roles.GM.id));

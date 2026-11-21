@@ -1,12 +1,13 @@
 // C34 P9 RESEARCH ONLY. Executed AFTER accepted P7 in disposable signed PG17.
 import assert from "node:assert/strict";
+import {runC34B14P10SignedBrowser} from "./run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const script="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_slim_npc_context_pg17.sql";
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
-export async function runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,hiddenNpc,forgePc,ids}){
+export async function runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,another,hiddenNpc,forgePc,ids,browser,origin}){
  for(const [k,v] of Object.entries({
   CI:"true",GITHUB_ACTIONS:"true",PGHOST:"127.0.0.1",PGPORT:"54322",
   PGDATABASE:"postgres",PGUSER:"postgres",
@@ -104,4 +105,5 @@ export async function runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,hidden
   "public.is_admin(uuid)","public.buy_from_merchant(uuid,uuid,integer)"][i]),originals[i],
   "P9 changed original/P6/P7 function");
  console.log("PASS T46-C2B14-P9-SIGNED: local GoTrue/PostgREST/PG17 current grants, anon denied, P6/P7/legacy/buyer/role function bodies byte-preserved");
+ await runC34B14P10SignedBrowser({env,root,browser,origin,roles,hired,another,hiddenNpc,forgePc,ids,sql,q});
 }

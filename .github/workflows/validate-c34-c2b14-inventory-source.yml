@@ -15,6 +15,9 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs'
+      - 'components/c34/NonMapNpcInventoryP10ResearchShell.jsx'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
     paths:
@@ -29,6 +32,9 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs'
+      - 'components/c34/NonMapNpcInventoryP10ResearchShell.jsx'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
 permissions:
@@ -72,6 +78,10 @@ jobs:
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p9_npc_interaction_client.mjs
+      - name: P10 isolated React non-map NPC inventory and disposable browser source contract
+        run: |
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs
       - name: P8 original NPC-consent-bypass crosswalk and original player trade source RED
         run: |
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs

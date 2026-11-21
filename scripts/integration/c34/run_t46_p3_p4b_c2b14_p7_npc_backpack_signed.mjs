@@ -10,7 +10,7 @@ import {randomUUID} from "node:crypto";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const localFile="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_page_and_equipment_pg17.sql";
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-export async function runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles}){
+export async function runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles,browser,origin}){
  for(const [key,value] of Object.entries({
   CI:"true",GITHUB_ACTIONS:"true",PGHOST:"127.0.0.1",
   PGPORT:"54322",PGDATABASE:"postgres",PGUSER:"postgres",
@@ -260,5 +260,5 @@ export async function runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles}){
   buyer:"public.buy_from_merchant(uuid,uuid,integer)"
  }))assert.equal(hash(reg),originals[name],"P7 changed original "+name);
  console.log("PASS T46-C2B14-P7-SIGNED: redacted bounded keyset inventory, independent signed equipment grant, no raw write from hired view, no original functions modified");
- await runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,hiddenNpc,forgePc,ids});
+ await runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,another,hiddenNpc,forgePc,ids,browser,origin});
 }
