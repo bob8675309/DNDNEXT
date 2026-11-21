@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `20876a76eed29b70cb48f882c01cd4ce6df20a67` |
+| Exact source commit represented by this archive snapshot | `75f2acfe7338305e5db8971f1c7c1a7bb278bc38` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): source-original G1 delegated Player RPC RED to held #345 Stage1 signed GREEN candidate |
+| Last source commit title | docs(C34): accept signed original Player RPC G1 RED to held #345 Stage1 GREEN |
 | Files changed relative to main | 279 (221 non-docs; 58 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-global-g1-player-rpc-signed.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T46_GLOBAL_PLAYER_CHARACTER_RPC_ORIGINAL_SOURCE_REVIEW_2026-11-20.md`
-- `scripts/integration/c34/test_t46_global_g1_player_rpc_red_green_signed.mjs`
 
 ## Research-branch change inventory versus main
 
