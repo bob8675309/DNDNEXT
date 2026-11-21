@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `43faa4936d4ad4f8013e2d9bec00c54fe4afb926` |
+| Exact source commit represented by this archive snapshot | `fd66fb068252d633d3b0156fae7d1ad38a71db1b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): propose NPC interaction tiers as orthogonal visibility/equipment/combat grants plus scoped spell control RFC |
+| Last source commit title | docs(c34): hand off proposed tiered NPC interaction and encounter-only spell control RFC before inventory UI cutover |
 | Files changed relative to main | 351 (270 non-docs; 81 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
