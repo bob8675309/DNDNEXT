@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b79eb268d96e01e9e26f6aaed96f06ac9a964ba1` |
+| Exact source commit represented by this archive snapshot | `e41877f6b516dd5dea59c518802e84bb81a3b1fb` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): avoid ambiguous request item recipient and client-forged fulfillment status in future quest DTO |
-| Files changed relative to main | 348 (269 non-docs; 79 docs) |
+| Last source commit title | test(c34): lock side-effect-free NPC quest item send/request proposals and original trade/quest source boundaries |
+| Files changed relative to main | 349 (270 non-docs; 79 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 298 more
+- … 299 more
 
 ## Trust and update procedure
 
