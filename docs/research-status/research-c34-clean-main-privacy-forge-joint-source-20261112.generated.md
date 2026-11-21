@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `056092fb40d57e5bd4c84e60f46d276bc3dc8c9d` |
+| Exact source commit represented by this archive snapshot | `f922c864acbcc1092a67ab16cf388f6b566cf5fb` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): close B7 signed moving+camping sales, synthetic deadlock, relative-delta and initial fixture failure |
+| Last source commit title | docs(c34): record fully signed B7 moving+camping acceptance and next bounded manager quantity contract |
 | Files changed relative to main | 305 (240 non-docs; 65 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B7_TRAVEL_CAMP_REROLL_LOCK_RESEARCH_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
