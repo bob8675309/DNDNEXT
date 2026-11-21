@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1e3e082a4f4f789fb2e261aa8dd09137b12d700e` |
+| Exact source commit represented by this archive snapshot | `dbb453a9d1eb3e04c113caa9d95414e2f7035428` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B13: free read-only Node source-census CI for merchant and adjacent writers |
+| Last source commit title | C34 C2-B13: correct repo-relative root for source census on CI |
 | Files changed relative to main | 329 (257 non-docs; 72 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b13-merchant-writer-census.yml`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b13_merchant_writer_census.mjs`
 
 ## Research-branch change inventory versus main
 
