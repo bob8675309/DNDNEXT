@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d85b17e830cd09bef0d2d55f8708bf11a17fc9dd` |
+| Exact source commit represented by this archive snapshot | `1e3a217ecdd9663d5e408f03dc37f1a64c13fe84` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P0: mark verified source-only permission mismatch and one genuine signed B14-P1 task |
+| Last source commit title | C34 B14-P0: append exact source-auth mismatch PASS, reuse prior signed fixture, pending signed matrix |
 | Files changed relative to main | 333 (259 non-docs; 74 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
