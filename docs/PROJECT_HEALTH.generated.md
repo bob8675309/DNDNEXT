@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-21T16:52:09Z | research/c34-ci-efficiency-independent-20261121 (1065a3157ea544814724d4a5c1e0d1be6d1fa301) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
+| 2026-11-21T16:54:18Z | research/c34-clean-main-privacy-forge-joint-source-20261112 (26e289f2ea7a16932b14df7568cb9bc0f227bb50) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
