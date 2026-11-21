@@ -79,7 +79,7 @@ async function expectSafeManagerMutation(sql,manager,buyer,q,stock){
  return selected.data;
 }
 export async function runT46C2B6MerchantConcurrency({
- env,root,actors,newActor,merchantId,sql,q,lit,walletOf,invCount
+ env,root,actors,newActor,merchantId,merchantOriginalBytes,sql,q,lit,walletOf,invCount
 }){
  for(const [key,value] of Object.entries({
   CI:"true",GITHUB_ACTIONS:"true",PGHOST:"127.0.0.1",PGPORT:"54322",
@@ -89,7 +89,15 @@ export async function runT46C2B6MerchantConcurrency({
  assert.equal(walletOf(actors.OUTSIDER.id),"12","B6 requires B5 signed 15→12 state");
  const buyerSource=fs.readFileSync(path.join(root,
   "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql"));
- const originalPanel=fs.readFileSync(path.join(root,"components/MerchantPanel.js"));
+ // B2-B5 temporarily overlay the tracked merchant file to test Profile
+ // Return. The parent verified and preserved original MerchantPanel bytes
+ // BEFORE that overlay; only these bytes can satisfy original-source parity.
+ assert.ok(Buffer.isBuffer(merchantOriginalBytes),
+  "B6 refuses generated merchant overlay in place of original source");
+ const originalPanel=merchantOriginalBytes;
+ const currentOverlay=fs.readFileSync(path.join(root,"components/MerchantPanel.js"));
+ assert.ok(currentOverlay.toString().includes("async function changeQty(stockId, nextQty)"),
+  "Temporary #345 merchant overlay lost original stock editing functions");
  const guard=fs.readFileSync(path.join(root,
   "scripts/integration/c34/candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs"));
  assert.equal(blob(buyerSource),"72fd9f0f80a83adaec67caf80a762e238f1dcd8c");
