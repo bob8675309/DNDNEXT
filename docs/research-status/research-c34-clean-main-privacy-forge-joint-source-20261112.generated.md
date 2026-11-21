@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `efe2e7f488b24d72d1ee1882fcb2464e62be4eb5` |
+| Exact source commit represented by this archive snapshot | `bedf62272ff7ba604ff38b97f70cd0c83735bc8f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): hand off Forge kind=npc player-character tag hazard and P4 controlled-recipient pending signed gates |
+| Last source commit title | fix(c34): reject Forge player-character-tagged NPC recipients across versioned P2 and P4 transfers |
 | Files changed relative to main | 347 (268 non-docs; 79 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit | 3 files (2 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4B_C2_B14_P4_CONTROLLED_SIDEKICK_GEAR_OWNER_DECISION_2026-11-21.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p2_inventory_authority_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p4_controlled_gear_signed.mjs`
 
 ## Research-branch change inventory versus main
 
