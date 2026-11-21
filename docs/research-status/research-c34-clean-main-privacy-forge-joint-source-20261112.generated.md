@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ec98a7299dfde28c21d1bfcbe74eabc541c1bbb9` |
+| Exact source commit represented by this archive snapshot | `7ed5b470b51db19892f3b147e8596688b79e3c23` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): define B4 signed flagged Stage2 town acceptance and release hold without claiming success |
+| Last source commit title | test(c34): install only source-pinned T31 read-only role projection in local B4 fixture |
 | Files changed relative to main | 299 (237 non-docs; 62 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B4_FLAGGED_GUARDED_TOWN_SIGNED_2026-11-20.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b4_guarded_town_signed.mjs`
 
 ## Research-branch change inventory versus main
 
