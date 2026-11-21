@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `22f1fdadd72951020e47a74890091af2ba877ad5` |
+| Exact source commit represented by this archive snapshot | `783e572459278d927fa6a8f4f55209b652ca3919` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11-BRACE: include new source and signed pending-RPC browser races in full PG17 CI |
-| Files changed relative to main | 322 (253 non-docs; 69 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | C34 B11-BRACE: record eight actual signed in-flight RPC actor/merchant race passes, exact CI and release hold |
+| Files changed relative to main | 323 (253 non-docs; 70 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `docs/research/C34_T46_P3_P4B_C2_B11_BRACE_PENDING_RPC_RACES_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
-- … 272 more
+- … 273 more
 
 ## Trust and update procedure
 
