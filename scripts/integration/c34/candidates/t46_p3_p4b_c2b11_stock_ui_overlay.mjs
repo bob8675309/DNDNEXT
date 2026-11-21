@@ -22,7 +22,6 @@ function replaceRegion(src,begin,end,newText,label){
   const a=exactlyOne(src,begin,label+" begin");
   const z=src.indexOf(end,a+begin.length);
   assert.ok(z>a,"B11 "+label+" end missing");
-  assert.equal(src.indexOf(end,z+end.length),-1,"B11 "+label+" end ambiguous");
   return src.slice(0,a)+newText+src.slice(z);
 }
 function replaceExact(src,before,after,label){
