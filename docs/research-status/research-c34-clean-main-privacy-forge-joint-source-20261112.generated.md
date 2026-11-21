@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `01316088269fd7660d3a0771fe204bb9774ee723` |
+| Exact source commit represented by this archive snapshot | `5722dcaa4008260db554258be4417edde71e9e67` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): preserve owner no-same-account-PC decision and independent controlled sidekick/henchman gear-send candidate |
+| Last source commit title | docs(c34): record owner no-same-account PCs and controlled henchman/sidekick source-gear donation as signed research pending |
 | Files changed relative to main | 347 (268 non-docs; 79 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B14_P4_CONTROLLED_SIDEKICK_GEAR_OWNER_DECISION_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
