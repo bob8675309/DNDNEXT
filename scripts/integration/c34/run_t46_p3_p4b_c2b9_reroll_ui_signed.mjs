@@ -149,7 +149,7 @@ export async function runT46C2B9RerollUiSigned({
  sql(candidate);sql(grant);
  const nowSql=sql("SELECT pg_get_functiondef('public.reroll_merchant_inventory_v2(uuid,text,integer)'::regprocedure)");
  assert.match(nowSql,/FOR UPDATE/i);
- assert.match(nowSql,/role IN \('admin', 'gm', 'dm'\)/i);
+ assert.match(nowSql,/role IN \('admin',\s*'gm',\s*'dm'\)/i);
  assert.ok(nowSql.indexOf("FOR UPDATE")<nowSql.indexOf("DELETE FROM public.character_stock"));
  assert.equal(sql("SELECT has_function_privilege('anon','public.reroll_merchant_inventory_v2(uuid,text,integer)','EXECUTE')"),"f");
  const gmResult=await reroll(gm,rerollMerchant);
@@ -282,6 +282,7 @@ export async function runT46C2B9RerollUiSigned({
   assert.ok(ready,"B9 signed local Next not ready: "+tail);
   page=await browser.newPage({viewport:{width:1440,height:1080}});
   page.on("pageerror",e=>pageErrors.push(e.message));
+  page.on("dialog",dialog=>dialog.accept());
   page.on("request",r=>{if(r.url().includes("/rest/v1/"))
    requests.push({method:r.method(),url:r.url()})});
   await page.goto(origin+"/__c34_t46_p4b_login",{waitUntil:"domcontentloaded",timeout:95000});
