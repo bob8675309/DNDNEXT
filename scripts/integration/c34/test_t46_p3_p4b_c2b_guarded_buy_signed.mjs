@@ -744,7 +744,7 @@ for(const [name,id] of Object.entries(ids))
  // receipts, against the SAME disposable merchant guarded buyer.
  await runT46C2B6MerchantConcurrency({
    env,root,actors,newActor:actor,merchantId:ids.merchant,
-   sql,q,lit,walletOf,invCount
+   merchantOriginalBytes:merchantBytes,sql,q,lit,walletOf,invCount
  });
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
