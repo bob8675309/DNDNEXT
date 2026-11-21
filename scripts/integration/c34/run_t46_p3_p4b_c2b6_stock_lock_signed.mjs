@@ -140,8 +140,8 @@ export async function runT46C2B6MerchantConcurrency({
  try{
   await held.send("BEGIN; SELECT 1 FROM public.character_stock WHERE id="+q(raceStock)+" FOR UPDATE;");
   let settled=0;
-  const reqA=purchase(a,raceStock).finally(()=>{settled++});
-  const reqB=purchase(b,raceStock).finally(()=>{settled++});
+  const reqA=Promise.resolve(purchase(a,raceStock)).finally(()=>{settled++});
+  const reqB=Promise.resolve(purchase(b,raceStock)).finally(()=>{settled++});
   await sleep(280);
   assert.equal(settled,0,"Both real signed buyers must remain pending while shelf row locked");
   await held.send("COMMIT;");
@@ -164,7 +164,7 @@ export async function runT46C2B6MerchantConcurrency({
  try{
   await held.send("BEGIN; UPDATE public.characters SET is_hidden=true WHERE id="+q(merchantId)+";");
   let settled=false;
-  const pending=purchase(a,hiddenStock).finally(()=>{settled=true});
+  const pending=Promise.resolve(purchase(a,hiddenStock)).finally(()=>{settled=true});
   await sleep(240);
   assert.equal(settled,false,"Buyer bypassed uncommitted merchant visibility update");
   await held.send("COMMIT;");
@@ -231,7 +231,7 @@ export async function runT46C2B6MerchantConcurrency({
  try{
   await held.send("BEGIN; DELETE FROM public.character_stock WHERE id="+q(deleteStock)+";");
   let settled=false;
-  const pending=purchase(b,deleteStock).finally(()=>{settled=true});
+  const pending=Promise.resolve(purchase(b,deleteStock)).finally(()=>{settled=true});
   await sleep(240);
   assert.equal(settled,false,"Buyer bypassed uncommitted manager source-shape stock DELETE");
   const preWallet=walletB(),preInv=invCount(b.id);
