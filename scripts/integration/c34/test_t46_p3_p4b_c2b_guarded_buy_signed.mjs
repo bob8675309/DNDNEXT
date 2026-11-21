@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import {buildTownPresenceOverlay} from "./candidates/t46_p3_p4b_b_town_overlay.mjs";
 import {writeC2B3OriginalProbe,removeC2B3Probe,runC2B3SignedCommerce} from "./run_t46_p3_p4b_c2b3_original_browser.mjs";
+import {runT46C2B4FlaggedTown} from "./run_t46_p3_p4b_c2b4_guarded_town_signed.mjs";
 import {buildC2B2GuardedOriginalBuyer,ORIGINAL_BUYER_BLOB,ORIGINAL_BUYER_FUNCTION_MD5} from "./candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs";
 import {buildHeldNpcWithIntelAndPrint,buildGuardedSheetPanel,buildMerchantReturnToProfile} from "./candidates/t46_p3_p4a_composed_overlays.mjs";
 // C34 T46-P3-P4B-C2-B2: preserve B1 original hidden purchase RED, then test disposable guarded source GREEN
@@ -727,6 +728,16 @@ for(const [name,id] of Object.entries(ids))
  await runC2B3SignedCommerce({
    root,browser,origin,page,side,actors,merchantId:ids.merchant,
    visitingMerchantId:travellingMerchant,sql,q,lit,walletOf,invCount
+ });
+ // C2-B4 runs a separately flagged real tracked town/Profile/Shop while
+ // retaining the same disposable PG17 seller guard and signed JWTs.
+ // Stop the default-OFF Next dev server first (it owns .next/dev/lock).
+ await page.close();
+ if(server){try{process.kill(-server.pid,"SIGTERM")}catch{} await sleep(850);
+   try{process.kill(-server.pid,"SIGKILL")}catch{} server=null; await sleep(700);}
+ await runT46C2B4FlaggedTown({
+   env,root,browser,actors,townId,merchantId:ids.merchant,
+   sql,q,lit,walletOf,invCount
  });
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
