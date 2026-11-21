@@ -9,8 +9,14 @@ const buyerRequest=r=>r.method()==="POST"&&
 
 async function openOriginalShop(side,stockName){
  await side.getByRole("button",{name:"Let me browse your wares."}).click({force:true});
- await side.getByRole("listbox",{name:"Merchant stock"})
-  .getByRole("option",{name:new RegExp(stockName)}).waitFor({timeout:40000});
+ const stockOption=side.getByRole("listbox",{name:"Merchant stock"})
+  .getByRole("option",{name:new RegExp(stockName)});
+ await stockOption.waitFor({timeout:40000});
+ // Stock existence is NOT selection. The original source sorts the shelf by
+ // display_name and defaults to the first row, often a different price.
+ await stockOption.click({force:true});
+ await side.getByRole("button",{name:"Buy for 3 gp",exact:true})
+  .waitFor({timeout:25000});
 }
 async function signOut(page){
  const error=await page.evaluate(async()=>{
