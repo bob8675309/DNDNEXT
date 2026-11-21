@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a0719cc841b160355b578e989ba3f993ccc3727e` |
+| Exact source commit represented by this archive snapshot | `81290e7ea92154fecd23b301d555c56c7c6575f5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept real B14-P2-C1 signed concurrency and Town owner-write research; preserve Forge/runtime holds |
+| Last source commit title | docs(c34): append accepted B14-P2-C1 real signed overlap/concurrency evidence and next Forge compatibility hold |
 | Files changed relative to main | 341 (264 non-docs; 77 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B14_P2_C1_REAL_SIGNED_CONCURRENCY_2026-11-21.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
