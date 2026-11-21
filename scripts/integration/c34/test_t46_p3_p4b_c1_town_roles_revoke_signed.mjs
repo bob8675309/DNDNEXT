@@ -46,7 +46,8 @@ const immutable={
  "sql/20260710_04_character_xp_level_up_review.sql":"81bce9bec9c59b3b673aeaada913cd054e4b74c7",
  "components/CharacterClassPanel.js":"d39d2bceab944d3d4ec42cc2cfda92609ce51a2b",
  "components/c34/NonMapNpcProfileResearchShell.jsx":"8ddd3c451449cbd8aa256d237f1f17902e614b98",
- "utils/c34/readNonMapNpcProfileCandidate.mjs":"80501d106db9788c466ab39e63a2f6c062a9b0a7"
+ "utils/c34/readNonMapNpcProfileCandidate.mjs":"80501d106db9788c466ab39e63a2f6c062a9b0a7",
+ "components/PlayerCharacterProfilePanelUnified.js":"8a561e51eafd9e8507db7a4d3f15fd4699d6d1b8"
 };
 const original={};
 for(const [p,sha] of Object.entries(immutable)){
@@ -425,9 +426,10 @@ try{
  async function openRoleTown(label) {
    const actor=actors[label];
    const p=await browser.newPage({viewport:{width:1400,height:1060}});
-   const seen=[];
+   const seen=[],rawResponses=[];
    p.on("pageerror",e=>pageErrors.push(label+": "+e.message));
    p.on("request",r=>{if(r.url().includes("/rest/v1/"))seen.push(r.url());});
+   p.on("response",r=>{if(r.url().includes("/rest/v1/characters?"))rawResponses.push(r);});
    await p.goto(origin+"/__c34_t46_p4b_login",{waitUntil:"domcontentloaded",timeout:95000});
    await p.waitForFunction(()=>!!window.__p4bLogin,null,{timeout:85000});
    assert.equal(await p.evaluate(a=>window.__p4bLogin(a.email,a.password),
@@ -439,11 +441,44 @@ try{
    await p.getByText("T46 Visiting Merchant",{exact:true}).first().waitFor({timeout:45000});
    assert.ok(seen.some(url=>url.includes("/rest/v1/rpc/c34_t46_get_town_presence_v1")),
      label+" bypassed signed town projection");
+   // Global <PlayerCharacterProfilePanelUnified> is mounted in _app on every
+   // page, even when closed. Its ORIGINAL linked-player fallback reads private
+   // narrative columns revoked by #345 Stage2. Retain that separately signed
+   // ORIGINAL RED and require exact 42501 denial; never count it as the TOWN
+   // roster consumer, permit a successful private read, or widen source grants.
+   const globalPlayerProfileCols=[
+     "id","name","kind","status","race","role","description","background",
+     "motivation","quirk","mannerism","voice","affiliation","location_id",
+     "last_known_location_id","storefront_enabled","storefront_title",
+     "storefront_tagline","storefront_bg_url","storefront_bg_video_url",
+     "storefront_bg_image_url","portrait_url","portrait_thumb_url",
+     "portrait_library_id","visual_asset_id","tags"
+   ].join(",");
+   const originalGlobalSource=original["components/PlayerCharacterProfilePanelUnified.js"];
+   assert.ok(originalGlobalSource.includes("function characterSelectColumns()"));
+   assert.ok(originalGlobalSource.includes('.contains("tags", ["player-character"])'));
+   const isKnownGlobalFallback=url=>{
+     const u=new URL(url);
+     return u.searchParams.get("select")===globalPlayerProfileCols
+       && u.searchParams.get("tags")==="cs.{player-character}"
+       && /^in\\.\\([0-9a-f-]+\\)$/i.test(u.searchParams.get("id")||"");
+   };
    const rawCharacterReads=seen.filter(url=>url.includes("/rest/v1/characters?"));
-   if(rawCharacterReads.length)console.error("T46-P4B-C1-UNEXPECTED-RAW-CHARACTERS",
-     JSON.stringify({actor:label,urls:rawCharacterReads.slice(0,8)}));
-   assert.equal(rawCharacterReads.length,0,
-     label+" unexpectedly requested raw characters REST: "+JSON.stringify(rawCharacterReads.slice(0,8)));
+   const unrelatedRaw=rawCharacterReads.filter(url=>!isKnownGlobalFallback(url));
+   assert.deepEqual(unrelatedRaw,[],
+     label+" made a TOWN or unknown unrestricted characters GET "+JSON.stringify(unrelatedRaw));
+   const globalFallback=rawCharacterReads.filter(isKnownGlobalFallback);
+   assert.equal(globalFallback.length,label==="EDITOR"?1:0,
+     label+" global original linked-profile fallback count drift");
+   for(const url of globalFallback){
+     const response=rawResponses.find(r=>r.url()===url)
+       || await p.waitForResponse(r=>r.url()===url,{timeout:15000});
+     const body=await response.json();
+     assert.equal(response.status(),403,"Global forbidden columns unexpectedly readable");
+     assert.equal(body.code,"42501","Global original Stage2 reader did not fail closed");
+     console.log("EXPECTED ORIGINAL GLOBAL PLAYER PROFILE RED T46-P3-P4B-C1:",
+       label,"held #345 Stage2 denied narrative-column SELECT 42501; separate release blocker");
+   }
    return p;
  }
  let gmTown=null;
