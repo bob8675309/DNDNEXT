@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `99087e67f41254a365bd495e9c85c13718a35299` |
+| Exact source commit represented by this archive snapshot | `8a2f66042ae869f1d756171ec2c5c95f9738e624` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): include signed P6 view-only companion and pending/automatic NPC consent research in PG17 gate |
-| Files changed relative to main | 353 (272 non-docs; 81 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record P6 NPC tiers, GM-adjudicated item offers, explicit auto-accept consent and legacy bypass release hold |
+| Files changed relative to main | 354 (272 non-docs; 82 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -64,14 +64,14 @@
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
 - `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
 - `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
-- `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
-- … 303 more
+- … 304 more
 
 ## Trust and update procedure
 
