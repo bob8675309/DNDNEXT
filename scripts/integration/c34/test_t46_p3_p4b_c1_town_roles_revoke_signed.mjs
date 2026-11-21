@@ -448,16 +448,25 @@ try{
    const p=await openRoleTown(label);
    const elevated=["GM","ADMIN","DM"].includes(label);
    const controls=p.getByRole("button",{name:"Show Admin Tools",exact:true});
+   // "Featured people" owns the live NPC roster. The Bazaar contains only
+   // merchants; asserting a hidden NPC in the Bazaar tests the wrong surface.
+   await p.getByRole("button",{name:"Featured people",exact:true}).first().click({force:true});
+   const peopleDrawer=p.locator('div[class*="drawerPane"]').first();
    if(elevated){
      await controls.waitFor({timeout:35000});
-     await p.getByText("T46 Hidden Informant",{exact:true}).first().waitFor({timeout:35000});
+     await peopleDrawer.getByText("T46 Hidden Informant",{exact:true}).first()
+       .waitFor({timeout:35000});
    } else {
      assert.equal(await controls.count(),0,label+" exposed privileged town controls");
-     assert.ok(!(await p.locator(".town-route-page").innerText()).includes("T46 Hidden Informant"),
-       label+" exposed hidden NPC");
-     assert.ok(!(await p.locator(".town-route-page").innerText()).includes(fixtures.npc.secret),
+     assert.ok(!(await peopleDrawer.innerText()).includes("T46 Hidden Informant"),
+       label+" exposed hidden NPC in actual Featured people roster");
+     assert.ok(!(await peopleDrawer.innerText()).includes(fixtures.npc.secret),
        label+" exposed GM-only Story");
    }
+   // Return to Bazaar so merchant Profile-first and open-panel revoke are
+   // tested under the same town state and not against an unmounted panel.
+   await p.getByRole("button",{name:"Bazaar / market",exact:true}).first().click({force:true});
+   await p.getByText("Bazaar of T46 Research Test Town").waitFor({timeout:35000});
    if(label==="GM")gmTown=p;else await p.close();
  }
  console.log("PASS T46-P3-P4B-C1-ROLES: current town GM/admin/DM and editor/viewer/other browser, privileged control and hidden NPC isolation");
@@ -476,10 +485,15 @@ try{
    .waitFor({state:"detached",timeout:35000});
  await gmTown.locator(".town-profile-sidepanel")
    .waitFor({state:"detached",timeout:35000});
- await gmTown.getByText("T46 Hidden Informant",{exact:true}).first()
-   .waitFor({state:"detached",timeout:35000});
  await gmTown.locator('div[class*="marketCard"]').filter({hasText:"T46 Curio Merchant"})
    .waitFor({state:"detached",timeout:35000});
+ // This is an actual hidden-roster negative, not a vacuous Bazaar assertion:
+ // open the live people drawer again after the same-JWT focus revalidation.
+ await gmTown.getByRole("button",{name:"Featured people",exact:true}).first()
+   .click({force:true});
+ const demotedPeople=await gmTown.locator('div[class*="drawerPane"]').first().innerText();
+ assert.ok(!demotedPeople.includes("T46 Hidden Informant"),
+   "Same-JWT demoted GM still sees the formerly visible hidden NPC");
  assert.ok(!(await gmTown.locator(".town-route-page").innerText()).includes(fixtures.hidden.secret),
    "Demoted viewer retained hidden NPC Secret");
  console.log("PASS T46-P3-P4B-C1-REVOKE: same-JWT GM downgrade and hidden merchant scrub admin controls, hidden people, Bazaar and open Profile on focus without remount");
