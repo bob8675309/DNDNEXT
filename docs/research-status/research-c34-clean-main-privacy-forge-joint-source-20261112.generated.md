@@ -5,21 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9e4f1928b9dad9dfc547c13cb77258086c1901a8` |
+| Exact source commit represented by this archive snapshot | `d99cf5a7801890daeb73772b7231cba5564ece05` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): preserve signed original hidden merchant buy bypass RED and hard release hold |
-| Files changed relative to main | 291 (231 non-docs; 60 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(C34): C2-B2 signed local buyer eligibility guard preserving exact original atomic transaction |
+| Files changed relative to main | 295 (235 non-docs; 60 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P3_P4B_C2_REAL_MERCHANT_BUY_SIGNED_2026-11-20.md`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b_guard_source.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -46,6 +47,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t46-p3-p4b-b-real-town-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-c1-town-roles-revoke.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-c2-merchant-purchase.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-c2b-hidden-direct-buy.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
@@ -72,8 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- `docs/research/C34_T19_PRIVACY_29_ORIGINAL_SIGNED_2026-11-14.md`
-- … 241 more
+- … 245 more
 
 ## Trust and update procedure
 
