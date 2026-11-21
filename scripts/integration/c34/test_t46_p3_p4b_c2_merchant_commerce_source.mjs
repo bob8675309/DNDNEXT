@@ -11,7 +11,7 @@ const read=p=>fs.readFileSync(path.join(root,p));
 const gitBlob=b=>crypto.createHash("sha1").update(Buffer.concat([Buffer.from("blob "+b.length+"\0"),b])).digest("hex");
 const refs={
  "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql":"72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
- "scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql":"fe5cca21a3a6798706e7ff3e2bba4cc43ffc4784",
+ "scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql":"c96a524407dcdcaf35ced189958d0832ab7e8dce",
  "scripts/integration/c34/test_t46_p3_p4b_b_real_town_browser_signed.mjs":"40e88676f0c50e98ed16edf0be58f84dd1598f23",
  "components/MerchantPanel.js":"22e4d0810603bc0322904573cb5fe0c14bad1f88",
  "components/MerchantStorefrontView.js":"9460eb1ea15994b9b0ed2abefba660e9b4c9370c",

@@ -1,12 +1,16 @@
 -- C34 T46-P3-P4B-C2: DISPOSABLE LOCAL PG17 ONLY commerce fixture.
 -- Not a production migration, not equivalent to hosted wallet_get source.
+-- Runner independently enforces PGHOST=127.0.0.1, PGPORT=54322, GITHUB_ACTIONS,
+-- and local-only confirmation. Docker-mapped postgres sees a bridge IP inside
+-- the container, so inet_server_addr() must NOT be compared to 127.0.0.1.
 -- Exact original buy_from_merchant body installed independently, MD5 verified.
 DO $guard$
 BEGIN
   IF current_setting('server_version_num')::integer < 170000
      OR current_database()<>'postgres'
-     OR inet_server_addr()::text <> '127.0.0.1' THEN
-    RAISE EXCEPTION 'C2 REFUSE: local PG17 loopback database required';
+     OR to_regclass('private.test_admins') IS NULL
+     OR to_regprocedure('public.c34_t46_get_town_presence_v1(bigint)') IS NULL THEN
+    RAISE EXCEPTION 'C2 REFUSE: disposable PG17 with original C34 local-only test prerequisites required';
   END IF;
   IF to_regprocedure('public.buy_from_merchant(uuid,uuid,integer)') IS NOT NULL THEN
     RAISE EXCEPTION 'C2 REFUSE: original buyer already installed';

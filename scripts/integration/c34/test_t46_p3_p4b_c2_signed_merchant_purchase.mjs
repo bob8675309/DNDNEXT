@@ -48,7 +48,7 @@ const immutable={
  "components/c34/NonMapNpcProfileResearchShell.jsx":"8ddd3c451449cbd8aa256d237f1f17902e614b98",
  "utils/c34/readNonMapNpcProfileCandidate.mjs":"80501d106db9788c466ab39e63a2f6c062a9b0a7",
  "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql":"72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
- "scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql":"fe5cca21a3a6798706e7ff3e2bba4cc43ffc4784",
+ "scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql":"c96a524407dcdcaf35ced189958d0832ab7e8dce",
  "scripts/integration/c34/test_t46_p3_p4b_b_real_town_browser_signed.mjs":"40e88676f0c50e98ed16edf0be58f84dd1598f23",
  "components/MerchantStorefrontView.js":"9460eb1ea15994b9b0ed2abefba660e9b4c9370c",
  "utils/useWallet.js":"f34b99f1d6eee66420d57bdcefdc6d3427092e25"
