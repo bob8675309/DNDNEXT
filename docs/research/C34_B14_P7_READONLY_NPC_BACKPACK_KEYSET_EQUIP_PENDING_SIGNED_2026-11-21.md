@@ -1,0 +1,43 @@
+# C34 B14-P7 — redacted, keyset-paginated hired-NPC backpack and independent equipment authorization
+
+**Date:** November 21, 2026 CST. **Research-only, exact-head signed tests PENDING** on draft PR [#379](https://github.com/bob8675309/DNDNEXT/pull/379). Not a deployment proposal or hosted migration. No original NPC panel, inventory page, world-map, Town, merchant, Forge, quests, original SQL/Policies, production Supabase data, or protected PR changes.
+
+## Why P7 is necessary
+
+Owner-approved NPC presets separate public Profile/dialogue/merchant stock from private backpack; a hired sidekick may **see** gear and backpack but **must not** equip/unequip or withdraw; trusted or fully delegated companions may receive explicit management rights. P6 already signed-accepted read-only, pending NPC offers and explicit auto-accept.
+
+**Actual source blocker:** Original `components/NpcPanel.js` sets `canView=canManage=(can_inventory||can_edit)` and queries private `character_spells` whenever inventory is viewable. Original `public.get_character_inventory_v1(uuid)` returns **complete `inventory_items` rows**, and original `set_character_inventory_equipment_v1(uuid,uuid,boolean,text)` checks the **same** private `can_access_character_v1(...,'inventory')` permission. Do **not** grant old `can_inventory` just to let a hired player inspect items; doing so would also authorize equipment mutation, and expose card payloads through the original full-row RPC. These are source facts, not a claim of verified hosted execution.
+
+## Versioned P7 candidate — local disposable PostgreSQL 17 only
+
+`scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_page_and_equipment_pg17.sql` adds functions, leaving every original function body and database table/policy unchanged:
+
+1. `public.c34_b14_p7_npc_backpack_page_v1(npc_id,page_size,after_created_at,after_item_id)`: signed actor, explicit canonical manager OR currently granted P6 `view_backpack/manage_equipment/withdraw_items`, rejects hidden NPCs for ordinary players and any `kind=npc` Forge PC tagged `player-character`. Maximum 40 items per call, default 20, deterministic keyset on `(created_at DESC,id DESC)` with paired cursor and `LIMIT page_size+1`. Projects **only** `id,name,type,rarity,is_equipped,equip_slot`, plus `has_more/next_cursor` envelope. Does **not** return `card_payload`, `user_id`, GM metadata, notes, or unrelated owners; an unauthorized caller gets `42501`, not a row count.
+2. `public.c34_b14_p7_set_npc_equipment_v1(npc_id,item_id,is_equipped,equip_slot,expected_equipped)`: requires canonical manager OR current P6 `manage_equipment` **only** (not `view_backpack`, `can_control` or `auto_accept_items`). Validates one genuine nonhidden NPC/owner scope, item is currently `owner_type='npc',owner_id=npc_id`, strict original equipment slots, no occupied duplicate slot, caller's expected equipped state (`40001` on stale), unequip clears slot. Locks character before item for two parallel equipment operations. Returns a **minimal item-state receipt**, not a full private row. No ownership transfer or item mint occurs.
+3. Both RPCs are `SECURITY DEFINER` with explicit search path and current `auth.uid()`. PUBLIC/anon EXECUTE denied, authenticated only. Original direct equip/transfer RPCs are **not** changed. P7 is not a replacement until a separate owner-reviewed release.
+4. Original `P6` context continues returning backpack rows inside its authorized context for its existing signed contract: it is not yet the minimal payload production endpoint. A future source-preserving runtime projection should carry only capabilities and bounded public worn gear on profile open, then lazy-load this sanitized paginated endpoint when the backpack tab opens. Source-original character spell features must be separately projected using held PR312 delegated spell model, not triggered by backpack access.
+
+## Exact signed acceptance planned
+
+New `scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs` runs *after* accepted P6 full signed tests and before same-JWT GM demotion in existing runner. Existing workflow now checks its syntax and uses it in signed disposable GoTrue/PostgREST/PG17 fixture, retaining inherited P2–P6 and all original merchant/Forge/PR345 tests.
+
+Expected markers (not yet accepted):
+
+- `P7-SOURCE`: explicit only local PG17, anon forbidden, original P2/P3/P4/P6/legacy/role/buyer function definitions preserved;
+- `P7-NO-ACCESS`: combat-only control, unrelated user, observer, hidden NPC, genuine player-character-tagged NPC denied; authorized manager sees hidden NPC;
+- `P7-PAGINATE`: genuine signed 2+2+1 across 5 items, deterministic no-overlap cursor, limits and malformed partial-cursor denial, no payload/user IDs/GM secrets or cross-NPC items;
+- `P7-READONLY`: a signed hired backpack viewer cannot equip through new RPC **or** raw inventory table update;
+- `P7-EQUIP`: independent manager-granted equipment authority permits valid equip/unequip; original item provenance untouched, invalid slots, other NPC item and occupied slot denied; same-JWT grant revocation removes mutation while preserving read;
+- `P7-REVOKE`: revoking view separately removes backpack read even though combat delegation persists; canonical GM remains authorized;
+- `P7-CONCURRENCY`: two genuinely concurrent signed equip commands for one item, one commit/one stale `40001`, no conflicting double state;
+- `P7-SIGNED`: anonymous denied, all prior original function body MD5 hashes preserved.
+
+**CI exact executable:** `0cef3f15bc5ed24174ebc41f5bb04ab7a0819d08`, [signed workflow #44952545023](https://github.com/bob8675309/DNDNEXT/actions/runs/44952545023) **in progress when authored**. Do not label accepted until full decoded log and exact-head pass reviewed. Previous P6 accepted `99087e67f41254a365bd495e9c85c13718a35299`, [#44944487621](https://github.com/bob8675309/DNDNEXT/actions/runs/44944487621) success with full log; source-only tier tests [#44944861110](https://github.com/bob8675309/DNDNEXT/actions/runs/44944861110) 8/8 success.
+
+## Risks and next integration seam
+
+- P7 equipment writes lock NPC before item. P6 item offers and legacy transfer use different lock paths (item before NPC). **Global item/NPC lock ordering remains unproven**; run combined offer/accepted quest/gear contention and reconcile lock ordering before runtime migration.
+- **Original legacy `transfer_inventory_item_v1`, original equip, original full-row read, B14-P2 direct-NPC transfer and old frontend RPC-failure→raw UPDATE** still bypass consent/read-only separation or assume broader permissions; the P7 source-local scratch functions do not repair these. Release requires a coordinated, signed read/write/offer cutover without breaking normal player trades, Town/Forge creation, merchant stock, source-original profile/creator-secret protection, PR312 combat/spells, PR318 GM permissions, or original maps.
+- Slot occupancy check protects two P7 requests serialized on the NPC; it is not a full audit of other legacy equip writers. Refresh/backpack paging consistency, grant revocation races and multiclient user experience need browser tests after source staging.
+- Keep `public.character_stock` shop stock separate. The P5 future NPC quest item request ledger remains a **future** transactional story feature, not an authorization derived from combat control.
+- Release HOLD includes original source contributions, historical 22/34 `players.sheet` writers, 29/31 nonmap and two protected world-map triggers, encrypted independent PostgreSQL17 plus all 340 Supabase Storage objects, no hosted SQL/merge/deploy without owner approval; agents/automations OFF.
