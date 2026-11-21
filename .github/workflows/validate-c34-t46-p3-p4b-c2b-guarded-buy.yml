@@ -10,6 +10,8 @@ on:
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b5_flag01_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b6_stock_lock_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b8_manager_qty_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b8_manager_quantity_pg17.sql'
       - '.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_town_presence_pg17.sql'
       - 'pages/town/[id].js'
@@ -32,6 +34,8 @@ on:
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b5_flag01_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b6_stock_lock_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b8_manager_qty_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b8_manager_quantity_pg17.sql'
       - '.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml'
   workflow_dispatch:
 permissions:
@@ -68,6 +72,7 @@ jobs:
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b5_flag01_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b6_stock_lock_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b8_manager_qty_signed.mjs
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b_guard_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2_merchant_commerce_source.mjs
