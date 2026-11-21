@@ -76,7 +76,7 @@ export async function runC34B14P10SignedBrowser({
   await login(roles.OWNER);
   await page.getByTestId("p10-ready").waitFor({timeout:25000});
   await page.getByTestId("p10-worn").getByText("P7 sword").waitFor();
-  await page.getByTestId("p10-rights").getByText(/Backpack: read/).waitFor();
+  await page.getByTestId("p10-rights").filter({hasText:/Backpack: read/}).waitFor();
   assert.equal(rpcCalls.filter(x=>x==="c34_b14_p7_npc_backpack_page_v1").length,0,
    "Open Profile must not eagerly load private backpack");
   await page.getByRole("button",{name:"Open backpack"}).click();
@@ -105,7 +105,7 @@ export async function runC34B14P10SignedBrowser({
   await grant("view_backpack",true);
   await grant("manage_equipment",true);
   await page.getByRole("button",{name:"Refresh permissions"}).click();
-  await page.getByTestId("p10-rights").getByText(/Equipment management: granted/).waitFor();
+  await page.getByTestId("p10-rights").filter({hasText:/Equipment management: granted/}).waitFor();
   await page.getByRole("button",{name:"Open backpack"}).click();
   await page.getByTestId("p10-item").first().waitFor();
   await page.getByRole("button",{name:"Load more"}).click();
@@ -113,7 +113,7 @@ export async function runC34B14P10SignedBrowser({
   await page.getByRole("button",{name:"Load more"}).click();
   await page.getByText("P7 map").first().waitFor();
   const before=sql("SELECT coalesce(is_equipped,false)::text FROM public.inventory_items WHERE id="+q(ids[4]));
-  assert.equal(before,"f");
+  assert.equal(before,"false");
   await page.getByLabel("Equipment slot").selectOption("misc_1");
   await page.getByRole("button",{name:"Equip P7 map"}).click();
   await page.getByRole("button",{name:"Unequip P7 map"}).waitFor();
