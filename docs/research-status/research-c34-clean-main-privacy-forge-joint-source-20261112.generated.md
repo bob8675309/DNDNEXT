@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4eca858250e21b541cf657fd8ed676dce58f9421` |
+| Exact source commit represented by this archive snapshot | `d50f7a513d1fa019b516d9385b96c19b48fbc99c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): close G2 test fingerprint helper after initial Node syntax RED |
+| Last source commit title | test(C34): align disposable G2 character columns with original global select, keep strict 42501 negative |
 | Files changed relative to main | 284 (225 non-docs; 59 docs) |
 | Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
