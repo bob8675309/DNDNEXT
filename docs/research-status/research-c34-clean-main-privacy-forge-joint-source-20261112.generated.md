@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f3bc3e2f9a6dc923052829f94486e28f1cd2ba9b` |
+| Exact source commit represented by this archive snapshot | `43160917908980de2ada1b49c1d31a673bfe0673` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record B14-P2 research implementation with signed green explicitly pending and release holds |
+| Last source commit title | docs(c34): set explicit P2 pending-signed handoff as current active work; preserve historical records |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B14_P2_CANDIDATE_PENDING_SIGNED_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
