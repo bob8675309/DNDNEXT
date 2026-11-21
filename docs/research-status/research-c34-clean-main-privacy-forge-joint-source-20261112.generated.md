@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `538c0690824153213dd97a5ee41d00d0d6664233` |
+| Exact source commit represented by this archive snapshot | `dc2ca0d574b6f1660615c6a9a909a249ec865f71` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): publish exact B4 signed T28+T33 Green / T28-only Stage2 RED and next bounded review |
+| Last source commit title | docs(c34): append accepted signed B4 guarded town, Stage2 negative and original fixture failure history |
 | Files changed relative to main | 299 (237 non-docs; 62 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
