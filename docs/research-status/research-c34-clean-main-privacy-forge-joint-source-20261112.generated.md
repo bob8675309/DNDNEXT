@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `68b9179298b146bd666329830613ece8923e5e4c` |
+| Exact source commit represented by this archive snapshot | `91102a05921fbeb75eda3a8131050a1faf34f256` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): signed P4B town original ACL/roster and real Bazaar/Profile browser handoff |
-| Files changed relative to main | 273 (217 non-docs; 56 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(C34): add disposable signed P4B-C1 town role/revocation browser coverage |
+| Files changed relative to main | 276 (219 non-docs; 57 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-t46-p3-p4b-c1-town-roles-revoke.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P3_P4B_TOWN_SIGNED_2026-11-20.md`
+- `docs/research/C34_T46_P3_P4B_C1_TOWN_ROLE_BROWSER_2026-11-20.md`
+- `scripts/integration/c34/test_t46_p3_p4b_c1_town_roles_revoke_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -42,6 +44,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t46-p3-p4a_combined-npc-profile-print-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-a-town-source-presence.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-b-real-town-browser.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c1-town-roles-revoke.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -72,8 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
-- `docs/research/C34_T24_CURRENT_NEXT_NPC_MANAGER_SIGNED_PDF_2026-11-14.md`
-- … 223 more
+- … 226 more
 
 ## Trust and update procedure
 
