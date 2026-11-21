@@ -1,0 +1,86 @@
+name: C34 T46-GLOBAL-G1 source-original player RPC RED to held Stage1 GREEN (disposable)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t46_global_g1_player_rpc_red_green_signed.mjs'
+      - '.github/workflows/validate-c34-t46-global-g1-player-rpc-signed.yml'
+      - 'scripts/integration/c34/sources/02_npc_profile_stage1.sql'
+      - 'sql/20260804_01_multi_player_character_forge_v2.sql'
+      - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t46_global_g1_player_rpc_red_green_signed.mjs'
+      - '.github/workflows/validate-c34-t46-global-g1-player-rpc-signed.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-original-pc-permissions-matrix:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_C34_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+    steps:
+      - name: Checkout source-locked research only, no retained credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Static source and fixture integrity
+        run: |
+          node --check scripts/integration/c34/test_t46_global_g1_player_rpc_red_green_signed.mjs
+          node --test scripts/integration/c34/test_t46_p2_profile_source.mjs
+      - name: Lockfile install for local signed supabase-js
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Create isolated PG17 with locally signed GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/t46-global-g1/supabase"
+          cat > "$RUNNER_TEMP/t46-global-g1/supabase/config.toml" <<'TOML'
+          project_id = "t46-global-g1-original-stage1"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+          cd "$RUNNER_TEMP/t46-global-g1"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Source original pre-Stage1 Forge and RLS installed ONLY in local PG17
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$GITHUB_ACTIONS" = true
+          (cd "$RUNNER_TEMP/t46-global-g1" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/t46-global-g1-auth-env"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 -f scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          echo 'PASS T46-GLOBAL-G1-ORIGINAL: pre-Stage1 original source installed in disposable PG17'
+      - name: Genuine signed original RED then exact preserved Stage1 GREEN and same-JWT revocation
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "$RUNNER_TEMP/t46-global-g1-auth-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          node scripts/integration/c34/test_t46_global_g1_player_rpc_red_green_signed.mjs
+      - name: Stop local PG17 and remove local signed identities
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/t46-global-g1" ]; then
+            cd "$RUNNER_TEMP/t46-global-g1"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          fi
