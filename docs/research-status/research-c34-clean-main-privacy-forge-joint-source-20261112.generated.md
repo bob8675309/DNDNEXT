@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7b49c652d8d33ec9278c0e6243ce4adf6fbb6bc5` |
+| Exact source commit represented by this archive snapshot | `43faa4936d4ad4f8013e2d9bec00c54fe4afb926` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept signed P4, preserve future NPC quest item request P5 tests and quest schema drift release hold |
-| Files changed relative to main | 350 (270 non-docs; 80 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | docs(c34): propose NPC interaction tiers as orthogonal visibility/equipment/combat grants plus scoped spell control RFC |
+| Files changed relative to main | 351 (270 non-docs; 81 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -66,13 +65,13 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
+- `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
-- `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 300 more
+- … 301 more
 
 ## Trust and update procedure
 
