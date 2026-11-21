@@ -779,6 +779,7 @@ for(const [name,id] of Object.entries(ids))
  // PG17; no hosted SQL, original storefront, or world map writes.
  await runT46C2B11StockUiSigned({
    env,root,actors,newActor:actor,merchantId:ids.merchant,townId,
+   merchantOriginalBytes:merchantBytes,
    browser,sql,q,lit,walletOf,invCount
  });
  // Roaming/camping seller contract is intentionally NOT defined in this
