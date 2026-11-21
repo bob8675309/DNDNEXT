@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2362a621674ae8f495e68df9eb66628c762fc45e` |
+| Exact source commit represented by this archive snapshot | `21d6b18f5b6e5baba0aa2dd06d9480d456b92ec3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: run original source signed inventory role matrix after inherited B2–B12 |
+| Last source commit title | C34 B14-P1: validate signed source-locked inventory authorization after B2–B12 in CI |
 | Files changed relative to main | 334 (260 non-docs; 74 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
