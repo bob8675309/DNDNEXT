@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `31c36e9f3d8c177680287c4a0f855ba71fd7f62e` |
+| Exact source commit represented by this archive snapshot | `39b73c5b5c80288328e967e6b19fe21103996966` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): stage additive P6 NPC tier flags and pending-offer/GM-consent versus explicit companion auto-accept SQL |
-| Files changed relative to main | 352 (271 non-docs; 81 docs) |
+| Last source commit title | test(c34): signed P6 NPC read-only hire, independent offer consent, delegated auto-accept, revoke and concurrency suite |
+| Files changed relative to main | 353 (272 non-docs; 81 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p6_npc_capabilities_and_offers_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p6_npc_offers_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
-- … 302 more
+- … 303 more
 
 ## Trust and update procedure
 
