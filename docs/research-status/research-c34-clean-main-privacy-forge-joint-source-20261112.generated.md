@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9922bc27ddb98fa8ee4487b123bf2928b816b1a3` |
+| Exact source commit represented by this archive snapshot | `049d7574937ea3a7faaa778a01560c2a687a33aa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): signed original reroll vs seller-lock and browser stock editor tests |
+| Last source commit title | ci(c34): run B9 signed reroll/browser source candidate |
 | Files changed relative to main | 310 (244 non-docs; 66 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
