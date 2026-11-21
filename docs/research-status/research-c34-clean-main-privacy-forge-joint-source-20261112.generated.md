@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c44da2d862564bb028ddd8c25648fae62b61ffda` |
+| Exact source commit represented by this archive snapshot | `ecef46bf76dcfa694cc764d851b642a6f1e843cb` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B12: record accepted 10 signed races and next protected C2-B13 writer census |
+| Last source commit title | C34 C2-B12: append 90K signed 10/10 receipt, 409 retry risk and bounded B13 callsite next |
 | Files changed relative to main | 327 (255 non-docs; 72 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
