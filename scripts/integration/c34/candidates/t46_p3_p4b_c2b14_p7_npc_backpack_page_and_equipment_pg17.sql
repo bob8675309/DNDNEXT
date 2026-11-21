@@ -13,6 +13,13 @@ DO $p7_guard$ BEGIN
  END IF;
 END $p7_guard$;
 
+-- Disposable C34 fixtures use an intentionally reduced June inventory table
+-- without created_at. Live production TABLE METADATA has created_at timestamptz.
+-- Fill this missing column ONLY here, guarded to disposable PG17 above; never
+-- rewrite the source-original shared fixture or hosted table as a workaround.
+ALTER TABLE public.inventory_items
+ ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
+
 CREATE OR REPLACE FUNCTION public.c34_b14_p7_npc_backpack_page_v1(
  p_npc_id uuid,
  p_page_size integer DEFAULT 20,
