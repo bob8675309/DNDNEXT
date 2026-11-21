@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3db1c2107a9bdeaec7c64d3aedce5b4df0620327` |
+| Exact source commit represented by this archive snapshot | `f8c2db495569d38eed2d3ea0eca7c36937148aee` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B12: source-grounded PostgREST 40001/HTTP409/automatic POST retry release review (no SQL) |
-| Files changed relative to main | 326 (255 non-docs; 71 docs) |
+| Last source commit title | C34 C2-B12: record exact 90K signed quantity/reroll races, unchanged originals and C2-B13 next |
+| Files changed relative to main | 327 (255 non-docs; 72 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_C2_B12_HTTP_CONFLICT_RETRY_REVIEW_2026-11-21.md`
+- `docs/research/C34_T46_P3_P4B_C2_B12_QUANTITY_REROLL_EPOCH_SIGNED_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
-- … 276 more
+- … 277 more
 
 ## Trust and update procedure
 
