@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `360798f15cc7d83118f3128b04923bcfe9f694de` |
+| Exact source commit represented by this archive snapshot | `a0719cc841b160355b578e989ba3f993ccc3727e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append source-locked baseline B14-P2 signed success and concurrency/Forge release hold |
-| Files changed relative to main | 340 (264 non-docs; 76 docs) |
+| Last source commit title | docs(c34): accept real B14-P2-C1 signed concurrency and Town owner-write research; preserve Forge/runtime holds |
+| Files changed relative to main | 341 (264 non-docs; 77 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4B_C2_B14_P2_C1_REAL_SIGNED_CONCURRENCY_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 290 more
+- … 291 more
 
 ## Trust and update procedure
 
