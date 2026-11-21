@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `139e27dcc3f7e20cf16001ec14d9caafd24ad58a` |
+| Exact source commit represented by this archive snapshot | `9439fe14533ec75f7d40ab3503bfe6e346dd2ce4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append owner moving merchant sale policy, scope and required signed travel regression |
+| Last source commit title | docs(c34): annotate B6 concurrency dossier with approved moving-merchant trading and camping boundary |
 | Files changed relative to main | 303 (239 non-docs; 64 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4B_C2_B6_MERCHANT_CONCURRENCY_SOURCE_SIGNED_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
