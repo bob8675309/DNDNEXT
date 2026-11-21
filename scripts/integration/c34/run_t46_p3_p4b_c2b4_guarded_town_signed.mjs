@@ -137,12 +137,12 @@ export async function runT46C2B4FlaggedTown({
  const roleBytes=fs.readFileSync(path.join(root,
    "scripts/integration/c34/t31_disposable_game_manager_role_unification_pg17.sql"));
  const roleBlob=createHash("sha1").update(Buffer.concat([
-  Buffer.from("blob "+roleBytes.length+"\\0"),roleBytes])).digest("hex");
+  Buffer.from("blob "+roleBytes.length+"\0"),roleBytes])).digest("hex");
  assert.equal(roleBlob,"46da7b3b33730df6f739e850c1c09b35699f040b",
   "T31 role projection original source drift");
  const roleText=roleBytes.toString("utf8");
  const roleStart=roleText.indexOf("CREATE OR REPLACE FUNCTION public.c34_game_manager_capabilities_research_v1()");
- const roleEnd=roleText.indexOf("\\nCOMMIT;",roleStart);
+ const roleEnd=roleText.indexOf("\nCOMMIT;",roleStart);
  assert.ok(roleStart>=0 && roleEnd>roleStart,"T31 original read-only function/grants missing");
  const roleOnly=roleText.slice(roleStart,roleEnd);
  assert.ok(roleOnly.includes("REVOKE ALL ON FUNCTION public.c34_game_manager_capabilities_research_v1()"));
