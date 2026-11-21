@@ -5,19 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `821f4d7971274c26a32ff0f5ab36a0c8dd0b2265` |
+| Exact source commit represented by this archive snapshot | `91119fbdcbd3492d6dd346a8a12b81f7c480f436` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): capture pending B10 cross-writer signed candidate and owner fail-closed decision |
+| Last source commit title | test(c34): compare full merchant stock row before delete/dump; signed stale payload and price negative |
 | Files changed relative to main | 315 (247 non-docs; 68 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B10_MANUAL_STOCK_BULK_WRITERS_2026-11-21.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b10_manual_stock_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b10_stock_writers_signed.mjs`
 
 ## Research-branch change inventory versus main
 
