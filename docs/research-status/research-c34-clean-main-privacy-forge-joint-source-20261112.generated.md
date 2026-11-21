@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `334b14f6d0c85f5d9e88549ee4157a42770e1717` |
+| Exact source commit represented by this archive snapshot | `3db1c2107a9bdeaec7c64d3aedce5b4df0620327` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B12: require source syntax and signed B8/B9 race suite in PG17 CI |
-| Files changed relative to main | 325 (255 non-docs; 70 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | C34 C2-B12: source-grounded PostgREST 40001/HTTP409/automatic POST retry release review (no SQL) |
+| Files changed relative to main | 326 (255 non-docs; 71 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `docs/research/C34_T46_C2_B12_HTTP_CONFLICT_RETRY_REVIEW_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
-- … 275 more
+- … 276 more
 
 ## Trust and update procedure
 
