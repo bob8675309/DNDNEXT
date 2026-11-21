@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `61ff28cf1409d791c0ce3761df3914ab37c564d8` |
+| Exact source commit represented by this archive snapshot | `d44452f99fa271042f28f70a10b28a2d5d2eb417` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): keep NPC backpack lazy-paged and discard stale selected-NPC results in source-only client adapter |
-| Files changed relative to main | 360 (277 non-docs; 83 docs) |
+| Last source commit title | test(c34): verify lazy NPC backpack paging, stale target cancellation, redaction, fail-closed and source-original UI/SQL parity |
+| Files changed relative to main | 361 (278 non-docs; 83 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
-- … 310 more
+- … 311 more
 
 ## Trust and update procedure
 
