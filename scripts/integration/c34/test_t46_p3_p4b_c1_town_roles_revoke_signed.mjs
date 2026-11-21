@@ -439,8 +439,11 @@ try{
    await p.getByText("T46 Visiting Merchant",{exact:true}).first().waitFor({timeout:45000});
    assert.ok(seen.some(url=>url.includes("/rest/v1/rpc/c34_t46_get_town_presence_v1")),
      label+" bypassed signed town projection");
-   assert.ok(!seen.some(url=>url.includes("/rest/v1/characters?")),
-     label+" queried raw characters roster");
+   const rawCharacterReads=seen.filter(url=>url.includes("/rest/v1/characters?"));
+   if(rawCharacterReads.length)console.error("T46-P4B-C1-UNEXPECTED-RAW-CHARACTERS",
+     JSON.stringify({actor:label,urls:rawCharacterReads.slice(0,8)}));
+   assert.equal(rawCharacterReads.length,0,
+     label+" unexpectedly requested raw characters REST: "+JSON.stringify(rawCharacterReads.slice(0,8)));
    return p;
  }
  let gmTown=null;
