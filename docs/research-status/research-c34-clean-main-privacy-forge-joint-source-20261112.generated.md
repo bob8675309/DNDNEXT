@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7466bddcb282a51c512c84be734918f39f952208` |
+| Exact source commit represented by this archive snapshot | `c322f0c273710af7c95df88d4b9111c52ae1905d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): isolate B10 purchases with newly signed funded buyer; preserve B2-B9 wallets |
+| Last source commit title | test(c34): preserve original buyer Stock not found P0001 in B10 dump race |
 | Files changed relative to main | 315 (247 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
