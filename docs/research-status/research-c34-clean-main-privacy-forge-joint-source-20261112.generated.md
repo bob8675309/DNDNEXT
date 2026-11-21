@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `77aa5d40903cf91f53a5d2fd113b64bea51b8c6e` |
+| Exact source commit represented by this archive snapshot | `0848f1b74d8d1a39bc48987003c02bf0ccc25ef4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record B7 moving/camping signed contract and repo-full Oct16 reroll source distinction |
+| Last source commit title | test(c34): fix B7 delta model fixture price=3 qty=2 argument order |
 | Files changed relative to main | 305 (240 non-docs; 65 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B7_TRAVEL_CAMP_REROLL_LOCK_RESEARCH_2026-11-21.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs`
 
 ## Research-branch change inventory versus main
 
