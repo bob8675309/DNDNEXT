@@ -270,6 +270,99 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
  assert.equal(state(separateHistorical).owner_type,"player");
  console.log("PASS T46-C2B14-P2-FORGE-DOMAIN-RED: source-shaped character gear remains outside explicit versioned transfer, while original June raw owner RLS still accepts character->player laundering; historical RED only, real original Forge acceptance belongs to separate source-complete joint suite");
 
+
+ // B14-P3 source-only ADDITIVE read context: one Data API call for roles,
+ // owner capabilities and legal visible targets. NOT mounted by gameplay.
+ const contextSql=fs.readFileSync(path.join(root,
+  "scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p3_inventory_context_pg17.sql"),"utf8");
+ assert.match(contextSql,/NOT a migration/);
+ assert.match(contextSql,/coalesce\(c.is_hidden,false\)=false/);
+ assert.match(contextSql,/v_owner_type = 'character'/);
+ sql(contextSql);
+ assert.equal(sql("SELECT has_function_privilege('anon',"+
+  "'public.c34_b14_p3_inventory_context_v1(text,text)','EXECUTE')"),"f");
+ assert.equal(sql("SELECT has_function_privilege('authenticated',"+
+  "'public.c34_b14_p3_inventory_context_v1(text,text)','EXECUTE')"),"t");
+ sql("NOTIFY pgrst,'reload schema'");
+ const context=async(actor,type,id)=>{
+  let response;
+  for(let tries=0;tries<28;tries++){
+   response=await actor.who.rpc("c34_b14_p3_inventory_context_v1",{
+    p_owner_type:type,p_owner_id:id
+   });
+   if(response.error?.code!=="PGRST202")break;
+   await delay(180);
+  }
+  return response;
+ };
+ const hiddenNpc=randomUUID(),hiddenStateNpc=randomUUID(),hiddenMerchant=randomUUID();
+ for(const [id,kind,hidden,stateStr,name] of [
+  [hiddenNpc,"npc",true,"resting","B14 SECRET NPC"],
+  [hiddenStateNpc,"npc",false,"hidden","B14 HIDDEN STATE NPC"],
+  [hiddenMerchant,"merchant",true,"resting","B14 PRIVATE MERCHANT"]
+ ]){
+  sql("INSERT INTO public.characters(id,name,kind,is_hidden,state) VALUES("+
+   q(id)+","+lit(name)+","+lit(kind)+","+(hidden?"true":"false")+","+lit(stateStr)+")");
+ }
+ const ownContext=await context(roles.OWNER,"player",roles.OWNER.id);
+ assert.ifError(ownContext.error);
+ assert.equal(ownContext.data.can_view,true);
+ assert.equal(ownContext.data.can_manage,true);
+ assert.equal(ownContext.data.is_manager,false);
+ assert.equal(ownContext.data.owner_type,"player");
+ assert.equal(ownContext.data.owner_id,roles.OWNER.id);
+ const labels=ownContext.data.targets.map(t=>t.name);
+ assert.ok(labels.includes("P2 Delegated Source"));
+ assert.ok(!labels.includes("B14 SECRET NPC"));
+ assert.ok(!labels.includes("B14 HIDDEN STATE NPC"));
+ assert.ok(!labels.includes("B14 PRIVATE MERCHANT"));
+ assert.ok(!ownContext.data.targets.some(t=>t.kind==="merchant"),
+  "Player should never enumerate merchant direct-send targets");
+ assert.ok(!ownContext.data.targets.some(t=>t.kind==="player"&&t.id===roles.OWNER.id));
+ const otherContext=await context(roles.OWNER,"player",roles.OUTSIDER.id);
+ assert.ifError(otherContext.error);
+ assert.equal(otherContext.data.can_view,false);
+ assert.equal(otherContext.data.can_manage,false);
+ assert.deepEqual(otherContext.data.targets,[]);
+ const observerContext=await context(roles.OBSERVER,"player",roles.OBSERVER.id);
+ assert.ifError(observerContext.error);
+ assert.equal(observerContext.data.is_manager,false);
+ assert.ok(!observerContext.data.targets.some(t=>t.kind==="merchant"));
+ const gmContext=await context(roles.GM,"player",roles.OUTSIDER.id);
+ assert.ifError(gmContext.error);
+ assert.equal(gmContext.data.is_manager,true);
+ assert.equal(gmContext.data.can_view,true);
+ const gmLabels=gmContext.data.targets.map(t=>t.name);
+ assert.ok(gmLabels.includes("B14 SECRET NPC"));
+ assert.ok(gmLabels.includes("B14 HIDDEN STATE NPC"));
+ assert.ok(gmLabels.includes("B14 PRIVATE MERCHANT"));
+ assert.ok(gmContext.data.targets.some(t=>t.kind==="merchant"&&t.id===hiddenMerchant));
+ console.log("PASS T46-C2B14-P3-CONTEXT-PRIVACY: genuine signed players/observer denied manager and hidden NPC/merchant names; real GM receives explicit-role manager and all curated owner targets in ONE RPC");
+
+ const npcNoGrant=await context(roles.OWNER,"npc",npcOther);
+ assert.ifError(npcNoGrant.error);
+ assert.equal(npcNoGrant.data.can_view,false);
+ assert.deepEqual(npcNoGrant.data.targets,[]);
+ sql("UPDATE public.character_permissions SET can_inventory=true WHERE character_id="+q(npc)+
+  " AND user_id="+q(roles.OWNER.id));
+ const delegatedContext=await context(roles.OWNER,"npc",npc);
+ assert.ifError(delegatedContext.error);
+ assert.equal(delegatedContext.data.can_view,true);
+ sql("UPDATE public.character_permissions SET can_inventory=false,can_edit=false WHERE character_id="+q(npc)+
+  " AND user_id="+q(roles.OWNER.id));
+ const revokedContext=await context(roles.OWNER,"npc",npc);
+ assert.ifError(revokedContext.error);
+ assert.equal(revokedContext.data.can_view,false);
+ assert.deepEqual(revokedContext.data.targets,[]);
+ const forgedCharContext=await context(roles.OWNER,"character",forgeCharId);
+ assertDenied(forgedCharContext,"unreviewed Forge character-scope context","42501");
+ const anonContext=await context({who:(await import("@supabase/supabase-js")).createClient(
+  env.DNDNEXT_C34_LOCAL_URL,env.DNDNEXT_C34_LOCAL_ANON_KEY,
+  {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}
+ )},"player",roles.OWNER.id);
+ assertDenied(anonContext,"anonymous context");
+ console.log("PASS T46-C2B14-P3-CONTEXT-REVOKE: signed NPC delegation allowed then revoked without JWT renewal; unreviewed character scope and anon denied");
+
  const demotedItem=seed("GM role revoked","player",roles.OUTSIDER.id,roles.OUTSIDER.id);
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(roles.GM.id));
  assertDenied(await single(roles.GM,demotedItem,"merchant",merchant,"player",roles.OUTSIDER.id),
