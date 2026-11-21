@@ -12,7 +12,6 @@ DO $p4_local_guard$
 BEGIN
   IF current_database() <> 'postgres'
      OR current_setting('server_version_num')::integer NOT BETWEEN 170000 AND 179999
-     OR inet_server_addr() IS DISTINCT FROM '127.0.0.1'::inet
      OR to_regclass('auth.users') IS NULL
      OR to_regclass('public.character_permissions') IS NULL
      OR to_regprocedure('public.c34_b14_p2_transfer_inventory_item_v1(uuid,text,text,text,text)') IS NULL
