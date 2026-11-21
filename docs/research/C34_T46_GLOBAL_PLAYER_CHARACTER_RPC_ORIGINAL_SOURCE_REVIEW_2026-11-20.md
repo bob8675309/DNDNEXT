@@ -18,3 +18,6 @@
 - Reconcile the 22/34 legacy `players.sheet` writers, all inherited original PR contributions, original character creation/restore, Sheet/Print, Forge, player-account and GM operations; independent encrypted PG17 and 340 Storage restored-byte checks, ACL/rollback and explicit owner GO remain separate release gates.
 
 **Priority and execution discipline:** This is **review evidence** discovered while resolving T46-P3-P4B-C1; do not interrupt, relabel, or weaken the exact signed C1 town role/focus gate. Next C1 Actions run on executable `97446c710e85b056dfc88cfe844ef4a19a713d08` is pending at authorship; subsequent full release/security work must explicitly carry forward this independent RPC red-risk item.
+
+### Subsequent town-only outcome
+Exact C1 local signed browser `97446c710e85b056dfc88cfe844ef4a19a713d08` [#44842386219](https://github.com/bob8675309/DNDNEXT/actions/runs/44842386219) **SUCCESS** for Town roles, hidden NPC, same-JWT focus revoke, Bazaar Profile-first. It deliberately required the separate original global PlayerProfile fallback raw query to be denied **403/42501**. **It did not stage or sign-test the original `get_my_player_characters_v2()` body**. Source-defined full-Sheet inventory-only/convert-only RPC risk remains first independent next security gate; do not claim disclosure or production readiness.
