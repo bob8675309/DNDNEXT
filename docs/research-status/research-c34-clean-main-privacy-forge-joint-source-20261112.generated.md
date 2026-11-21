@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `77ce4dc21e91ccc498f459993e36d3b93d93f9b3` |
+| Exact source commit represented by this archive snapshot | `8e50e3b6c5042d11347281fe1f1f361d44fef579` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B13: record owner-requested weekly low-usage safe automation resume and B14 next |
+| Last source commit title | C34 C2-B13: append verified weekly ChatGPT safe agent reactivation, Plus budget limits and no paid Codex |
 | Files changed relative to main | 330 (257 non-docs; 73 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
