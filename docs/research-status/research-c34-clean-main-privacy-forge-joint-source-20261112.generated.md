@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `173a582dfd9535a2023235dc272737ea8278b605` |
+| Exact source commit represented by this archive snapshot | `97446c710e85b056dfc88cfe844ef4a19a713d08` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): isolate denied global player-profile reader from signed town roster ACL |
+| Last source commit title | test(C34): self-check exact global linked-profile URL classifier and town negative |
 | Files changed relative to main | 276 (219 non-docs; 57 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit | 3 files (1 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_P3_P4B_C1_TOWN_ROLE_BROWSER_2026-11-20.md`
 - `scripts/integration/c34/test_t46_p3_p4b_c1_town_roles_revoke_signed.mjs`
 
 ## Research-branch change inventory versus main
