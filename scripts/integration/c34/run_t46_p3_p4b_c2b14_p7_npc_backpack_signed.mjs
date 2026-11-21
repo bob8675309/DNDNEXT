@@ -34,6 +34,9 @@ export async function runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles}){
  assert.match(source,/LIMIT p_page_size\+1/);
  assert.match(source,/p_page_size NOT BETWEEN 1 AND 40/);
  assert.match(source,/manage_equipment/);
+ assert.ok(source.indexOf("WHERE i.id=p_item_id AND i.owner_type='npc'") <
+  source.indexOf("FROM public.characters c WHERE c.id=p_npc_id FOR UPDATE"),
+  "P7 item lock must precede NPC lock to avoid inversion with accepted P6 offers");
  assert.doesNotMatch(source,/CREATE TABLE|ALTER POLICY|DROP FUNCTION|DROP TABLE/);
  sql(source);
  for(const sig of [
@@ -225,6 +228,18 @@ export async function runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles}){
  assert.equal(state(racer).is_equipped,true);
  assert.equal(state(racer).equip_slot,"weapon_3");
  console.log("PASS T46-C2B14-P7-CONCURRENCY: actual concurrently signed equip requests serialize on NPC lock, one succeeds and loser gets 40001");
+
+ // Concurrent updates to DISTINCT item rows and the SAME free slot must
+ // still serialize on the NPC row after locking each item in shared order.
+ const sameSlot=await Promise.all([
+  equip(roles.OWNER,hired,ids[1],true,"weapon_2",false),
+  equip(roles.GM,hired,ids[3],true,"weapon_2",false)
+ ]);
+ assert.equal(sameSlot.filter(r=>!r.error).length,1);
+ assert.equal(sameSlot.filter(r=>r.error).length,1);
+ assert.equal(sameSlot.find(r=>r.error)?.error.code,"23505");
+ assert.equal([ids[1],ids[3]].filter(id=>state(id).is_equipped).length,1);
+ console.log("PASS T46-C2B14-P7-DISTINCT-SLOT: distinct-item same-slot signed race serializes item→NPC, exactly one equip without duplicate slot or lock inversion");
 
  const {createClient}=await import("@supabase/supabase-js");
  const anon=createClient(env.DNDNEXT_C34_LOCAL_URL,env.DNDNEXT_C34_LOCAL_ANON_KEY,

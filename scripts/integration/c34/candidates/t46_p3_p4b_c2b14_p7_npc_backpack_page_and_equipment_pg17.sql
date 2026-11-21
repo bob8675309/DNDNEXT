@@ -127,9 +127,15 @@ BEGIN
    RAISE EXCEPTION 'Unequip must not supply a slot' USING ERRCODE='22023';
  END IF;
  v_manager:=private.c34_b14_p2_inventory_manager_v1();
- -- Authoritatively lock NPC before item. Concurrent equipment updates for
- -- this one NPC serialize; migrations must audit lock order with ALL item
- -- transfers and pending NPC offer settlement before deploying.
+ -- Global order must be ITEM -> NPC: P6 pending offer and original P2/P4
+ -- transfers already acquire the inventory item first. Reversing that order
+ -- allows an equip-versus-offer deadlock under simultaneous writes.
+ SELECT * INTO v_item FROM public.inventory_items i
+ WHERE i.id=p_item_id AND i.owner_type='npc' AND i.owner_id=p_npc_id::text
+ FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'NPC item not found' USING ERRCODE='42501'; END IF;
+ -- The NPC row still serializes distinct-item attempts into one equipment
+ -- slot, after the item lock is acquired in the shared order.
  SELECT c.kind,c.tags,coalesce(c.is_hidden,false),coalesce(c.state,'')
  INTO v_kind,v_tags,v_hidden,v_state
  FROM public.characters c WHERE c.id=p_npc_id FOR UPDATE;
@@ -148,10 +154,6 @@ BEGIN
   END IF;
  END IF;
 
- SELECT * INTO v_item FROM public.inventory_items i
- WHERE i.id=p_item_id AND i.owner_type='npc' AND i.owner_id=p_npc_id::text
- FOR UPDATE;
- IF NOT FOUND THEN RAISE EXCEPTION 'NPC item not found' USING ERRCODE='42501'; END IF;
  IF coalesce(v_item.is_equipped,false) IS DISTINCT FROM p_expected_equipped THEN
    RAISE EXCEPTION 'Equipment state changed; refresh' USING ERRCODE='40001';
  END IF;
