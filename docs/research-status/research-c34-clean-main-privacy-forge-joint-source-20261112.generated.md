@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `97446c710e85b056dfc88cfe844ef4a19a713d08` |
+| Exact source commit represented by this archive snapshot | `433a30e74016cd26bba422a73b5f33d1500eab51` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): self-check exact global linked-profile URL classifier and town negative |
-| Files changed relative to main | 276 (219 non-docs; 57 docs) |
-| Last source commit | 3 files (1 non-docs; 2 authored docs) |
+| Last source commit title | docs(C34): hold original global player-character SECURITY DEFINER full-Sheet exposure risk |
+| Files changed relative to main | 277 (219 non-docs; 58 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/integration/c34/test_t46_p3_p4b_c1_town_roles_revoke_signed.mjs`
+- `docs/research/C34_T46_GLOBAL_PLAYER_CHARACTER_RPC_ORIGINAL_SOURCE_REVIEW_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
-- … 226 more
+- … 227 more
 
 ## Trust and update procedure
 
