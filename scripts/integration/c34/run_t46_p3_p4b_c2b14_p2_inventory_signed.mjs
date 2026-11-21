@@ -7,6 +7,7 @@ import {randomUUID,createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
 import {runC34B14P4ControlledGearSigned} from "./run_t46_p3_p4b_c2b14_p4_controlled_gear_signed.mjs";
 import {runC34B14P6NpcOffersSigned} from "./run_t46_p3_p4b_c2b14_p6_npc_offers_signed.mjs";
+import {runC34B14P7NpcBackpackSigned} from "./run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const sourcePath="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p2_inventory_authority_pg17.sql";
@@ -400,6 +401,7 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
 
  await runC34B14P4ControlledGearSigned({env,sql,q,lit,roles});
  await runC34B14P6NpcOffersSigned({env,sql,q,lit,roles});
+ await runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles});
 
  const demotedItem=seed("GM role revoked","player",roles.OUTSIDER.id,roles.OUTSIDER.id);
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(roles.GM.id));
