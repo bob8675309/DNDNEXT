@@ -168,6 +168,7 @@ const originalFingerprint=()=>{
  return sql("SELECT string_agg(id::text||':'||md5(sheet::text),'|' ORDER BY id) "+
  "FROM (SELECT character_id AS id,sheet FROM public.character_sheets "+
  "WHERE character_id IN ("+q(pcEditor)+","+q(pcOwner)+")) s");
+};
 assert.equal(sql("SELECT current_database()"),"postgres");
 assert.ok(sql("SHOW server_version").startsWith("17."));
 assert.equal(sql("SELECT to_regprocedure('public.get_my_player_characters_v2()') IS NOT NULL"),"t");

@@ -1537,3 +1537,8 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 - **CI at authorship PENDING, NOT GREEN.** Read exact new workflow markers; if RED, preserve log and do bounded test/overlay repair before any acceptance. G2 cannot substitute for all original Player Account/Forge/Creator/Sheet/Print/route parity; no original PR closure.
 - **Remaining release HOLD:** 22/34 original Sheet writers, original Forge 29/31 nonmap+two world-map-protected triggers, independent encrypted PG17 restoration and all 340 Storage object bytes, source ACL/rollback and explicit owner GO. Merchant C2, Creator Story C3 and legacy T28/T33 combos still unverified.
 - **ONE NEXT:** inspect new signed G2 run; then plan bounded C2 merchant buy/wallet/inventory, NOT cutover.
+
+## 2026-11-20 CST — G2 initial source-parse failure retained, one-line research runner correction
+- [Initial exact G2 Actions #44849074191](https://github.com/bob8675309/DNDNEXT/actions/runs/44849074191) executable 66bf81221294a059673e997da746124e279b0516 **FAILURE** at the earliest node --check step, line 203 unexpected reserved word. The test's originalFingerprint arrow callback was not closed before top-level await. No disposable Supabase services or browser had started; this cannot be a gameplay failure/signed original RED.
+- Bound the change strictly to adding one closing brace in test_t46_global_g2_player_profile_signed_browser.mjs (new blob 4a77ebe87a428f21fde6a05f917541fe08d30fa9). Preserve original app/global panel, #345 Stage1/2/3, all prior C1/G1 acceptance, read-only map and production release hold.
+- **ONE NEXT:** exact new G2 Actions actual browser, accept only signed markers, preserve other RED with logs. Other release gates still untouched.
