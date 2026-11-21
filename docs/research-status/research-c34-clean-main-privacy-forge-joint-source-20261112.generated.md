@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `eb038c277dce1ad70b2e37c87bfc413e4d91b994` |
+| Exact source commit represented by this archive snapshot | `951ce2ad6dffbd8b68606c7a403b4d25e6d87e23` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): correct signed P10 boolean cast and rights paragraph locator |
+| Last source commit title | fix(c34): P10 signed Chromium uses fresh disposable Next server after B4 stops old origin |
 | Files changed relative to main | 372 (286 non-docs; 86 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
