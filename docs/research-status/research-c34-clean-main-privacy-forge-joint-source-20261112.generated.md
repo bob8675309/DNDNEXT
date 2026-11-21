@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `124040d8b2c806246e9f24ee9fa98aee586f9ca1` |
+| Exact source commit represented by this archive snapshot | `719c359beab69d56fc3d21072e23607a96dfdc2e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): define side-effect-free GM NPC tier preset compiler and strict inventory/tactical UI projection |
-| Files changed relative to main | 355 (273 non-docs; 82 docs) |
+| Last source commit title | test(c34): assert 4 NPC permission tiers, read-only hire, independent withdraw and temporary tactical-only projection |
+| Files changed relative to main | 356 (274 non-docs; 82 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
-- … 305 more
+- … 306 more
 
 ## Trust and update procedure
 
