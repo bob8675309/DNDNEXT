@@ -8,6 +8,8 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p2_forge_town_bridge_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
     paths:
@@ -15,6 +17,8 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p2_forge_town_bridge_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
 permissions:
@@ -43,6 +47,11 @@ jobs:
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs
+      - name: B14-P6 GM tier presets and encounter-only UI authority model
+        run: |
+          node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs
       - name: Full checked-in SQL role override scan and exact original RED preservation
         run: node scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs
       - name: No merchant panel or protected world map edits
