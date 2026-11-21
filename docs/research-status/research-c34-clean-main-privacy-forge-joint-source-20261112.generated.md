@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e1839e0a9ff123fa56f119a564f72284a4814bb1` |
+| Exact source commit represented by this archive snapshot | `39bd0c2a8a01c6da48ed639bd11909455dad189f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-lock NPC offer consent bypass crosswalk as explicit expected legacy/P2/page RED gates |
+| Last source commit title | ci(c34): keep original NPC direct-send consent bypasses visible as explicit source-only RED release gate |
 | Files changed relative to main | 362 (279 non-docs; 83 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
