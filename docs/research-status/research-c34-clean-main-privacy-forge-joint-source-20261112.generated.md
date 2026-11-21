@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2a80aab4a5f48b989cf767327a4bcf233cd9a34b` |
+| Exact source commit represented by this archive snapshot | `2e5c26cfd5d4c29e6658e821478f0071d46c119d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): retain second B6 PromiseLike harness failure and source-neutral fix |
+| Last source commit title | docs(c34): promote B6 signed merchant lock and stale quantity RED with exact job, retain failed fixtures |
 | Files changed relative to main | 303 (239 non-docs; 64 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
