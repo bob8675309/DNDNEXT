@@ -4,12 +4,12 @@
 // A future SERVER must validate auth, NPC/quest entitlement, item ownership,
 // visibility, current RLS and a transactional transfer + idempotent receipt.
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const RECIPIENT_TYPES=new Set(["player","npc","merchant"]);
+const COUNTERPARTY_TYPES=new Set(["player","npc","merchant"]);
 const ITEM_KEY=/^[a-z0-9][a-z0-9._:-]{0,127}$/i;
 const PROPOSAL_KEYS=new Set([
-  "requestId","intent","itemId","requestedItemKey","quantity","recipient","questId"
+  "requestId","intent","itemId","requestedItemKey","quantity","counterparty","questId"
 ]);
-const RECIPIENT_KEYS=new Set(["type","id"]);
+const COUNTERPARTY_KEYS=new Set(["type","id"]);
 
 function isObject(v) {
   return typeof v==="object"&&v!==null&&!Array.isArray(v) &&
@@ -33,23 +33,23 @@ function optionalQuestId(value) {
     throw new TypeError("Invalid quest reference");
   return value;
 }
-function recipient(input) {
-  keysOnly(input,RECIPIENT_KEYS,"recipient");
-  if(!RECIPIENT_TYPES.has(input.type))
-    throw new TypeError("Invalid recipient type; no player-character target");
-  return Object.freeze({type:input.type,id:uuid(input.id,"recipient")});
+function counterparty(input) {
+  keysOnly(input,COUNTERPARTY_KEYS,"counterparty");
+  if(!COUNTERPARTY_TYPES.has(input.type))
+    throw new TypeError("Invalid counterparty type; no player-character target");
+  return Object.freeze({type:input.type,id:uuid(input.id,"counterparty")});
 }
 
 export function normalizeQuestItemProposal(input) {
   keysOnly(input,PROPOSAL_KEYS,"item interaction proposal");
   const requestId=uuid(input.requestId,"requestId");
   const questId=optionalQuestId(input.questId);
-  const destination=recipient(input.recipient);
+  const otherParty=counterparty(input.counterparty);
   if(input.intent==="send") {
     if(input.requestedItemKey!==undefined||input.quantity!==undefined)
       throw new TypeError("Send uses one exact item row; request descriptor forbidden");
     return Object.freeze({
-      requestId,intent:"send",questId,recipient:destination,
+      requestId,intent:"send",questId,counterparty:otherParty,
       itemId:uuid(input.itemId,"item"),requestedItemKey:null,quantity:1,
       // UI proposal alone does not write or authorize. Server may reject.
       state:"proposed",mutationAuthorized:false
@@ -63,7 +63,7 @@ export function normalizeQuestItemProposal(input) {
     if(!Number.isSafeInteger(input.quantity)||input.quantity<1||input.quantity>99)
       throw new TypeError("Requested item quantity must be an integer 1-99");
     return Object.freeze({
-      requestId,intent:"request",questId,recipient:destination,
+      requestId,intent:"request",questId,counterparty:otherParty,
       itemId:null,requestedItemKey:input.requestedItemKey,quantity:input.quantity,
       // Even valid quest request is pending ONLY after trusted backend creation;
       // no transfer or item mint ever occurs on proposal normalization.
@@ -73,23 +73,12 @@ export function normalizeQuestItemProposal(input) {
   throw new TypeError("Unsupported item interaction intent");
 }
 
-// UI-only view of server-owned request lifecycle. NEVER persist a transition
-// from this helper or interpret a client status as proof of authorization.
-// Fulfillment requires a trusted SERVER transfer receipt from the SAME
-// transaction that updates inventory + request status + quest progress.
-export function projectQuestItemRequestTransition({status,decision,transferReceiptId=null}) {
-  if(status!=="pending")throw new TypeError("Only pending requests can transition");
-  if(decision==="decline"||decision==="cancel"||decision==="expire"){
-    if(transferReceiptId!==null)throw new TypeError("Nonfulfillment cannot claim a receipt");
-    return Object.freeze({status:{
-      decline:"declined",cancel:"cancelled",expire:"expired"
-    }[decision],requiresServerSettlement:true});
-  }
-  if(decision==="fulfill"){
-    return Object.freeze({
-      status:"fulfilled",transferReceiptId:uuid(transferReceiptId,"server transfer receipt"),
-      requiresServerSettlement:true
-    });
-  }
-  throw new TypeError("Unsupported request transition");
+// UI-only DECISION proposal; does not transition status or claim a receipt.
+// The server must re-check request state + current actor ACL, lock the
+// inventory row, atomically transfer item/mark fulfillment and emit receipt.
+export function planQuestItemRequestDecision({status,decision}) {
+  if(status!=="pending")throw new TypeError("Only pending requests accept decisions");
+  if(!["accept","decline","cancel"].includes(decision))
+    throw new TypeError("Unsupported request decision");
+  return Object.freeze({decision,requiresServerSettlement:true,nextStatus:null});
 }
