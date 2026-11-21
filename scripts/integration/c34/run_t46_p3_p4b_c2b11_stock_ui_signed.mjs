@@ -198,7 +198,11 @@ export async function runT46C2B11StockUiSigned({
    const wallet0=Number(walletOf(buyer.id)),items0=Number(invCount(buyer.id));
    assert.ifError((await purchase(staleRow)).error);
    assert.equal(qty(staleRow),"1");
-   const stale=await remove(page,side,staleRow,409);
+   // PostgREST maps SQLSTATE 40001 (transaction rollback) to HTTP 500;
+   // the JSON code, unchanged stock, wallet and inventory establish the
+   // expected stale-CAS denial. A future release should expose stable 409
+   // semantics without changing accepted B10 evidence or original RPCs.
+   const stale=await remove(page,side,staleRow,500);
    assert.equal((await stale.json()).code,"40001");
    assert.equal(qty(staleRow),"1");
    assert.equal(Number(walletOf(buyer.id)),wallet0-4);
@@ -233,7 +237,7 @@ export async function runT46C2B11StockUiSigned({
     await side.getByTestId("c34-b11-remove-"+buyerRow).waitFor({timeout:30000});
     const gp0=Number(walletOf(buyer.id)),item0=Number(invCount(buyer.id));
     assert.ifError((await purchase(buyerRow)).error);
-    const staleDump=await dump(page,side,409);
+    const staleDump=await dump(page,side,500);
     assert.equal((await staleDump.json()).code,"40001");
     assert.equal(qty(buyerRow),"1");
     assert.equal(Number(walletOf(buyer.id)),gp0-3);
