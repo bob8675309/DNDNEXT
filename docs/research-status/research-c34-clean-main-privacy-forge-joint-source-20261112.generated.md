@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d1886b3ea2c86fe42a98e00c90b06a75dc654330` |
+| Exact source commit represented by this archive snapshot | `019aa7b296301491307a5c18858be7e97e4b16f5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): run owner-approved B7 travel/camping signed buys and deadlock proof after B6 |
+| Last source commit title | ci(c34): run B7 moving+camping trade and reverse-lock-deadlock disposable PG17 checks |
 | Files changed relative to main | 304 (240 non-docs; 64 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
