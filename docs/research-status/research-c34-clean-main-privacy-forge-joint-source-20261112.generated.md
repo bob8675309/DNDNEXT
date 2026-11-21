@@ -5,21 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `646d1b8a1d3e0e77bc149b72e38b615973830a1d` |
+| Exact source commit represented by this archive snapshot | `79b313932c02c3395df57543abec62bbfe3c613a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): accept G2 exact signed original global Profile 42501 RED and temporary guarded browser GREEN |
-| Files changed relative to main | 284 (225 non-docs; 59 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(C34): C2 original merchant-buy signed real town Profile-first ledger runner |
+| Files changed relative to main | 288 (229 non-docs; 59 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_GLOBAL_G2_CURRENT_PLAYER_PROFILE_BROWSER_2026-11-20.md`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2-merchant-purchase.yml`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql`
+- `scripts/integration/c34/test_t46_p3_p4b_c2_merchant_commerce_source.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2_signed_merchant_purchase.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -45,6 +46,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t46-p3-p4b-a-town-source-presence.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-b-real-town-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-p4b-c1-town-roles-revoke.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2-merchant-purchase.yml`
 - `.github/workflows/validate-c34-t46-progression-discovery.yml`
 - `components/NpcPanelTownT28P2Research.jsx`
 - `components/NpcPanelTownT33Research.jsx`
@@ -72,8 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
 - `docs/research/C34_T19_PRIVACY_29_ORIGINAL_SIGNED_2026-11-14.md`
 - `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
-- `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
-- … 234 more
+- … 238 more
 
 ## Trust and update procedure
 
