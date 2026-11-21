@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d7810f8971678b09e79dd852a31ecfc7159ba546` |
+| Exact source commit represented by this archive snapshot | `8b9d45478e7cf488de13ddb362a5733a3e498770` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11-BRACE: assert source-pinned pending-response epochs on both merchant components |
-| Files changed relative to main | 321 (252 non-docs; 69 docs) |
+| Last source commit title | C34 B11-BRACE: genuine signed in-flight RPC actor/merchant switch and revoked-role browser races |
+| Files changed relative to main | 322 (253 non-docs; 69 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b11_brace_pending_rpc_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
-- … 271 more
+- … 272 more
 
 ## Trust and update procedure
 
