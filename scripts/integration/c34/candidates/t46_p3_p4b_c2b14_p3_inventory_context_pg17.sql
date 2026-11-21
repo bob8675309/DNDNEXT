@@ -53,6 +53,7 @@ BEGIN
     v_can_view := EXISTS (
       SELECT 1 FROM public.characters c
       WHERE c.id = v_owner_uuid AND c.kind = 'npc'
+        AND NOT ('player-character' = ANY(coalesce(c.tags,'{}'::text[])))
         AND (v_manager OR (
           coalesce(c.is_hidden,false)=false AND coalesce(c.state,'') <> 'hidden'
         ))
@@ -86,6 +87,7 @@ BEGIN
       SELECT 'npc'::text,c.id::text,
              coalesce(nullif(c.name,''),'NPC')::text
       FROM public.characters c WHERE c.kind='npc'
+        AND NOT ('player-character' = ANY(coalesce(c.tags,'{}'::text[])))
         AND (v_manager OR (
           coalesce(c.is_hidden,false)=false AND coalesce(c.state,'') <> 'hidden'
         ))

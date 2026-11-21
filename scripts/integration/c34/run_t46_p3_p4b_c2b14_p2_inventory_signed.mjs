@@ -305,6 +305,14 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
   sql("INSERT INTO public.characters(id,name,kind,is_hidden,state) VALUES("+
    q(id)+","+lit(name)+","+lit(kind)+","+(hidden?"true":"false")+","+lit(stateStr)+")");
  }
+ // Original Forge player PCs have kind='npc' AND player-character tag;
+ // NPC kind alone is not a safe target or inventory-domain discriminator.
+ const realForgeKindPc=randomUUID();
+ sql("INSERT INTO public.characters(id,name,kind,is_hidden,state,tags) VALUES("+
+  q(realForgeKindPc)+",'P3 REAL FORGE KIND NPC PC','npc',false,'resting',"+
+  "ARRAY['player-character']::text[])");
+ sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) VALUES("+
+  q(realForgeKindPc)+","+q(roles.OWNER.id)+",true,false,false)");
  const ownContext=await context(roles.OWNER,"player",roles.OWNER.id);
  assert.ifError(ownContext.error);
  assert.equal(ownContext.data.can_view,true);
@@ -315,6 +323,7 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
  const labels=ownContext.data.targets.map(t=>t.name);
  assert.ok(labels.includes("P2 Delegated Source"));
  assert.ok(!labels.includes("B14 SECRET NPC"));
+ assert.ok(!labels.includes("P3 REAL FORGE KIND NPC PC"));
  assert.ok(!labels.includes("B14 HIDDEN STATE NPC"));
  assert.ok(!labels.includes("B14 PRIVATE MERCHANT"));
  assert.ok(!ownContext.data.targets.some(t=>t.kind==="merchant"),
@@ -337,8 +346,16 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
  assert.ok(gmLabels.includes("B14 SECRET NPC"));
  assert.ok(gmLabels.includes("B14 HIDDEN STATE NPC"));
  assert.ok(gmLabels.includes("B14 PRIVATE MERCHANT"));
+ assert.ok(!gmLabels.includes("P3 REAL FORGE KIND NPC PC"));
+ const forgeAsNpcOwner=await context(roles.OWNER,"npc",realForgeKindPc);
+ assert.ifError(forgeAsNpcOwner.error);
+ assert.equal(forgeAsNpcOwner.data.can_view,false);
+ assert.deepEqual(forgeAsNpcOwner.data.targets,[]);
+ const forgeAsNpcManager=await context(roles.GM,"npc",realForgeKindPc);
+ assert.ifError(forgeAsNpcManager.error);
+ assert.equal(forgeAsNpcManager.data.can_view,false);
  assert.ok(gmContext.data.targets.some(t=>t.kind==="merchant"&&t.id===hiddenMerchant));
- console.log("PASS T46-C2B14-P3-CONTEXT-PRIVACY: genuine signed players/observer denied manager and hidden NPC/merchant names; real GM receives explicit-role manager and all curated owner targets in ONE RPC");
+ console.log("PASS T46-C2B14-P3-CONTEXT-PRIVACY: genuine signed player/GM exclude Forge player-character-tagged kind=npc from both recipients and NPC owner context; hidden NPC/merchant and observer policies retained in ONE RPC");
 
  // A delegated private NPC must remain manager-only even if its underlying
  // character_permissions row grants inventory access to a normal player.
