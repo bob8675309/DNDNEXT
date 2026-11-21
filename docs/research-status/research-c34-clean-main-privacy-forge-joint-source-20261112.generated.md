@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1ab7925c43d307403e2c9438fb3fe68043c457e6` |
+| Exact source commit represented by this archive snapshot | `44815b6375ab1bafc2ce3c37fa7843d9598c7edf` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: require syntax and original source negatives within full signed B2–B11 CI |
+| Last source commit title | C34 B11: compose exact pristine original source while preserving parent B2 Profile overlay |
 | Files changed relative to main | 319 (251 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b11_stock_ui_signed.mjs`
 
 ## Research-branch change inventory versus main
 
