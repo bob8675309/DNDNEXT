@@ -7,6 +7,7 @@ import path from "node:path";
 import net from "node:net";
 import {randomUUID,createHash} from "node:crypto";
 import {spawn} from "node:child_process";
+import {runT46C2B5Flag01Town} from "./run_t46_p3_p4b_c2b5_flag01_signed.mjs";
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function port(){
@@ -339,7 +340,15 @@ export async function runT46C2B4FlaggedTown({
     "T28-only research route unexpectedly mounted Stage2-safe T33 profile");
    console.log("EXPECTED ORIGINAL T46-C2B4-FLAG-10-STAGE2-RED: actual signed T28=1/T33=0 town Profile attempts prohibited raw character SELECT under unchanged #345 Stage2; do not widen RLS or treat 10 as secure release");
   }finally{await t28Page.close().catch(()=>{})}
-  console.log("PASS T46-C2B4-FLAG-MATRIX: 00 original B3 real browser GREEN receipts, 11 T28+T33 guarded real buyer/actor GREEN, 10 Stage2 privacy profile RED characterized, 01 source-equivalent to 00 and independent browser still open");
+  // B5: real separate 00/01 compiled servers and actual signed original
+  // Profile/Shop, rather than treating T33-only flag equivalence as proof.
+  await server.stop();server=null;
+  await runT46C2B5Flag01Town({
+    env,root,browser,startNext,authIn,gotoTown,signInTown,
+    actors,townId,merchantId,sql,q,lit,walletOf,invCount
+  });
+  console.log("PASS T46-C2B4-FLAG-MATRIX: 00 original B3 real browser GREEN receipts, 11 T28+T33 guarded buyer/actor GREEN, 10 Stage2 privacy profile RED, 01 original parity independently signed by B5");
+
   console.log("PASS T46-C2B4-SIGNED-RESEARCH: source-derived T28+T33 current real town guarded buyer, postcommit correctness, real signed late 200, cross-role and Stage2 boundary; research-only no production patch");
   assert.deepEqual(offsite,[],"B4 attempted offsite Supabase "+offsite.join(","));
   assert.deepEqual(errors,[],"B4 Chromium uncaught errors "+errors.join(","));
