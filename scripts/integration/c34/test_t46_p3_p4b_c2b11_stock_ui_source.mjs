@@ -7,6 +7,7 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {buildB11StockUiOverlay} from "./candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs";
 import {buildB11BraceOverlay} from "./candidates/t46_p3_p4b_c2b11_brace_pending_rpc_overlay.mjs";
+import {buildB12CommerceEpochOverlay} from "./candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const cases=[
   {name:"original",file:"components/MerchantPanel.js",guarded:false},
@@ -46,6 +47,21 @@ for(const c of cases){
   assert.throws(()=>buildB11BraceOverlay(Buffer.concat([original,Buffer.from("drift")]),{guarded:c.guarded}),/blob drift/);
   console.log("PASS T46-C2B11-BRACE-SOURCE-"+c.name.toUpperCase()+
     ": exact source+sign-in epochs+merchant/request tickets, no direct stock DML");
+  // B12 preserves exact original bytes but guards every remaining B8/B9
+  // quantity/reroll action while its HTTP result is outstanding.
+  const next=buildB12CommerceEpochOverlay(original,{guarded:c.guarded});
+  assert.match(next,/return b12Delta\(stockId,by,"inc"\)/);
+  assert.match(next,/return b12Delta\(stockId,-by,"dec"\)/);
+  assert.match(next,/onClick=\{\(\) => b12Set\(entry.id,2\)\}/);
+  assert.match(next,/b11Start\("reroll"\)/);
+  assert.match(next,/p_expected_updated_at:current.updated_at/);
+  assert.match(next,/p_count:desiredCount/);
+  assert.match(next,/b11Pending\(ticket\)/);
+  assert.match(next,/c34_t46_manage_stock_qty_v1/);
+  assert.doesNotMatch(next,/rerollThemedFallback\(\)/);
+  assert.doesNotMatch(next,/\.from\(["']character_stock["']\)\s*\.(?:insert|update|delete)\s*\(/);
+  assert.throws(()=>buildB12CommerceEpochOverlay(Buffer.concat([original,Buffer.from("drift")]),{guarded:c.guarded}),/blob drift/);
+  console.log("PASS T46-C2B12-STATIC-"+c.name.toUpperCase()+": B8 delta/CAS and B9 reroll actor/merchant epoch guard, old writer RED preserved");
   assert.ok(original.toString("utf8").includes('stock_merchant_item'),
     "B11 original RED missing");
   assert.ok(original.toString("utf8").includes('.delete()'),
