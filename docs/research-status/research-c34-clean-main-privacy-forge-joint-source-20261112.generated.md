@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `43d9c32e88d322f99ef5e87c65218a74de4d28a8` |
+| Exact source commit represented by this archive snapshot | `173a582dfd9535a2023235dc272737ea8278b605` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): retain C1 editor raw query RED and capture exact signed REST URLs |
+| Last source commit title | test(C34): isolate denied global player-profile reader from signed town roster ACL |
 | Files changed relative to main | 276 (219 non-docs; 57 docs) |
 | Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
