@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d5f26675292c334544217cd54256bdbf4ff8003a` |
+| Exact source commit represented by this archive snapshot | `83838c6710ae3f6b8234e3f0b55f2c5b4d7a3bb3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B12: include epoch quantity/reroll overlay in source-only CI |
+| Last source commit title | C34 B12: assert unreachable reroll fallback call, retain original source as RED |
 | Files changed relative to main | 324 (254 non-docs; 70 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-c2b11-static.yml`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs`
 
 ## Research-branch change inventory versus main
 
