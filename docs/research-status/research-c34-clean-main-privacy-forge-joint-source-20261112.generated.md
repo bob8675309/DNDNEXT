@@ -5,20 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `463e6aa625553220dde81f659eb8f99e26fcdb53` |
+| Exact source commit represented by this archive snapshot | `124040d8b2c806246e9f24ee9fa98aee586f9ca1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record approved NPC consent and tiered read-only capabilities with signed P6 green explicitly pending |
-| Files changed relative to main | 354 (272 non-docs; 82 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | research(c34): define side-effect-free GM NPC tier preset compiler and strict inventory/tactical UI projection |
+| Files changed relative to main | 355 (273 non-docs; 82 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
-- … 304 more
+- … 305 more
 
 ## Trust and update procedure
 
