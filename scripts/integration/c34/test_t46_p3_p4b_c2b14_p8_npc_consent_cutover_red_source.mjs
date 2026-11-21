@@ -41,7 +41,7 @@ test("EXPECTED LEGACY RED: original definer can move player-owned item directly 
  const start=s.indexOf("CREATE OR REPLACE FUNCTION public.transfer_inventory_item_v1(");
  const body=s.slice(start);
  assert.ok(body.includes("SECURITY DEFINER"));
- assert.ok(body.includes("WHERE c.kind = v_target_type"));
+ assert.ok(body.includes("AND c.kind = v_target_type"));
  assert.ok(!body.includes("player-character"));
  assert.ok(!body.includes("c34_b14_p6_offer_item_v1"));
  assert.ok(body.includes("SET owner_type = v_target_type"));
