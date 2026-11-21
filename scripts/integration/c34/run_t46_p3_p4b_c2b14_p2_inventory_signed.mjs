@@ -236,6 +236,40 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
  assert.equal(townGrant.data[0].card_payload.source,"town");
  console.log("PASS T46-C2B14-P2-TOWN-INSERT: genuine player signed owner INSERT with item payload succeeds; original AssignItemButton and Forge character-scoped sources byte-pinned (NOT full Town crafting/Forge E2E)");
 
+
+ // C2 source owner-domain intersection. Actual Forge v3 + original deferred
+ // materialization are already signed-tested by C34 joint/J94-J102 research,
+ // under a DIFFERENT review-only combined owner CHECK/RLS candidate.
+ // Do not confuse this minimal June-policy fixture with that real Forge graph.
+ const forgeCharId=randomUUID();
+ sql("INSERT INTO public.characters(id,name,kind,is_hidden) VALUES("+
+  q(forgeCharId)+",'P2 source-shaped individual Forge character','player',false)");
+ const forgeGear=seed("Forge source-shaped held gear","character",forgeCharId,roles.OWNER.id);
+ assert.equal(state(forgeGear).owner_type,"character");
+ assert.equal(state(forgeGear).owner_id,forgeCharId);
+ assert.equal(state(forgeGear).user_id,roles.OWNER.id);
+ const forgeRead=await roles.OWNER.who.from("inventory_items")
+  .select("id,owner_type,owner_id").eq("id",forgeGear);
+ assert.ifError(forgeRead.error);
+ assert.equal(forgeRead.data.length,1,
+  "Historical June RLS reads account-user character gear without checking character access");
+ const scopedRejected=await single(roles.OWNER,forgeGear,"npc",npc,"character",forgeCharId);
+ assertDenied(scopedRejected,"unapproved character source transfer","22023");
+ assert.equal(state(forgeGear).owner_type,"character");
+ assert.equal(state(forgeGear).owner_id,forgeCharId);
+ const scopedBulkRejected=await bulk(roles.ADMIN,[forgeGear],"npc",npc,"character",forgeCharId);
+ assertDenied(scopedBulkRejected,"unapproved character source bulk transfer","22023");
+ assert.equal(state(forgeGear).owner_type,"character");
+ const separateHistorical=seed("June direct character DML RED","character",forgeCharId,roles.OWNER.id);
+ const JuneRaw=await roles.OWNER.who.from("inventory_items")
+  .update({owner_type:"player",owner_id:roles.OWNER.id})
+  .eq("id",separateHistorical).select("id,owner_type,owner_id");
+ assert.ifError(JuneRaw.error);
+ assert.equal(JuneRaw.data.length,1,
+  "Expected original June owner-only RLS to allow character->player laundering in minimal fixture");
+ assert.equal(state(separateHistorical).owner_type,"player");
+ console.log("PASS T46-C2B14-P2-FORGE-DOMAIN-RED: source-shaped character gear remains outside explicit versioned transfer, while original June raw owner RLS still accepts character->player laundering; historical RED only, real original Forge acceptance belongs to separate source-complete joint suite");
+
  const demotedItem=seed("GM role revoked","player",roles.OUTSIDER.id,roles.OUTSIDER.id);
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(roles.GM.id));
  assertDenied(await single(roles.GM,demotedItem,"merchant",merchant,"player",roles.OUTSIDER.id),
