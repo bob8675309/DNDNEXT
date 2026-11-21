@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e41877f6b516dd5dea59c518802e84bb81a3b1fb` |
+| Exact source commit represented by this archive snapshot | `6d8916b94a12736567a4c3a7db526b724e7eedba` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): lock side-effect-free NPC quest item send/request proposals and original trade/quest source boundaries |
+| Last source commit title | ci(c34): gate quest-compatible no-mutation inventory intent and original trade/quest source evidence in cheap Node workflow |
 | Files changed relative to main | 349 (270 non-docs; 79 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p5_quest_item_intent_contract.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
