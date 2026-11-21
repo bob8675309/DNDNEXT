@@ -625,7 +625,7 @@ for(const [name,id] of Object.entries(ids))
  assert.equal(authPerm,"t","Guarded candidate revoked buyer's existing signed privilege");
  console.log("PASS T46-P3-P4B-C2-B2-LOCAL-SOURCE: original captured buyer reproduced RED, then ONLY one SOURCE-DERIVED FOR SHARE merchant-visibility preface installed locally; no status/location predicate, no privilege change");
 
- const who=actors.OUTSIDER.who;
+ const c2B2Buyer=actors.OUTSIDER.who;
  const walletStart=walletOf(actors.OUTSIDER.id);
  assert.equal(walletStart,"55");
  const hiddenInvBefore=invCount(actors.OUTSIDER.id);
@@ -635,7 +635,7 @@ for(const [name,id] of Object.entries(ids))
   const beforeWallet=walletOf(actors.OUTSIDER.id);
   const beforeInv=invCount(actors.OUTSIDER.id);
   const beforeCount=sql("SELECT qty FROM public.character_stock WHERE id="+q(stock));
-  const response=await who.rpc("buy_from_merchant",{
+  const response=await c2B2Buyer.rpc("buy_from_merchant",{
    p_merchant_id:merchant,p_stock_uuid:stock,p_qty:1
   });
   assert.equal(response.error?.code,"42501",label+" must fail original source guarded merchant check: "+JSON.stringify(response));
@@ -657,7 +657,7 @@ for(const [name,id] of Object.entries(ids))
  sql("INSERT INTO public.character_stock(id,character_id,item_id,display_name,price_gp,qty,card_payload) VALUES("+
   q(npcStock)+","+q(ids.npc)+",'invalid-npc-stock','NPC not a merchant',3,2,'{}'::jsonb)");
  await deniedEligibility("nonmerchant character",npcStock,ids.npc);
- const badPair=await who.rpc("buy_from_merchant",{
+ const badPair=await c2B2Buyer.rpc("buy_from_merchant",{
   p_merchant_id:ids.merchant,p_stock_uuid:hiddenStock,p_qty:1
  });
  assert.match(badPair.error?.message||"",/Stock not found/i,"Merchant/stock pair verification lost");
@@ -670,7 +670,7 @@ for(const [name,id] of Object.entries(ids))
  // Allowed legitimate stock still uses the UNMODIFIED original stock/wallet
  // debit, inventory loop and payload. C2-A browser already completed first.
  const preNormal=Number(invCount(actors.OUTSIDER.id));
- const valid=await who.rpc("buy_from_merchant",{
+ const valid=await c2B2Buyer.rpc("buy_from_merchant",{
   p_merchant_id:ids.merchant,p_stock_uuid:stockId,p_qty:1
  });
  assert.ifError(valid.error);
@@ -689,7 +689,7 @@ for(const [name,id] of Object.entries(ids))
   q(recipeStock)+","+q(ids.merchant)+",'c2-recipe','Recipe: C2 B2 map',7,2,"+
   lit(JSON.stringify({recipe_item:true,item_type:"recipe",recipe_unlock:{recipe_id:recipeId}}))+"::jsonb)");
  const invBeforeRecipe=invCount(actors.OUTSIDER.id);
- const firstRecipe=await who.rpc("buy_from_merchant",{
+ const firstRecipe=await c2B2Buyer.rpc("buy_from_merchant",{
   p_merchant_id:ids.merchant,p_stock_uuid:recipeStock,p_qty:2
  });
  assert.ifError(firstRecipe.error);
@@ -699,7 +699,7 @@ for(const [name,id] of Object.entries(ids))
  assert.equal(sql("SELECT count(*) FROM public.player_recipes WHERE player_id="+q(actors.OUTSIDER.id)+
   " AND recipe_id="+q(recipeId)),"1","Recipe unlock not persisted");
  assert.equal(invCount(actors.OUTSIDER.id),invBeforeRecipe,"Recipe wrongly minted inventory item");
- const duplicate=await who.rpc("buy_from_merchant",{
+ const duplicate=await c2B2Buyer.rpc("buy_from_merchant",{
   p_merchant_id:ids.merchant,p_stock_uuid:recipeStock,p_qty:1
  });
  assert.match(duplicate.error?.message||"",/Recipe already known/,"Duplicate recipe accepted");
