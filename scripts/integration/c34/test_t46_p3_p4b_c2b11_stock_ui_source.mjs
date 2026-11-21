@@ -58,7 +58,8 @@ for(const c of cases){
   assert.match(next,/p_count:desiredCount/);
   assert.match(next,/b11Pending\(ticket\)/);
   assert.match(next,/c34_t46_manage_stock_qty_v1/);
-  assert.doesNotMatch(next,/rerollThemedFallback\(\)/);
+  assert.doesNotMatch(next,/await\s+rerollThemedFallback\(\)/,
+    "B12 missing RPC must not invoke retained historical browser fallback");
   assert.doesNotMatch(next,/\.from\(["']character_stock["']\)\s*\.(?:insert|update|delete)\s*\(/);
   assert.throws(()=>buildB12CommerceEpochOverlay(Buffer.concat([original,Buffer.from("drift")]),{guarded:c.guarded}),/blob drift/);
   console.log("PASS T46-C2B12-STATIC-"+c.name.toUpperCase()+": B8 delta/CAS and B9 reroll actor/merchant epoch guard, old writer RED preserved");
