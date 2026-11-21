@@ -1,0 +1,34 @@
+name: C34 independent CI path-filter research (read-only, no signed DB)
+on:
+  push:
+    branches:
+      - research/c34-ci-efficiency-independent-20261121
+    paths:
+      - 'scripts/audits/test_c34_ci_filter_independent.mjs'
+      - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
+  pull_request:
+    paths:
+      - 'scripts/audits/test_c34_ci_filter_independent.mjs'
+      - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  path-filter-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout immutable research-only source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: node --check scripts/audits/test_c34_ci_filter_independent.mjs
+      - name: Original workflow Git SHA and changed-file trigger matrix
+        run: node scripts/audits/test_c34_ci_filter_independent.mjs
+      - name: Do not alter protected maps, live CI or gameplay
+        run: git diff --exit-code -- .github/workflows/validate-c34-joint-local-auth.yml components/MapPageClient.js pages/town/'[id].js'
