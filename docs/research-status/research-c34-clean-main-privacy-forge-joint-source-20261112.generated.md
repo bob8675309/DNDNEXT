@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `277d7dbb732aba83a3d8d24163b30c01fde9c256` |
+| Exact source commit represented by this archive snapshot | `f73b7d4ddd4622c742e5ec0b4341497093330948` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record accepted source-only NPC consent bypass RED crosswalk and safe versioned dispatcher design without runtime edits |
+| Last source commit title | docs(c34): record failed P7 exact log, local fixture/lock fix pending signed, and accepted P8 legacy consent RED crosswalk |
 | Files changed relative to main | 363 (279 non-docs; 84 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P8_NPC_CONSENT_CUTOVER_SOURCE_RED_AND_ROUTING_PLAN_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
