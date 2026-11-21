@@ -5,11 +5,13 @@ on:
       - research/c34-clean-main-privacy-forge-joint-source-20261112
     paths:
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs'
       - '.github/workflows/validate-c34-t46-c2b11-static.yml'
   pull_request:
     paths:
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs'
       - '.github/workflows/validate-c34-t46-c2b11-static.yml'
   workflow_dispatch:
@@ -31,6 +33,7 @@ jobs:
       - name: Check B11 source syntax
         run: |
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs
+          node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs
       - name: Original+guarded stock mutation overlays, source pins and negative controls
         run: node scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs
