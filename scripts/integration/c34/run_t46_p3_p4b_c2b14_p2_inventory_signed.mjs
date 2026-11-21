@@ -339,6 +339,22 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
  assert.ok(gmContext.data.targets.some(t=>t.kind==="merchant"&&t.id===hiddenMerchant));
  console.log("PASS T46-C2B14-P3-CONTEXT-PRIVACY: genuine signed players/observer denied manager and hidden NPC/merchant names; real GM receives explicit-role manager and all curated owner targets in ONE RPC");
 
+ // A delegated private NPC must remain manager-only even if its underlying
+ // character_permissions row grants inventory access to a normal player.
+ sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) VALUES("+
+  q(hiddenNpc)+","+q(roles.OWNER.id)+",true,false,false)");
+ const delegatedHidden=await context(roles.OWNER,"npc",hiddenNpc);
+ assert.ifError(delegatedHidden.error);
+ assert.equal(delegatedHidden.data.can_view,false);
+ assert.equal(delegatedHidden.data.can_manage,false);
+ assert.deepEqual(delegatedHidden.data.targets,[]);
+ const managerHidden=await context(roles.GM,"npc",hiddenNpc);
+ assert.ifError(managerHidden.error);
+ assert.equal(managerHidden.data.can_view,true);
+ assert.equal(managerHidden.data.can_manage,true);
+ console.log("PASS T46-C2B14-P3-HIDDEN-OWNER: hidden NPC cannot be opened via inventory context using a stale/delegated permission; true GM manager retains access");
+
+
  const npcNoGrant=await context(roles.OWNER,"npc",npcOther);
  assert.ifError(npcNoGrant.error);
  assert.equal(npcNoGrant.data.can_view,false);

@@ -53,6 +53,9 @@ BEGIN
     v_can_view := EXISTS (
       SELECT 1 FROM public.characters c
       WHERE c.id = v_owner_uuid AND c.kind = 'npc'
+        AND (v_manager OR (
+          coalesce(c.is_hidden,false)=false AND coalesce(c.state,'') <> 'hidden'
+        ))
         AND (
           v_manager OR EXISTS (
             SELECT 1 FROM public.character_permissions cp
