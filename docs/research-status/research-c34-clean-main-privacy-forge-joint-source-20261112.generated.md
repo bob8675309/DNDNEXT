@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8069dcfc847b8bb1e4d117ba68667d8c54ec4582` |
+| Exact source commit represented by this archive snapshot | `1a5a273b3d51b258fc22c7a5c63c87955fdb8dc7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: add source-locked disposable merchant add/remove/dump UI candidate |
+| Last source commit title | C34 B11: accept bounded first matching UI refresh in source transform |
 | Files changed relative to main | 316 (248 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
