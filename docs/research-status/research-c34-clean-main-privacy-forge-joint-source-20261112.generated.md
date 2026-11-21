@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a8ec47661b961cb04170ec4f541a7bac408c0eed` |
+| Exact source commit represented by this archive snapshot | `b79eb268d96e01e9e26f6aaed96f06ac9a964ba1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): define strict side-effect-free quest item send/request proposal and settlement contract |
+| Last source commit title | research(c34): avoid ambiguous request item recipient and client-forged fulfillment status in future quest DTO |
 | Files changed relative to main | 348 (269 non-docs; 79 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
