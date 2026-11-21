@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `69c1a28a785393ab33ba8667fa8d83b7379d7dbb` |
+| Exact source commit represented by this archive snapshot | `4cd53e63d99d4ae6df33faa4f087e39aea67f0a2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: set accepted signed-browser core and one bounded pending actor/merchant race |
+| Last source commit title | C34 B11: append complete 85K log signed PASS, historical failures and next actor-switch gate |
 | Files changed relative to main | 320 (251 non-docs; 69 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
