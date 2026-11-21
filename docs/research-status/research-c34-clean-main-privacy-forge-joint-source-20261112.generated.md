@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `75f2acfe7338305e5db8971f1c7c1a7bb278bc38` |
+| Exact source commit represented by this archive snapshot | `66bf81221294a059673e997da746124e279b0516` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): accept signed original Player RPC G1 RED to held #345 Stage1 GREEN |
-| Files changed relative to main | 279 (221 non-docs; 58 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(C34): source-pinned G2 global PlayerProfile current Next signed RED-to-candidate browser |
+| Files changed relative to main | 284 (225 non-docs; 59 docs) |
+| Last source commit | 7 files (4 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,13 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-t46-global-g2-player-profile-browser.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_T46_GLOBAL_PLAYER_CHARACTER_RPC_ORIGINAL_SOURCE_REVIEW_2026-11-20.md`
+- `docs/research/C34_T46_GLOBAL_G2_CURRENT_PLAYER_PROFILE_BROWSER_2026-11-20.md`
+- `scripts/integration/c34/candidates/t46_global_g2_player_profile_overlay.mjs`
+- `scripts/integration/c34/test_t46_global_g2_overlay_source.mjs`
+- `scripts/integration/c34/test_t46_global_g2_player_profile_signed_browser.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -31,6 +35,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t45-parent-review-source.yml`
 - `.github/workflows/validate-c34-t45-parent-signed-browser.yml`
 - `.github/workflows/validate-c34-t46-global-g1-player-rpc-signed.yml`
+- `.github/workflows/validate-c34-t46-global-g2-player-profile-browser.yml`
 - `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
 - `.github/workflows/validate-c34-t46-p3-p1-active-npc-red-browser.yml`
@@ -72,8 +77,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T19_PRIVACY_29_ORIGINAL_SIGNED_2026-11-14.md`
 - `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
 - `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
-- `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
-- … 229 more
+- … 234 more
 
 ## Trust and update procedure
 
