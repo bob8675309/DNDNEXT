@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c8224d21b03c027cdcd2816e8c9659dcb23a9f66` |
+| Exact source commit represented by this archive snapshot | `187d9e93fc1df72f7a66cc9ee6b9496c7c4c37de` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record owner fail-closed decision and current B10 signed cross-writer test receipt |
+| Last source commit title | docs(c34): append B10 candidate, user fail-closed policy, failed-test receipts and pending signed gate |
 | Files changed relative to main | 315 (247 non-docs; 68 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
