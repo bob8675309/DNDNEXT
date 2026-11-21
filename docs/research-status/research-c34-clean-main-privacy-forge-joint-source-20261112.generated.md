@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4b5fc2347bbcb7d7cdc01d9b169361e7863270e3` |
+| Exact source commit represented by this archive snapshot | `3776d6d7d0290aa962a0c75ec89ffceb16e41be5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): run cheap Node-only B14 Forge/Town original-owner contract crosswalk without full PG17 startup |
-| Files changed relative to main | 342 (265 non-docs; 77 docs) |
+| Last source commit title | research(c34): add versioned single inventory capability+safe transfer target projection excluding hidden NPCs |
+| Files changed relative to main | 343 (266 non-docs; 77 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p3_inventory_context_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 292 more
+- … 293 more
 
 ## Trust and update procedure
 
