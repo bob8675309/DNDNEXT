@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d85d8ca00c47bcb6b31c9ad3819a34e3fc1115cc` |
+| Exact source commit represented by this archive snapshot | `b7c02dc4ac1b236de888957d1f5b992de09a1164` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): include versioned inventory context/hidden-recipient research in existing signed PG17 gate |
-| Files changed relative to main | 343 (266 non-docs; 77 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record original Forge signed GREEN and versioned one-RPC inventory context/hidden-recipient privacy proposal as PENDING |
+| Files changed relative to main | 344 (266 non-docs; 78 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `docs/research/C34_T46_P3_P4B_C2_B14_P3_INVENTORY_CONTEXT_CONSOLIDATION_PENDING_SIGNED_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 293 more
+- … 294 more
 
 ## Trust and update procedure
 
