@@ -4,9 +4,24 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import net from "node:net";
+import {spawn} from "node:child_process";
 const routeRel="pages/__c34_b14_p10_npc_inventory_probe.jsx";
 const UUID=/^[0-9a-f-]{36}$/i;
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function freePort(){return new Promise((resolve,reject)=>{
+ const server=net.createServer();
+ server.once("error",reject);
+ server.listen(0,"127.0.0.1",()=>{
+  const port=server.address().port;
+  server.close(()=>resolve(port));
+ });
+});}
+function stopProcess(proc){
+ if(!proc)return;
+ try{process.kill(-proc.pid,"SIGTERM");}catch{}
+}
+
 export async function runC34B14P10SignedBrowser({
  env,root,browser,origin,roles,hired,another,hiddenNpc,forgePc,ids,sql,q
 }){
@@ -18,7 +33,10 @@ export async function runC34B14P10SignedBrowser({
  }))assert.equal(env[name],value,"P10 refuses non-disposable "+name);
  assert.ok(!env.VERCEL&&!env.VERCEL_ENV,"No Vercel browser fixture");
  for(const value of [hired,another,hiddenNpc,forgePc])assert.match(value,UUID);
- assert.ok(origin?.startsWith("http://127.0.0.1:"));
+ // The primary C2-B2 browser origin has already been stopped by the
+ // original B4 flag test long BEFORE P2→P7→P9 calls this runner.
+ // Never reuse it: launch our own isolated Next server after the legacy suite.
+ assert.ok(!origin||origin.startsWith("http://127.0.0.1:"));
  const dest=path.join(root,routeRel);
  assert.ok(!fs.existsSync(dest),"Refusing pre-existing P10 route");
  const code=[
@@ -38,7 +56,8 @@ export async function runC34B14P10SignedBrowser({
   ' <Shell client={supabase} characterId={chosen}/></main>;',
   "}"
  ].join("\n");
- let page=null;
+ let page=null,server=null,serverLog="";
+ let localOrigin=null;
  const grant=async(cap,enabled)=>{
   const r=await roles.GM.who.rpc("c34_b14_p6_set_npc_capability_v1",{
    p_npc_id:hired,p_user_id:roles.OWNER.id,p_capability:cap,p_enabled:enabled
@@ -57,13 +76,39 @@ export async function runC34B14P10SignedBrowser({
  };
  try{
   fs.writeFileSync(dest,code,{flag:"wx"});
+  const port=await freePort();
+  localOrigin="http://127.0.0.1:"+port;
+  const nextBin=path.join(root,"node_modules/next/dist/bin/next");
+  assert.ok(fs.existsSync(nextBin),"P10 requires lockfile-installed Next");
+  server=spawn(process.execPath,[nextBin,"dev","--webpack","-H","127.0.0.1",
+   "-p",String(port)],{
+   cwd:root,detached:true,stdio:["ignore","pipe","pipe"],
+   env:{...env,NODE_ENV:"development",NEXT_TELEMETRY_DISABLED:"1",
+    NEXT_PUBLIC_SUPABASE_URL:env.DNDNEXT_C34_LOCAL_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY:env.DNDNEXT_C34_LOCAL_ANON_KEY}
+  });
+  for(const stream of [server.stdout,server.stderr])
+   stream.on("data",data=>{serverLog=(serverLog+data.toString()).slice(-18000);});
+  let ready=false;
+  for(let tries=0;tries<110;tries++){
+   if(server.exitCode!==null)break;
+   try{
+    const res=await fetch(localOrigin+"/__c34_b14_p10_npc_inventory_probe",{
+     signal:AbortSignal.timeout(3000)});
+    if(res.ok&&(await res.text()).includes("P10 isolated inventory probe")){
+     ready=true;break;
+    }
+   }catch{}
+   await delay(850);
+  }
+  assert.ok(ready,"Independent P10 Next did not start: "+serverLog.slice(-6000));
   page=await browser.newPage({viewport:{width:1280,height:900}});
   page.on("pageerror",e=>browserErrors.push(e.message));
   page.on("request",r=>{
    if(r.method()==="POST"&&r.url().includes("/rest/v1/rpc/"))
     rpcCalls.push(r.url().split("/").pop().split("?")[0]);
   });
-  await page.goto(origin+"/__c34_b14_p10_npc_inventory_probe",{
+  await page.goto(localOrigin+"/__c34_b14_p10_npc_inventory_probe",{
    waitUntil:"domcontentloaded",timeout:100000
   });
   await page.waitForFunction(()=>!!window.__p10Sb,null,{timeout:85000});
@@ -149,6 +194,8 @@ export async function runC34B14P10SignedBrowser({
   console.log("PASS T46-C2B14-P10-SIGNED: real local Next/Chromium actor matrix and no old inventory/transfer RPC fallbacks");
  }finally{
   if(page)await page.close().catch(()=>{});
+  stopProcess(server);
+  if(server){await delay(700);try{process.kill(-server.pid,"SIGKILL");}catch{}}
   if(fs.existsSync(dest))fs.rmSync(dest);
   assert.ok(!fs.existsSync(dest),"P10 ephemeral test route not cleaned");
  }
