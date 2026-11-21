@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3bab90b5d457bde7c78f7220b3d60c4dcf8ae480` |
+| Exact source commit represented by this archive snapshot | `52cd31b048f1f8a085c94c5f2d865932517f7a6a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): document held B9 reroll source-lock/UI acceptance criteria |
+| Last source commit title | test(c34): complete B9 disposable stock schema note field for original reroll |
 | Files changed relative to main | 311 (244 non-docs; 67 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B9_REROLL_SOURCE_LOCK_UI_SIGNED_2026-11-21.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs`
 
 ## Research-branch change inventory versus main
 
