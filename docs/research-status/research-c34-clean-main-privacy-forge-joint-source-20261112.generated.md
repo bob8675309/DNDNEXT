@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `150c2ff89522acc782dd14feb4a30e25e867e6fe` |
+| Exact source commit represented by this archive snapshot | `1ab7925c43d307403e2c9438fb3fe68043c457e6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: add genuine signed browser add/remove/dump, CAS, role, and fail-closed research suite |
+| Last source commit title | C34 B11: require syntax and original source negatives within full signed B2–B11 CI |
 | Files changed relative to main | 319 (251 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b11_stock_ui_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
