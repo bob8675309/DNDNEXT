@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ae0b17f2588b9068b529f01e8c44c9ebba44d4eb` |
+| Exact source commit represented by this archive snapshot | `710baa784f3a5dfb637fd116542d21bd9a99ed81` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept full B9 signed SQL/browser run and preserve prior failed fixture receipts |
+| Last source commit title | docs(c34): close B9 signed research acceptance and identify B10 next bounded task |
 | Files changed relative to main | 311 (244 non-docs; 67 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B9_REROLL_SOURCE_LOCK_UI_SIGNED_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
