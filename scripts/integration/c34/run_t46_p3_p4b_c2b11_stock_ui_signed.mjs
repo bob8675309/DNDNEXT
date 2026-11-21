@@ -62,7 +62,7 @@ async function stopNext(child){
  await sleep(450);
 }
 export async function runT46C2B11StockUiSigned({
- env,root,actors,newActor,merchantId,townId,browser,sql,q,lit,walletOf,invCount
+ env,root,actors,newActor,merchantId,townId,merchantOriginalBytes,browser,sql,q,lit,walletOf,invCount
 }){
  requireLocal(env);
  const originalBuyer=sql("SELECT md5(pg_get_functiondef('public.buy_from_merchant(uuid,uuid,integer)'::regprocedure))");
@@ -70,8 +70,18 @@ export async function runT46C2B11StockUiSigned({
  const originalStock=sql("SELECT md5(pg_get_functiondef('public.c34_t46_manage_merchant_stock_v1(uuid,text,uuid,jsonb,text,numeric,integer,jsonb)'::regprocedure))");
  assert.equal(sql("SELECT current_setting('server_version_num')::integer BETWEEN 170000 AND 179999"),"t");
  const paths=["components/MerchantPanel.js","components/c34/MerchantPanelT28P2Research.jsx"];
+ // Parent B2's test-only original storefront already has Return-to-Profile
+ // composed, so on-disk original is NOT the pristine pinned Git blob.
+ // Build from original captured BEFORE B2, but restore the parent's current
+ // composed overlay after B11. Guarded T28/T33 remains its pristine blob.
+ assert.ok(Buffer.isBuffer(merchantOriginalBytes),"B11 requires parent captured immutable merchant source");
  const bytes=paths.map(file=>fs.readFileSync(path.join(root,file)));
- const candidates=bytes.map((b,i)=>buildB11StockUiOverlay(b,{guarded:i===1}));
+ assert.ok(bytes[0].toString("utf8").includes("Return to Profile"),
+  "B11 parent original should already carry its temporary Profile return");
+ const candidates=[
+  buildB11StockUiOverlay(merchantOriginalBytes,{guarded:false}),
+  buildB11StockUiOverlay(bytes[1],{guarded:true})
+ ];
  const shelf=()=>JSON.parse(sql("SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY s.id),'[]'::jsonb)::text FROM public.character_stock s WHERE s.character_id="+q(merchantId)));
  const byId=id=>JSON.parse(sql("SELECT coalesce((SELECT row_to_json(s)::text FROM public.character_stock s WHERE s.id="+q(id)+"),'null')"));
  const qty=id=>sql("SELECT coalesce((SELECT qty::text FROM public.character_stock WHERE id="+q(id)+"),'gone')");
