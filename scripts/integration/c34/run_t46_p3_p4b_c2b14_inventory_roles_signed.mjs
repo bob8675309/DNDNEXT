@@ -21,7 +21,7 @@ const pins={
  "components/MapPageClient.js":"61f8738da2ca3d8635b5a413bfdc18c094228a0a"
 };
 const exactFunction=(s,fn,terminator)=>{
- const anchor="CREATE OR REPLACE FUNCTION "+fn+"(";
+ const anchor="CREATE OR REPLACE FUNCTION "+fn+(fn.endsWith(")")?"":"(");
  const start=s.indexOf(anchor);
  assert.ok(start>=0,"Missing original function "+fn);
  assert.equal(s.indexOf(anchor,start+anchor.length),-1,
@@ -61,7 +61,7 @@ export async function runC34C2B14InventoryRolesSigned({
  const transferSrc=source("sql/20260624_01_inventory_item_send_rpc.sql");
  const roleFns=[
   exactFunction(roleSrc,"private.current_user_is_admin","$function$"),
-  exactFunction(roleSrc,"public.is_admin","$function$")
+  exactFunction(roleSrc,"public.is_admin()","$function$")
  ];
  // The public.is_admin overloads share the same name. Extract the UUID
  // signature explicitly rather than taking the zero-argument first one.
