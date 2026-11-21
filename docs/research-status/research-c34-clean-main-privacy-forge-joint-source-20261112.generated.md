@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8c130c74eec63cb4ea456f23bd12d0dcaf921e8c` |
+| Exact source commit represented by this archive snapshot | `ca46273bb519b30eba20c3b604abb25ef5fcc6e4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): preserve original inventory read/equip permission coupling and propose paginated lazy hired backpack+delegated spell projections |
+| Last source commit title | docs(c34): promote exact signed B14-P6 NPC consent and hired read-only tests to accepted source-local handoff, preserve runtime blockers |
 | Files changed relative to main | 356 (274 non-docs; 82 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
+- `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
