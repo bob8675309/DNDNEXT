@@ -35,12 +35,12 @@ function walk(dir,extensions=codeTypes){
  for(const item of fs.readdirSync(path.join(root,dir),{withFileTypes:true})){
   if(item.name==="node_modules"||item.name===".next")continue;
   const rel=dir+"/"+item.name;
-  if(item.isDirectory())results.push(...walk(rel));
+  if(item.isDirectory())results.push(...walk(rel,extensions));
   else if(extensions.test(item.name))results.push(rel);
  }
  return results;
 }
-const files=["components","pages","utils"].flatMap(walk);
+const files=["components","pages","utils"].flatMap(dir=>walk(dir));
 const knownRpcs=[
  "buy_from_merchant","stock_merchant_item","reroll_merchant_inventory_v2",
  "set_campaign_future_tech_enabled_v1","c34_t46_manage_stock_qty_v1",
