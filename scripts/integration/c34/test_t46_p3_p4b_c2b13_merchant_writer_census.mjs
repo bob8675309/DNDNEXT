@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
-const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const raw=rel=>fs.readFileSync(path.join(root,rel));
 const gitBlob=b=>createHash("sha1").update(Buffer.concat([
  Buffer.from("blob "+b.length+"\0"),b
