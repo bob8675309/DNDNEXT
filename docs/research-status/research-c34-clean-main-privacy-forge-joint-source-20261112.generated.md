@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2a0560fb0a6fe43e1bcf215e706c054554ee7b0c` |
+| Exact source commit represented by this archive snapshot | `2a7f5448a47ea090f172261619252c50b756eef8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): rely on signed runner PGHOST guard; do not assume container-internal PG server loopback address |
-| Files changed relative to main | 345 (267 non-docs; 78 docs) |
+| Last source commit title | test(c34): add authentic signed PR312 control-separated henchman/sidekick character-gear donation matrix |
+| Files changed relative to main | 346 (268 non-docs; 78 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p4_controlled_npc_gear_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p4_controlled_gear_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 295 more
+- … 296 more
 
 ## Trust and update procedure
 
