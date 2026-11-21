@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `85c34237779a90a833dc456b7db77a323af68112` |
+| Exact source commit represented by this archive snapshot | `46aac9ec3cd6ce24456bd1f9e86196417c43b54c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: remove old reroll fallback before unambiguous atomic stock source substitution |
-| Files changed relative to main | 317 (249 non-docs; 68 docs) |
+| Last source commit title | C34 B11: free source-only CI for original and guarded stock management overlay |
+| Files changed relative to main | 318 (250 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs`
+- `.github/workflows/validate-c34-t46-c2b11-static.yml`
 
 ## Research-branch change inventory versus main
 
@@ -28,6 +28,7 @@
 - `.github/workflows/validate-c34-t44-real-level-up-browser.yml`
 - `.github/workflows/validate-c34-t45-parent-review-source.yml`
 - `.github/workflows/validate-c34-t45-parent-signed-browser.yml`
+- `.github/workflows/validate-c34-t46-c2b11-static.yml`
 - `.github/workflows/validate-c34-t46-global-g1-player-rpc-signed.yml`
 - `.github/workflows/validate-c34-t46-global-g2-player-profile-browser.yml`
 - `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
@@ -70,8 +71,7 @@
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
-- `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- … 267 more
+- … 268 more
 
 ## Trust and update procedure
 
