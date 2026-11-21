@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f73b7d4ddd4622c742e5ec0b4341497093330948` |
+| Exact source commit represented by this archive snapshot | `b0b2cabeecd0914879490d324643accc71a78788` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record failed P7 exact log, local fixture/lock fix pending signed, and accepted P8 legacy consent RED crosswalk |
+| Last source commit title | docs(c34): promote full signed P7 keyset/read-only/equip acceptance, retain original legacy consent RED and production hold |
 | Files changed relative to main | 363 (279 non-docs; 84 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,6 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
