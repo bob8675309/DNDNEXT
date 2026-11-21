@@ -1,0 +1,118 @@
+name: C34 T46-P3-P4B-C2-B1 original hidden seller direct buy RED (disposable)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b_hidden_direct_buy_signed.mjs'
+      - '.github/workflows/validate-c34-t46-p3-p4b-c2b-hidden-direct-buy.yml'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_town_presence_pg17.sql'
+      - 'pages/town/[id].js'
+      - 'components/TownSheet.js'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2_signed_merchant_purchase.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2_merchant_commerce_source.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql'
+      - 'scripts/fixtures/forge_original_merchant_buy_source_pg17.sql'
+      - 'components/MerchantPanel.js'
+      - 'utils/useWallet.js'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_b_town_overlay.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4a_composed_overlays.mjs'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b_hidden_direct_buy_signed.mjs'
+      - '.github/workflows/validate-c34-t46-p3-p4b-c2b-hidden-direct-buy.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-current-active-npc-original-red:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 31
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_C34_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_T46_P2_LOCAL_CONFIRM: T46_P2_EXACT_PRIVACY_REAL_NEXT_SIGNED_ONLY
+    steps:
+      - name: Checkout current research branch without retaining credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Preserve original Stage1–3, T45/T46-P1 sources and T46-P2 static privacy
+        run: |
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b_hidden_direct_buy_signed.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2_merchant_commerce_source.mjs
+          node --check scripts/integration/c34/test_t46_p2_profile_source.mjs
+          node --test scripts/integration/c34/test_t46_p2_profile_source.mjs
+          node --test scripts/integration/c34/test_t46_progression_visibility_source.mjs
+          node --test scripts/integration/c34/test_t45_parent_review_source.mjs
+          node --test scripts/integration/c34/test_t44_level_up_browser_source.mjs
+          node --test scripts/integration/c34/test_t43_earned_v5_source.mjs
+      - name: Install lockfile-pinned current Next and local Chromium controller
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          mkdir -p "$RUNNER_TEMP/t46-p3-p4bc2b-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/t46-p3-p4bc2b-browser-tools" --no-save --package-lock=false --no-audit --no-fund --no-progress playwright-core@1.56.1 esbuild@0.25.12
+      - name: Prepare isolated PostgreSQL 17 and signed Auth
+        run: |
+          mkdir -p "$RUNNER_TEMP/t46-p3-p4bc2b-signed/supabase"
+          cat > "$RUNNER_TEMP/t46-p3-p4bc2b-signed/supabase/config.toml" <<'TOML'
+          project_id = "t46-p3-p4bc2b-hidden-source-red"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local GoTrue/PostgREST/Postgres (no hosted operations)
+        run: |
+          cd "$RUNNER_TEMP/t46-p3-p4bc2b-signed"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Install exact original Forge privacy setup and original PR345 Stage 1/2/3
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$GITHUB_ACTIONS" = true
+          (cd "$RUNNER_TEMP/t46-p3-p4bc2b-signed" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/t46-p3-p4bc2b-auth-env"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 -f scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/integration/c34/sources/02_npc_profile_stage1.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/integration/c34/sources/03_npc_dossier_stage2.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/integration/c34/sources/04_private_story_stage3.sql
+          echo 'PASS T46-P2-PR345-SOURCE: real exact unmodified source-original Stage1/2/3 installed in disposable PG17'
+      - name: Actual current Next browser, held PR345 Profile, original Class parent, signed role/reveal/secret tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "$RUNNER_TEMP/t46-p3-p4bc2b-auth-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/t46-p3-p4bc2b-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME" || { echo 'No local Chromium; no remote fallback' >&2; exit 1; }
+          test ! -e pages/__c34_t46_p3_roster_probe.jsx
+          node scripts/integration/c34/test_t46_p3_p4b_c2b_hidden_direct_buy_signed.mjs
+          test ! -e pages/__c34_t46_p3_roster_probe.jsx
+          echo 'PASS T46-P3-P4B-C2-B1: expected original signed direct hidden merchant purchase RED, no live SQL, release HOLD'
+      - name: Remove disposable database/Auth/role data and temporary route
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/t46-p3-p4bc2b-signed" ]; then
+            cd "$RUNNER_TEMP/t46-p3-p4bc2b-signed"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          else
+            echo "No disposable services were created; teardown not needed"
+          fi
