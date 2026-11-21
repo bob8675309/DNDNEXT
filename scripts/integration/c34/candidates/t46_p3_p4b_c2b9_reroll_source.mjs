@@ -58,7 +58,7 @@ export function buildB9LockedReroll(original){
   "SELECT coalesce(up.role='admin',false)").includes("CREATE OR REPLACE FUNCTION public.reroll_merchant_inventory_v2("),true);
  return candidate;
 }
-export function buildB9StockUiOverlay(src){
+export function buildB9StockUiOverlay(src,guardedTown=false){
  // Takes already composed Return-to-Profile overlay. Never persisted into game.
  // Preserve original functions in the research branch: ONLY replace at test runtime.
  const pin=(before,after)=>{
@@ -91,7 +91,9 @@ export function buildB9StockUiOverlay(src){
  // An RPC denial is NEVER permission to delete shelf rows from the browser.
  pin("      if (isMissingFunctionError(e)) {",
      "      if (false && isMissingFunctionError(e)) {");
- const anchor='      <div className="merchant-admin-grid">';
+ const anchor=guardedTown
+  ? '      {mayManageTravel ? <div className="merchant-admin-grid">'
+  : '      <div className="merchant-admin-grid">';
  const injected=`      <div data-testid="c34-b9-stock-controls" className="merchant-admin-stock-list">
         {stock.map((entry) => (
           <div data-testid={"c34-b9-stock-" + entry.id} key={entry.id}>

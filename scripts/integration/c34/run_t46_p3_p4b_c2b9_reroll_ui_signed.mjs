@@ -252,12 +252,12 @@ export async function runT46C2B9RerollUiSigned({
 
  // Exact original merchant panel overlay (Return to Profile already mounted
  // by B2 parent), replaced temporarily ONLY for local Next browser tests.
- const panelPath=path.join(root,"components/MerchantPanel.js");
+ const panelPath=path.join(root,"components/c34/MerchantPanelT28P2Research.jsx");
  const previous=fs.readFileSync(panelPath);
  const oldPanel=previous.toString();
  assert.match(oldPanel,/Return to Profile/);
  assert.match(oldPanel,/\.update\(\{ qty \}\)/,"B9 original stale absolute PATCH must remain available as RED");
- const patched=buildB9StockUiOverlay(oldPanel);
+ const patched=buildB9StockUiOverlay(oldPanel,true);
  let next=null,page=null,tail="",pageErrors=[],requests=[];
  try{
   fs.writeFileSync(panelPath,patched);
@@ -354,9 +354,11 @@ export async function runT46C2B9RerollUiSigned({
    body:JSON.stringify({code:"PGRST202",message:"Could not find the function public.reroll_merchant_inventory_v2"})});
   await page.route("**/rest/v1/rpc/reroll_merchant_inventory_v2",rpcUnavailable);
   try{
-   await side.getByRole("button",{name:/^Reroll /}).click({force:true});
-   await page.waitForResponse(r=>r.request().method()==="POST"&&
+   const rerollMissing=page.waitForResponse(r=>r.request().method()==="POST"&&
      r.url().includes("/rest/v1/rpc/reroll_merchant_inventory_v2"),{timeout:35000});
+   await side.getByRole("button",{name:/^Reroll /}).click({force:true});
+   const unavailable=await rerollMissing;
+   assert.equal(unavailable.status(),404,"B9 reroll error-injection must be observed");
    await sleep(550);
    assert.ok(!requests.slice(beforeCalls).some(x=>x.method==="DELETE"&&
     x.url.includes("/rest/v1/character_stock")),
