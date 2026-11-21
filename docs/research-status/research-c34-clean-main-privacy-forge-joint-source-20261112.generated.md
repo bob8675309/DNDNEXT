@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ef4f7f5cf8c9a34a76aa510ea97d51ec0b6a9873` |
+| Exact source commit represented by this archive snapshot | `360798f15cc7d83118f3128b04923bcfe9f694de` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record fully decoded baseline B14-P2 signed GREEN and keep concurrent/Town Forge gates pending |
+| Last source commit title | docs(c34): append source-locked baseline B14-P2 signed success and concurrency/Forge release hold |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B14_P2_CANDIDATE_PENDING_SIGNED_2026-11-21.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
