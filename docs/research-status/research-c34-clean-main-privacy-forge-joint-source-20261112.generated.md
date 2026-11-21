@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1e930e200cc60fab9f944a91f6925dcb2409413d` |
+| Exact source commit represented by this archive snapshot | `117dd7be0a6fc79520269a25b033b4de120e97bd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add disposable source-exact merchant late-response and postcommit browser races |
+| Last source commit title | test(c34): attach B3 original-byte signed merchant races to disposable C2-B2 harness |
 | Files changed relative to main | 296 (236 non-docs; 60 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b3_original_browser.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
 
