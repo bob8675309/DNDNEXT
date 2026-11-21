@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1171ee47e088cb0866680ffe1062c89eb6d54968` |
+| Exact source commit represented by this archive snapshot | `536da7eefeb78a9daf63af49193495ec2f0c21bd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record B8 unaccepted signed candidate and exact next verification gate |
+| Last source commit title | docs(c34): append B8 candidate receipt and pending signed acceptance |
 | Files changed relative to main | 307 (242 non-docs; 65 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
