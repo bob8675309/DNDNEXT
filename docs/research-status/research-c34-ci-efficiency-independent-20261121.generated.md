@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `9d3b5366d802f29270278617102bae9e365c09ff` |
+| Exact source commit represented by this archive snapshot | `f3219f5cb9c8d973eacff2f2889af3ad94fcc153` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | CI Issue389: independently model safe path exclusions without touching signed workflow |
-| Files changed relative to main | 335 (261 non-docs; 74 docs) |
+| Last source commit title | CI Issue389: run independent zero-database trigger source matrix on separate branch |
+| Files changed relative to main | 336 (262 non-docs; 74 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,13 +17,14 @@
 
 ## Latest source commit paths
 
-- `scripts/audits/test_c34_ci_filter_independent.mjs`
+- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-c34-c2b13-merchant-writer-census.yml`
 - `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `.github/workflows/validate-c34-t43-original-earned-v5.yml`
@@ -70,8 +71,7 @@
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
-- `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 285 more
+- … 286 more
 
 ## Trust and update procedure
 
