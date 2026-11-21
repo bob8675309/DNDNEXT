@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `049d7574937ea3a7faaa778a01560c2a687a33aa` |
+| Exact source commit represented by this archive snapshot | `3bab90b5d457bde7c78f7220b3d60c4dcf8ae480` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): run B9 signed reroll/browser source candidate |
-| Files changed relative to main | 310 (244 non-docs; 66 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): document held B9 reroll source-lock/UI acceptance criteria |
+| Files changed relative to main | 311 (244 non-docs; 67 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `docs/research/C34_T46_P3_P4B_C2_B9_REROLL_SOURCE_LOCK_UI_SIGNED_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- … 260 more
+- … 261 more
 
 ## Trust and update procedure
 
