@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `500fb65ab238d5a2a53b724d487c40489432fff8` |
+| Exact source commit represented by this archive snapshot | `77ce4dc21e91ccc498f459993e36d3b93d93f9b3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B13: append source verified writer census, failure provenance, rollback gate and budget-aware automation resumption |
+| Last source commit title | C34 C2-B13: record owner-requested weekly low-usage safe automation resume and B14 next |
 | Files changed relative to main | 330 (257 non-docs; 73 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
