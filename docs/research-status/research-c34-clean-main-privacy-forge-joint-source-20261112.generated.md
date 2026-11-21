@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6688e553b061c4212357d3b5e9aabc2aab6249e0` |
+| Exact source commit represented by this archive snapshot | `7b49c652d8d33ec9278c0e6243ce4adf6fbb6bc5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record signed P4 acceptance, future NPC quest request architecture, original trade and quest schema drift |
+| Last source commit title | docs(c34): accept signed P4, preserve future NPC quest item request P5 tests and quest schema drift release hold |
 | Files changed relative to main | 350 (270 non-docs; 80 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B14_P5_NPC_QUEST_ITEM_INTERACTION_CONTRACT_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
