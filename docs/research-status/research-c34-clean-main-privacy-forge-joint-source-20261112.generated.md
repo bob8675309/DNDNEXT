@@ -5,22 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `79b313932c02c3395df57543abec62bbfe3c613a` |
+| Exact source commit represented by this archive snapshot | `a949d0faa75c1de18193742a312c3e89d39442c7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): C2 original merchant-buy signed real town Profile-first ledger runner |
-| Files changed relative to main | 288 (229 non-docs; 59 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit title | docs(C34): preserve pending C2 signed original merchant ledger gate and hidden seller risk |
+| Files changed relative to main | 289 (229 non-docs; 60 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2-merchant-purchase.yml`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql`
-- `scripts/integration/c34/test_t46_p3_p4b_c2_merchant_commerce_source.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2_signed_merchant_purchase.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4B_C2_REAL_MERCHANT_BUY_SIGNED_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +73,7 @@
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
 - `docs/research/C34_T19_PRIVACY_29_ORIGINAL_SIGNED_2026-11-14.md`
 - `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
-- … 238 more
+- … 239 more
 
 ## Trust and update procedure
 
