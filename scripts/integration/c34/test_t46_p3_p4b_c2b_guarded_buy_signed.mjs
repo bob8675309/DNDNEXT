@@ -7,6 +7,7 @@ import {runT46C2B7MerchantTravelLocks} from "./run_t46_p3_p4b_c2b7_travel_camp_d
 import {runT46C2B8ManagerQuantity} from "./run_t46_p3_p4b_c2b8_manager_qty_signed.mjs";
 import {runT46C2B9RerollUiSigned} from "./run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs";
 import {runT46C2B10StockWritersSigned} from "./run_t46_p3_p4b_c2b10_stock_writers_signed.mjs";
+import {runT46C2B11StockUiSigned} from "./run_t46_p3_p4b_c2b11_stock_ui_signed.mjs";
 import {buildC2B2GuardedOriginalBuyer,ORIGINAL_BUYER_BLOB,ORIGINAL_BUYER_FUNCTION_MD5} from "./candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs";
 import {buildHeldNpcWithIntelAndPrint,buildGuardedSheetPanel,buildMerchantReturnToProfile} from "./candidates/t46_p3_p4a_composed_overlays.mjs";
 // C34 T46-P3-P4B-C2-B2: preserve B1 original hidden purchase RED, then test disposable guarded source GREEN
@@ -772,6 +773,13 @@ for(const [name,id] of Object.entries(ids))
  // add/remove/dump and campaign bulk reroll. No hosted SQL or runtime patch.
  await runT46C2B10StockWritersSigned({
    env,root,actors,newActor:actor,sql,q,lit,walletOf,invCount
+ });
+ // B11: source-pinned actual original AND T28/T33 guarded stock controls.
+ // Run ONLY after B10 server stock manager has been installed in disposable
+ // PG17; no hosted SQL, original storefront, or world map writes.
+ await runT46C2B11StockUiSigned({
+   env,root,actors,newActor:actor,merchantId:ids.merchant,townId,
+   browser,sql,q,lit,walletOf,invCount
  });
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
