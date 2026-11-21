@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8a2f66042ae869f1d756171ec2c5c95f9738e624` |
+| Exact source commit represented by this archive snapshot | `463e6aa625553220dde81f659eb8f99e26fcdb53` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record P6 NPC tiers, GM-adjudicated item offers, explicit auto-accept consent and legacy bypass release hold |
+| Last source commit title | docs(c34): record approved NPC consent and tiered read-only capabilities with signed P6 green explicitly pending |
 | Files changed relative to main | 354 (272 non-docs; 82 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
