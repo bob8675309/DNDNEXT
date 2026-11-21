@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `57e5a46f56f1a13046cb4b997362b8e7e3a83ffd` |
+| Exact source commit represented by this archive snapshot | `a677816139346612cede9bbed6b8dc89a6f3ee41` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record exact initial B4 missing-T31 fixture RED and guarded-source preserving rerun |
+| Last source commit title | docs(c34): promote B4 signed flagged town acceptance, expected T28-only Stage2 RED and next gate |
 | Files changed relative to main | 299 (237 non-docs; 62 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
