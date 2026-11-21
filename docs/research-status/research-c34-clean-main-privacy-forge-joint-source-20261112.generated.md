@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c9c5942501fb5cd7ef537acc6ad611c45b1c7c11` |
+| Exact source commit represented by this archive snapshot | `c2568e16524afd6e9337bad18509c528f1c3c362` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append explicit B14-P2 provisional source+test handoff, no invented signed success |
+| Last source commit title | test(c34): exercise real competing PostgREST single/bulk transfers and signed Town owner-insert source preservation |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
 
 ## Research-branch change inventory versus main
 
