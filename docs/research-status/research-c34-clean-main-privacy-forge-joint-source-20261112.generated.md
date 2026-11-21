@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `719c359beab69d56fc3d21072e23607a96dfdc2e` |
+| Exact source commit represented by this archive snapshot | `0c52f4819eb71783f28de1199022b64016f289b1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): assert 4 NPC permission tiers, read-only hire, independent withdraw and temporary tactical-only projection |
+| Last source commit title | ci(c34): cheaply verify exact NPC tier preset flags, hired read-only gear and domination tactical-only UI views |
 | Files changed relative to main | 356 (274 non-docs; 82 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
