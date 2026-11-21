@@ -5,19 +5,30 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `613d41cc882cd920ea954b69e1cee125a42198d0` |
+| Exact source commit represented by this archive snapshot | `4d4d6dab3f2083c79374947704e48b4066fe52a4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): validate executable P9 SQL only and accept P7 persisted worn gear |
-| Files changed relative to main | 368 (283 non-docs; 85 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | research(c34): isolated P10 NPC backpack React shell and signed browser actor tests |
+| Files changed relative to main | 372 (286 non-docs; 86 docs) |
+| Last source commit | 12 files (9 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `components/c34/NonMapNpcInventoryP10ResearchShell.jsx`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs`
 - `scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -55,6 +66,7 @@
 - `components/c34/DiscoveredProgressionIntel.jsx`
 - `components/c34/MerchantPanelT28P2Research.jsx`
 - `components/c34/NonMapMerchantShopResearchPanel.jsx`
+- `components/c34/NonMapNpcInventoryP10ResearchShell.jsx`
 - `components/c34/NonMapNpcManagerResearchShell.jsx`
 - `components/c34/NonMapNpcProfileResearchShell.jsx`
 - `components/c34/T28NonMapPersistentResearchProbe.jsx`
@@ -64,14 +76,13 @@
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
 - `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
 - `docs/research/C34_B14_P8_NPC_CONSENT_CUTOVER_SOURCE_RED_AND_ROUTING_PLAN_2026-11-21.md`
 - `docs/research/C34_B14_P9_SLIM_NPC_CONTEXT_LAZY_BACKPACK_RESEARCH_2026-11-21.md`
 - `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
-- `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
-- `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
-- … 318 more
+- … 322 more
 
 ## Trust and update procedure
 
