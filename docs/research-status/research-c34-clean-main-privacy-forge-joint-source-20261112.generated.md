@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `76f69c0b79d0f058360b7390f4ab25e0e6ee2735` |
+| Exact source commit represented by this archive snapshot | `2362a621674ae8f495e68df9eb66628c762fc45e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: source-locked real signed inventory RLS and transfer role matrix in disposable PG17 |
+| Last source commit title | C34 B14-P1: run original source signed inventory role matrix after inherited B2–B12 |
 | Files changed relative to main | 334 (260 non-docs; 74 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_inventory_roles_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
 
