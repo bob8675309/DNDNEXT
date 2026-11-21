@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import net from "node:net";
-import {randomUUID} from "node:crypto";
+import {randomUUID,createHash} from "node:crypto";
 import {spawn} from "node:child_process";
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -131,6 +131,26 @@ export async function runT46C2B4FlaggedTown({
  assert.equal(env.DNDNEXT_C34_LOCAL_URL,"http://127.0.0.1:54321");
  assert.equal(walletOf(actors.OUTSIDER.id),"27","B4 requires confirmed exact B3 receipts");
  assert.equal(sql("SELECT pg_get_functiondef('public.buy_from_merchant(uuid,uuid,integer)'::regprocedure) ILIKE '%Merchant unavailable%'"),"t");
+ // Only the independent READ-ONLY T31 role projection is missing from the
+ // B2 disposable fixture. The full T31 migration is NOT eligible here:
+ // it requires the pre-B2 ORIGINAL buyer MD5 and rewrites manager helpers.
+ const roleBytes=fs.readFileSync(path.join(root,
+   "scripts/integration/c34/t31_disposable_game_manager_role_unification_pg17.sql"));
+ const roleBlob=createHash("sha1").update(Buffer.concat([
+  Buffer.from("blob "+roleBytes.length+"\\0"),roleBytes])).digest("hex");
+ assert.equal(roleBlob,"46da7b3b33730df6f739e850c1c09b35699f040b",
+  "T31 role projection original source drift");
+ const roleText=roleBytes.toString("utf8");
+ const roleStart=roleText.indexOf("CREATE OR REPLACE FUNCTION public.c34_game_manager_capabilities_research_v1()");
+ const roleEnd=roleText.indexOf("\\nCOMMIT;",roleStart);
+ assert.ok(roleStart>=0 && roleEnd>roleStart,"T31 original read-only function/grants missing");
+ const roleOnly=roleText.slice(roleStart,roleEnd);
+ assert.ok(roleOnly.includes("REVOKE ALL ON FUNCTION public.c34_game_manager_capabilities_research_v1()"));
+ assert.ok(roleOnly.includes("GRANT EXECUTE ON FUNCTION public.c34_game_manager_capabilities_research_v1()"));
+ sql(roleOnly);
+ sql("NOTIFY pgrst, 'reload schema'");
+ assert.equal(sql("SELECT pg_get_functiondef('public.buy_from_merchant(uuid,uuid,integer)'::regprocedure) ILIKE '%Merchant unavailable%'"),"t",
+  "Role read-only projection changed B2 guarded original buyer");
  const townPath=path.join(root,"pages/town/[id].js");
  const currentTown=fs.readFileSync(townPath,"utf8");
  assert.ok(currentTown.includes("T46_P4B_TOWN_PRESENCE_ENABLED"),
