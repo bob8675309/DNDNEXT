@@ -1,0 +1,34 @@
+name: C34 C2-B13 nonmap merchant writer census (source-only, no spend)
+on:
+  push:
+    branches: [research/c34-clean-main-privacy-forge-joint-source-20261112]
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b13_merchant_writer_census.mjs'
+      - '.github/workflows/validate-c34-c2b13-merchant-writer-census.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b13_merchant_writer_census.mjs'
+      - '.github/workflows/validate-c34-c2b13-merchant-writer-census.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-writer-census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read-only checkout, no credential persistence
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static source syntax
+        run: node --check scripts/integration/c34/test_t46_p3_p4b_c2b13_merchant_writer_census.mjs
+      - name: Entire checked-out branch runtime and historical SQL writer census
+        run: node scripts/integration/c34/test_t46_p3_p4b_c2b13_merchant_writer_census.mjs
+      - name: Confirm no edits to protected original gameplay and map files
+        run: |
+          git diff --exit-code -- components/MerchantPanel.js components/c34/MerchantPanelT28P2Research.jsx components/MapPageClient.js pages/town/'[id].js' pages/inventory.js pages/admin.js
