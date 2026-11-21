@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `bd4f07f6ec858aeacb8f19f0664eb685c012f66e` |
+| Exact source commit represented by this archive snapshot | `1e3e082a4f4f789fb2e261aa8dd09137b12d700e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B13: source-locked nonmap merchant writer and adjacent inventory/SQL callsite census |
-| Files changed relative to main | 328 (256 non-docs; 72 docs) |
+| Last source commit title | C34 C2-B13: free read-only Node source-census CI for merchant and adjacent writers |
+| Files changed relative to main | 329 (257 non-docs; 72 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,11 +17,12 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b13_merchant_writer_census.mjs`
+- `.github/workflows/validate-c34-c2b13-merchant-writer-census.yml`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/research-docs-maintenance.yml`
+- `.github/workflows/validate-c34-c2b13-merchant-writer-census.yml`
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `.github/workflows/validate-c34-t43-original-earned-v5.yml`
@@ -70,8 +71,7 @@
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
-- `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
-- … 278 more
+- … 279 more
 
 ## Trust and update procedure
 
