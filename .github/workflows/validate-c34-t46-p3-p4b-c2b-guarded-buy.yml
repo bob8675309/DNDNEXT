@@ -5,6 +5,7 @@ on:
       - research/c34-clean-main-privacy-forge-joint-source-20261112
     paths:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b3_original_browser.mjs'
       - '.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_town_presence_pg17.sql'
       - 'pages/town/[id].js'
@@ -22,6 +23,7 @@ on:
   pull_request:
     paths:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b3_original_browser.mjs'
       - '.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml'
   workflow_dispatch:
 permissions:
@@ -53,6 +55,7 @@ jobs:
       - name: Preserve original Stage1–3, T45/T46-P1 sources and T46-P2 static privacy
         run: |
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b3_original_browser.mjs
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b_guard_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2_merchant_commerce_source.mjs
