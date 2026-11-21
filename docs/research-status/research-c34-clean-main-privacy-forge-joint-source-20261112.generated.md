@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3fcc9c9a13cf3b7ea74fefa9ea1ee56e1ad29720` |
+| Exact source commit represented by this archive snapshot | `8ca73b6a0ff5d940b1d1bdf75d1f026f4e2deb86` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): add B8 signed manager delta CAS and buyer race tests |
+| Last source commit title | ci(c34): trigger signed disposable B8 merchant manager concurrency run |
 | Files changed relative to main | 307 (242 non-docs; 65 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b8_manager_qty_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
