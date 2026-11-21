@@ -1,0 +1,39 @@
+name: C34 B11 source-locked merchant stock UI candidate (research only)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs'
+      - '.github/workflows/validate-c34-t46-c2b11-static.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs'
+      - '.github/workflows/validate-c34-t46-c2b11-static.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  b11-source-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout source only (no credential retention)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check B11 source syntax
+        run: |
+          node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs
+      - name: Original+guarded stock mutation overlays, source pins and negative controls
+        run: node scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs
+      - name: Preserve original merchant and map on test-only path
+        run: |
+          git diff --exit-code -- components/MerchantPanel.js components/c34/MerchantPanelT28P2Research.jsx components/MapPageClient.js
