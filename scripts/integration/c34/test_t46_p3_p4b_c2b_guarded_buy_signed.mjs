@@ -9,6 +9,7 @@ import {runT46C2B9RerollUiSigned} from "./run_t46_p3_p4b_c2b9_reroll_ui_signed.m
 import {runT46C2B10StockWritersSigned} from "./run_t46_p3_p4b_c2b10_stock_writers_signed.mjs";
 import {runT46C2B11StockUiSigned} from "./run_t46_p3_p4b_c2b11_stock_ui_signed.mjs";
 import {runT46C2B11BraceSigned} from "./run_t46_p3_p4b_c2b11_brace_pending_rpc_signed.mjs";
+import {runT46C2B12QtyRerollSigned} from "./run_t46_p3_p4b_c2b12_qty_reroll_signed.mjs";
 import {buildC2B2GuardedOriginalBuyer,ORIGINAL_BUYER_BLOB,ORIGINAL_BUYER_FUNCTION_MD5} from "./candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs";
 import {buildHeldNpcWithIntelAndPrint,buildGuardedSheetPanel,buildMerchantReturnToProfile} from "./candidates/t46_p3_p4a_composed_overlays.mjs";
 // C34 T46-P3-P4B-C2-B2: preserve B1 original hidden purchase RED, then test disposable guarded source GREEN
@@ -789,6 +790,12 @@ for(const [name,id] of Object.entries(ids))
  await runT46C2B11BraceSigned({
    env,root,actors,newActor:actor,merchantOriginalBytes:merchantBytes,
    browser,sql,q,lit
+ });
+ // C2-B12: isolated NEXT signed browser stage. Preserve all B2-B11 tests and
+ // B11-BRACE unchanged, then use a SECOND disposable fixture for B8 and B9.
+ await runT46C2B12QtyRerollSigned({
+   env,root,actors,newActor:actor,merchantOriginalBytes:merchantBytes,
+   browser,sql,q,lit,walletOf,invCount
  });
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
