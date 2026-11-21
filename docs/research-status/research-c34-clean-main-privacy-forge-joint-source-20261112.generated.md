@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3cf38709766a7cc76191727f8fe4d10fe3bc1ed3` |
+| Exact source commit represented by this archive snapshot | `b36dbf1bd24adab33df52f5e36e3302243fd3ea5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): chain B4 Stage2-safe flagged current-town acceptance after B3 original RED |
+| Last source commit title | ci(c34): run B4 guarded T28/T33 real town browser crosswalk in disposable signed workflow |
 | Files changed relative to main | 298 (237 non-docs; 61 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
