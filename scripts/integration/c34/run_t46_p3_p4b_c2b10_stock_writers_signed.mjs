@@ -70,9 +70,12 @@ export async function runT46C2B10StockWritersSigned({
  const def=sql("SELECT pg_get_functiondef("+sig+"::regprocedure)");
  assert.ok(def.indexOf("FOR UPDATE")<def.indexOf("DELETE FROM public.character_stock"),"B10 seller lock order");
 
- const [admin,gm,player]=await Promise.all([
-  newActor("B10_ADMIN","admin"),newActor("B10_GM","gm"),newActor("B10_PLAYER","player")
+ const [admin,gm,player,buyer]=await Promise.all([
+  newActor("B10_ADMIN","admin"),newActor("B10_GM","gm"),
+  newActor("B10_PLAYER","player"),newActor("B10_FUNDED_BUYER","player")
  ]);
+ // Isolate B10 purchase accounting from B2–B9 spending and stock fixtures.
+ sql("INSERT INTO public.player_wallets(user_id,gp) VALUES("+q(buyer.id)+",100)");
  const ids=[randomUUID(),randomUUID()].sort();
  const [sellerA,sellerB]=ids;
  for(const [i,id] of ids.entries())sql(
@@ -87,8 +90,8 @@ export async function runT46C2B10StockWritersSigned({
  const byId=(id)=>JSON.parse(sql("SELECT row_to_json(s)::text FROM public.character_stock s WHERE id="+q(id)));
  const stockQty=(id)=>sql("SELECT coalesce((SELECT qty::text FROM public.character_stock WHERE id="+q(id)+"),'gone')");
  const count=(seller)=>Number(sql("SELECT count(*) FROM public.character_stock WHERE character_id="+q(seller)));
- const walletStart=walletOf(actors.OUTSIDER.id),invStart=Number(invCount(actors.OUTSIDER.id));
- const normalBuy=(seller,id)=>actors.OUTSIDER.who.rpc("buy_from_merchant",{
+ const walletStart=walletOf(buyer.id),invStart=Number(invCount(buyer.id));
+ const normalBuy=(seller,id)=>buyer.who.rpc("buy_from_merchant",{
   p_merchant_id:seller,p_stock_uuid:id,p_qty:1
  });
  const [a0,b0]=await Promise.all([
@@ -151,8 +154,8 @@ export async function runT46C2B10StockWritersSigned({
  assert.equal(stockQty(aid),"gone");
  deny(await mutate(admin,{p_merchant_id:sellerA,p_action:"remove",
   p_stock_id:aid,p_expected:oldRow}),"P0002","removed stock UUID");
- assert.equal(walletOf(actors.OUTSIDER.id),String(Number(walletStart)-5));
- assert.equal(Number(invCount(actors.OUTSIDER.id)),invStart+1);
+ assert.equal(walletOf(buyer.id),String(Number(walletStart)-5));
+ assert.equal(Number(invCount(buyer.id)),invStart+1);
  console.log("PASS T46-C2B10-REMOVE-CAS: buyer invalidates original snapshot, stale remove 40001, fresh remove deletes exactly owned stock; no purchase double debit");
 
  // Dump snapshot compares EVERY UUID, quantity and timestamp on a seller
@@ -167,15 +170,15 @@ export async function runT46C2B10StockWritersSigned({
  assert.equal(dumped.data.deleted,1);
  assert.equal(count(sellerB),0);
  assert.equal(count(sellerA),1,"Merchant B dump must never remove Merchant A stock");
- assert.equal(walletOf(actors.OUTSIDER.id),String(Number(walletStart)-10));
- assert.equal(Number(invCount(actors.OUTSIDER.id)),invStart+2);
+ assert.equal(walletOf(buyer.id),String(Number(walletStart)-10));
+ assert.equal(Number(invCount(buyer.id)),invStart+2);
  console.log("PASS T46-C2B10-DUMP-CAS: old snapshot rejected after signed buyer; fresh full-shelf clear atomic and merchant scoped");
 
  // Reverse-race check: exclusive seller lock must be taken BEFORE waiting on
  // held stock row. Buyer and B8 manager each need seller FOR SHARE and queue.
  const heldRow=third.data.id;
  const snapshot=shelf(sellerA);
- const walletBeforeRace=walletOf(actors.OUTSIDER.id),itemsBeforeRace=Number(invCount(actors.OUTSIDER.id));
+ const walletBeforeRace=walletOf(buyer.id),itemsBeforeRace=Number(invCount(buyer.id));
  let tx=new LockRow(env);
  try{
   await tx.send("BEGIN; SELECT id FROM public.character_stock WHERE id="+q(heldRow)+" FOR UPDATE;");
@@ -205,8 +208,8 @@ export async function runT46C2B10StockWritersSigned({
   deny(receipt,"P0002","buyer of removed row after dump");
   deny(qty,"P0002","B8 delta of removed row after dump");
   assert.equal(stockQty(heldRow),"gone");
-  assert.equal(walletOf(actors.OUTSIDER.id),walletBeforeRace);
-  assert.equal(Number(invCount(actors.OUTSIDER.id)),itemsBeforeRace);
+  assert.equal(walletOf(buyer.id),walletBeforeRace);
+  assert.equal(Number(invCount(buyer.id)),itemsBeforeRace);
   console.log("PASS T46-C2B10-DUMP-RACE: signed dump acquires exclusive seller before stock, signed buyer/B8 manager wait, both old UUIDs deny, no deadlock/GP/item side effects");
  }finally{await tx.close()}
 
@@ -289,8 +292,8 @@ export async function runT46C2B10StockWritersSigned({
    assert.equal(sql("SELECT future_tech_enabled::text FROM public.campaign_item_pool_settings WHERE id=1"),settingBefore);
    for(let i=0;i<ids.length;i++)assert.equal(JSON.stringify(shelf(ids[i])),beforeStock[i],
      "B10 mass failure partially replaced merchant "+i);
-   assert.equal(walletOf(actors.OUTSIDER.id),walletBeforeRace);
-   assert.equal(Number(invCount(actors.OUTSIDER.id)),itemsBeforeRace);
+   assert.equal(walletOf(buyer.id),walletBeforeRace);
+   assert.equal(Number(invCount(buyer.id)),itemsBeforeRace);
    console.log("PASS T46-C2B10-BULK-ROLLBACK: failed second signed DM merchant reroll rolls back first merchant shelf AND global future-tech flag, exact old UUID/qty/revision, zero buyer side effects");
   }finally{
    sql("DROP TRIGGER IF EXISTS c34_b10_bulk_fail_second ON public.character_stock");
