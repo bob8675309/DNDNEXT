@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8b9d45478e7cf488de13ddb362a5733a3e498770` |
+| Exact source commit represented by this archive snapshot | `22f1fdadd72951020e47a74890091af2ba877ad5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11-BRACE: genuine signed in-flight RPC actor/merchant switch and revoked-role browser races |
+| Last source commit title | C34 B11-BRACE: include new source and signed pending-RPC browser races in full PG17 CI |
 | Files changed relative to main | 322 (253 non-docs; 69 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b11_brace_pending_rpc_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
