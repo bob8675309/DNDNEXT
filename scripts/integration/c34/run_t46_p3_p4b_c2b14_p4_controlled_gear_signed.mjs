@@ -179,6 +179,27 @@ export async function runC34B14P4ControlledGearSigned({env,sql,q,lit,roles}) {
  assert.equal(state(concurrent).owner_id,wins[0].data.owner_id);
  console.log("PASS T46-C2B14-P4-CONCURRENCY: overlapping real signed PostgREST character gear donation serializes; one commit, losing 40001");
 
+
+ // Prior B14-P2 ordinary account-owned item transfer must not bypass P4's
+ // explicit no-PC-recipient rule by pretending a Forge PC is an NPC.
+ const forgedPcTargetItem=randomUUID();
+ sql("INSERT INTO public.inventory_items(id,owner_type,owner_id,user_id,item_name,item_type,item_rarity) VALUES("+
+  q(forgedPcTargetItem)+",'player',"+q(roles.OWNER.id)+","+q(roles.OWNER.id)+
+  ",'P4 player-to-tagged-PC attack','Misc','Common')");
+ const priorRpc=async(who,target)=>who.rpc("c34_b14_p2_transfer_inventory_item_v1",{
+  p_item_id:forgedPcTargetItem,p_target_type:"npc",p_target_id:target,
+  p_expected_owner_type:"player",p_expected_owner_id:roles.OWNER.id
+ });
+ denied(await priorRpc(roles.OWNER.who,otherSameAccountPC),
+  "earlier versioned P2 cannot send account item to same-account Forge PC disguised as npc","22023");
+ denied(await priorRpc(roles.GM.who,otherSameAccountPC),
+  "GM cannot use earlier P2 to send to a tagged player character","22023");
+ assert.equal(state(forgedPcTargetItem).owner_id,roles.OWNER.id);
+ const originalNpcSend=await priorRpc(roles.OWNER.who,sidekick);
+ assert.ifError(originalNpcSend.error);
+ assert.equal(originalNpcSend.data.owner_id,sidekick);
+ console.log("PASS T46-C2B14-P4-P2-NPC-TAG-GUARD: older versioned P2 refuses tagged Forge PC even kind=npc/control=true/manager, ordinary NPC recipient remains valid");
+
  const otherAccountItem=randomUUID();
  sql("INSERT INTO public.inventory_items(id,owner_type,owner_id,user_id,item_name,item_type,item_rarity) VALUES("+
   q(otherAccountItem)+",'player',"+q(roles.OWNER.id)+","+q(roles.OWNER.id)+

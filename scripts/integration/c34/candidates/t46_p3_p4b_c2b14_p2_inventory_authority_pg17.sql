@@ -92,6 +92,8 @@ BEGIN
     IF NOT EXISTS (
       SELECT 1 FROM public.characters c
       WHERE c.id = v_target_uuid AND c.kind = v_target_type
+        AND NOT (v_target_type = 'npc'
+          AND 'player-character' = ANY(coalesce(c.tags,'{}'::text[])))
     ) THEN
       RAISE EXCEPTION 'Character target not found' USING ERRCODE = '22023';
     END IF;
