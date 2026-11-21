@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ef93aceba6abf16d2ead0950ded1ace7f70107c2` |
+| Exact source commit represented by this archive snapshot | `dc91c4552dca09c355c7ce058b2d528c1b1fe468` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record pending bounded C2-B3 original source and signed acceptance contract |
+| Last source commit title | docs(c34): record B3 authored source-exact tests and pending signed run without claiming acceptance |
 | Files changed relative to main | 297 (236 non-docs; 61 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B3_ORIGINAL_MERCHANT_ASYNC_SIGNED_2026-11-20.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
