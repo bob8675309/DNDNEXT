@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fc8bb60d7cc51a40b45c5191072a9afa7001b041` |
+| Exact source commit represented by this archive snapshot | `a2f60f8d427358afc6345c3f6fb93851994c1e68` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): preserve original Forge character-scope distinction and expose remaining June direct ownership laundering RED |
-| Files changed relative to main | 341 (264 non-docs; 77 docs) |
+| Last source commit title | test(c34): pin original Forge v3 signed acceptance, Town craft owner alignment, distinct character scope and target-list RED |
+| Files changed relative to main | 342 (265 non-docs; 77 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p2_forge_town_bridge_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 291 more
+- … 292 more
 
 ## Trust and update procedure
 
