@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `81290e7ea92154fecd23b301d555c56c7c6575f5` |
+| Exact source commit represented by this archive snapshot | `fc8bb60d7cc51a40b45c5191072a9afa7001b041` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append accepted B14-P2-C1 real signed overlap/concurrency evidence and next Forge compatibility hold |
+| Last source commit title | test(c34): preserve original Forge character-scope distinction and expose remaining June direct ownership laundering RED |
 | Files changed relative to main | 341 (264 non-docs; 77 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
 
 ## Research-branch change inventory versus main
 
