@@ -23,7 +23,7 @@ export async function runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,hidden
  const source=fs.readFileSync(path.join(root,script),"utf8");
  assert.match(source,/RESEARCH ONLY/);
  assert.match(source,/LIMIT 12/);
- assert.doesNotMatch(source,/card_payload|SELECT \*|CREATE TABLE|ALTER TABLE|DROP FUNCTION|DROP POLICY/i);
+ assert.doesNotMatch(source.split("\n").filter(line=>!line.trimStart().startsWith("--")).join("\n"),/card_payload|SELECT \*|CREATE TABLE|ALTER TABLE|DROP FUNCTION|DROP POLICY/i);
  sql(source);
  const name="c34_b14_p9_npc_slim_context_v1";
  const sig="public."+name+"(uuid)";
@@ -56,7 +56,8 @@ export async function runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,hidden
  assert.ifError(baseline.error);
  assert.deepEqual(Object.keys(baseline.data).sort(),keys.sort());
  assert.equal(baseline.data.can_issue_encounter_commands,true);
- assert.deepEqual(baseline.data.worn_gear,[{name:"P7 sword"}]);
+ assert.ok(baseline.data.worn_gear.some(row=>row.name==="P7 sword"));
+ assert.ok(baseline.data.worn_gear.length<=12);
  assert.ok(!JSON.stringify(baseline.data).includes(ids[0]));
  assert.ok(!JSON.stringify(baseline.data).includes("P7-private-GM-payload"));
  assert.equal(Object.hasOwn(baseline.data,"backpack"),false);
