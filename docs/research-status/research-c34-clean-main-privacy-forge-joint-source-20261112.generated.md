@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `91102a05921fbeb75eda3a8131050a1faf34f256` |
+| Exact source commit represented by this archive snapshot | `0d4abaa0707448aa0a7548b7a1318c2865c09918` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): add disposable signed P4B-C1 town role/revocation browser coverage |
+| Last source commit title | test(C34): assert hidden NPC on actual People drawer, not Bazaar |
 | Files changed relative to main | 276 (219 non-docs; 57 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c1-town-roles-revoke.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T46_P3_P4B_C1_TOWN_ROLE_BROWSER_2026-11-20.md`
