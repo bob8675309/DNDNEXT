@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import {randomUUID} from "node:crypto";
+import {randomUUID,createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
@@ -160,6 +160,81 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
   "missing item rollback","22023");
  assert.equal(state(present).owner_id,roles.OWNER.id);
  console.log("PASS T46-C2B14-P2-BULK: signed 2-item atomic move+unequip; mixed owner/duplicate/missing all roll back");
+
+
+ // Concurrent POST requests go through distinct real PostgREST SQL transactions,
+ // NOT an in-process mock or sequential calls.
+ const clash=seed("competing single","player",roles.OWNER.id,roles.OWNER.id);
+ const raceSingle=await Promise.all([
+  single(roles.OWNER,clash,"npc",npc,"player",roles.OWNER.id),
+  single(roles.OWNER,clash,"npc",npcOther,"player",roles.OWNER.id)
+ ]);
+ const singleWinners=raceSingle.filter(x=>!x.error);
+ const singleDenied=raceSingle.filter(x=>!!x.error);
+ assert.equal(singleWinners.length,1,"Exactly one competing single transfer must commit");
+ assert.equal(singleDenied.length,1,"Exactly one competing single transfer must reject");
+ assert.equal(singleDenied[0].error.code,"40001","Stale competitor must see owner conflict");
+ assert.equal(state(clash).owner_id,singleWinners[0].data.owner_id);
+ assert.equal(state(clash).is_equipped,false);
+ console.log("PASS T46-C2B14-P2-CONCURRENCY-SINGLE: 2 concurrent genuine PostgREST transfers compete for one locked item; exactly 1 commit, loser 40001, no duplicate ownership");
+
+ const shared=seed("race bulk shared","player",roles.OWNER.id,roles.OWNER.id);
+ const onlyA=seed("race bulk A","player",roles.OWNER.id,roles.OWNER.id);
+ const onlyB=seed("race bulk B","player",roles.OWNER.id,roles.OWNER.id);
+ const raceBulk=await Promise.all([
+  bulk(roles.OWNER,[shared,onlyA],"npc",npc,"player",roles.OWNER.id),
+  bulk(roles.OWNER,[onlyB,shared],"npc",npcOther,"player",roles.OWNER.id)
+ ]);
+ const bulkWinners=raceBulk.map((result,index)=>({result,index})).filter(x=>!x.result.error);
+ const bulkDenied=raceBulk.filter(x=>!!x.error);
+ assert.equal(bulkWinners.length,1,"Exactly one competing bulk must commit");
+ assert.equal(bulkDenied.length,1,"Exactly one competing bulk must reject");
+ assert.equal(bulkDenied[0].error.code,"40001","Losing bulk must detect owner conflict");
+ const winningIndex=bulkWinners[0].index;
+ const winningDestination=winningIndex===0?npc:npcOther;
+ const winnerOnly=winningIndex===0?onlyA:onlyB;
+ const loserOnly=winningIndex===0?onlyB:onlyA;
+ assert.equal(state(shared).owner_id,winningDestination);
+ assert.equal(state(winnerOnly).owner_id,winningDestination);
+ assert.equal(state(loserOnly).owner_id,roles.OWNER.id,
+  "Competing bulk failure must roll back its disjoint item");
+ console.log("PASS T46-C2B14-P2-CONCURRENCY-BULK: overlapping signed parallel transactions serialize via row locks, one wins, loser 40001 with unaffected unique item");
+
+ // Source-locked Town item grant and Forge character-scoped materializers.
+ // This fixture does not call the complete original Forge creation workflow;
+ // never equate this source/owner-shape preservation with that positive E2E.
+ const gitBlob=bytes=>createHash("sha1").update(
+  Buffer.concat([Buffer.from("blob "+bytes.length+"\0"),bytes])
+ ).digest("hex");
+ for(const [file,sha,tokens] of [
+  ["components/AssignItemButton.js","dc09dc77c66896ed842d240c584225cde26581db",
+   ['.from("inventory_items").insert(insertData)',"if (finalType === \"player\") insertData.user_id = finalId"]],
+  ["sql/20260808_51_player_forge_character_scoped_equipment_projection.sql",
+   "7b84dfca57a5482fbc474db71ea4e00243ff58fb",
+   ["insert into public.inventory_items(","'character',p_character_id::text"]],
+  ["sql/20261010_01_player_forge_starting_market.sql",
+   "f77f996e88e8b3f8f01f10f77da205af2a24f11d",
+   ["insert into public.inventory_items(","'startingMarket',true"]]
+ ]){
+  const bytes=fs.readFileSync(path.join(root,file));
+  assert.equal(gitBlob(bytes),sha,"P2 original Town/Forge materializer drift "+file);
+  const src=bytes.toString();
+  for(const token of tokens)assert.ok(src.includes(token),"Missing original source contract "+file+" "+token);
+ }
+ const townGrant=await roles.OWNER.who.from("inventory_items").insert({
+  owner_type:"player",owner_id:roles.OWNER.id,user_id:roles.OWNER.id,
+  item_id:"p2-town-grant",item_name:"P2 legitimate town item grant",
+  item_type:"Misc",item_rarity:"Common",is_equipped:false,
+  card_payload:{source:"town",materializedBy:"P2 signed compatibility fixture"}
+ }).select("id,owner_type,owner_id,user_id,is_equipped,card_payload");
+ assert.ifError(townGrant.error);
+ assert.equal(townGrant.data.length,1);
+ assert.equal(townGrant.data[0].owner_type,"player");
+ assert.equal(townGrant.data[0].owner_id,roles.OWNER.id);
+ assert.equal(townGrant.data[0].user_id,roles.OWNER.id);
+ assert.equal(townGrant.data[0].is_equipped,false);
+ assert.equal(townGrant.data[0].card_payload.source,"town");
+ console.log("PASS T46-C2B14-P2-TOWN-INSERT: genuine player signed owner INSERT with item payload succeeds; original AssignItemButton and Forge character-scoped sources byte-pinned (NOT full Town crafting/Forge E2E)");
 
  const demotedItem=seed("GM role revoked","player",roles.OUTSIDER.id,roles.OUTSIDER.id);
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(roles.GM.id));
