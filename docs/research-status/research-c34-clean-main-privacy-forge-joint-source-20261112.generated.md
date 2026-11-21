@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `46aac9ec3cd6ce24456bd1f9e86196417c43b54c` |
+| Exact source commit represented by this archive snapshot | `34f5297468c33f19d1d0fd4ac1f33e1a2caaebe4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: free source-only CI for original and guarded stock management overlay |
+| Last source commit title | C34 B11: align static actor-epoch assertion with actual signed current-actor helper |
 | Files changed relative to main | 318 (250 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-c2b11-static.yml`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs`
 
 ## Research-branch change inventory versus main
 
