@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dbb453a9d1eb3e04c113caa9d95414e2f7035428` |
+| Exact source commit represented by this archive snapshot | `881b9fb08e7cad2ef49dde32014346882dcdaa86` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B13: correct repo-relative root for source census on CI |
+| Last source commit title | C34 B13: make bounded directory walk preserve RegExp extension across array recursion |
 | Files changed relative to main | 329 (257 non-docs; 72 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
