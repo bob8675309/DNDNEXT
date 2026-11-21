@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7364483afb87cc5960982bf613025c41d33c3417` |
+| Exact source commit represented by this archive snapshot | `796bce97d03b9fd5219c88ce7dfc3f396b4b1be7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: pass B2-pristine merchant blob into signed stock overlay stage |
+| Last source commit title | C34 B11: assert documented PostgREST 40001→HTTP500 while retaining strict stale-CAS denial |
 | Files changed relative to main | 319 (251 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b11_stock_ui_signed.mjs`
 
 ## Research-branch change inventory versus main
 
