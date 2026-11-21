@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `793627e2e32c4d8df96d16e2c3bfab7da4e8e298` |
+| Exact source commit represented by this archive snapshot | `76adc23f84942503f37409e903b5ee0820abe81e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record B9 held reroll source/browser research pending signed acceptance |
+| Last source commit title | docs(c34): append B9 candidate receipt and pending signed evidence |
 | Files changed relative to main | 311 (244 non-docs; 67 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
