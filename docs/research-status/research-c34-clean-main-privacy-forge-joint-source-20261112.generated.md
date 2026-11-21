@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f26c3000cc0e507fb6b19d208959f283892467c7` |
+| Exact source commit represented by this archive snapshot | `b8f2150f6af8ac1f0d713d2da111b7ee9a2702d4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record accepted signed B8 merchant manager quantity and release limits |
+| Last source commit title | docs(c34): close B8 signed research acceptance and set next bounded B9 |
 | Files changed relative to main | 308 (242 non-docs; 66 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B8_SIGNED_MANAGER_QUANTITY_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
