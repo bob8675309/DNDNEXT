@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `022d50197a0f55aa951a5a503bb593c16271c850` |
+| Exact source commit represented by this archive snapshot | `2a0560fb0a6fe43e1bcf215e706c054554ee7b0c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): isolate P4 character gear donation to controlled henchmen/sidekicks with independent control grants |
+| Last source commit title | research(c34): rely on signed runner PGHOST guard; do not assume container-internal PG server loopback address |
 | Files changed relative to main | 345 (267 non-docs; 78 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
