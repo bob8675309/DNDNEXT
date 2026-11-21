@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `cc480a7f5d9210ad989ca1e6c052fdd2b7f5ed48` |
+| Exact source commit represented by this archive snapshot | `8e4b9bb0037c9c5af908654fdd95f163ef720cea` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): retain B6 initial test fixture original-vs-overlay hash failure and precise correction |
+| Last source commit title | test(c34): normalize Supabase PostgREST PromiseLike before concurrency finally handlers |
 | Files changed relative to main | 303 (239 non-docs; 64 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B6_MERCHANT_CONCURRENCY_SOURCE_SIGNED_2026-11-20.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b6_stock_lock_signed.mjs`
 
 ## Research-branch change inventory versus main
 
