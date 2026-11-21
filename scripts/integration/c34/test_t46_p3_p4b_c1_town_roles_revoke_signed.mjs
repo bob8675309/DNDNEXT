@@ -461,8 +461,19 @@ try{
      const u=new URL(url);
      return u.searchParams.get("select")===globalPlayerProfileCols
        && u.searchParams.get("tags")==="cs.{player-character}"
-       && /^in\\.\\([0-9a-f-]+\\)$/i.test(u.searchParams.get("id")||"");
+       && /^in\.\([0-9a-f-]+\)$/i.test(u.searchParams.get("id")||"");
    };
+   // Classifier must match the original delegated global fallback, not
+   // disguise an original TOWN/Bazaar roster query as an accepted RED.
+   const exemplar=new URL("http://127.0.0.1:54321/rest/v1/characters");
+   exemplar.searchParams.set("select",globalPlayerProfileCols);
+   exemplar.searchParams.set("id","in.("+ids.npc+")");
+   exemplar.searchParams.set("tags","cs.{player-character}");
+   assert.ok(isKnownGlobalFallback(exemplar.href),
+     "Global-profile exact query-classification self-check failed");
+   exemplar.searchParams.set("select","id,name,kind,race,role,state,location_id");
+   assert.equal(isKnownGlobalFallback(exemplar.href),false,
+     "Town source fields must never enter global-profile exemption");
    const rawCharacterReads=seen.filter(url=>url.includes("/rest/v1/characters?"));
    const unrelatedRaw=rawCharacterReads.filter(url=>!isKnownGlobalFallback(url));
    assert.deepEqual(unrelatedRaw,[],
