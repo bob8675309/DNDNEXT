@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import {buildTownPresenceOverlay} from "./candidates/t46_p3_p4b_b_town_overlay.mjs";
+import {writeC2B3OriginalProbe,removeC2B3Probe,runC2B3SignedCommerce} from "./run_t46_p3_p4b_c2b3_original_browser.mjs";
 import {buildC2B2GuardedOriginalBuyer,ORIGINAL_BUYER_BLOB,ORIGINAL_BUYER_FUNCTION_MD5} from "./candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs";
 import {buildHeldNpcWithIntelAndPrint,buildGuardedSheetPanel,buildMerchantReturnToProfile} from "./candidates/t46_p3_p4a_composed_overlays.mjs";
 // C34 T46-P3-P4B-C2-B2: preserve B1 original hidden purchase RED, then test disposable guarded source GREEN
@@ -446,6 +447,8 @@ let server=null,browser=null,serverLog="",pageErrors=[],requests=[];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function freePort(){return new Promise((resolve,reject)=>{const sock=net.createServer();sock.once("error",reject);sock.listen(0,"127.0.0.1",()=>{const p=sock.address().port;sock.close(()=>resolve(p))})})}
 try{
+ // Exact original merchant bytes before local #345 Return/Profile overlay.
+ writeC2B3OriginalProbe(root,merchantBytes,ids.merchant);
  const candidate=buildTownPresenceOverlay(townBytes.toString("utf8"));
  assert.ok(candidate.includes("T46_P4B_TOWN_PRESENCE_ENABLED"));
  assert.ok(candidate.includes("c34_t46_get_town_presence_v1"));
@@ -721,6 +724,10 @@ for(const [name,id] of Object.entries(ids))
  assert.equal(Number(invCount(actors.EDITOR.id)),Number(beforeInfinite)+1);
  console.log("PASS T46-P3-P4B-C2-B2-INFINITE: original -1GP buyer unchanged, one final stocked item delivered and exhausted row removed");
 
+ await runC2B3SignedCommerce({
+   root,browser,origin,page,side,actors,merchantId:ids.merchant,
+   visitingMerchantId:travellingMerchant,sql,q,lit,walletOf,invCount
+ });
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
  assert.ok(!/seller\.(?:state|location_id|home_location_id)/.test(guardedBuyerSql));
@@ -735,6 +742,7 @@ for(const [name,id] of Object.entries(ids))
  console.log("PASS T46-P3-P4B-C2-B1-RESEARCH: original source-only hidden seller RED proven with signed local buyer, old C2-A purchase still green; full C2 visibility and stale-actor release gate HOLD");
 }finally{
  if(browser)await browser.close().catch(()=>{});
+ removeC2B3Probe(root);
  if(server){try{process.kill(-server.pid,"SIGTERM")}catch{}await sleep(500);try{process.kill(-server.pid,"SIGKILL")}catch{}}
  if(overlaid)fs.writeFileSync(townPath,townBytes);
  if(npcOverlaid)fs.writeFileSync(npcPath,npcBytes);
