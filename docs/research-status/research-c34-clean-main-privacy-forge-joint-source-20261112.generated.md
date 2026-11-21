@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2ae33247d4b1a3fa4eb9b77c48b2cf003d5a8980` |
+| Exact source commit represented by this archive snapshot | `20876a76eed29b70cb48f882c01cd4ce6df20a67` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): accept exact signed P4B-C1 town role/focus proof; hold global PR source RPC risk |
-| Files changed relative to main | 277 (219 non-docs; 58 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | test(C34): source-original G1 delegated Player RPC RED to held #345 Stage1 signed GREEN candidate |
+| Files changed relative to main | 279 (221 non-docs; 58 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-t46-global-g1-player-rpc-signed.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T46_GLOBAL_PLAYER_CHARACTER_RPC_ORIGINAL_SOURCE_REVIEW_2026-11-20.md`
-- `docs/research/C34_T46_P3_P4B_C1_TOWN_ROLE_BROWSER_2026-11-20.md`
+- `scripts/integration/c34/test_t46_global_g1_player_rpc_red_green_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -31,6 +32,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c34-t44-real-level-up-browser.yml`
 - `.github/workflows/validate-c34-t45-parent-review-source.yml`
 - `.github/workflows/validate-c34-t45-parent-signed-browser.yml`
+- `.github/workflows/validate-c34-t46-global-g1-player-rpc-signed.yml`
 - `.github/workflows/validate-c34-t46-p2-real-profile-browser.yml`
 - `.github/workflows/validate-c34-t46-p3-active-consumer-source.yml`
 - `.github/workflows/validate-c34-t46-p3-p1-active-npc-red-browser.yml`
@@ -73,8 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T20_ORIGINAL_NPC_BROWSER_PDF_SIGNED_2026-11-14.md`
 - `docs/research/C34_T21_CURRENT_APP_NONMAP_NPC_READER_SIGNED_2026-11-14.md`
 - `docs/research/C34_T22_CURRENT_APP_NONMAP_NEXT_BROWSER_SIGNED_2026-11-14.md`
-- `docs/research/C34_T23_NONMAP_NPC_MANAGER_SOURCE_PRIVACY_REVIEW_2026-11-14.md`
-- … 227 more
+- … 229 more
 
 ## Trust and update procedure
 
