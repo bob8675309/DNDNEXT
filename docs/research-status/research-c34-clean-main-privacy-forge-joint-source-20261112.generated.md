@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a677816139346612cede9bbed6b8dc89a6f3ee41` |
+| Exact source commit represented by this archive snapshot | `538c0690824153213dd97a5ee41d00d0d6664233` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): promote B4 signed flagged town acceptance, expected T28-only Stage2 RED and next gate |
+| Last source commit title | docs(c34): publish exact B4 signed T28+T33 Green / T28-only Stage2 RED and next bounded review |
 | Files changed relative to main | 299 (237 non-docs; 62 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B4_FLAGGED_GUARDED_TOWN_SIGNED_2026-11-20.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
