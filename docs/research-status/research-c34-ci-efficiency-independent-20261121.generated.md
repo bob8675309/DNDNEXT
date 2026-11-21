@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `21d6b18f5b6e5baba0aa2dd06d9480d456b92ec3` |
+| Exact source commit represented by this archive snapshot | `9d3b5366d802f29270278617102bae9e365c09ff` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: validate signed source-locked inventory authorization after B2–B12 in CI |
-| Files changed relative to main | 334 (260 non-docs; 74 docs) |
+| Last source commit title | CI Issue389: independently model safe path exclusions without touching signed workflow |
+| Files changed relative to main | 335 (261 non-docs; 74 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `scripts/audits/test_c34_ci_filter_independent.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 284 more
+- … 285 more
 
 ## Trust and update procedure
 
