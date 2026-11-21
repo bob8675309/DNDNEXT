@@ -32,6 +32,7 @@ export async function runC34B14P4ControlledGearSigned({env,sql,q,lit,roles}) {
  assert.match(candidate,/v_item\.user_id IS DISTINCT FROM v_caller/);
  assert.match(candidate,/v_item\.owner_type IS DISTINCT FROM 'character'/);
  assert.match(candidate,/v_target_kind IS DISTINCT FROM 'npc'/);
+ assert.match(candidate,/'player-character' = ANY\(coalesce\(v_target_tags/);
  assert.match(candidate,/coalesce\(cp\.can_control,false\) OR coalesce\(cp\.can_edit,false\)/);
  assert.doesNotMatch(candidate,/ALTER POLICY|DROP POLICY|ALTER FUNCTION public\.is_admin/i);
  sql(candidate);
@@ -57,16 +58,16 @@ export async function runC34B14P4ControlledGearSigned({env,sql,q,lit,roles}) {
  const source=randomUUID(),otherSameAccountPC=randomUUID(),outsiderPC=randomUUID();
  const sidekick=randomUUID(),henchman=randomUUID(),uncontrolledNpc=randomUUID();
  const otherControlled=randomUUID(),hiddenNpc=randomUUID();
- character(source,"P4 source player character","player",["player-character"]);
- character(otherSameAccountPC,"P4 other same-account character","player",["player-character"]);
- character(outsiderPC,"P4 foreign player's character","player",["player-character"]);
+ character(source,"P4 source player character","npc",["player-character"]);
+ character(otherSameAccountPC,"P4 other same-account character","npc",["player-character"]);
+ character(outsiderPC,"P4 foreign player's character","npc",["player-character"]);
  character(sidekick,"P4 sidekick under control","npc",["sidekick"]);
  character(henchman,"P4 henchman under control","npc",["henchman"]);
  character(uncontrolledNpc,"P4 inventory-only unrelated NPC","npc",["npc"]);
  character(otherControlled,"P4 second controllable NPC","npc",["sidekick"]);
  character(hiddenNpc,"P4 hidden controlled sidekick","npc",["sidekick"],true);
  permission(source,roles.OWNER.id,{inventory:true});
- permission(otherSameAccountPC,roles.OWNER.id,{inventory:true});
+ permission(otherSameAccountPC,roles.OWNER.id,{inventory:true,control:true});
  permission(outsiderPC,roles.OUTSIDER.id,{inventory:true});
  permission(sidekick,roles.OWNER.id,{control:true});
  permission(henchman,roles.OWNER.id,{edit:true});
@@ -136,7 +137,9 @@ export async function runC34B14P4ControlledGearSigned({env,sql,q,lit,roles}) {
 
  const noPCtoPC=seed("P4 no same-account PC to PC",source);
  denied(await send(roles.OWNER,noPCtoPC,source,otherSameAccountPC),
-  "owner-directed same-account PC destination prohibited");
+  "owner-directed same-account PC destination prohibited even when kind=npc and delegated control=true");
+ denied(await send(roles.GM,noPCtoPC,source,otherSameAccountPC),
+  "manager cannot bypass absolute player-character destination exclusion");
  assert.equal(state(noPCtoPC).owner_id,source);
  const hidden=seed("P4 hidden NPC denied",source);
  denied(await send(roles.OWNER,hidden,source,hiddenNpc),

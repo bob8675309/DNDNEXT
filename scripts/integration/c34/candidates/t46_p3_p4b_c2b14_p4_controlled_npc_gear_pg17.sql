@@ -42,6 +42,7 @@ DECLARE
   v_target_kind text;
   v_target_hidden boolean;
   v_target_state text;
+  v_target_tags text[];
   v_source_inventory_access boolean := false;
   v_recipient_controls boolean := false;
 BEGIN
@@ -85,10 +86,11 @@ BEGIN
     END IF;
   END IF;
 
-  SELECT c.kind,coalesce(c.is_hidden,false),coalesce(c.state,'')
-    INTO v_target_kind,v_target_hidden,v_target_state
+  SELECT c.kind,coalesce(c.is_hidden,false),coalesce(c.state,''),c.tags
+    INTO v_target_kind,v_target_hidden,v_target_state,v_target_tags
   FROM public.characters c WHERE c.id = p_target_npc_id FOR SHARE;
-  IF NOT FOUND OR v_target_kind IS DISTINCT FROM 'npc' THEN
+  IF NOT FOUND OR v_target_kind IS DISTINCT FROM 'npc'
+    OR 'player-character' = ANY(coalesce(v_target_tags,'{}'::text[])) THEN
     RAISE EXCEPTION 'Controlled NPC destination required; no player-character recipient' USING ERRCODE = '42501';
   END IF;
   IF NOT v_manager AND (v_target_hidden OR v_target_state = 'hidden') THEN

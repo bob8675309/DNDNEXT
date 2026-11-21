@@ -21,7 +21,7 @@
 - Reproduces **only the held PR312 independent `can_control` column** in local disposable PG17 (not the entire PR312 combat SQL).
 - Adds versioned `public.c34_b14_p4_send_character_gear_to_controlled_npc_v1(item_id,expected_source_character_id,target_npc_id)`, not installed in any runtime page or hosted DB.
 - Verifies signed `auth.uid()`, explicit `owner_type='character'`, compare-and-swap `owner_id=expected_source_character_uuid`, original `characters.tags` containing `player-character`, and **both** current source-character inventory permission and source row `user_id=auth.uid()` for nonmanager. The provenance check prevents trusting stale account identity alone.
-- Destination is explicitly `characters.kind='npc'`, preventing even same-account player-character destination; ordinary players cannot target `is_hidden` or `state='hidden'` NPCs.
+- Destination must be `characters.kind='npc'` **and must NOT carry the `player-character` tag**. Original Forge v2 creates PCs with `kind='npc'` plus `tags={'player-character'}`. Checking `kind` alone would accidentally allow same-account PC→PC transfers! Signed test fixtures now use the exact original Forge shape, grant a misleading `can_control=true` to the second PC, and require denial even for a GM. Ordinary players also cannot target `is_hidden` or `state='hidden'` NPCs.
 - Recipient current **`can_control OR can_edit`** is required for nonmanager, sourced from the held PR312 combat-control semantics. This does not grant recipient inventory access. Manager authority remains explicit `admin/gm/dm`.
 - Source row is locked, recipient/source permission rows read `FOR SHARE`, mutation is a single transaction that sets NPC owner and clears `user_id`, `is_equipped`, `equip_slot` while retaining item card payload. DB functions and policies already present are left untouched; anonymous EXECUTE revoked.
 - Client-side role declarations or stale cached capabilities never authorize the write. Coordinated global row-lock order, role/recipient revocation races, and the full 29/31 nonmap + 2 protected-map dependencies must still be reviewed before deploy.
@@ -31,7 +31,7 @@
 1. Signed owner character → explicitly controlled sidekick, payload intact/auto unequip, no recipient inventory SELECT from control alone.
 2. Recipient controlled through the **existing `can_edit`** independently; `can_inventory`-only recipient denied.
 3. Foreign-origin Forge gear denied even with a separately delegated inventory permission.
-4. Same-account second player character as destination denied.
+4. Same-account second player character whose **kind is `npc` (actual Forge source)** and who even has a `can_control` grant is denied, including manager attempted bypass.
 5. Hidden controlled NPC and wrong expected source denied.
 6. Same JWT with target control revoked or source inventory access revoked cannot send.
 7. Genuine concurrent sends to two controlled NPCs: one commit, loser `40001`, no duplicated gear.
