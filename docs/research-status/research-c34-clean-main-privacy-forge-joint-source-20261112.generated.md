@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9de6bd76ec743e3b23059bebf7bad2e2ab8d040d` |
+| Exact source commit represented by this archive snapshot | `902a85f401e4f6badedba91552911c66050e93fc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B14-P0: preserve exact inventory role policy vs transfer source RED and reuse prior signed fixtures |
-| Files changed relative to main | 331 (258 non-docs; 73 docs) |
+| Last source commit title | C34 B14-P0: source-only Node CI for original inventory role matrix and transfer fallback |
+| Files changed relative to main | 332 (259 non-docs; 73 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,12 +17,13 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-c34-c2b13-merchant-writer-census.yml`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 - `.github/workflows/validate-c34-joint-local-auth.yml`
 - `.github/workflows/validate-c34-joint-source-research.yml`
 - `.github/workflows/validate-c34-t43-original-earned-v5.yml`
@@ -70,8 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
-- … 281 more
+- … 282 more
 
 ## Trust and update procedure
 
