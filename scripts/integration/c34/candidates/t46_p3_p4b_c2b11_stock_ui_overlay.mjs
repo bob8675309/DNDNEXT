@@ -54,6 +54,21 @@ export function buildB11StockUiOverlay(fileBytes,{guarded=false}={}){
   src=replaceExact(src,"  const [stock, setStock] = useState([]);\n",
     "  const [stock, setStock] = useState([]);\n"+scope,"actor/merchant ticket");
 
+  // Remove, rather than merely hide, the old independent HTTP DELETE/INSERT
+  // reroll fallback from the ephemeral candidate. A missing RPC fails closed.
+  src=replaceRegion(src,
+    "  async function rerollThemedFallback() {",
+    "  async function setMerchantRouteFallback(",
+    "  async function rerollThemedFallback() {\n"+
+    "    throw new Error(\"Server reroll RPC required; shelf unchanged\");\n"+
+    "  }\n\n",
+    "reroll browser fallback");
+  // Remove even unreachable browser fallback catch/insert paths from scratch candidate.
+  src=replaceRegion(src,
+    "      if (false && isMissingFunctionError(e)) {",
+    '      const msg = e.message || "Reroll failed";',
+    "", "reroll catch fallback");
+
   const common=`      const b11Scope = {actor:uid,merchant:merchant?.id};
       if(!(await b11Current(b11Scope)))
         throw new Error("Merchant stock action requires the current signed actor");
@@ -87,15 +102,7 @@ export function buildB11StockUiOverlay(fileBytes,{guarded=false}={}){
 `+atomic("remove","p_stock_id:stockId,p_expected:expected")+settle,
     "atomic remove");
 
-  // Remove, rather than merely hide, the old independent HTTP DELETE/INSERT
-  // reroll fallback from the ephemeral candidate. A missing RPC fails closed.
-  src=replaceRegion(src,
-    "  async function rerollThemedFallback() {",
-    "  async function setMerchantRouteFallback(",
-    "  async function rerollThemedFallback() {\n"+
-    "    throw new Error(\"Server reroll RPC required; shelf unchanged\");\n"+
-    "  }\n\n",
-    "reroll browser fallback");
+
 
   // B9 inserted its own test-only click controls. B11 adds a remove control
   // because the original storefront has no direct per-row remove button.
