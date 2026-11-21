@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7ed5b470b51db19892f3b147e8596688b79e3c23` |
+| Exact source commit represented by this archive snapshot | `91c2664422208dc247d9a1fed23a275e5b9ddca4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): install only source-pinned T31 read-only role projection in local B4 fixture |
+| Last source commit title | test(c34): correct pinned Git blob and source boundary escape literals |
 | Files changed relative to main | 299 (237 non-docs; 62 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
