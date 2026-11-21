@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d99cf5a7801890daeb73772b7231cba5564ece05` |
+| Exact source commit represented by this archive snapshot | `04dccc6749b46f801bd769fb609d4d955d79f715` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): C2-B2 signed local buyer eligibility guard preserving exact original atomic transaction |
+| Last source commit title | test(C34): avoid reused B2 lexical buyer binding in disposable signed runner |
 | Files changed relative to main | 295 (235 non-docs; 60 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2b_guard_source.mjs`
 - `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
