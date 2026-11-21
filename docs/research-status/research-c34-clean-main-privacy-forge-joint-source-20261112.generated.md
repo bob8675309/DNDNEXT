@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c92804c504ba8550f604b189f326dd94f303ebf9` |
+| Exact source commit represented by this archive snapshot | `0bf022ddd2cbdb33da36f355a295db8ed744c9ce` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): mark B10 fully signed research accepted and hand off B11 browser ACL cutover |
+| Last source commit title | docs(c34): append exact successful B10 signed logs and bounded B11 next task |
 | Files changed relative to main | 315 (247 non-docs; 68 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
