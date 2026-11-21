@@ -1,0 +1,35 @@
+name: C34 B14 original inventory authorization crosswalk (research only)
+on:
+  push:
+    branches:
+      - research/c34-clean-main-privacy-forge-joint-source-20261112
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs'
+      - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs'
+      - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Read-only checkout with no persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source test syntax
+        run: node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs
+      - name: Full checked-in SQL role override scan and exact original RED preservation
+        run: node scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs
+      - name: No merchant panel or protected world map edits
+        run: |
+          git diff --exit-code -- components/MapPageClient.js components/MerchantPanel.js components/c34/MerchantPanelT28P2Research.jsx pages/inventory.js components/AssignItemButton.js
