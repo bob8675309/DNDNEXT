@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b6e6aa12f9867393391bdc794d4fb4cf3091854e` |
+| Exact source commit represented by this archive snapshot | `4d04f86701c7a489bca5f82a7be7f2836b8de151` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): run B6 original guarded commerce lock races after accepted B2-B5 |
+| Last source commit title | ci(c34): include B6 signed PG17 concurrency regression under disposable workflow |
 | Files changed relative to main | 302 (239 non-docs; 63 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
