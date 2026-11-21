@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d00a49a70e9720f15e4a96be67861e80c85ff9b3` |
+| Exact source commit represented by this archive snapshot | `b6e6aa12f9867393391bdc794d4fb4cf3091854e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add B6 signed guarded buyer concurrency and original manager stock stale-quantity research |
+| Last source commit title | test(c34): run B6 original guarded commerce lock races after accepted B2-B5 |
 | Files changed relative to main | 302 (239 non-docs; 63 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b6_stock_lock_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
 
