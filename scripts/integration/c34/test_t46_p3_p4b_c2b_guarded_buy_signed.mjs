@@ -6,6 +6,7 @@ import {runT46C2B6MerchantConcurrency} from "./run_t46_p3_p4b_c2b6_stock_lock_si
 import {runT46C2B7MerchantTravelLocks} from "./run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs";
 import {runT46C2B8ManagerQuantity} from "./run_t46_p3_p4b_c2b8_manager_qty_signed.mjs";
 import {runT46C2B9RerollUiSigned} from "./run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs";
+import {runT46C2B10StockWritersSigned} from "./run_t46_p3_p4b_c2b10_stock_writers_signed.mjs";
 import {buildC2B2GuardedOriginalBuyer,ORIGINAL_BUYER_BLOB,ORIGINAL_BUYER_FUNCTION_MD5} from "./candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs";
 import {buildHeldNpcWithIntelAndPrint,buildGuardedSheetPanel,buildMerchantReturnToProfile} from "./candidates/t46_p3_p4a_composed_overlays.mjs";
 // C34 T46-P3-P4B-C2-B2: preserve B1 original hidden purchase RED, then test disposable guarded source GREEN
@@ -766,6 +767,11 @@ for(const [name,id] of Object.entries(ids))
  await runT46C2B9RerollUiSigned({
    env,root,actors,newActor:actor,merchantId:ids.merchant,townId,
    browser,sql,q,lit,walletOf,invCount
+ });
+ // B10: after full signed B2-B9, source-preserving server-only manual
+ // add/remove/dump and campaign bulk reroll. No hosted SQL or runtime patch.
+ await runT46C2B10StockWritersSigned({
+   env,root,actors,newActor:actor,sql,q,lit,walletOf,invCount
  });
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
