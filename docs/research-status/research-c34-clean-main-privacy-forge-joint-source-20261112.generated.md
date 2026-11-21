@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `15f9b4e44eaf21d48f9f26c23016449ca89b83fc` |
+| Exact source commit represented by this archive snapshot | `0723fcbd2cf1fb5c75d50ebf48a2ac8cbb873383` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: sign original six-user transfer/RLS role matrix 92K CI PASS and preserve all fixture failure provenance |
+| Last source commit title | C34 B14-P1: promote genuine six-user original RLS/transfer signed PASS and hold release |
 | Files changed relative to main | 335 (260 non-docs; 75 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B14_P1_REAL_SIGNED_ROLE_MATRIX_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
