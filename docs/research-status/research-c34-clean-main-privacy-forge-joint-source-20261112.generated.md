@@ -5,20 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e4c38ed0a0b2fed2a1d63d67b0abbb7f7b92a8f6` |
+| Exact source commit represented by this archive snapshot | `61ff28cf1409d791c0ce3761df3914ab37c564d8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): set P7 read-only NPC inventory/equip as pending exact signed acceptance, preserving legacy and lock-order holds |
-| Files changed relative to main | 359 (276 non-docs; 83 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | research(c34): keep NPC backpack lazy-paged and discard stale selected-NPC results in source-only client adapter |
+| Files changed relative to main | 360 (277 non-docs; 83 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
-- … 309 more
+- … 310 more
 
 ## Trust and update procedure
 
