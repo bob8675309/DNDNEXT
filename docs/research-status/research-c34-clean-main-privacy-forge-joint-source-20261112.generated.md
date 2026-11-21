@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1a5a273b3d51b258fc22c7a5c63c87955fdb8dc7` |
+| Exact source commit represented by this archive snapshot | `04134cba7149052a3b92e1c33a914458903b438c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: accept bounded first matching UI refresh in source transform |
-| Files changed relative to main | 316 (248 non-docs; 68 docs) |
+| Last source commit title | C34 B11: add both-merchant source-locked static and negative regression tests |
+| Files changed relative to main | 317 (249 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b11_stock_ui_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- … 266 more
+- … 267 more
 
 ## Trust and update procedure
 
