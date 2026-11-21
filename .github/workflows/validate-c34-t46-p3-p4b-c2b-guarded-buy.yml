@@ -12,6 +12,9 @@ on:
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b8_manager_qty_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b10_stock_writers_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b10_bulk_source.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b10_manual_stock_pg17.sql'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b9_reroll_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b8_manager_quantity_pg17.sql'
       - '.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml'
@@ -38,6 +41,9 @@ on:
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b8_manager_qty_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b10_stock_writers_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b10_bulk_source.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b10_manual_stock_pg17.sql'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b9_reroll_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b8_manager_quantity_pg17.sql'
       - '.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml'
@@ -78,6 +84,8 @@ jobs:
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b8_manager_qty_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b10_stock_writers_signed.mjs
+          node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b10_bulk_source.mjs
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b9_reroll_source.mjs
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b_guard_source.mjs
