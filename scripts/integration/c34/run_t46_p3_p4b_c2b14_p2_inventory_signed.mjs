@@ -365,6 +365,15 @@ export async function runC34C2B14P2InventorySigned({env,newActor,sql,q,lit}){
 
  const demotedItem=seed("GM role revoked","player",roles.OUTSIDER.id,roles.OUTSIDER.id);
  sql("UPDATE public.user_profiles SET role='player' WHERE id="+q(roles.GM.id));
+ const demotedContext=await context(roles.GM,"player",roles.OUTSIDER.id);
+ assert.ifError(demotedContext.error);
+ assert.equal(demotedContext.data.is_manager,false,
+  "Same signed JWT must recheck the current database role after GM demotion");
+ assert.equal(demotedContext.data.can_view,false);
+ assert.equal(demotedContext.data.can_manage,false);
+ assert.deepEqual(demotedContext.data.targets,[]);
+ console.log("PASS T46-C2B14-P3-CONTEXT-ROLE-REVOKE: original GM JWT remains valid, database demotion immediately revokes manager/browser targets and capabilities");
+
  assertDenied(await single(roles.GM,demotedItem,"merchant",merchant,"player",roles.OUTSIDER.id),
   "same JWT after GM demotion","42501");
  assert.equal(state(demotedItem).owner_id,roles.OUTSIDER.id);
