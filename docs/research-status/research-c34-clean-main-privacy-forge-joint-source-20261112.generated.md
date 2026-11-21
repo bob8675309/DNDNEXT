@@ -5,20 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9d9b290a6bd6ed4ea3e439f6339767ac4f1b6c7e` |
+| Exact source commit represented by this archive snapshot | `47d8fc6234f2a401037466aadedb076b4dce1cb0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): enforce hidden-NPC owner privacy even with delegated inventory permission (atomic two-file research patch) |
+| Last source commit title | docs(c34): record signed Forge/owner-domain evidence and pending single-RPC inventory context in one handoff commit |
 | Files changed relative to main | 344 (266 non-docs; 78 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p3_inventory_context_pg17.sql`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
