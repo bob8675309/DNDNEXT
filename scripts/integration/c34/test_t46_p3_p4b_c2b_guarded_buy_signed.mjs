@@ -5,6 +5,7 @@ import {runT46C2B4FlaggedTown} from "./run_t46_p3_p4b_c2b4_guarded_town_signed.m
 import {runT46C2B6MerchantConcurrency} from "./run_t46_p3_p4b_c2b6_stock_lock_signed.mjs";
 import {runT46C2B7MerchantTravelLocks} from "./run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs";
 import {runT46C2B8ManagerQuantity} from "./run_t46_p3_p4b_c2b8_manager_qty_signed.mjs";
+import {runT46C2B9RerollUiSigned} from "./run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs";
 import {buildC2B2GuardedOriginalBuyer,ORIGINAL_BUYER_BLOB,ORIGINAL_BUYER_FUNCTION_MD5} from "./candidates/t46_p3_p4b_c2b_merchant_eligibility_guard.mjs";
 import {buildHeldNpcWithIntelAndPrint,buildGuardedSheetPanel,buildMerchantReturnToProfile} from "./candidates/t46_p3_p4a_composed_overlays.mjs";
 // C34 T46-P3-P4B-C2-B2: preserve B1 original hidden purchase RED, then test disposable guarded source GREEN
@@ -759,6 +760,12 @@ for(const [name,id] of Object.entries(ids))
  await runT46C2B8ManagerQuantity({
    env,root,actors,newActor:actor,merchantId:ids.merchant,
    sql,q,lit,walletOf,invCount
+ });
+ // B9: exact Oct16 reroll original-source and seller-exclusive lock
+ // candidate, plus signed UI overlay; only disposable local PG17/Next.
+ await runT46C2B9RerollUiSigned({
+   env,root,actors,newActor:actor,merchantId:ids.merchant,townId,
+   browser,sql,q,lit,walletOf,invCount
  });
  // Roaming/camping seller contract is intentionally NOT defined in this
  // candidate. No new state/rest/location predicate exists in the source.
