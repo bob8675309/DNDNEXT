@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `02c9ebc81484e734db01f553f1168bcbd9e43d44` |
+| Exact source commit represented by this archive snapshot | `0c9e6af7f8f7a56bed4acf15b1fa5f30cdb7030d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): set signed B5 00/01 original parity accepted and next bounded merchant lock-order policy research |
+| Last source commit title | docs(c34): append signed B5 all-four-flag classification and preserve initial test failure |
 | Files changed relative to main | 301 (238 non-docs; 63 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
