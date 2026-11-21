@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `91119fbdcbd3492d6dd346a8a12b81f7c480f436` |
+| Exact source commit represented by this archive snapshot | `7466bddcb282a51c512c84be734918f39f952208` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): compare full merchant stock row before delete/dump; signed stale payload and price negative |
+| Last source commit title | test(c34): isolate B10 purchases with newly signed funded buyer; preserve B2-B9 wallets |
 | Files changed relative to main | 315 (247 non-docs; 68 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b10_manual_stock_pg17.sql`
 - `scripts/integration/c34/run_t46_p3_p4b_c2b10_stock_writers_signed.mjs`
 
 ## Research-branch change inventory versus main
