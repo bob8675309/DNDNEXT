@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d579523bfc01213d673eaed1d242adcc17d56ea5` |
+| Exact source commit represented by this archive snapshot | `eee3c50b63a250e3bc0b11b4305f32620d4d7e40` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): promote B3 signed original RED evidence with exact code/job and bounded remaining flags |
+| Last source commit title | docs(c34): mark signed B3 exact-source RED accepted and route next guarded ON/OFF integration |
 | Files changed relative to main | 297 (236 non-docs; 61 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B3_ORIGINAL_MERCHANT_ASYNC_SIGNED_2026-11-20.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
