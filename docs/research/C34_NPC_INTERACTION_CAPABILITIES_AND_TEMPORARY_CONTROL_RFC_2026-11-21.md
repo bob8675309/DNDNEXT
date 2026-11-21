@@ -1,6 +1,6 @@
 # C34 — NPC interaction tiers, inventory permissions, and encounter-only control
 
-**Proposed design / NOT owner-finalized / NOT a migration or gameplay change.** Prepared November 21, 2026 on held draft #379 while working on B14-P2–P5 inventory and future NPC quest item send/request. No deployed SQL, page, encounter, world map, merge, or paid-agent change.
+**Core interaction tiers and item-consent behavior OWNER-AGREED as a design direction; detailed grant scope and runtime migration still require review. NOT a migration or gameplay change.** Prepared November 21, 2026 on held draft #379 while working on B14-P2–P5 inventory and future NPC quest item send/request. No deployed SQL, page, encounter, world map, merge, or paid-agent change.
 
 ## Product intent from owner
 
