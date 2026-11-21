@@ -5,19 +5,20 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `76adc23f84942503f37409e903b5ee0820abe81e` |
+| Exact source commit represented by this archive snapshot | `470ff390641360941588ae2bad4610d356c9288f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append B9 candidate receipt and pending signed evidence |
+| Last source commit title | test(c34): target actual T33 guarded shop with B9 temporary overlay; prearm RPC fault response |
 | Files changed relative to main | 311 (244 non-docs; 67 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b9_reroll_source.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs`
 
 ## Research-branch change inventory versus main
 
