@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b4c42e27875cc01e669eae6d69b55871600adaa3` |
+| Exact source commit represented by this archive snapshot | `0cef3f15bc5ed24174ebc41f5bb04ab7a0819d08` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): exercise signed P7 paginated redacted hired NPC backpack and separate CAS equip/revoke/parallel permissions |
+| Last source commit title | ci(c34): run signed P7 bounded NPC backpack and separate equipment authorization after accepted P6 |
 | Files changed relative to main | 358 (276 non-docs; 82 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
 
 ## Research-branch change inventory versus main
 
