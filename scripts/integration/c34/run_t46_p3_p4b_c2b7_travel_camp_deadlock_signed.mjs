@@ -227,7 +227,7 @@ export async function runT46C2B7MerchantTravelLocks({
 
  // Safe RELATIVE SQL quantity update model (not an authorized production RPC).
  // Contrasts B6's real signed DM stale absolute PATCH (3→2→4 wrong).
- const deltaStock=addStock("Atomic Delta Model",2,3);
+ const deltaStock=addStock("Atomic Delta Model",3,2);
  const startWallet=walletOf(traveller.id),initialInv=invCount(traveller.id);
  const priorQty=qty(sql,q,deltaStock);
  assert.equal(priorQty,"2");
