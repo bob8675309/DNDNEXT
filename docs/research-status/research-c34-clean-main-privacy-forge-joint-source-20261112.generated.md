@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `315f0e55d46c94445c00aa73e41472d098f1ddc7` |
+| Exact source commit represented by this archive snapshot | `e4c38ed0a0b2fed2a1d63d67b0abbb7f7b92a8f6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record P7 bounded redacted NPC backpack/equipment candidate and exact-head signed acceptance pending |
+| Last source commit title | docs(c34): set P7 read-only NPC inventory/equip as pending exact signed acceptance, preserving legacy and lock-order holds |
 | Files changed relative to main | 359 (276 non-docs; 83 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
