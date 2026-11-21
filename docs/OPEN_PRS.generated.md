@@ -4,13 +4,13 @@
 
 | Captured UTC | GitHub main (not deployment verified) | Trigger source SHA | Open PRs |
 |---|---|---|---|
-| 2026-11-21T07:46:18Z | `bb3939eeb9a38cf416996a1dca3b196b156b2915` | `52cd31b048f1f8a085c94c5f2d865932517f7a6a` | 42 |
+| 2026-11-21T07:47:10Z | `bb3939eeb9a38cf416996a1dca3b196b156b2915` | `793627e2e32c4d8df96d16e2c3bfab7da4e8e298` | 42 |
 
 Every open PR returned by **all pages** of the GitHub open-pulls API at capture time appears below, including draft and stacked research PRs. **Closed/merged PRs, unassociated branches and later PR activity are not included.**
 
 | PR / title | Exact HEAD | Branch → base | Draft? | GitHub updated UTC |
 |---|---|---|---|---|
-| [#379 — C34 T28-P2 HOLD: nonmap original merchant/wallet guard after T28-P1 signed PASS](https://github.com/bob8675309/DNDNEXT/pull/379) | `52cd31b048f1f8a085c94c5f2d865932517f7a6a` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-21T07:45:54Z |
+| [#379 — C34 T28-P2 HOLD: nonmap original merchant/wallet guard after T28-P1 signed PASS](https://github.com/bob8675309/DNDNEXT/pull/379) | `76adc23f84942503f37409e903b5ee0820abe81e` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-21T07:47:03Z |
 | [#371 — I2-G research: original signed level-up v1 account-overwrite RED and Option A no-mirror scratch GREEN](https://github.com/bob8675309/DNDNEXT/pull/371) | `6db27e720d0c2788774cc37d2f85d14244e61b95` | `research/i2g-signed-levelup-v1-option-a-20261112` → `research/i2f-source-species-projection-option-a-freeze-20261111` | yes | 2026-11-12T23:26:15Z |
 | [#370 — I2-F research: sourceChoices/species runtime private projection Option A no-mirror RED/GREEN](https://github.com/bob8675309/DNDNEXT/pull/370) | `ea43938da626292cb7b3f8f8459955b426874f9d` | `research/i2f-source-species-projection-option-a-freeze-20261111` → `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` | yes | 2026-11-12T03:54:47Z |
 | [#369 — I2-E research: signed original HP/Admin/Rage account-overwrite RED and Option A no-mirror GREEN](https://github.com/bob8675309/DNDNEXT/pull/369) | `1132a33b64e24197e974276cd58c48cbdded3baa` | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` → `research/i2d-private-forge-v3-option-a-freeze-20261111` | yes | 2026-11-12T03:14:06Z |
