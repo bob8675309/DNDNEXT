@@ -20,7 +20,8 @@ for(const c of cases){
   assert.match(src,/p_expected:expected/);
   assert.match(src,/p_expected:snapshot/);
   assert.match(src,/getUser\(\)/);
-  assert.match(src,/b11Matches\(b11Scope\)/);
+  assert.match(src,/b11Current\(b11Scope\)/);
+  assert.match(src,/const b11Matches =/);
   assert.match(src,/c34-b11-stock-controls/);
   assert.match(src,/c34-b9-stock-controls/);
   assert.match(src,/Return to Profile/);
