@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d50f7a513d1fa019b516d9385b96c19b48fbc99c` |
+| Exact source commit represented by this archive snapshot | `c9a2846a9ee7cdb0ce18b8f30aa03e17cd0b8dc7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): align disposable G2 character columns with original global select, keep strict 42501 negative |
+| Last source commit title | test(C34): repair G2 focus revocation close using actor/request epoch, not effect lifetime |
 | Files changed relative to main | 284 (225 non-docs; 59 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,7 +20,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T46_GLOBAL_G2_CURRENT_PLAYER_PROFILE_BROWSER_2026-11-20.md`
-- `scripts/integration/c34/test_t46_global_g2_player_profile_signed_browser.mjs`
+- `scripts/integration/c34/candidates/t46_global_g2_player_profile_overlay.mjs`
+- `scripts/integration/c34/test_t46_global_g2_overlay_source.mjs`
 
 ## Research-branch change inventory versus main
 
