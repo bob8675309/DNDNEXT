@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `796bce97d03b9fd5219c88ce7dfc3f396b4b1be7` |
+| Exact source commit represented by this archive snapshot | `483838dae20c02f860ed624681baf82c3e71b9d8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11: assert documented PostgREST 40001→HTTP500 while retaining strict stale-CAS denial |
+| Last source commit title | C34 B11: use DOM attachment for intentionally empty manager stock list after dump |
 | Files changed relative to main | 319 (251 non-docs; 68 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
