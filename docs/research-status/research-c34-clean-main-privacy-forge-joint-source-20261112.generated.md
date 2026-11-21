@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a00b5d4b2b3980e95e50be3d0d5610b0fc663510` |
+| Exact source commit represented by this archive snapshot | `38165a9efb9bd4534d4044b3e09ad8cc3b985510` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): owner explicitly permits sales while camping and moving; preserve guard and release hold |
-| Files changed relative to main | 303 (239 non-docs; 64 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): add B7 signed moving/camping merchant buys, source reroll and reverse-lock/deadlock study |
+| Files changed relative to main | 304 (240 non-docs; 64 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b7_travel_camp_deadlock_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- … 253 more
+- … 254 more
 
 ## Trust and update procedure
 
