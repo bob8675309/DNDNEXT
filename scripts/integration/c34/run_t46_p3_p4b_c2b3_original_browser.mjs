@@ -126,7 +126,7 @@ export async function runC2B3SignedCommerce({
  };
  await page.route("**/rest/v1/rpc/wallet_get",walletFault);
  try{
-  const responsePromise=page.waitForResponse(buyerReq,{timeout:32000});
+  const responsePromise=page.waitForResponse(r=>buyerReq(r.request()),{timeout:32000});
   await side.getByRole("button",{name:"Buy for 5 gp",exact:true}).click({force:true});
   const result=await responsePromise;
   assert.equal(result.status(),200,"Signed guarded buyer did not commit before refresh failure");
