@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c322f0c273710af7c95df88d4b9111c52ae1905d` |
+| Exact source commit represented by this archive snapshot | `c8224d21b03c027cdcd2816e8c9659dcb23a9f66` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): preserve original buyer Stock not found P0001 in B10 dump race |
+| Last source commit title | docs(c34): record owner fail-closed decision and current B10 signed cross-writer test receipt |
 | Files changed relative to main | 315 (247 non-docs; 68 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b10_stock_writers_signed.mjs`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
