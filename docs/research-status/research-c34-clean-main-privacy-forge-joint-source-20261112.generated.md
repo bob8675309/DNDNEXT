@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4bfea76ed1fe8eeb0316e2a90970e3e6752e2d07` |
+| Exact source commit represented by this archive snapshot | `3cf38709766a7cc76191727f8fe4d10fe3bc1ed3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add B4 disposable real-town T28/T33 guarded buyer and signed race crosswalk |
+| Last source commit title | test(c34): chain B4 Stage2-safe flagged current-town acceptance after B3 original RED |
 | Files changed relative to main | 298 (237 non-docs; 61 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b4_guarded_town_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
 
