@@ -12,6 +12,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
     paths:
@@ -23,6 +24,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p6_npc_tier_ui_presets.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
 permissions:
@@ -61,6 +63,10 @@ jobs:
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p7_npc_backpack_client_pager.mjs
+      - name: P8 original NPC-consent-bypass crosswalk and original player trade source RED
+        run: |
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_npc_consent_cutover_red_source.mjs
       - name: Full checked-in SQL role override scan and exact original RED preservation
         run: node scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs
       - name: No merchant panel or protected world map edits
