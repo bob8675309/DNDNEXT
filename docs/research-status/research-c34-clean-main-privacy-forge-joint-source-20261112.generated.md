@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `31da01ce01d76c0af8828a58b3505b52c6147b2a` |
+| Exact source commit represented by this archive snapshot | `b33e88166bc0f86973598a8865ff3a451fbc1650` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): stage browser-side fail-closed inventory RPC candidate without legacy mutation fallback |
-| Files changed relative to main | 338 (263 non-docs; 75 docs) |
+| Last source commit title | ci(c34): gate P2 fail-closed adapter tests alongside disposable signed transfer research |
+| Files changed relative to main | 339 (264 non-docs; 75 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p2_inventory_client_fail_closed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
 - `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
 - `docs/research/C34_T15_BATTLE_MASTER_PAIRED_SIGNED_2026-11-13.md`
-- … 288 more
+- … 289 more
 
 ## Trust and update procedure
 
