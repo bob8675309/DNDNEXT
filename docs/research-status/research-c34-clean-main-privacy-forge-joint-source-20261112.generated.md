@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8658614d82197a974b55c02e548c53a96723c8c9` |
+| Exact source commit represented by this archive snapshot | `1bce2383e21008f5fad04c64d423a45384bdb8ea` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add genuine signed B14-P2 canonical roles and atomic bulk rollback suite |
+| Last source commit title | ci(c34): validate isolated B14-P2 candidate and signed suite on research branch push/PR |
 | Files changed relative to main | 337 (262 non-docs; 75 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
