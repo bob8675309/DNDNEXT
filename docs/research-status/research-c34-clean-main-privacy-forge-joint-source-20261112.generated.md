@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ad3e5c3676d2c3e9ad8c6f9190fc617723ca34ac` |
+| Exact source commit represented by this archive snapshot | `5e50e0d097d1cdbd7484ba7430cd4e21ae62aff6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B14-P1: preserve signed run failure provenance, exact original scope and pending role matrix |
+| Last source commit title | C34 B14-P1: preserve agents OFF, exact signed CI pending and independent Issue389 source pass |
 | Files changed relative to main | 335 (260 non-docs; 75 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B14_P1_REAL_SIGNED_ROLE_MATRIX_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
