@@ -83,8 +83,8 @@ export async function runT46C2B10StockWritersSigned({
   p_payload:{item_type:"Potion",item_rarity:"Common",item_id:"b10-"+name.replaceAll(" ","-")}
  });
  const mutate=(actor,args)=>actor.who.rpc("c34_t46_manage_merchant_stock_v1",args);
- const shelf=(seller)=>JSON.parse(sql("SELECT coalesce(jsonb_agg(jsonb_build_object('id',s.id,'qty',s.qty,'updated_at',s.updated_at) ORDER BY s.id),'[]'::jsonb)::text FROM public.character_stock s WHERE s.character_id="+q(seller)));
- const byId=(id)=>JSON.parse(sql("SELECT row_to_json(t)::text FROM (SELECT id,qty,updated_at FROM public.character_stock WHERE id="+q(id)+") t"));
+ const shelf=(seller)=>JSON.parse(sql("SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY s.id),'[]'::jsonb)::text FROM public.character_stock s WHERE s.character_id="+q(seller)));
+ const byId=(id)=>JSON.parse(sql("SELECT row_to_json(s)::text FROM public.character_stock s WHERE id="+q(id)));
  const stockQty=(id)=>sql("SELECT coalesce((SELECT qty::text FROM public.character_stock WHERE id="+q(id)+"),'gone')");
  const count=(seller)=>Number(sql("SELECT count(*) FROM public.character_stock WHERE character_id="+q(seller)));
  const walletStart=walletOf(actors.OUTSIDER.id),invStart=Number(invCount(actors.OUTSIDER.id));
@@ -127,6 +127,16 @@ export async function runT46C2B10StockWritersSigned({
  deny(await mutate(admin,addParams(npc,"NPC stock")),"42501","NPC not a merchant");
  assert.equal(count(sellerA),2);
  console.log("PASS T46-C2B10-VALIDATION: invalid price/quantity/name/actions/snapshots and nonmerchant seller rejected without writes");
+
+ // Entire row snapshot must detect card-payload AND price edits even when a
+ // privileged legacy writer changes neither qty nor updated_at.
+ const frozenDetails=byId(aid);
+ sql("UPDATE public.character_stock SET price_gp=price_gp+1, card_payload=card_payload || '{\"b10_probe\":true}'::jsonb WHERE id="+q(aid));
+ deny(await mutate(gm,{p_merchant_id:sellerA,p_action:"remove",p_stock_id:aid,
+  p_expected:frozenDetails}),"40001","stale crafted price/payload despite equal quantity/revision");
+ assert.equal(stockQty(aid),"3");
+ sql("UPDATE public.character_stock SET price_gp=price_gp-1, card_payload=card_payload-'b10_probe' WHERE id="+q(aid));
+ console.log("PASS T46-C2B10-SNAPSHOT-FULL-ROW: stale price/payload edit invalidates destructive CAS despite unchanged qty and timestamp");
 
  // Purchase after UI snapshot MUST invalidate a deliberate remove.
  const oldRow=byId(aid);

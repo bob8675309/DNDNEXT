@@ -83,8 +83,10 @@ BEGIN
    IF NOT FOUND THEN
      RAISE EXCEPTION 'Stock no longer exists' USING ERRCODE='P0002';
    END IF;
-   v_snapshot:=jsonb_build_object('id',v_stock.id,
-     'qty',v_stock.qty,'updated_at',v_stock.updated_at);
+   -- Compare the ENTIRE row, not merely count/revision. A privileged
+   -- legacy writer might alter name, price or crafted card payload without
+   -- updating updated_at. The future UI submits its full SELECT * row.
+   v_snapshot:=to_jsonb(v_stock);
    IF p_expected IS DISTINCT FROM v_snapshot THEN
      RAISE EXCEPTION 'Stock changed; refresh before removing'
        USING ERRCODE='40001';
@@ -100,9 +102,7 @@ BEGIN
       OR p_qty IS NOT NULL OR p_payload IS NOT NULL THEN
      RAISE EXCEPTION 'Missing exact shelf snapshot for dump' USING ERRCODE='22023';
    END IF;
-   SELECT coalesce(jsonb_agg(jsonb_build_object(
-     'id',s.id,'qty',s.qty,'updated_at',s.updated_at)
-     ORDER BY s.id),'[]'::jsonb)
+   SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY s.id),'[]'::jsonb)
      INTO v_snapshot
    FROM public.character_stock s WHERE s.character_id=v_seller;
    IF v_snapshot IS DISTINCT FROM p_expected THEN
