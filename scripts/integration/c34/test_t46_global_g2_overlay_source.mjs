@@ -29,6 +29,8 @@ test("G2 source-exact global panel candidate, all original creator/profile/epoch
   'const OPEN_PLAYER_PROFILE_EVENT = "dndnext:open-player-profile";',
   'const isCurrentRequest = () => isCurrentProfileLoadRequest'
  ]) assert.ok(after.includes(marker),"Preservation regression "+marker);
+ assert.ok(after.includes("activeProfileUserIdRef.current === actorId && profileLoadRequestRef.current === requestEpoch"));
+ assert.ok(!after.includes("let alive = true;"));
  assert.throws(()=>buildG2GlobalPlayerProfileOverlay(before.replace('if (!rows.length && resolvedPlayerName)','if (anotherCondition)')),
   /Missing preserved original branch/);
 });
