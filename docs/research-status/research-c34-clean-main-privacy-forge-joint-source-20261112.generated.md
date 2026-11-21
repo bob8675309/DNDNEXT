@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `433a30e74016cd26bba422a73b5f33d1500eab51` |
+| Exact source commit represented by this archive snapshot | `2ae33247d4b1a3fa4eb9b77c48b2cf003d5a8980` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(C34): hold original global player-character SECURITY DEFINER full-Sheet exposure risk |
+| Last source commit title | docs(C34): accept exact signed P4B-C1 town role/focus proof; hold global PR source RPC risk |
 | Files changed relative to main | 277 (219 non-docs; 58 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_T46_GLOBAL_PLAYER_CHARACTER_RPC_ORIGINAL_SOURCE_REVIEW_2026-11-20.md`
+- `docs/research/C34_T46_P3_P4B_C1_TOWN_ROLE_BROWSER_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
