@@ -133,7 +133,10 @@ export async function runT46C2B11StockUiSigned({
   await side.getByRole("button",{name:"Merchant tools",exact:true}).waitFor({timeout:40000});
   await side.getByRole("button",{name:"Merchant tools",exact:true}).click({force:true});
   await side.getByRole("button",{name:"Add item",exact:true}).waitFor({timeout:40000});
-  await side.getByTestId("c34-b11-stock-controls").waitFor({timeout:40000});
+  // An empty stock shelf still mounts the manager controls; its stock-list
+  // container can be CSS-hidden until an item exists. Do not conflate an
+  // empty valid shelf with missing management authorization.
+  await side.getByTestId("c34-b11-stock-controls").waitFor({state:"attached",timeout:40000});
  }
  async function add(page,side,name,expectedStatus=200){
   await side.getByPlaceholder("Paste JSON or type an item name…").fill(name);
