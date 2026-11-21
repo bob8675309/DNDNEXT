@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `533582485c2843123fd692460ff0865e78e69939` |
+| Exact source commit represented by this archive snapshot | `d85d8ca00c47bcb6b31c9ad3819a34e3fc1115cc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): genuine signed one-RPC inventory context role/hidden-target filters, delegated revoke and Forge fail-closed |
+| Last source commit title | ci(c34): include versioned inventory context/hidden-recipient research in existing signed PG17 gate |
 | Files changed relative to main | 343 (266 non-docs; 77 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
