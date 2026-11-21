@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b1eb3ea625adac78b383eaf9fa7acb69f2836522` |
+| Exact source commit represented by this archive snapshot | `b4c42e27875cc01e669eae6d69b55871600adaa3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): introduce P7 bounded redacted keyset NPC backpack RPC and independent equip authorization |
-| Files changed relative to main | 357 (275 non-docs; 82 docs) |
+| Last source commit title | test(c34): exercise signed P7 paginated redacted hired NPC backpack and separate CAS equip/revoke/parallel permissions |
+| Files changed relative to main | 358 (276 non-docs; 82 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_page_and_equipment_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
-- … 307 more
+- … 308 more
 
 ## Trust and update procedure
 
