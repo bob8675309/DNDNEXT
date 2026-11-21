@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c4b6a32bebea1388394d71e227a17909283f81a4` |
+| Exact source commit represented by this archive snapshot | `9922bc27ddb98fa8ee4487b123bf2928b816b1a3` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): source-pinned B9 reroll lock candidate and temporary stock UI overlay |
-| Files changed relative to main | 309 (243 non-docs; 66 docs) |
+| Last source commit title | research(c34): signed original reroll vs seller-lock and browser stock editor tests |
+| Files changed relative to main | 310 (244 non-docs; 66 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b9_reroll_source.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b9_reroll_ui_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- … 259 more
+- … 260 more
 
 ## Trust and update procedure
 
