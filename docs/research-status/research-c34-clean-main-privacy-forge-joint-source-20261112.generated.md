@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3784441547b46d764408069c184bcd940471f265` |
+| Exact source commit represented by this archive snapshot | `b1af58549f763c337447486b08a006621c8d5cf4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add exact original 00 vs 01 signed town role, logout and wallet-failure parity |
+| Last source commit title | ci(c34): include B5 signed 00 vs 01 real-town regression in local guarded buyer workflow |
 | Files changed relative to main | 300 (238 non-docs; 62 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b5_flag01_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
