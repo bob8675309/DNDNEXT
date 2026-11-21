@@ -5,21 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `7e4a67d638dc887e78e66be934e08a3b2026bd68` |
+| Exact source commit represented by this archive snapshot | `5fa9e797b8ee9ae004525f0b6ae719be9d3d0e55` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(C34): correct C2 Docker bridge-local SQL fixture guard, preserve runner loopback lock |
+| Last source commit title | docs(C34): accept signed C2-A original merchant buy and ledger, hold hidden seller and actor races |
 | Files changed relative to main | 289 (229 non-docs; 60 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2_merchant_buy_pg17.sql`
-- `scripts/integration/c34/test_t46_p3_p4b_c2_merchant_commerce_source.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2_signed_merchant_purchase.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4B_C2_REAL_MERCHANT_BUY_SIGNED_2026-11-20.md`
 
 ## Research-branch change inventory versus main
 
