@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `57555a69871952a6401565659a96dbd681b9e764` |
+| Exact source commit represented by this archive snapshot | `00005761c131ca5f105a1bb8e18cc35c3719faaf` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 B11-BRACE: advance active handoff to actual signed epoch race PASS and B12 boundary |
+| Last source commit title | C34 B11-BRACE: append exact 87K signed PASS, true commit-after-logout scope and C2-B12 next gate |
 | Files changed relative to main | 323 (253 non-docs; 70 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
