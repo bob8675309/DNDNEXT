@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {buildB11StockUiOverlay} from "./candidates/t46_p3_p4b_c2b11_stock_ui_overlay.mjs";
+import {buildB11BraceOverlay} from "./candidates/t46_p3_p4b_c2b11_brace_pending_rpc_overlay.mjs";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const cases=[
   {name:"original",file:"components/MerchantPanel.js",guarded:false},
@@ -31,6 +32,20 @@ for(const c of cases){
   assert.doesNotMatch(src,/supabase\.rpc\("stock_merchant_item"/);
   assert.doesNotMatch(src,/await rerollThemedFallback\(\)/,
     "B11 missing reroll RPC must not attempt browser fallback");
+  // B11-BRACE composes on the accepted B11, but adds epoch-scoped
+  // UI lifecycle only in disposable research. The original RED stays.
+  const brace=buildB11BraceOverlay(original,{guarded:c.guarded});
+  assert.match(brace,/b11AuthOverrideRef/);
+  assert.match(brace,/b11ScopeRef.current.epoch/);
+  assert.match(brace,/b11Pending\(b11Ticket\)/);
+  assert.match(brace,/b11Finish\(b11Ticket\)/);
+  assert.match(brace,/__b11BraceDebug/);
+  assert.match(brace,/c34_t46_manage_merchant_stock_v1/);
+  assert.doesNotMatch(brace,/\.from\(["']character_stock["']\)\s*\.(?:insert|update|delete)\s*\(/);
+  assert.doesNotMatch(brace,/supabase\.rpc\("stock_merchant_item"/);
+  assert.throws(()=>buildB11BraceOverlay(Buffer.concat([original,Buffer.from("drift")]),{guarded:c.guarded}),/blob drift/);
+  console.log("PASS T46-C2B11-BRACE-SOURCE-"+c.name.toUpperCase()+
+    ": exact source+sign-in epochs+merchant/request tickets, no direct stock DML");
   assert.ok(original.toString("utf8").includes('stock_merchant_item'),
     "B11 original RED missing");
   assert.ok(original.toString("utf8").includes('.delete()'),
