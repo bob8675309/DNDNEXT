@@ -5,30 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4d4d6dab3f2083c79374947704e48b4066fe52a4` |
+| Exact source commit represented by this archive snapshot | `eb038c277dce1ad70b2e37c87bfc413e4d91b994` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): isolated P10 NPC backpack React shell and signed browser actor tests |
+| Last source commit title | test(c34): correct signed P10 boolean cast and rights paragraph locator |
 | Files changed relative to main | 372 (286 non-docs; 86 docs) |
-| Last source commit | 12 files (9 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
-- `components/c34/NonMapNpcInventoryP10ResearchShell.jsx`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2b_guarded_buy_signed.mjs`
 
 ## Research-branch change inventory versus main
 
