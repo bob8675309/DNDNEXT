@@ -5,20 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0cef3f15bc5ed24174ebc41f5bb04ab7a0819d08` |
+| Exact source commit represented by this archive snapshot | `315f0e55d46c94445c00aa73e41472d098f1ddc7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): run signed P7 bounded NPC backpack and separate equipment authorization after accepted P6 |
-| Files changed relative to main | 358 (276 non-docs; 82 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit title | docs(c34): record P7 bounded redacted NPC backpack/equipment candidate and exact-head signed acceptance pending |
+| Files changed relative to main | 359 (276 non-docs; 83 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs`
+- `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -66,13 +65,13 @@
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
+- `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
 - `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
 - `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
-- `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
-- … 308 more
+- … 309 more
 
 ## Trust and update procedure
 
