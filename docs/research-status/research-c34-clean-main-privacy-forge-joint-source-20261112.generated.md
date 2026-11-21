@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0522b76aa81ddbfbfcf98590a1d2d26e096810b5` |
+| Exact source commit represented by this archive snapshot | `78ac66f5139f5a6e11f7ede8cf78195f129e1bfe` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): preserve initial B5 signed partial parity pass and exact unselected-stock harness failure |
+| Last source commit title | docs(c34): mark B5 signed 00/01 parity and expected original 01 false purchase RED accepted |
 | Files changed relative to main | 301 (238 non-docs; 63 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
