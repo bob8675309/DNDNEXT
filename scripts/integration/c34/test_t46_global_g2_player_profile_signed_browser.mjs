@@ -174,6 +174,8 @@ assert.ok(sql("SHOW server_version").startsWith("17."));
 assert.equal(sql("SELECT to_regprocedure('public.get_my_player_characters_v2()') IS NOT NULL"),"t");
 assert.notEqual(sql("SELECT md5(pg_get_functiondef('public.get_my_player_characters_v2()'::regprocedure))"),
  "deca87aaad0dce214743c87cdca03f36","Exact held #345 Stage1 must already be installed");
+for(const c of ["storefront_bg_url text","storefront_bg_video_url text","storefront_bg_image_url text"])
+ sql("ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS "+c);
 sql("ALTER TABLE public.locations ADD COLUMN IF NOT EXISTS name text");
 sql("ALTER TABLE public.locations ENABLE ROW LEVEL SECURITY");
 sql("CREATE POLICY t46_g2_locations ON public.locations FOR SELECT TO authenticated USING(true)");
@@ -229,8 +231,9 @@ try{
  const forbidden=original.page.waitForResponse(r=>hasOriginalRawFallback(r.url()),{timeout:35000});
  assert.equal(await original.call("login",actors.EDITOR.email,actors.EDITOR.password),actors.EDITOR.id);
  const rawResp=await forbidden;
- assert.equal(rawResp.status(),403,"Original raw 42501 reader was unexpectedly granted");
  const denied=await rawResp.json();
+ console.log("T46-GLOBAL-G2-ORIGINAL-HTTP-TRACE",JSON.stringify({status:rawResp.status(),code:denied.code,message:denied.message}));
+ assert.equal(rawResp.status(),403,"Original raw 42501 reader was unexpectedly granted");
  assert.equal(denied.code,"42501","Original Stage2 forbidden narrative did not deny raw fallback");
  assert.equal(original.raw.length,1,"Expected exactly one original global broad fallback");
  assert.ok(original.raw[0].includes("id=in."),"Actual original delegated scope query missing");
