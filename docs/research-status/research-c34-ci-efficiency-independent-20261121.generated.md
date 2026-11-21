@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `f3219f5cb9c8d973eacff2f2889af3ad94fcc153` |
+| Exact source commit represented by this archive snapshot | `1065a3157ea544814724d4a5c1e0d1be6d1fa301` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | CI Issue389: run independent zero-database trigger source matrix on separate branch |
-| Files changed relative to main | 336 (262 non-docs; 74 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | CI Issue389: document exact passed path-filter matrix and explicit required-check 403 release hold |
+| Files changed relative to main | 337 (262 non-docs; 75 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
+- `docs/research/C34_CI_EFFICIENCY_INDEPENDENT_ISSUE389_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -65,13 +65,13 @@
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_CI_EFFICIENCY_INDEPENDENT_ISSUE389_2026-11-21.md`
 - `docs/research/C34_HELD_PR324_PR345_UI_SOURCE_PRESERVATION_2026-11-14.md`
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
-- `docs/research/C34_T14_KHORAVAR_OPTION_A_SIGNED_2026-11-13.md`
-- … 286 more
+- … 287 more
 
 ## Trust and update procedure
 
