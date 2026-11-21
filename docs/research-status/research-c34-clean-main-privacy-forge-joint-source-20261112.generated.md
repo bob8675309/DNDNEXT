@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b16226387089a8968a3b3b60a93d3cc0ca69f261` |
+| Exact source commit represented by this archive snapshot | `d5f26675292c334544217cd54256bdbf4ff8003a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B12: epoch-scoped manager quantity, CAS, reroll research cutover |
+| Last source commit title | C34 B12: include epoch quantity/reroll overlay in source-only CI |
 | Files changed relative to main | 324 (254 non-docs; 70 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b12_qty_reroll_epoch_overlay.mjs`
+- `.github/workflows/validate-c34-t46-c2b11-static.yml`
 
 ## Research-branch change inventory versus main
 
