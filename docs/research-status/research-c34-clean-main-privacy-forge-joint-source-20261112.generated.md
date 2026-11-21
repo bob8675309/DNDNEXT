@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `536da7eefeb78a9daf63af49193495ec2f0c21bd` |
+| Exact source commit represented by this archive snapshot | `f26c3000cc0e507fb6b19d208959f283892467c7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append B8 candidate receipt and pending signed acceptance |
-| Files changed relative to main | 307 (242 non-docs; 65 docs) |
+| Last source commit title | docs(c34): record accepted signed B8 merchant manager quantity and release limits |
+| Files changed relative to main | 308 (242 non-docs; 66 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_T46_P3_P4B_C2_B8_SIGNED_MANAGER_QUANTITY_2026-11-21.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_T16_WIZARD_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T17_ARTIFICER_OPTION_A_SIGNED_2026-11-14.md`
 - `docs/research/C34_T18_WARLOCK_JOINT_SIGNED_2026-11-14.md`
-- … 257 more
+- … 258 more
 
 ## Trust and update procedure
 
