@@ -2,6 +2,7 @@
 // Separate redacted keyset backpack read and explicit equip; original Page/RPC
 // and all prior P6 consent+NPC controller behavior remain source-original.
 import assert from "node:assert/strict";
+import {runC34B14P9SlimNpcSigned} from "./run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
@@ -259,4 +260,5 @@ export async function runC34B14P7NpcBackpackSigned({env,sql,q,lit,roles}){
   buyer:"public.buy_from_merchant(uuid,uuid,integer)"
  }))assert.equal(hash(reg),originals[name],"P7 changed original "+name);
  console.log("PASS T46-C2B14-P7-SIGNED: redacted bounded keyset inventory, independent signed equipment grant, no raw write from hired view, no original functions modified");
+ await runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,hiddenNpc,forgePc,ids});
 }
