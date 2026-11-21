@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `df444bb0cd0b6193e5d9a07934e1efec7dfb5c1f` |
+| Exact source commit represented by this archive snapshot | `7518621378c38d7952c8850924a3ada42fc5b831` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34: record B11 source-only green and one bounded signed browser follow-up |
+| Last source commit title | C34: append B11 source-only green, failed test provenance and signed-browser next gate |
 | Files changed relative to main | 318 (250 non-docs; 68 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
