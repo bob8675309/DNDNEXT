@@ -5,22 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ca46273bb519b30eba20c3b604abb25ef5fcc6e4` |
+| Exact source commit represented by this archive snapshot | `b1eb3ea625adac78b383eaf9fa7acb69f2836522` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): promote exact signed B14-P6 NPC consent and hired read-only tests to accepted source-local handoff, preserve runtime blockers |
-| Files changed relative to main | 356 (274 non-docs; 82 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | research(c34): introduce P7 bounded redacted keyset NPC backpack RPC and independent equip authorization |
+| Files changed relative to main | 357 (275 non-docs; 82 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
-- `docs/research/C34_NPC_INTERACTION_CAPABILITIES_AND_TEMPORARY_CONTROL_RFC_2026-11-21.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p7_npc_backpack_page_and_equipment_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
 - `docs/research/C34_T13_ELADRIN_ORIGINAL_SEASON_SIGNED_2026-11-13.md`
-- … 306 more
+- … 307 more
 
 ## Trust and update procedure
 
