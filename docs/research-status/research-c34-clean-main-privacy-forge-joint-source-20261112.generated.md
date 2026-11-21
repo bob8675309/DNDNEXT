@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f8c2db495569d38eed2d3ea0eca7c36937148aee` |
+| Exact source commit represented by this archive snapshot | `c44da2d862564bb028ddd8c25648fae62b61ffda` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | C34 C2-B12: record exact 90K signed quantity/reroll races, unchanged originals and C2-B13 next |
+| Last source commit title | C34 B12: record accepted 10 signed races and next protected C2-B13 writer census |
 | Files changed relative to main | 327 (255 non-docs; 72 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_T46_P3_P4B_C2_B12_QUANTITY_REROLL_EPOCH_SIGNED_2026-11-21.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
