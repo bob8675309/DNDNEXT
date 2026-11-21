@@ -250,7 +250,17 @@ export async function runT46C2B10StockWritersSigned({
   sql("REVOKE ALL ON FUNCTION public.set_campaign_future_tech_enabled_v1(boolean) FROM PUBLIC,anon,authenticated");
   sql("GRANT EXECUTE ON FUNCTION public.set_campaign_future_tech_enabled_v1(boolean) TO authenticated");
   sql("NOTIFY pgrst,'reload schema'");
-  deny(await bulk(gm,false),"P0001","original admin-only bulk setter");
+  // PostgREST reload notification is asynchronous. Wait ONLY for PGRST202
+  // readiness, using a GM call that cannot mutate the historical admin-only
+  // function. NEVER treat missing-RPC as expected role denial.
+  let originalGmDenied=null;
+  for(let attempt=0;attempt<45;attempt++){
+   originalGmDenied=await bulk(gm,false);
+   if(originalGmDenied.error?.code!=="PGRST202")break;
+   await pause(200);
+  }
+  deny(originalGmDenied,"P0001","original admin-only bulk setter");
+  assert.match(originalGmDenied.error.message,/Only admins can change the campaign item pool/);
   assert.equal(sql("SELECT future_tech_enabled::text FROM public.campaign_item_pool_settings WHERE id=1"),initialSetting);
   console.log("EXPECTED ORIGINAL T46-C2B10-BULK-GM-RED: exact historical October future-tech source rejects signed GM, while in-app admin/gm/dm are owner-equivalent");
   sql(candidate);
