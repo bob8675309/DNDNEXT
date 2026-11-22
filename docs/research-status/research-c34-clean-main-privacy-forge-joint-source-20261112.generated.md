@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ba4019ec7b398b290e9e0ed6ae7b1d146eb552e6` |
+| Exact source commit represented by this archive snapshot | `7886283f07f11e2f4be23d7e3fee9df291e36f9c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): P17 inventory writer and definer source census with character-owner RED witness |
+| Last source commit title | fix(c34): correct P17 source-census regex and Git blob literals |
 | Files changed relative to main | 398 (303 non-docs; 95 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
