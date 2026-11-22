@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5b70edcad1049af541a5d4413716d05ce0d3b994` |
+| Exact source commit represented by this archive snapshot | `ebd399fb2e5bd41fd71104ff2735ad27cdd1b45f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record owner-approved source-preserved retirement of PR #320 |
-| Files changed relative to main | 419 (317 non-docs; 102 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(c34): full inherited source and negative-test preservation audit for #321–323 |
+| Files changed relative to main | 420 (317 non-docs; 103 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/PR320_SOURCE_RETIREMENT_CROSSWALK_2026-11-22.md`
+- `docs/research/PR321_PR323_NPC_PRIVACY_STACK_RETIREMENT_CROSSWALK_2026-11-22.md`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 369 more
+- … 370 more
 
 ## Trust and update procedure
 
