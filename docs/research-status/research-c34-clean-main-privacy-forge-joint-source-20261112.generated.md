@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `511ce9ec6ac487084ec265c2f0d64dc0f71cbd42` |
+| Exact source commit represented by this archive snapshot | `98489c9b88484f330e33a47ba000eb5e53d46dfe` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): signed P18 accepted with source-original Stage4 preservation and next P19 |
+| Last source commit title | docs(c34): append P18 signed real-JWT PASS and held Stage4 no-lost-work receipt |
 | Files changed relative to main | 404 (307 non-docs; 97 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
