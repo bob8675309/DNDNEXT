@@ -38,7 +38,7 @@ test("P20B source-gated, single inscribe service, no client crafted object or ho
   "FOR UPDATE","DELETE FROM public.inventory_items",
   "CREATE TABLE private.c34_b14_p20b_town_inscribe_receipts",
   "SECURITY DEFINER","REVOKE ALL ON FUNCTION",
-  "p_town_id bigint","craft nonce","'crafted_service','inscribe'",
+  "p_town_id bigint","Craft nonce","'crafted_service','inscribe'",
   "AND 'scribe'=ANY","REVOKE ALL ON private.c34_b14_p20b_town_inscribe_receipts"])
   assert.ok(s.includes(snippet),"P20B candidate invariant absent: "+snippet);
  for(const forbidden of ["ALTER POLICY inventory_items_insert_owner_or_admin",
