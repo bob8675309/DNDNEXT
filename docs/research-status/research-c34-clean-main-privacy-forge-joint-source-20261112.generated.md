@@ -5,19 +5,24 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b65aa762f1290f3076fd92cfbb0c4daa54f97a8c` |
+| Exact source commit represented by this archive snapshot | `59044a2fd2bee58f5ef12b79616898c895474a11` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): P11 exclude executable legacy imports, not explanatory NpcPanel comments |
+| Last source commit title | security(c34): enforce current controlled sidekick for Forge-origin P8 item offers |
 | Files changed relative to main | 380 (291 non-docs; 89 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P8_SIGNED_DISPATCHER_CANDIDATE_ONLY_2026-11-21.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs`
 
 ## Research-branch change inventory versus main
 
