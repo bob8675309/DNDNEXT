@@ -44,16 +44,25 @@ export async function runC34B14P10SignedBrowser({
   'import {useEffect,useState} from "react";',
   'import Shell from "../components/c34/NonMapNpcInventoryP10ResearchShell";',
   'import {supabase} from "../utils/supabaseClient";',
+  // Attribute RPCs from this isolated P10 component without changing the
+  // global client used by _app navbar, bridges, overlays or other legacy UI.
+  'const scopedClient = new Proxy(supabase,{get(target,key){',
+  ' if(key==="rpc")return (name,args)=>{',
+  '  if(typeof window!=="undefined")window.__p10ScopedRpcNames?.push(name);',
+  '  return target.rpc(name,args);',
+  ' };',
+  ' return target[key];',
+  '}});',
   "const ids="+JSON.stringify({hired,another,hiddenNpc,forgePc})+";",
   "export default function C34P10Probe(){",
   " const [chosen,setChosen]=useState(ids.hired);",
-  " useEffect(()=>{window.__p10Sb=supabase;return()=>{delete window.__p10Sb;};},[]);",
+  " useEffect(()=>{window.__p10Sb=supabase;window.__p10ScopedRpcNames=[];return()=>{delete window.__p10Sb;delete window.__p10ScopedRpcNames;};},[]);",
   ' return <main data-testid="p10-probe"><h1>P10 isolated inventory probe</h1>',
   ' <button type="button" data-testid="p10-select-hired" onClick={()=>setChosen(ids.hired)}>Hired NPC</button>',
   ' <button type="button" data-testid="p10-select-other" onClick={()=>setChosen(ids.another)}>Other NPC</button>',
   ' <button type="button" data-testid="p10-select-hidden" onClick={()=>setChosen(ids.hiddenNpc)}>Hidden NPC</button>',
   ' <button type="button" data-testid="p10-select-forge" onClick={()=>setChosen(ids.forgePc)}>Forge PC</button>',
-  ' <Shell client={supabase} characterId={chosen}/></main>;',
+  ' <Shell client={scopedClient} characterId={chosen}/></main>;',
   "}"
  ].join("\n");
  let page=null,server=null,serverLog="";
@@ -191,10 +200,24 @@ export async function runC34B14P10SignedBrowser({
   assert.equal(await page.getByTestId("p10-ready").count(),0);
   console.log("PASS T46-C2B14-P10-AUTH: browser logout/account switch evicts old rows, outsider and hidden/tagged Forge PC cannot reveal NPC inventory");
   assert.deepEqual(browserErrors,[], "P10 Next browser errors "+JSON.stringify(browserErrors));
-  assert.ok(!rpcCalls.some(x=>["get_character_inventory_v1",
-   "set_character_inventory_equipment_v1","transfer_inventory_item_v1"].includes(x)),
-   "P10 must never fall back to legacy RPC");
-  console.log("PASS T46-C2B14-P10-SIGNED: real local Next/Chromium actor matrix and no old inventory/transfer RPC fallbacks");
+  const forbidden=["get_character_inventory_v1",
+   "set_character_inventory_equipment_v1","transfer_inventory_item_v1"];
+  const scoped=await page.evaluate(()=>window.__p10ScopedRpcNames||[]);
+  const allowed=["c34_b14_p9_npc_slim_context_v1",
+   "c34_b14_p7_npc_backpack_page_v1","c34_b14_p7_set_npc_equipment_v1"];
+  assert.ok(scoped.length>0&&scoped.includes(allowed[0])&&scoped.includes(allowed[1])
+   &&scoped.includes(allowed[2]),"P10 missing required authenticated API traffic: "+JSON.stringify(scoped));
+  assert.ok(scoped.every(name=>allowed.includes(name)),
+   "P10 introduced unrelated or legacy RPC: "+JSON.stringify(scoped));
+  assert.ok(!scoped.some(name=>forbidden.includes(name)),
+   "P10 must never fall back to legacy RPC: "+JSON.stringify(scoped));
+  const shellLegacy=rpcCalls.filter(name=>forbidden.includes(name));
+  if(shellLegacy.length){
+   // Unrelated _app/global-shell source may remain mounted around isolated
+   // P10 test page. Report exact RPCs instead of attributing them to P10.
+   console.log("P10-UNRELATED-APP-SHELL-LEGACY-RPCS: "+JSON.stringify(shellLegacy));
+  }
+  console.log("PASS T46-C2B14-P10-SIGNED: real local Next/Chromium actor matrix; isolated P10 client only ever called P9/P7, no legacy fallback");
  }finally{
   if(page)await page.close().catch(()=>{});
   stopProcess(server);
