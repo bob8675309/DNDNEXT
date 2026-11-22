@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
-import {randomUUID} from "node:crypto";
+import {randomUUID,createHash} from "node:crypto";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const file="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql";
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -177,6 +177,28 @@ export async function runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,hiddenN
  assert.equal(count,"0");
  deny(await rpc(actor,BULK,bulk([rollback,rollback],"npc",hired)),"duplicate bulk item","22023");
  console.log("PASS T46-C2B14-P8-BULK-PLAYER: signed immediate player atomic batch, failed second item rolls back all and duplicate IDs denied");
+ // Adversarial test: a caller knows any chosen parent UUID and item ID.
+ // The OLD deterministic child=md5("c34-p8-child:" + parent + ":" + item)
+ // was publicly computable; pre-seeding that single P8 request could make a
+ // later batch silently reuse an old receipt instead of checking ownership.
+ const preseeded=make("predictable child preseed"),sibling=make("preseed sibling");
+ const parentNonce=randomUUID();
+ const digest=createHash("md5").update(
+  "c34-p8-child:"+parentNonce+":"+preseeded).digest("hex");
+ const predictedChild=[digest.slice(0,8),digest.slice(8,12),
+  digest.slice(12,16),digest.slice(16,20),digest.slice(20)].join("-");
+ const malicious=await rpc(actor,ONE,request(
+  preseeded,"player",other.id,"player",actor.id,predictedChild));
+ assert.ifError(malicious.error);
+ assert.equal(owner(preseeded).owner_id,other.id);
+ const adversarialBulk=bulk([sibling,preseeded],"player",other.id,parentNonce);
+ deny(await rpc(actor,BULK,adversarialBulk),
+  "preseeded deterministic child cannot bypass stale ownership check","40001");
+ assert.equal(owner(sibling).owner_id,actor.id,
+  "Entire batch must roll back despite a previously submitted child-like ID");
+ assert.equal(sql("SELECT count(*) FROM private.c34_b14_p8_intent_receipts WHERE request_id="+
+  q(parentNonce)),"0","Bad bulk request cannot leave a parent receipt");
+ console.log("PASS T46-C2B14-P8-CHILD-NONCE: preseeded predictable child request cannot skip current item owner-CAS or partially settle a batch");
 
  const racer=make("same request concurrency"),race=request(racer,"player",other.id);
  const parallel=await Promise.all([rpc(actor,ONE,race),rpc(actor,ONE,race)]);

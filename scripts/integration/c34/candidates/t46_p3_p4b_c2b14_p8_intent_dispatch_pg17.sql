@@ -179,9 +179,12 @@ BEGIN
  FOR v_item IN SELECT x.value FROM unnest(p_item_ids) AS x(value)
   ORDER BY x.value
  LOOP
-  -- Stable, nonclient child ID; collision with an existing request fails
-  -- closed. The batch-level receipt retains the caller's request ID.
-  v_child_id:=md5('c34-p8-child:'||p_request_id::text||':'||v_item::text)::uuid;
+  -- Unpredictable server-only child request ID. A client who can pick a
+  -- parent UUID must NEVER preseed the derived single-intent receipt and
+  -- trick the bulk handler into skipping a stale ownership check.
+  -- Parent-level advisory locking + stored replay receipt provide stable
+  -- idempotence without a predictable per-item nonce.
+  v_child_id:=pg_catalog.gen_random_uuid();
   v_child:=public.c34_b14_p8_dispatch_item_intent_v1(
    v_child_id,v_item,v_source,v_source_id::text,v_target,v_target_id::text);
   IF v_first_state IS NULL THEN v_first_state:=v_child->>'status'; END IF;
