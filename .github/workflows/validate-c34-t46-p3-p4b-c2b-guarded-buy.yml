@@ -33,6 +33,12 @@ on:
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p18_disposable_character_item_creation_gate_pg17.sql'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_gm_offer_settlement_signed.mjs'
@@ -92,6 +98,12 @@ on:
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p18_disposable_character_item_creation_gate_pg17.sql'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_gm_offer_settlement_signed.mjs'
@@ -154,6 +166,10 @@ jobs:
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b12_qty_reroll_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_inventory_roles_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p2_inventory_signed.mjs
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p4_controlled_gear_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p6_npc_offers_signed.mjs
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p7_npc_backpack_signed.mjs
