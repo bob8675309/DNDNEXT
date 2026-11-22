@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `89083e6bbea1401d5122b1edc240232fc9e6cc39` |
+| Exact source commit represented by this archive snapshot | `2292ea47c7573117f89d29c7086a79d138401ea8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): execute P18 disposable character INSERT gate after all P16 and P17 checks |
+| Last source commit title | ci(c34): explicitly guard P18 signed candidate to disposable local PG17 |
 | Files changed relative to main | 402 (306 non-docs; 96 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
