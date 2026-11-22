@@ -1,7 +1,8 @@
 // C34 B14-P8 RESEARCH ONLY. This file is NOT imported by any gameplay page.
 // Contract-only callers for FUTURE versioned server-authorized transfer intent.
-// The two RPC names used here are not installed in hosted Supabase or P6/P7
-// disposable fixture. This client does not make legacy sends safe on its own.
+// These RPC names now exist only as a new P8 scratch SQL candidate installed
+// AFTER P10 in disposable PG17 signed research; NOT hosted or in gameplay.
+// This client does not make legacy sends safe on its own.
 // DO NOT use without a jointly audited P8 SQL/RLS + original page cutover.
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const uuid=value=>{

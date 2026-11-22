@@ -1,5 +1,6 @@
 // C34 P9 RESEARCH ONLY. Executed AFTER accepted P7 in disposable signed PG17.
 import assert from "node:assert/strict";
+import {runC34B14P8IntentSigned} from "./run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs";
 import {runC34B14P10SignedBrowser} from "./run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs";
 import fs from "node:fs";
 import path from "node:path";
@@ -106,4 +107,5 @@ export async function runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,anothe
   "P9 changed original/P6/P7 function");
  console.log("PASS T46-C2B14-P9-SIGNED: local GoTrue/PostgREST/PG17 current grants, anon denied, P6/P7/legacy/buyer/role function bodies byte-preserved");
  await runC34B14P10SignedBrowser({env,root,browser,origin,roles,hired,another,hiddenNpc,forgePc,ids,sql,q});
+ await runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,hiddenNpc,forgePc});
 }
