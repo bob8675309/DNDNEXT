@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `82048025e7219392e98f907a943d15f040f8fdd9` |
+| Exact source commit represented by this archive snapshot | `afa7c8b4a1f6fe3a1afdc7bae5fe50f21c0e883d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept signed P14 private bulk mapping and live offer status research with release hold |
-| Files changed relative to main | 391 (298 non-docs; 93 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): preserve PR312 controller authority and enumerate legacy NPC consent cutover REDs |
+| Files changed relative to main | 393 (299 non-docs; 94 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
+- `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p15_controller_and_legacy_cutover_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,8 +74,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P12_ORIGINAL_INVENTORY_CONSENT_CALLPATHS_2026-11-21.md`
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
-- `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
-- … 341 more
+- `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
+- … 343 more
 
 ## Trust and update procedure
 
