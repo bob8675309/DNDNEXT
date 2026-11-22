@@ -25,3 +25,15 @@ The genuine signed runner uses the **same original P16/P18 GoTrue/PostgREST fixt
 ## Next step after genuine signed evidence
 
 If all P20A signed markers pass, advance to source-authentic **atomic Town crafting/rollback and merchant/grant issue-event writers**, then jointly exercise original Forge v3/Stage4 and private GM/DM readers with full authenticated browser. If a test fails, preserve the failed log and patch only the actual fixture/source issue; no approval to promote to hosted RLS.
+
+## Signed P20A acceptance — genuine GoTrue/PostgREST/PG17, 2026-11-22 CST
+
+- Executable commit: `53006d5b6f9e54089980a93e973973de151e4eec`, guarded original buyer workflow [#45061585586](https://github.com/bob8675309/DNDNEXT/actions/runs/45061585586), job `137328482658`, **COMPLETED SUCCESS**. Its decoded 127,670-character, 1,444-line job log was inspected; six exact P20A markers passed and original P19→P18→P16 restoration completed before isolated local Supabase teardown.
+- `P20A-ORIGINAL-SIGNED-RED`: original unchanged raw self-owned player INSERT succeeded under historical four-policy RLS.
+- `P20A-RAW-DENY`: genuinely signed player/outsider/observer, false receipt in card payload, foreign account and NPC direct inserts all denied under temporary RESTRICTIVE rule, with no ghost rows.
+- `P20A-RECEIPT-GREEN`: trusted disposable postgres created receipt; genuine JWT claim restricted to recipient; two simultaneous claims produced exactly one inventory row; player SELECT/equip and outsider non-visibility passed.
+- `P20A-TOWN-RELEASE-HOLD`: consume worked and a consumed receipt was not reminted; unchanged original browser Town crafted-result/rollback direct INSERT fails under gate. This is intentional proof of an unresolved compatibility break, **not** a compatible installed crafting replacement.
+- `P20A-MANAGER-PRESERVE-READ-HOLD`: original source-shaped Admin NPC, GM NPC, DM merchant, GM player-target direct inserts passed with temporary P19 manager policy; unchanged GM NPC SELECT still hidden by historic original SELECT policy, and owner-column UPDATE remains restricted.
+- `P20A-RESTORE`: temporary manager/restrictive RLS policies, private receipt ledger, public claim RPC and scratch item rows dropped; original four inventory RLS and both P16/P18 triggers preserved for parent cleanup.
+- Lightweight P20A source workflow [#45061585431](https://github.com/bob8675309/DNDNEXT/actions/runs/45061585431) SUCCESS. Full separate Forge/Story/browser workflow [#45061585535](https://github.com/bob8675309/DNDNEXT/actions/runs/45061585535) **was IN PROGRESS** at this acceptance, and should be reviewed independently; do not falsely report as complete.
+- No genuine mounted /admin browser exploit verification, actual original Town recipe issuance, staged original #345 Stage4 and latest October v3 Forge co-residence, GM private reader cutover, full seller/trade-issued entitlements, 22 legacy `players.sheet` writers or encrypted DB+340 Storage restore verified. No production SQL/read, map touch, app deploy, main merge, PR retirement or paid agent.
