@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6cc1f55d95b8e297461fad91af006f904b61bf44` |
+| Exact source commit represented by this archive snapshot | `b9c6ccee3b81c7a759860d26914bf796a23b75e2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin P19 authentic item assignment RLS RED and held Forge Stage4 source-preservation gaps |
+| Last source commit title | ci(c34): add P19 original GM/DM/Admin assignment source and Forge Stage4 preservation gate |
 | Files changed relative to main | 406 (309 non-docs; 97 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
