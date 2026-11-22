@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `18c3f1e3016c2a10351267e67dccce3b2d781f1c` |
+| Exact source commit represented by this archive snapshot | `8ac133f276b33fa5997bfbead1a2ff23d92f9e2e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): verify real P8 idempotent mismatch and deterministic second-item bulk rollback |
+| Last source commit title | test(c34): P10 revoke private backpack only, preserve P9 public worn names |
 | Files changed relative to main | 378 (290 non-docs; 88 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs`
 
 ## Research-branch change inventory versus main
 
