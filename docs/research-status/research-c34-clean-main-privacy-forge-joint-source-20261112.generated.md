@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `4f22dca57903c6895be080092aa19ad141a1cc70` |
+| Exact source commit represented by this archive snapshot | `17fc019e77bbaacb54fea9cb844c4a5305f185ef` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): P19 original writer RED and temporary manager-only INSERT policy GREEN matrix with signed hold |
+| Last source commit title | docs(c34): P19 source-green original GM/DM assignment and held signed test checkpoint |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P19_ORIGINAL_ASSIGNMENT_AND_FORGE_STAGE4_COMPATIBILITY_2026-11-22.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
