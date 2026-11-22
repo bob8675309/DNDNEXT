@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9c0a10958c4029a0b92eee059540acbb0e296120` |
+| Exact source commit represented by this archive snapshot | `aa62bd3e451122b35bcc8a18a20149dba01ad638` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append P17 source census and pending signed-owner-spoof handoff receipt |
+| Last source commit title | fix(c34): P17 disposable spoof probe always clean attempted item on partial assertion failure |
 | Files changed relative to main | 400 (304 non-docs; 96 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs`
 
 ## Research-branch change inventory versus main
 
