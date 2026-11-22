@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a2d2a35e432ea62db6e8f56c64de43422a9a392a` |
+| Exact source commit represented by this archive snapshot | `9c77698c80284eeef26c566b5d934ba525f7b1a5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): checkpoint P20 source-confirmed /admin account item mint route risk and P19 signed hold |
+| Last source commit title | docs(c34): append source P20 account item mint route and original writer preserve handoff |
 | Files changed relative to main | 410 (311 non-docs; 99 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
