@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8ac133f276b33fa5997bfbead1a2ff23d92f9e2e` |
+| Exact source commit represented by this archive snapshot | `bc4b9649ecb47883a4700ddbcfccc892785371e4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): P10 revoke private backpack only, preserve P9 public worn names |
+| Last source commit title | test(c34): attribute P10 RPCs separately from global Next shell and enforce precise no-fallback contract |
 | Files changed relative to main | 378 (290 non-docs; 88 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
