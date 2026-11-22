@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1f4eeebef58c76a85caefefe58daafcd88e84b98` |
+| Exact source commit represented by this archive snapshot | `5093373f9046d45e3319a18998718a1838801618` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): align P20B source assertion with original SQL; retain first CI RED |
+| Last source commit title | docs(c34): accept genuine signed P20B narrow Town inscribe, preserve CI RED and rollout hold |
 | Files changed relative to main | 418 (317 non-docs; 101 docs) |
-| Last source commit | 3 files (1 non-docs; 2 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20b_atomic_town_inscribe_source.mjs`
+- `docs/research/C34_B14_P20B_ATOMIC_TOWN_INSCRIBE_SOURCE_AND_SIGNED_2026-11-22.md`
 
 ## Research-branch change inventory versus main
 
