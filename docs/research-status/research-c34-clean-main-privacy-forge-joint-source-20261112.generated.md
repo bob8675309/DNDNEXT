@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `16a9571848f8879c2f2b95195bb70acf12723ff1` |
+| Exact source commit represented by this archive snapshot | `b7dfc69f26f57f3ffe6fd1eb756ac10925e59cc9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-pin legacy NPC consent callers and race GM acceptance with sender cancel |
-| Files changed relative to main | 385 (294 non-docs; 91 docs) |
-| Last source commit | 8 files (4 non-docs; 4 authored docs) |
+| Last source commit title | test(c34): classify all nonmap inventory client RPCs and preserve NPC consent release boundaries |
+| Files changed relative to main | 387 (295 non-docs; 92 docs) |
+| Last source commit | 6 files (2 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,13 +18,11 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `.github/workflows/validate-c34-c2b14-inventory-source.yml`
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P12_ORIGINAL_INVENTORY_CONSENT_CALLPATHS_2026-11-21.md`
-- `docs/research/C34_B14_P8_GM_SETTLEMENT_SOURCE_2026-11-21.md`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_gm_offer_settlement_signed.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p12_original_inventory_consent_caller_graph_source.mjs`
+- `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -75,10 +73,10 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P12_ORIGINAL_INVENTORY_CONSENT_CALLPATHS_2026-11-21.md`
+- `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
 - `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
-- `docs/research/C34_B14_P8_GM_SETTLEMENT_SOURCE_2026-11-21.md`
-- … 335 more
+- … 337 more
 
 ## Trust and update procedure
 
