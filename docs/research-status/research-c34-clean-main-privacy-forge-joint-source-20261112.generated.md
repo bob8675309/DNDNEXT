@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a966153e165b8f73c59018d071f4022c7fccbe21` |
+| Exact source commit represented by this archive snapshot | `82048025e7219392e98f907a943d15f040f8fdd9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): propagate P14 disposable signed opt-in to guarded-buyer consumer job |
+| Last source commit title | docs(c34): accept signed P14 private bulk mapping and live offer status research with release hold |
 | Files changed relative to main | 391 (298 non-docs; 93 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
