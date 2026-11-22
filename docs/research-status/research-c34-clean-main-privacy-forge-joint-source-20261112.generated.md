@@ -5,21 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `244a3da2120841cce1b9e9e3ec5c6c948f33c511` |
+| Exact source commit represented by this archive snapshot | `ba4019ec7b398b290e9e0ed6ae7b1d146eb552e6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept signed P16 local consent cutover and restore with production hold |
-| Files changed relative to main | 397 (302 non-docs; 95 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): P17 inventory writer and definer source census with character-owner RED witness |
+| Files changed relative to main | 398 (303 non-docs; 95 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P16_DISPOSABLE_NO_BYPASS_CUTOVER_2026-11-22.md`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p17_inventory_writer_and_character_spoof_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 347 more
+- … 348 more
 
 ## Trust and update procedure
 
