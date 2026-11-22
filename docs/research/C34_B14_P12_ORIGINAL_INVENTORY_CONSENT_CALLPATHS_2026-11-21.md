@@ -1,0 +1,39 @@
+# C34 B14-P12 — original NPC inventory, offer decision and transfer caller-graph audit
+
+**November 21, 2026 CST. RESEARCH ONLY, not a gameplay/RLS cutover.** Active held draft PR #379, branch research/c34-clean-main-privacy-forge-joint-source-20261112. Source snapshot before this audit commit: 3650835cffe6a9c236aab6e91384f0870b1bfb2a; unchanged main bb3939eeb9a38cf416996a1dca3b196b156b2915. Preserve source, original PR contributions, and world-map movement. No hosted SQL, branch merge, PR closure, deployment, map change, paid agent or Storage mutation.
+
+## Exact signed GM settlement research receipt
+
+- [C34 original merchant/buyer and B14 signed job #44979538343](https://github.com/bob8675309/DNDNEXT/actions/runs/44979538343), job 137076787607, exact SHA 3650835c, **SUCCESS**. Decoded 108,141 characters / 1,256 lines inspected; P8 original existing ten dispatcher markers plus CONTROLLED-FORGE and inherited P10/P11 markers PASS, and **7 of 7 GM settlement markers PASS**: ORIGINAL-RED, ACL, REVOCATION, DECLINE, ACCOUNT, RACE, SIGNED. Original P6 accepts a pending Forge-character donation after target control is revoked; disposable-only P8 GM decision rejects that stale authorization and ordinary P6 manager EXECUTE is disabled only in the disposable fixture. Concurrent GM accept is exactly once, old P6 and P8 bodies hash-identical.
+- [Separate full C34 Forge/Story/Auth #44979538400](https://github.com/bob8675309/DNDNEXT/actions/runs/44979538400), job 137076787753, same exact code SHA, SUCCESS, 268,404 characters / 3,241 lines. It is a separate prior source/Forge/browser acceptance suite, **not** the GM-specific test-run evidence.
+- This evidence confirms local authenticated PostgreSQL 17, GoTrue, PostgREST and temporary Next/Chromium tests. The original application still calls legacy functions. No hosted function, grant, RLS policy or production browser has been changed or acceptance-tested by these two runs.
+
+## Source-original and research-only call paths
+
+| Entrypoint | Current checked-in behavior | Required owner-reviewed cutover disposition |
+| --- | --- | --- |
+| Original June SQL `sql/20260624_01_inventory_item_send_rpc.sql`, `list_item_send_targets_v1` | Authenticated definer emits every `kind='npc'`, including hidden and player-character-tagged Forge PCs; `public.is_admin(uid)` is broad | Typed authorized target list, reject hidden/tagged recipient and outsiders without removing player-account targets |
+| Same June SQL `transfer_inventory_item_v1` | Authenticated definer immediately transfers to NPC and returns complete `inventory_items` row; no P6 pending consent and no source Forge-character model | Retain legitimate player-account and original GM personal transfers; close direct NPC bypass only with coordinated grants/RLS/server/UI design |
+| Disposable P2 `c34_b14_p2_transfer_inventory_item_v1` and `_bulk_v1` | Direct normal NPC destination still allowed immediately despite tagged-PC exclusion and owner CAS; public authenticated EXECUTE only in scratch | Recipient-aware router or RPC restriction; cover 1–50 atomic bulk, stale owner, manager/merchant paths, no partial P6 offers |
+| Disposable P4 controlled gift | Originally directly transfers Forge `owner_type='character'` to controlled sidekick; P6 disables authenticated P4 EXECUTE **only in scratch** after original positives | Preserve source/test and route genuine Forge-to-sidekick via pending consent or explicit GM autoaccept |
+| P6 original GM `c34_b14_p6_decide_item_offer_v1` | Pending Forge gift acceptance does not recheck current recipient delegation; locks offer before item | P8 versioned GM settlement checks current control with item-before-offer order; P6 EXECUTE revocation must be coordinated and cannot be unilaterally deployed |
+| P6 source `c34_b14_p6_cancel_item_offer_v1` | Sender may cancel still-pending offer by locking offer; no inventory mutation | Preserve sender-only cancel with concurrency against GM acceptance, terminal-state queue absence and idempotency semantics |
+| Original `components/NpcPanel.js` | Reads full-row `get_character_inventory_v1`, old target list, old direct item transfer and equip; `can_inventory||can_edit` combines view/manage and inventory unlocks spell load | Separate P9 public profile, P7 lazy redacted read/equip, independent combat/known-spell rights; preserve GM creator Story, NPC Profile-first and merchant shop |
+| `hooks/useNpcSheetActionData.js` in original `pages/npcs.js` | Independently calls old full-row inventory RPC and directly fetches spells/progression; manager page separately selects full equipped item rows | Separate NPC-manager consumer cutover with current GM/delegation rights; P11 mounted hidden Profile trace is not proof this route ran |
+| Original `pages/inventory.js` | On one RPC error raw `inventory_items` UPDATE fallback for delegated transfers, always raw UPDATE bulk, raw equip/delete, broad role fallback and direct target-list fallbacks | Typed P8 no-fallback owner-CAS client + independent GM/merchant inventory authoring and player-account trades; preserve source Forge `character` ownership |
+| P8 candidate dispatcher and GM queue | Tested in disposable signed PG17. Immutable initial intent receipt is **not live offer status**; GM queue is manager-only bounded pending list | Integrate separately authorized current-status, original cancellation, management UX, old-route retirement, shared locking and private redaction |
+
+## Unchanged adjacent systems
+
+- `components/OfferTradeButton.js` + `TradeRequestsPanel.js` and `accept_trade` are **account-to-account trade requests**, not NPC acceptance. Do not remove or reinterpret them.
+- `components/AssignItemButton.js` inserts legitimate source-owned inventory; Forge character gear and Town crafting use additional creation/materialization paths. Do not blanket deny legitimate INSERT or mistake `owner_type='character'` for NPC inventory.
+- `components/MerchantPanel.js` and `character_stock` are merchant checkout and management, distinct from NPC personal `inventory_items`; preserve original stock buy/reroll and protected movement-side reroll caller without map edits.
+- Admin/GM/DM are equal within application authority by the November 16 owner policy; independent NPC `can_control`, `can_edit`, `can_inventory`, view/withdraw, auto-accept and creator Story remain separate. Historical T29/T30/T34 negative tests reflect superseded policy, not current owner role intent.
+
+## Current incremental tests and explicit limits
+
+- New source-only P12 test checks original Git blob SHAs for ten source files plus the June/P2/P6/P8 GM bypass/receipt seams. A passing EXPECTED RED test is **evidence the unresolved old path remains**. It does not scan dynamic RPC names or externally deployed functions.
+- Added genuine local GM-acceptance versus sender-P6-cancellation race test to the existing P8 suite: exactly one terminal accepted/cancelled result, other loses with 40001, item ownership matches the winner, and terminal offer is no longer returned in the pending queue. **P12/race tests are pending their new exact-head CI**; do not inherit the green claim from 3650835.
+- Outstanding full release gates: coordinated original function EXECUTE and RLS cutover, all public and manager inventory callers, original Forge/Town/merchant/trade/PR312/318/345 parity, 22/34 older `players.sheet` writer paths, 29/31 nonmap original creation trigger fixture with two protected map triggers, encrypted independent PostgreSQL17 plus all 340 Storage files restoration, current production browser role matrix, and explicit owner approval.
+
+**NEXT bounded action:** inspect exact new CI for P12 source test and GM/cancel race, repair source-only fixtures if necessary; then complete the original old-RPC grant/manager/merchant caller release matrix and owner-reviewed integration design. No cutover without separate authorization.

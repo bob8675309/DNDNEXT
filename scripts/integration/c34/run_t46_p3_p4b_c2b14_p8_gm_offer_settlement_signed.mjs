@@ -177,5 +177,29 @@ export async function runC34B14P8GmSettlementSigned({env,sql,q,lit,roles,hired,f
  assert.equal(hash(p6sig),original[0],"P6 must remain source-identical after tests");
  assert.equal(hash(p8sig),original[1],"P8 must remain source-identical after tests");
  console.log("PASS T46-C2B14-P8-GM-RACE: parallel genuine signed decisions settle once; loser 40001, original P6/P8 function bodies unchanged");
+ // Genuine source-cancel versus GM-accept race: the P6 sender cancellation
+ // still locks only the offer, while versioned acceptance locks item first.
+ // Exactly one terminal state must commit; the other request is stale.
+ const cancelItem=give("accept versus sender cancel");
+ const cancelOffer=args(cancelItem);
+ assert.ifError((await rpc(actor,one,cancelOffer)).error);
+ const [gmRace,sourceCancel]=await Promise.all([
+  rpc(roles.GM,gm,{p_request_id:cancelOffer.p_request_id,p_accept:true}),
+  rpc(actor,"c34_b14_p6_cancel_item_offer_v1",{
+   p_request_id:cancelOffer.p_request_id
+  })
+ ]);
+ const gmWon=!gmRace.error,sourceWon=!sourceCancel.error;
+ assert.notEqual(gmWon,sourceWon,"Only one settlement/cancellation may succeed");
+ assert.equal((gmWon?sourceCancel:gmRace).error?.code,"40001",
+  "Losing decision must observe terminal request");
+ assert.equal(state(cancelOffer.p_request_id),gmWon?"accepted":"cancelled");
+ assert.equal(owned(cancelItem).owner_type,gmWon?"npc":"character");
+ assert.equal(owned(cancelItem).owner_id,gmWon?hired:forgeSource);
+ const afterCancelRace=await rpc(roles.GM,queue,{p_npc_id:hired,p_limit:50});
+ assert.ifError(afterCancelRace.error);
+ assert.ok(!afterCancelRace.data.some(x=>x.request_id===cancelOffer.p_request_id),
+  "Terminal settlement must never be present in pending GM queue");
+ console.log("PASS T46-C2B14-P8-GM-CANCEL-RACE: concurrent source cancellation versus GM acceptance commits one terminal state; losing request 40001, exact item owner and pending queue consistent");
  console.log("PASS T46-C2B14-P8-GM-SIGNED: original RED then versioned GM queue/accept/decline/current-control GREEN in disposable local PG17; old decision blocked; NO hosted cutover or legacy transfer claim");
 }
