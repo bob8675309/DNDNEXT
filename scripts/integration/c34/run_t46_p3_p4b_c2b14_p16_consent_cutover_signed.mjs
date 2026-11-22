@@ -8,6 +8,7 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {randomUUID} from "node:crypto";
 import {runC34B14P17CharacterOwnerSpoofRedSigned} from "./run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs";
+import {runC34B14P18CharacterInsertGuardSigned} from "./run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const file="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql";
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -254,6 +255,11 @@ export async function runC34B14P16ConsentCutoverSigned({env,sql,q,lit,roles,hire
    else assert.equal(exists(sig),false,"Uninstalled original function unexpectedly appeared: "+sig);
   }
   console.log("PASS P16-INDEPENDENT: merchant buy and trade function bodies preserved; buyer/wallet and complete craft/Forge browser release tests still required");
+
+  // P18 runs ONLY after every original P16 positive and P17 signed RED.
+  // Its own finally drops the additional scratch trigger before P16 restores
+  // all original grants, hashes and its own local-only P16 guard.
+  await runC34B14P18CharacterInsertGuardSigned({env,sql,q,lit,roles,forgeSource,hired});
  }finally{
   if(installed){
    // Revert ONLY research-added ACL and trigger changes. The signed original
