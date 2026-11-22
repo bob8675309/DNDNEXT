@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `957031a24e504f83f88c6bc6beface31ce4cac18` |
+| Exact source commit represented by this archive snapshot | `3650835cffe6a9c236aab6e91384f0870b1bfb2a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): P11 signed original NpcPanel caller and P8 controlled Forge acceptance receipts |
-| Files changed relative to main | 380 (291 non-docs; 89 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | test(c34): signed local GM pending-offer settlement control recheck, preserve P6 RED |
+| Files changed relative to main | 383 (293 non-docs; 90 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,8 +19,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
-- `docs/research/C34_B14_P8_SIGNED_DISPATCHER_CANDIDATE_ONLY_2026-11-21.md`
+- `docs/research/C34_B14_P8_GM_SETTLEMENT_SOURCE_2026-11-21.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_gm_offer_settlement_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_gm_offer_settlement_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,9 +74,9 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
 - `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
+- `docs/research/C34_B14_P8_GM_SETTLEMENT_SOURCE_2026-11-21.md`
 - `docs/research/C34_B14_P8_NPC_CONSENT_CUTOVER_SOURCE_RED_AND_ROUTING_PLAN_2026-11-21.md`
-- `docs/research/C34_B14_P8_SIGNED_DISPATCHER_CANDIDATE_ONLY_2026-11-21.md`
-- … 330 more
+- … 333 more
 
 ## Trust and update procedure
 
