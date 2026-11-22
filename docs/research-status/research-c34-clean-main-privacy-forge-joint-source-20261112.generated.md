@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `94c1648ec4d4fb7ab3dfa381b1fbc748a826e084` |
+| Exact source commit represented by this archive snapshot | `33c70154fa38fb54ce546d8f0265a11e7417aed2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): pin /admin default self-item mint path to exact current main blobs; hosted risk unverified |
+| Last source commit title | docs(c34): checkpoint two signed P19 harness REDs, main /admin self-mint source parity and pending fixed probe |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P19_ORIGINAL_ASSIGNMENT_AND_FORGE_STAGE4_COMPATIBILITY_2026-11-22.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
