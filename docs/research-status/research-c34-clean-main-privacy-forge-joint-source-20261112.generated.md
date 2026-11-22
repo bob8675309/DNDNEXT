@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e8b3fa3b39e45a3c9e7e3e6358d04ceacb7968e1` |
+| Exact source commit represented by this archive snapshot | `e56089aa926f97ff0fad45232334bfdf0500ddda` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): P18 strictly disposable signed character-owned INSERT authority guard |
-| Files changed relative to main | 401 (305 non-docs; 96 docs) |
+| Last source commit title | test(c34): P18 signed original-red to guarded character INSERT matrix and cleanup |
+| Files changed relative to main | 402 (306 non-docs; 96 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p18_disposable_character_item_creation_gate_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 351 more
+- … 352 more
 
 ## Trust and update procedure
 
