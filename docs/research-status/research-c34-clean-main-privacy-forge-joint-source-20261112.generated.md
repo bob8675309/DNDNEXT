@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0b6e4a5656a107abbd6ae526eae2cb2b2f51f3b4` |
+| Exact source commit represented by this archive snapshot | `aaa4cabcaff535b20d8125d0442f3cad345d5cd9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record P13 exact source acceptance and pending full signed release hold |
+| Last source commit title | test(c34): avoid invalid inherited Forge child groups in T39 signed target selection |
 | Files changed relative to main | 387 (295 non-docs; 92 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
+- `scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs`
 
 ## Research-branch change inventory versus main
 
