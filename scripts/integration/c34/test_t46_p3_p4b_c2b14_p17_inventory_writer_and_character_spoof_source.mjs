@@ -12,7 +12,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..")
 const read=p=>fs.readFileSync(path.join(root,p),"utf8");
 const blob=p=>{
  const bytes=fs.readFileSync(path.join(root,p));
- return createHash("sha1").update(Buffer.concat([Buffer.from("blob "+bytes.length+"\\0"),bytes])).digest("hex");
+ return createHash("sha1").update(Buffer.concat([Buffer.from("blob "+bytes.length+"\0"),bytes])).digest("hex");
 };
 const original={
  "sql/20260614_02_phase_a_non_map_security_hardening.sql":"25d106dfc18f469948edf705e7997fa961a16cd0",
@@ -32,17 +32,17 @@ function walk(dir,extensions){
   return ent.isDirectory()?walk(rel,extensions):extensions.test(ent.name)?[rel]:[];
  });
 }
-const runtime=["components","pages","hooks","utils"].flatMap(d=>walk(d,/\\.(?:jsx?|tsx?|mjs)$/i)).sort();
-const sqlSources=["sql","supabase"].flatMap(d=>walk(d,/\\.sql$/i)).sort();
-const lineno=(s,i)=>s.slice(0,i).split("\\n").length;
+const runtime=["components","pages","hooks","utils"].flatMap(d=>walk(d,/\.(?:jsx?|tsx?|mjs)$/i)).sort();
+const sqlSources=["sql","supabase"].flatMap(d=>walk(d,/\.sql$/i)).sort();
+const lineno=(s,i)=>s.slice(0,i).split("\n").length;
 function tableCalls(table){
  const out=[];
- const pat=new RegExp("\\\\.from\\\\(\\\\s*['\\\"]"+table+"['\\\"]\\\\s*\\\\)","g");
+ const pat=new RegExp("\\.from\\(\\s*['\\"]"+table+"['\\"]\\s*\\)","g");
  for(const file of runtime){
   const source=read(file);
   for(const m of source.matchAll(pat)){
    const after=source.slice(m.index+m[0].length,m.index+m[0].length+270);
-   const method=/\\.\\s*(select|insert|upsert|update|delete)\\s*\\(/.exec(after)?.[1]??"unresolved";
+   const method=/\.\s*(select|insert|upsert|update|delete)\s*\(/.exec(after)?.[1]??"unresolved";
    out.push({file,line:lineno(source,m.index),method});
   }
  }
@@ -55,12 +55,12 @@ function definerCandidates(){
  const rows=[];
  for(const file of sqlSources){
   const source=read(file);
-  const functions=[...source.matchAll(/CREATE\\s+(?:OR\\s+REPLACE\\s+)?FUNCTION\\s+([A-Za-z_][A-Za-z_0-9."]*)\\s*\\(/gi)];
+  const functions=[...source.matchAll(/CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+([A-Za-z_][A-Za-z_0-9."]*)\s*\(/gi)];
   for(let i=0;i<functions.length;i++){
    const m=functions[i];
    const section=source.slice(m.index,functions[i+1]?.index??source.length);
-   if(!/SECURITY\\s+DEFINER/i.test(section)||!/\\binventory_items\\b/i.test(section))continue;
-   const mutates=/\\b(?:INSERT\\s+INTO|UPDATE|DELETE\\s+FROM)\\s+(?:public\\.)?inventory_items\\b/i.test(section);
+   if(!/SECURITY\s+DEFINER/i.test(section)||!/\binventory_items\b/i.test(section))continue;
+   const mutates=/\b(?:INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+(?:public\.)?inventory_items\b/i.test(section);
    rows.push({file,line:lineno(source,m.index),function:m[1],mutates,
     note:"Textual function-section candidate, not installed pg_proc and not complete dynamic-SQL proof"});
   }
@@ -71,12 +71,12 @@ test("P17 immutable original writer and P16 signed-local source: no silent produ
  for(const [file,sha] of Object.entries(original))
   assert.equal(blob(file),sha,"Original accepted source changed: "+file);
  const p16=read(Object.keys(original).at(-1));
- assert.match(p16,/IF TG_OP='INSERT' AND lower\\(coalesce\\(NEW.owner_type,''\\)\\) IN \\('npc','merchant'\\)/);
- assert.match(p16,/current_user NOT IN \\('authenticated','anon'\\)/);
- assert.doesNotMatch(p16,/IF TG_OP='INSERT' AND lower\\(coalesce\\(NEW.owner_type,''\\)\\) IN \\('npc','merchant','character'\\)/);
+ assert.match(p16,/IF TG_OP='INSERT' AND lower\(coalesce\(NEW.owner_type,''\)\) IN \('npc','merchant'\)/);
+ assert.match(p16,/current_user NOT IN \('authenticated','anon'\)/);
+ assert.doesNotMatch(p16,/IF TG_OP='INSERT' AND lower\(coalesce\(NEW.owner_type,''\)\) IN \('npc','merchant','character'\)/);
  const rls=read("sql/20260614_02_phase_a_non_map_security_hardening.sql");
- assert.match(rls,/CREATE POLICY inventory_items_insert_owner_or_admin[\\s\\S]*?WITH CHECK \\(\\s*user_id = \\(SELECT auth\\.uid\\(\\)\\)/);
- assert.match(rls,/GRANT SELECT, INSERT, UPDATE, DELETE[\\s\\S]*?ON TABLE public\\.inventory_items/);
+ assert.match(rls,/CREATE POLICY inventory_items_insert_owner_or_admin[\s\S]*?WITH CHECK \(\s*user_id = \(SELECT auth\.uid\(\)\)/);
+ assert.match(rls,/GRANT SELECT, INSERT, UPDATE, DELETE[\s\S]*?ON TABLE public\.inventory_items/);
  console.log("PASS P17-ORIGINAL-RED: P16 direct npc/merchant INSERT guard omits character ownership; original signed-user_id INSERT RLS does not verify character owner_id");
 });
 test("P17 full literal browser inventory writer paths, deliberate Town/GM/merchant/trade separation",()=>{
@@ -90,12 +90,12 @@ test("P17 full literal browser inventory writer paths, deliberate Town/GM/mercha
  assert.ok(writers.filter(x=>x.file==="pages/town/[id].js"&&x.method==="insert").length>=2);
  assert.ok(writers.some(x=>x.file==="pages/inventory.js"&&x.method==="update"));
  const assigned=read("components/AssignItemButton.js"),town=read("pages/town/[id].js");
- assert.match(assigned,/if \\(finalType === "player"\\) insertData.user_id = finalId/);
- assert.match(assigned,/supabase\\.from\\("inventory_items"\\)\\.insert\\(insertData\\)/);
- assert.match(town,/\\.insert\\(rollbackRows\\)/);
- assert.match(read("components/OfferTradeButton.js"),/\\.from\\("trade_requests"\\)\\.insert/);
- assert.match(read("components/TradeRequestsPanel.js"),/rpc\\("accept_trade"/);
- assert.match(read("components/MerchantPanel.js"),/rpc\\("buy_from_merchant"/);
+ assert.match(assigned,/if \(finalType === "player"\) insertData.user_id = finalId/);
+ assert.match(assigned,/supabase\.from\("inventory_items"\)\.insert\(insertData\)/);
+ assert.match(town,/\.insert\(rollbackRows\)/);
+ assert.match(read("components/OfferTradeButton.js"),/\.from\("trade_requests"\)\.insert/);
+ assert.match(read("components/TradeRequestsPanel.js"),/rpc\("accept_trade"/);
+ assert.match(read("components/MerchantPanel.js"),/rpc\("buy_from_merchant"/);
  assert.ok(merchant.some(x=>x.file==="components/MerchantPanel.js"&&x.method==="insert"));
  assert.equal(merchant.filter(x=>x.file==="components/AssignItemButton.js").length,0);
  console.log("PASS P17-BROWSER-WRITERS: direct item mutations exact path list, player crafting rollback, admin assignment and player trade vs merchant stock split");
