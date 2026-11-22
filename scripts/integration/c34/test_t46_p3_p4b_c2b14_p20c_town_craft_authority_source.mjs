@@ -17,7 +17,7 @@ test("P20C-P0 exact original Town, canonical v6, and P20B source pins",()=>{
  const original={
   "pages/town/[id].js":"c66508b798645e189bb900e63bc17b85b8662e10",
   "components/TownSheet.js":"5399097e48f548956807cd93476fefe03e4dee28",
-  "components/CraftingWorkspace.js":"e584b7eb1a39e9f6525cbeb3e8e1a477f34ba",
+  "components/CraftingWorkspace.js":"e584b7eb1a394e9d9f6525cbeb3e8e1a477f34ba",
   "sql/20260612_90_patch0_crafting_authorization_hardening.sql":"d60b0ded3f94cd9f7db9aa687e72ee0fc589c416",
   "sql/20260613_99_crafting_workflow_v6.sql":"570b2733d3aad5ed02bbe12d288ea52a7e6e352e",
   "scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20b_disposable_atomic_town_inscribe_pg17.sql":"300db43749faa6910aa058c9f32daf42d825abf8"

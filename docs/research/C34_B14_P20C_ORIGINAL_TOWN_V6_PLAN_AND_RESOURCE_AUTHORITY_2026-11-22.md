@@ -8,7 +8,7 @@ Date: November 22, 2026. Research on draft PR #379 only. NOT a deployed implemen
 | --- | --- | --- |
 | pages/town/[id].js | c66508b798645e189bb900e63bc17b85b8662e10 | Browser Town handleCraftWorkshop deletes inventory ingredients, inserts a client-crafted result and attempts separate compensating rollback INSERT |
 | components/TownSheet.js | 5399097e48f548956807cd93476fefe03e4dee28 | UI builds six services and a client alchemy formula library; canAttempt and recipe tag matching are previews |
-| components/CraftingWorkspace.js | e584b7eb1a39e9f6525cbeb3e8e1a477f34ba | Existing canonical /items plan, attempt, approval and completion; dynamic smithing forgeRecipe, selected materials, result item snapshot |
+| components/CraftingWorkspace.js | e584b7eb1a394e9d9f6525cbeb3e8e1a477f34ba | Existing canonical /items plan, attempt, approval and completion; dynamic smithing forgeRecipe, selected materials, result item snapshot |
 | sql/20260612_90_patch0_crafting_authorization_hardening.sql | d60b0ded3f94cd9f7db9aa687e72ee0fc589c416 | Existing protected craft-plan and attempt wrappers, original Admin-only completion and private function ownership |
 | sql/20260613_99_crafting_workflow_v6.sql | 570b2733d3aad5ed02bbe12d288ea52a7e6e352e | Original private completion amendment to deliver items to player records |
 | P20B scratch inscribe SQL | 300db43749faa6910aa058c9f32daf42d825abf8 | Accepted local genuine signed narrow atomic Inscribe source, not a general crafting engine |
@@ -46,3 +46,7 @@ P20C-P0 source/pure tests and handoff pending CI until an actual green Actions r
 ONE NEXT P20C-P1: inspect source-original private.complete_craft_plan_v1_impl, public.player_plants stock/owner schema and wallet cost data; prepare the smallest genuine signed PG17 fail-closed existing-plan transaction; prove real recipe and stock/currency rollback and a separate reason-audited GM override before proposing any runtime cutover.
 
 NO hosted SQL, including SELECT. No world-map change, game deployment, main merge, or branch deletion.
+
+## Historical source test receipt — initial typo RED, corrected retest
+
+First source P20C-P0 run [#45083727978](https://github.com/bob8675309/DNDNEXT/actions/runs/45083727978) failed only because our source test expected an incorrectly copied CraftingWorkspace blob e584b7eb1a39e9f6525cbeb3e8e1a477f34ba. Actual original e584b7eb1a394e9d9f6525cbeb3e8e1a477f34ba is pinned above. Six other P20C-P0 tests passed and are unchanged. No SQL or game source was changed; this receipt is not a P20C signed fixture.
