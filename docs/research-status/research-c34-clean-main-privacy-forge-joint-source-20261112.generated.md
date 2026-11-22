@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f6ea30601047111afad4ee904f7cee504500d913` |
+| Exact source commit represented by this archive snapshot | `a56ea138b1c6f7da5ee0e45be8be0c276c2e3a0e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add genuine signed P17 foreign-character inventory mint expected RED |
+| Last source commit title | test(c34): execute P17 signed character-owner spoof RED after preserved P16 positives |
 | Files changed relative to main | 399 (304 non-docs; 95 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs`
 
 ## Research-branch change inventory versus main
 
