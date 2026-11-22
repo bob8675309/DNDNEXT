@@ -135,9 +135,9 @@ export async function runC34B14P10SignedBrowser({
       rpc:name,
       // Redact account, item, session and UUID values; record only module
       // path/line frames from the LOCAL disposable browser's JS stack.
-      frames:raw.split("\\n").slice(1,16)
-       .map(frame=>frame.replace(/https?:\\/\\/127\\.0\\.0\\.1:\\d+/g,"<local>"))
-       .filter(frame=>!/node_modules\\//.test(frame)).slice(0,10)
+      frames:raw.split(String.fromCharCode(10)).slice(1,16)
+       .map(frame=>frame.split("http://127.0.0.1:").join("<local>:"))
+       .filter(frame=>!frame.includes("node_modules/")).slice(0,10)
      });
     }
     return original(name,...args);
