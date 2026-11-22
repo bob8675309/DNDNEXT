@@ -22,6 +22,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p12_original_inventory_consent_caller_graph_source.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
     paths:
@@ -43,6 +44,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p12_original_inventory_consent_caller_graph_source.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
 permissions:
@@ -107,6 +109,10 @@ jobs:
         run: |
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p12_original_inventory_consent_caller_graph_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p12_original_inventory_consent_caller_graph_source.mjs
+      - name: P13 full runtime code inventory, old RPC callers and merchant/Forge/Town role separation
+        run: |
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs
       - name: Full checked-in SQL role override scan and exact original RED preservation
         run: node scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs
       - name: No merchant panel or protected world map edits
