@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8cddefdbee0b72e5ca14a47a07383b260b4a23f2` |
+| Exact source commit represented by this archive snapshot | `81d7ef920fd17ffe7be2756b3685d2d42d2d6b4e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): P19 lock original minimal-return INSERT and independent GM row SELECT visibility HOLD |
+| Last source commit title | ci(c34): rerun genuine guarded buyer on P17/P18/P19 source changes and precheck faithful minimal-return writer |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 
 ## Research-branch change inventory versus main
 
