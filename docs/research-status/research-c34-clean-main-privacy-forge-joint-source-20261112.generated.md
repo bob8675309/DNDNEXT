@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9b33d3bdf80e1300efc04cab175be51dd238cae4` |
+| Exact source commit represented by this archive snapshot | `f7ae02c7bd04468749d45be7e7f45c02c9e7c766` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept exact P15 source controller and expected-RED consent crosswalk |
-| Files changed relative to main | 393 (299 non-docs; 94 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(c34): stage signed local P16 no-bypass NPC consent and original ACL restoration |
+| Files changed relative to main | 397 (302 non-docs; 95 docs) |
+| Last source commit | 11 files (7 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,17 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
+- `docs/research/C34_B14_P16_DISPOSABLE_NO_BYPASS_CUTOVER_2026-11-22.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +81,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 343 more
+- … 347 more
 
 ## Trust and update procedure
 
