@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {randomUUID} from "node:crypto";
+import {runC34B14P20BAtomicTownInscribeSigned} from "./run_t46_p3_p4b_c2b14_p20b_atomic_town_inscribe_signed.mjs";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const candidate="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20a_disposable_earned_receipt_gate_pg17.sql";
 const p19="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql";
@@ -119,6 +120,9 @@ export async function runC34B14P20AEarnedReceiptSigned({env,sql,q,lit,roles,hire
   denied(await make(alice,"player",alice.id,"town-raw-rollback"),
    "Original Town raw INSERT is no longer compatible without server-side craft/rollback");
   console.log("PASS P20A-TOWN-RELEASE-HOLD: signed consume works and receipt cannot remint; original browser Town crafted-result/rollback direct INSERT is blocked, requires atomic source-authentic server replacement BEFORE any rollout");
+
+  // Source-narrow P20B atomic Town inscribe research under original P20A restrictive INSERT.
+  await runC34B14P20BAtomicTownInscribeSigned({env,sql,q,lit,roles});
 
   sql(fs.readFileSync(path.join(root,p19),"utf8"));managerInstalled=true;
   assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"6");
