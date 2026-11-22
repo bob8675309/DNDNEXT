@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5aa648af15ce2e67c7bd1d40c4c35079e0e5519b` |
+| Exact source commit represented by this archive snapshot | `b65aa762f1290f3076fd92cfbb0c4daa54f97a8c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): P11 local stack trace syntax and source-graph test regexes |
+| Last source commit title | test(c34): P11 exclude executable legacy imports, not explanatory NpcPanel comments |
 | Files changed relative to main | 380 (291 non-docs; 89 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs`
 - `scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs`
 
 ## Research-branch change inventory versus main
