@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `89d7e3f0e62b68fa5ab419b54db943d0509ef09c` |
+| Exact source commit represented by this archive snapshot | `9c0a10958c4029a0b92eee059540acbb0e296120` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): checkpoint P17 writer census and signed spoof RED pending |
+| Last source commit title | docs(c34): append P17 source census and pending signed-owner-spoof handoff receipt |
 | Files changed relative to main | 400 (304 non-docs; 96 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
