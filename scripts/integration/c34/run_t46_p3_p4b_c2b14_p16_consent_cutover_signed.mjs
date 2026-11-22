@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {randomUUID} from "node:crypto";
+import {runC34B14P17CharacterOwnerSpoofRedSigned} from "./run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const file="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql";
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -196,6 +197,10 @@ export async function runC34B14P16ConsentCutoverSigned({env,sql,q,lit,roles,hire
   assert.ifError(gmCreate.error);
   assert.equal(owner(gmSeed).type,"npc");
   console.log("PASS P16-PRESERVE-DML: signed self equip, Town-style account DELETE/INSERT rollback, Forge item materialization and explicit GM NPC item creation still work");
+
+  // New P17 independent expected-RED proof, after original P16 preservation.
+  // Uses the same guarded disposable instance and restores its temporary rows.
+  await runC34B14P17CharacterOwnerSpoofRedSigned({sql,q,roles});
 
   const companion=randomUUID();
   sql("INSERT INTO public.characters(id,name,kind,is_hidden,state,tags) VALUES("+
