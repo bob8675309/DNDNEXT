@@ -20,6 +20,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
     paths:
@@ -39,6 +40,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
 permissions:
@@ -86,6 +88,10 @@ jobs:
         run: |
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p10_npc_inventory_shell_source.mjs
+      - name: P11 original hidden profile and NPC reader/source transfer preservation graph
+        run: |
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs
       - name: P8 typed client-intent research contract (NOT backend consent cutover)
         run: |
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs

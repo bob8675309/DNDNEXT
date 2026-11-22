@@ -121,6 +121,28 @@ export async function runC34B14P10SignedBrowser({
    waitUntil:"domcontentloaded",timeout:100000
   });
   await page.waitForFunction(()=>!!window.__p10Sb,null,{timeout:85000});
+  // P11 scratch-only tracing of original app-shell RPCs. All capture is
+  // installed before the first signed actor login. The P10 component's own
+  // scoped client is already audited separately; do not disable other app UI.
+  await page.evaluate(()=>{
+   const shared=window.__p10Sb,original=shared.rpc.bind(shared);
+   window.__p11OriginalRpc=shared.rpc;
+   window.__p11LegacyReaderSites=[];
+   shared.rpc=(name,...args)=>{
+    if(name==="get_character_inventory_v1"){
+     const raw=(new Error("P11 original legacy reader")).stack||"";
+     window.__p11LegacyReaderSites.push({
+      rpc:name,
+      // Redact account, item, session and UUID values; record only module
+      // path/line frames from the LOCAL disposable browser's JS stack.
+      frames:raw.split("\\n").slice(1,16)
+       .map(frame=>frame.replace(/https?:\\/\\/127\\.0\\.0\\.1:\\d+/g,"<local>"))
+       .filter(frame=>!/node_modules\\//.test(frame)).slice(0,10)
+     });
+    }
+    return original(name,...args);
+   };
+  });
   await page.getByTestId("p10-unavailable").waitFor();
   assert.ok(!rpcCalls.includes("c34_b14_p7_npc_backpack_page_v1"));
   console.log("PASS T46-C2B14-P10-ANON: unsigned local browser cannot view backpack and no eager private list");
@@ -129,6 +151,12 @@ export async function runC34B14P10SignedBrowser({
   await grant("manage_equipment",false);
   await login(roles.OWNER);
   await page.getByTestId("p10-ready").waitFor({timeout:25000});
+  // Original _app mounts the global profile even while it is visually
+  // suspended. This protects the existing Forge persistence but may cause
+  // hidden NpcPanel inventory effects to execute on unrelated Next routes.
+  assert.equal(await page.locator(
+   ".npc-page-profile-panel-backdrop.is-forge-suspended").count(),1,
+   "Expected the original suspended global character Profile mount");
   await page.getByTestId("p10-worn").getByText("P7 sword").waitFor();
   await page.getByTestId("p10-rights").filter({hasText:/Backpack: read/}).waitFor();
   assert.equal(rpcCalls.filter(x=>x==="c34_b14_p7_npc_backpack_page_v1").length,0,
@@ -212,10 +240,26 @@ export async function runC34B14P10SignedBrowser({
   assert.ok(!scoped.some(name=>forbidden.includes(name)),
    "P10 must never fall back to legacy RPC: "+JSON.stringify(scoped));
   const shellLegacy=rpcCalls.filter(name=>forbidden.includes(name));
+  const callsites=await page.evaluate(()=>window.__p11LegacyReaderSites||[]);
   if(shellLegacy.length){
-   // Unrelated _app/global-shell source may remain mounted around isolated
-   // P10 test page. Report exact RPCs instead of attributing them to P10.
    console.log("P10-UNRELATED-APP-SHELL-LEGACY-RPCS: "+JSON.stringify(shellLegacy));
+   assert.equal(callsites.length,
+    shellLegacy.filter(name=>name==="get_character_inventory_v1").length,
+    "Browser-wide legacy RPCs must be traceable to actual JS callers");
+   const unique=Array.from(new Set(callsites.flatMap(site=>site.frames)
+    .filter(frame=>frame.includes("NpcPanel")||
+      frame.includes("useNpcSheetActionData")||
+      frame.includes("CharacterInteractionPanel")||
+      frame.includes("PlayerCharacterProfilePanel"))));
+   console.log("P11-LEGACY-READER-SOURCE-FRAMES: "+JSON.stringify(unique.slice(0,12)));
+   assert.ok(callsites.every(site=>site.frames.length>0),
+    "P11 legacy calls must have caller stack evidence");
+   assert.ok(callsites.some(site=>site.frames.some(frame=>
+    /NpcPanel|useNpcSheetActionData/.test(frame))),
+    "Unexpected legacy inventory fetcher: review full source modules before release");
+   console.log("PASS T46-C2B14-P11-TRACE: original legacy full-row reader attribution recorded outside P10; no hidden reader silently classified as safe");
+  } else {
+   console.log("P11-LEGACY-READER-NONE: no original reader fired under this actor fixture; retained source-graph cutover hold");
   }
   console.log("PASS T46-C2B14-P10-SIGNED: real local Next/Chromium actor matrix; isolated P10 client only ever called P9/P7, no legacy fallback");
  }finally{
