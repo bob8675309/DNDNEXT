@@ -9,6 +9,7 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {randomUUID} from "node:crypto";
 import {runC34B14P19OriginalAssignItemSourceRedSigned} from "./run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs";
+import {runC34B14P20AEarnedReceiptSigned} from "./run_t46_p3_p4b_c2b14_p20a_earned_receipt_signed.mjs";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const file="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p18_disposable_character_item_creation_gate_pg17.sql";
@@ -170,6 +171,8 @@ export async function runC34B14P18CharacterInsertGuardSigned({env,sql,q,lit,role
   // independently signed GM, DM, Admin and player identities. The expected
   // old GM/DM/account RED is research evidence; NO client/RLS patch here.
   await runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,lit,roles,hired});
+  // P20A additive research only: same signed actors after original P19 cleanup.
+  await runC34B14P20AEarnedReceiptSigned({env,sql,q,lit,roles,hired});
  } finally {
   if(installed){
    sql("DROP TRIGGER IF EXISTS c34_b14_p18_guard_direct_character_item_creation ON public.inventory_items");
