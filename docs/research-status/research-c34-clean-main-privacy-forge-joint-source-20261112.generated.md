@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1158839f46b024396026b76a9bf8daac9c241363` |
+| Exact source commit represented by this archive snapshot | `89d7e3f0e62b68fa5ab419b54db943d0509ef09c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record P17 source writer census and pending signed foreign-character mint RED |
+| Last source commit title | docs(c34): checkpoint P17 writer census and signed spoof RED pending |
 | Files changed relative to main | 400 (304 non-docs; 96 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P17_INVENTORY_WRITERS_AND_CHARACTER_INSERT_SPOOF_2026-11-22.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
