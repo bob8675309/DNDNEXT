@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `48a621399c58ea54dbd375ba429d87002e7a5dae` |
+| Exact source commit represented by this archive snapshot | `244a3da2120841cce1b9e9e3ec5c6c948f33c511` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): distinguish missing June target-list fixture from installed legacy transfer |
+| Last source commit title | docs(c34): accept signed P16 local consent cutover and restore with production hold |
 | Files changed relative to main | 397 (302 non-docs; 95 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,9 +20,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P16_DISPOSABLE_NO_BYPASS_CUTOVER_2026-11-22.md`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs`
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs`
 
 ## Research-branch change inventory versus main
 
