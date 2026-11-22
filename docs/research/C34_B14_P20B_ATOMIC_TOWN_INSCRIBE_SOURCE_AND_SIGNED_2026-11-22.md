@@ -23,3 +23,19 @@ November 22, 2026; held draft PR #379. Initial source-backed research candidate,
 No production rollout until (1) the entire original Crafters Quarter service and actor rules are modeled without invented entitlements, (2) complete source-authentic signed browser+Forge/Stage4+Town+merchant+trade matrix is green, (3) 22/34 old \`players.sheet\` writers are resolved, (4) independent encrypted PG17+340 Storage byte restoration is complete, and (5) owner separately approves schema and deployment. Never promote source-only and disposable tests to hosted status.
 
 **Next bounded task after signed P20B acceptance:** P20C original Town multi-ingredient recipes, plant-source provenance and seller/GM source-authorized output, preserving the original recipe tables and legacy rollbacks without unearned gear generation.
+
+## Signed P20B acceptance — exact executable and all seven markers (2026-11-22 CST)
+
+**Accepted only the bounded local disposable Inscribe subset**, at executable `1f4eeebef58c76a85caefefe58daafcd88e84b98`: [original buyer + signed PG17/GoTrue/PostgREST browser #45065229582](https://github.com/bob8675309/DNDNEXT/actions/runs/45065229582), job `137339770551`, **SUCCESS**, entire 132,779-character / 1,500-line log decoded and reviewed. All seven source-derived P20B markers PASS:
+
+1. `P20B-ORIGINAL-TOWN-SOURCE`: exact old Crafters Quarter `inscribe` present, raw browser sequence unchanged.
+2. `P20B-SIGNED-DENY`: signed outsider cannot consume someone else's item; missing item, forged crafter and wrong town all fail without item mutation.
+3. `P20B-ATOMIC-ROLLBACK`: injected true DB post-DELETE insert trigger `P0001` rolls back original row byte-relevant MD5 and request ledger; no client compensating mint.
+4. `P20B-INSCRIBE-GREEN`: authenticated server-produced restricted plain gear Inscribe metadata/provenance, exactly one source item consumed, private player read/equip.
+5. `P20B-NONCE-CONCURRENCY`: two same-nonce concurrent requests share one result; altered or foreign signed replay denied, second replay idempotent.
+6. `P20B-DOUBLE-CONSUME`: two different nonces racing on one existing item commit only one output, other 42501.
+7. `P20B-RESTORE`: scratch function, private receipt ledger, test failure trigger, item rows and crafter dropped; original P20A gate, P16/P18 protections unchanged before their parent teardown.
+
+The prior `P20A-ORIGINAL-SIGNED-RED`, `P20A-RAW-DENY`, `P20A-RECEIPT-GREEN`, `P20A-TOWN-RELEASE-HOLD`, `P20A-MANAGER-PRESERVE-READ-HOLD` and `P20A-RESTORE` all passed in the **same signed guarded buyer**. Corrected source-only [#45065229586](https://github.com/bob8675309/DNDNEXT/actions/runs/45065229586) SUCCESS. Initial expected CI **failed** at [source #45065108561](https://github.com/bob8675309/DNDNEXT/actions/runs/45065108561) and [guarded #45065108630](https://github.com/bob8675309/DNDNEXT/actions/runs/45065108630) on test-only lowercase `craft nonce` vs candidate's exact `Craft nonce`; this was fixed only in test, not SQL or runtime, and all historical errors preserved. Exact original candidate SQL Git blob `300db43749faa6910aa058c9f32daf42d825abf8` and runner `80b882c575a6ea8da852a270315d550de898045a` and P20A parent `578e7f8967356af5d0ab6278c1991d22bbf79e2a` unchanged across initial and corrected heads.
+
+A narrow local positive is not a full Town server cutover: the live UI still sends three separate database calls; no full forge/imbue/smith/plant/catalyst source entitlement, no actual latest October v3 Forge under held #345 Stage4 all four RLS+old owner CHECK, no mounted client P20B browser, no complete merchant/trade/consent/GM private reader co-residence; independent signed full Forge/Story/browser [#45065229565](https://github.com/bob8675309/DNDNEXT/actions/runs/45065229565) was IN PROGRESS at this acceptance and cannot be assumed green. Production remains held.
