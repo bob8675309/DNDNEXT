@@ -78,3 +78,15 @@ Original immediate changed files: **15/15 present**, **11 exact copied/archived*
 ## Retirement judgment, open release gates
 
 **All 35/35 original immediate changed-file occurrences are source-accounted and evidence preserved in open successor #345; inherited Stage1–3, original V00–V24 RED/GREEN tests and creator/GM permission behavior are reconciled.** Under the owner's newly approved research-consolidation rule, original PRs **#321, #322 and #323 are eligible to be closed unmerged without deleting their Git branches**. Do not close #324 or #328–335 as part of this action. Do not conflate closed legacy research with production deployment of #345, #379, centered world-map visual approval, 31-trigger full Forge install, all original full-browser flows, current hosted RLS or independent encrypted PostgreSQL 17 and 340 Storage file recovery. These remain release HOLD and require separate owner approval.
+
+## Closure confirmation — checked against live GitHub, 2026-11-22
+
+Every PR below was closed **unmerged**, exact original head unchanged and all original Git branch ancestors preserved:
+
+| Original | Verified status | Closed at (UTC) | Original immutable HEAD | Named successor |
+| --- | --- | --- | --- | --- |
+| [#323](https://github.com/bob8675309/DNDNEXT/pull/323) | CLOSED, merged=false | 2026-11-22T22:56:22Z | `07ff6a4f68418a37d89527be79925922cb1a6775` | #345 OPEN |
+| [#322](https://github.com/bob8675309/DNDNEXT/pull/322) | CLOSED, merged=false | 2026-11-22T22:56:24Z | `4f4b8788744754ccf19af0e29546944f8ed8b3a3` | #345 OPEN |
+| [#321](https://github.com/bob8675309/DNDNEXT/pull/321) | CLOSED, merged=false | 2026-11-22T22:56:27Z | `b220fb5ecbc9570f63bd85a95da8706340abd153` | #345 OPEN |
+
+All three closed numbers were absent from the subsequently checked **38-open** live PR register. [#324](https://github.com/bob8675309/DNDNEXT/pull/324) remained **OPEN** and its GitHub base retained #321's old exact branch/SHA; #345 remained **OPEN**. Production deployment and genuine C3.3 world-map visual approval are still NOT implied.
