@@ -144,7 +144,10 @@ export async function runC34B14P10SignedBrowser({
   await page.getByTestId("p10-ready").waitFor();
   await page.getByTestId("p10-readonly-locked").waitFor();
   assert.equal(await page.getByTestId("p10-item").count(),0);
-  assert.ok(!(await page.locator("body").innerText()).includes("P7 hidden letter"));
+  // P7 concurrency tests equipped "P7 hidden letter" into a public outward
+  // worn slot. Revocation cannot hide its visible outward name; it MUST hide
+  // the unequipped, private backpack row "P7 map" that was previously loaded.
+  assert.ok(!(await page.locator("body").innerText()).includes("P7 map"));
   console.log("PASS T46-C2B14-P10-REVOKE: same JWT GM revoke clears displayed private backpack while combat control stays independent");
 
   await grant("view_backpack",true);
