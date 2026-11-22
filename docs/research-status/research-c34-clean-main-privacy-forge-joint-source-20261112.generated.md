@@ -5,22 +5,18 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9fce1518e21602a6d943fbb7995868875a9c0713` |
+| Exact source commit represented by this archive snapshot | `5aa648af15ce2e67c7bd1d40c4c35079e0e5519b` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): attribute suspended global NPC reader, preserve all legacy cutover routes |
+| Last source commit title | fix(c34): P11 local stack trace syntax and source-graph test regexes |
 | Files changed relative to main | 380 (291 non-docs; 89 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
 - `scripts/integration/c34/run_t46_p3_p4b_c2b14_p10_npc_inventory_browser_signed.mjs`
 - `scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs`
 
