@@ -107,6 +107,29 @@ function seedAccount(user,marker){
     sq(JSON.stringify({marker,kind:"legacy-historical-do-not-overwrite"}))+"::jsonb)");
   assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id="+q(user.id)),marker);
 }
+// Fixture target eligibility must respect the unchanged original Forge
+// nested-choice rule. Earlier signed suites seed multiple Fighter1 characters;
+// selecting simply the lowest UUID may choose an unrelated invalid child group.
+const fighterChoices="coalesce(cs.sheet->'classFeatureChoices','{}'::jsonb)";
+const nestedChoiceParentsSatisfied=[
+  "NOT EXISTS (",
+  "SELECT 1 FROM jsonb_each("+fighterChoices+") child(group_key,group_data)",
+  "WHERE jsonb_typeof(child.group_data->'activeWhen')='object'",
+  "AND NOT EXISTS (",
+  "SELECT 1 FROM jsonb_array_elements_text(",
+  "coalesce(child.group_data#>'{activeWhen,optionNames}','[]'::jsonb)",
+  ") required(option_name)",
+  "WHERE EXISTS (",
+  "SELECT 1 FROM jsonb_each("+fighterChoices+") parent(group_key,group_data)",
+  "CROSS JOIN LATERAL jsonb_array_elements(",
+  "coalesce(parent.group_data->'selections','[]'::jsonb)",
+  ") picked(selection)",
+  "WHERE private.normalize_player_choice_name_v1(picked.selection->>'name')",
+  "=private.normalize_player_choice_name_v1(required.option_name)",
+  ")",
+  ")",
+  ")"
+].join(" ");
 function chooseTarget(exclude){
   const excluded=exclude?" AND cp.character_id<>"+q(exclude):"";
   return sql("SELECT cp.character_id FROM public.character_progression cp "+
@@ -116,6 +139,7 @@ function chooseTarget(exclude){
     "AND cp.class_level=1"+excluded+" "+
     "AND NOT EXISTS(SELECT 1 FROM public.character_runtime_feature_choices r "+
     "WHERE r.character_id=cp.character_id AND r.feature_key='class-weapon-mastery') "+
+    "AND "+nestedChoiceParentsSatisfied+" "+
     "ORDER BY cp.character_id LIMIT 1");
 }
 const classKey=id=>sql("SELECT c.class_key||'|'||cp.class_level::text "+
@@ -165,6 +189,14 @@ assert.match(originalId,/^[0-9a-f-]{36}$/i,"Existing inherited signed fixture mu
 const secondId=chooseTarget(originalId);
 assert.match(secondId,/^[0-9a-f-]{36}$/i,"T39 must compare two independently stored characters");
 assert.notEqual(secondId,originalId);
+assert.equal(sql("SELECT to_regprocedure('private.normalize_player_choice_name_v1(text)') IS NOT NULL"),"t");
+for(const id of [originalId,secondId]){
+  assert.equal(
+    sql("SELECT "+nestedChoiceParentsSatisfied+" FROM public.character_sheets cs WHERE cs.character_id="+q(id)),
+    "t","T39 selected a Fighter with a missing original Forge parent option"
+  );
+}
+console.log("PASS T39-TARGET-PARENTS: both inherited Fighters satisfy original dependent class choice parents");
 assert.equal(classKey(originalId),"fighter|1");
 assert.equal(classKey(secondId),"fighter|1");
 link(originalId,owner);
