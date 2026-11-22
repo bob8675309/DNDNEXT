@@ -39,6 +39,12 @@ All four relevant source files are exact-blob-identical between `main` `bb3939ee
 | Trade / NPC consent | `trade_requests`, `accept_trade`, P14 current consent status, P16 old June/P2/P4/P6/P8 direct bypass revocation and owner-approved controlled companion gift semantics; preserve legitimate PC→NPC gift and separate PC→PC trade |
 | Source-definer/trigger callers | Historical 22 candidate definitions/8 apparent item-mutating SQL sections are **source text**, not installed live `pg_proc` proof; check function EXECUTE (including PUBLIC), all dependent grants, dynamic SQL, RLS bypass and external clients before any privileged change |
 
+## 3A. P19 disposable signed prerequisite NOW accepted; P20 remains source-only
+
+The prerequisite [P19 genuine signed guarded buyer #45053692275](https://github.com/bob8675309/DNDNEXT/actions/runs/45053692275), job `137304165997`, completed **SUCCESS** at unchanged executable `be28d86d02d1141d42be405629a2c7ae708b2eee`, decoded 1,388-line log. Original GM/DM no-user-id assignment RED, Admin positive, manager-only temporary-policy GM/DM GREEN, Player/Observer denied, **separate GM SELECT still hidden** under historical RLS, independent arbitrary player-account mint RED, original P19/P18/P16 scratch policy/row/function/grant restoration all passed. See [P19 signed acceptance](C34_B14_P19_ORIGINAL_ASSIGNMENT_AND_FORGE_STAGE4_COMPATIBILITY_2026-11-22.md) for exact markers and executable file blob parity.
+
+**This P19 result authorizes no change to production.** P20 remains a **source-only original /admin entrypoint and earned-item provenance investigation**, not real mounted browser proof of player self-mint through deployed /admin nor a deployed server-side fix. The next bounded research phase can now test P20 earned-item issuance with genuine signed account, GM, Forge and Town writers in one disposable fixture, while preserving original #345 Stage4 and all existing app code.
+
 ## 4. Bounded P20 work order, no unauthorized production changes
 
 **First** accept or diagnose the exact-head P19 local signed `GM/DM` no-return RED→temporary-policy GREEN and SELECT-HOLD, unauthorized Observer/player negatives, account mint RED and restoration of original four policies plus P18/P16 triggers. Distinct real signed tests and source CI must be green before declaring a compatible candidate.
