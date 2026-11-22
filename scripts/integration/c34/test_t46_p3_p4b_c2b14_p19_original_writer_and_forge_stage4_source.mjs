@@ -18,6 +18,7 @@ const signed="scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_i
 const p18="scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs";
 const writer="components/AssignItemButton.js";
 const stage4="sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql";
+const p19Policy="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql";
 const originalPins={
  [writer]:"dc09dc77c66896ed842d240c584225cde26581db",
  [stage4]:"4532ddb8db642d0d0ab14646a3e87c034d4134c6",
@@ -61,7 +62,7 @@ test("P19 signed untouched writer proves expected RED by real game-manager role 
   "PASS P19-ACCOUNT-MINT-RED",
   "PASS P19-ASSIGN-RESTORE"
  ])assert.ok(s.includes(label),"Expected signed evidence missing: "+label);
- assert.ok(parent.includes("await runC34B14P19OriginalAssignItemSourceRedSigned({sql,q,lit,roles,hired})"));
+ assert.ok(parent.includes("await runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,lit,roles,hired})"));
  assert.ok(parent.indexOf("PASS P18-INDEPENDENT") <
   parent.indexOf("await runC34B14P19OriginalAssignItemSourceRedSigned("));
  assert.ok(parent.indexOf("await runC34B14P19OriginalAssignItemSourceRedSigned(") <
@@ -69,6 +70,35 @@ test("P19 signed untouched writer proves expected RED by real game-manager role 
  assert.ok(s.includes("tgname IN ('c34_b14_p16_guard_direct_inventory_dml'"));
  assert.ok(s.includes("'c34_b14_p18_guard_direct_character_item_creation')"));
  console.log("PASS P19-SIGNED-SOURCE: original GM/DM/ADMIN same-JWT RED/positive and independent account mint RED sequenced inside P18 scratch and cleanup");
+});
+
+test("P19 additive local manager-authoring policy enforces live actor role without changing original Stage4",()=>{
+ const sql=read(p19Policy),signedCode=read(signed);
+ assert.ok(sql.includes("current_database()<>'postgres'"));
+ assert.ok(sql.includes("server_version_num"));
+ assert.ok(sql.includes("c34_b14_p16_guard_direct_inventory_dml"));
+ assert.ok(sql.includes("c34_b14_p18_guard_direct_character_item_creation"));
+ assert.ok(sql.includes("CREATE POLICY c34_b14_p19_temporary_game_manager_insert"));
+ assert.ok(sql.includes("FOR INSERT TO authenticated"));
+ assert.ok(sql.includes("WITH CHECK (coalesce(public.c34_b14_p16_is_item_grant_manager_v1(),false))"));
+ assert.ok(sql.includes("polroles=ARRAY['authenticated'::regrole::oid]"));
+ assert.ok(!sql.includes("ALTER POLICY inventory_items_insert_owner_or_admin"));
+ assert.ok(!sql.includes("DROP CONSTRAINT inventory_items_owner_type_chk"));
+ assert.ok(!sql.includes("GRANT ALL ON TABLE"));
+ assert.ok(!sql.includes("ALTER TABLE public.inventory_items DISABLE ROW LEVEL SECURITY"));
+ assert.ok(signedCode.includes("C34_P19_SIGNED_CONFIRM"));
+ assert.ok(signedCode.includes("P19_MANAGER_ASSIGN_DISPOSABLE_PG17_ONLY"));
+ assert.ok(signedCode.includes("DROP POLICY IF EXISTS c34_b14_p19_temporary_game_manager_insert"));
+ assert.ok(signedCode.includes('assert.equal(beforePolicies,"4"'));
+ for(const marker of [
+  "PASS P19-ROLE-AUTH","PASS P19-ASSIGN-TEMP-GREEN",
+  "PASS P19-ASSIGN-TEMP-DENY","PASS P19-ACCOUNT-MINT-HOLD"
+ ])assert.ok(signedCode.includes(marker));
+ for(const file of [
+  ".github/workflows/validate-c34-joint-local-auth.yml",
+  ".github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml"
+ ])assert.ok(read(file).includes("C34_P19_SIGNED_CONFIRM: P19_MANAGER_ASSIGN_DISPOSABLE_PG17_ONLY"));
+ console.log("PASS P19-TEMP-POLICY-SOURCE: P16 current-role authority, no observer/anon mint, original four RLS restored; Stage4 separate");
 });
 
 test("P19 original #345 Stage4 is NOT installed by P18/P19; full v3 and role/constraint tests remain independent",()=>{
