@@ -57,3 +57,23 @@ test("P14 plan explicitly holds original role and end-to-end authorization relea
   assert.match(gm,/REVOKE ALL ON FUNCTION public\.c34_b14_p6_decide_item_offer_v1/);
   assert.match(plan,/owner.*signoff/i);
 });
+
+test("P14 signed candidate remains isolated, private and attached after original GM suite",()=>{
+ const p14=read("scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p14_offer_status_and_links_pg17.sql");
+ const testRunner=read("scripts/integration/c34/run_t46_p3_p4b_c2b14_p14_status_signed.mjs");
+ const p8Runner=read("scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs");
+ assert.match(p14,/DO \$p14_local_guard\$/);
+ assert.match(p14,/CREATE TABLE private\.c34_b14_p14_batch_offer_links/);
+ assert.match(p14,/DEFERRABLE INITIALLY DEFERRED/);
+ assert.match(p14,/CREATE OR REPLACE FUNCTION public\.c34_b14_p14_dispatch_batch_intent_v1/);
+ assert.match(p14,/CREATE OR REPLACE FUNCTION public\.c34_b14_p14_my_intent_status_v1/);
+ assert.ok(!p14.includes("CREATE OR REPLACE FUNCTION public.c34_b14_p8_dispatch_batch_intent_v1"));
+ assert.match(p14,/REVOKE ALL ON private\.c34_b14_p14_batch_offer_links FROM PUBLIC,anon,authenticated/);
+ assert.match(p14,/v_parent\.actor_id IS DISTINCT FROM v_actor/);
+ assert.match(testRunner,/PASS P14-GM-CANCEL-RACE/);
+ assert.match(testRunner,/PASS P14-ATOMIC/);
+ assert.match(testRunner,/PASS P14-REVOKE/);
+ assert.match(p8Runner,/runC34B14P8GmSettlementSigned/);
+ assert.match(p8Runner,/runC34B14P14StatusSigned/);
+ assert.match(p8,/pg_catalog\.gen_random_uuid\(\)/);
+});

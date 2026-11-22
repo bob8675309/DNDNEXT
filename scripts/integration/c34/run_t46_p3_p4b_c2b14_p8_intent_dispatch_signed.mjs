@@ -7,6 +7,7 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {randomUUID,createHash} from "node:crypto";
 import {runC34B14P8GmSettlementSigned} from "./run_t46_p3_p4b_c2b14_p8_gm_offer_settlement_signed.mjs";
+import {runC34B14P14StatusSigned} from "./run_t46_p3_p4b_c2b14_p14_status_signed.mjs";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const file="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql";
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -235,5 +236,6 @@ export async function runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,another
  for(let i=0;i<sigs.length;i++)
   assert.equal(hash(sigs[i]),initial[i],"P8 changed original "+sigs[i]);
  await runC34B14P8GmSettlementSigned({env,sql,q,lit,roles,hired,forgeSource});
+ await runC34B14P14StatusSigned({env,sql,q,lit,roles,hired,forgeSource});
  console.log("PASS T46-C2B14-P8-SIGNED: signed local player/NPC/Forge/grant/atomic-bulk/replay/parallel, original function MD5 parity; legacy direct consent bypass STILL NOT CLOSED");
 }

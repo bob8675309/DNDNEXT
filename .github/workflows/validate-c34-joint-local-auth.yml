@@ -40,6 +40,7 @@ jobs:
       PGDATABASE: postgres
       DNDNEXT_I1C_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
       DNDNEXT_C34_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      C34_P14_SIGNED_CONFIRM: P14_STATUS_LOCAL_SIGNED_ONLY
     steps:
       - name: Checkout current research head
         uses: actions/checkout@v4
