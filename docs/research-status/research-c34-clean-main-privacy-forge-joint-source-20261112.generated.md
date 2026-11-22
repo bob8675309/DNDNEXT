@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `cf93793a92cebb733c9c92251f2597465af7c085` |
+| Exact source commit represented by this archive snapshot | `53006d5b6f9e54089980a93e973973de151e4eec` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append P19 signed local jwt RED-to-GREEN acceptance and P20 self-account mint source receipt |
-| Files changed relative to main | 410 (311 non-docs; 99 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research(c34): P20A signed disposable earned receipt gate and original writer hold |
+| Files changed relative to main | 414 (314 non-docs; 100 docs) |
+| Last source commit | 9 files (6 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,15 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
+- `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P20A_DISPOSABLE_EARNED_ACCOUNT_ITEM_AUTHORITY_2026-11-22.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20a_disposable_earned_receipt_gate_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p20a_earned_receipt_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20a_earned_receipt_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +79,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 360 more
+- … 364 more
 
 ## Trust and update procedure
 
