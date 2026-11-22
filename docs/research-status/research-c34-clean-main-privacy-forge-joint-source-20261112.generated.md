@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f7ae02c7bd04468749d45be7e7f45c02c9e7c766` |
+| Exact source commit represented by this archive snapshot | `48a621399c58ea54dbd375ba429d87002e7a5dae` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): stage signed local P16 no-bypass NPC consent and original ACL restoration |
+| Last source commit title | test(c34): distinguish missing June target-list fixture from installed legacy transfer |
 | Files changed relative to main | 397 (302 non-docs; 95 docs) |
-| Last source commit | 11 files (7 non-docs; 4 authored docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,16 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
-- `.github/workflows/validate-c34-joint-local-auth.yml`
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
 - `docs/research/C34_B14_P16_DISPOSABLE_NO_BYPASS_CUTOVER_2026-11-22.md`
 - `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql`
 - `scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
 - `scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs`
 
 ## Research-branch change inventory versus main
