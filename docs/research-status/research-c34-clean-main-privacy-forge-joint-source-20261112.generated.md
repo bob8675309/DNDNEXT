@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `55367b3a5ef692d6d2567a88039741c26a434c15` |
+| Exact source commit represented by this archive snapshot | `73c3c349d78751074048c0213b07ba700c7dd884` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): P19 faithfully test original minimal-return INSERT; prove separate manager SELECT RLS hold |
+| Last source commit title | fix(c34): P19 local manager read probe treat scalar UUID as text |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
