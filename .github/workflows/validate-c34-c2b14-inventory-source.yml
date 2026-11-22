@@ -23,6 +23,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p12_original_inventory_consent_caller_graph_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs'
+      - 'scripts/research/c34_b14_p14_cutover_source_witness.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
     paths:
@@ -45,6 +46,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p11_legacy_reader_origin_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p12_original_inventory_consent_caller_graph_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs'
+      - 'scripts/research/c34_b14_p14_cutover_source_witness.mjs'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
 permissions:
@@ -115,6 +117,10 @@ jobs:
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs
       - name: Full checked-in SQL role override scan and exact original RED preservation
         run: node scripts/integration/c34/test_t46_p3_p4b_c2b14_inventory_roles_source.mjs
+      - name: P14 expected-RED current-offer, private bulk mapping and owner-release crosswalk (source only)
+        run: |
+          node --check scripts/research/c34_b14_p14_cutover_source_witness.mjs
+          node --test scripts/research/c34_b14_p14_cutover_source_witness.mjs
       - name: No merchant panel or protected world map edits
         run: |
           git diff --exit-code -- components/MapPageClient.js components/MerchantPanel.js components/c34/MerchantPanelT28P2Research.jsx pages/inventory.js components/AssignItemButton.js
