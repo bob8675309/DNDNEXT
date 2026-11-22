@@ -1,6 +1,6 @@
 # C34 B14-P10 — Isolated non-map NPC inventory UI and signed browser actor checks
 
-**November 21, 2026 CST. Status: research source staged, signed CI pending.** Draft [PR #379](https://github.com/bob8675309/DNDNEXT/pull/379). Follows preserved P6/P7 signed research and P9 slim-context source. Not mounted into gameplay, not an installed migration, not a production release.
+**November 21, 2026 CST. Status: isolated disposable signed research ACCEPTED on exact code SHA `ec6b2854`; production release HOLD.** Draft [PR #379](https://github.com/bob8675309/DNDNEXT/pull/379). Follows preserved P6/P7 signed research and P9 slim-context source. Not mounted into gameplay, not an installed migration, not a production release.
 
 ## Exact scope
 
@@ -12,3 +12,9 @@
 ## Source-preserving limits and release HOLD
 
 P10 is not an interface release. Original `NpcPanel.js` and `pages/inventory.js` remain preserved; the latter still contains old raw UPDATE fallback and old NPC direct-transfer consent bypass. P8 must be designed and signed as a **coordinated server and client cutover** across original transfers, Forge PCs tagged `player-character`, merchant and Town, player-player trades, pending offers and GM-delegated autoaccept. Distinct browser account tests do not prove full original 31-trigger migration, 22/34 historical sheet writers, live RLS, independent encrypted PG17+340 Storage restore, or cover deployment acceptance. No production SQL, maps, main, other PR merge, deployment, paid agent or automation changes. Owner explicit GO required for runtime cutover.
+
+## Signed acceptance receipt — exact source commit `ec6b2854`
+
+[Actions #44971006230](https://github.com/bob8675309/DNDNEXT/actions/runs/44971006230), job **137050546958 SUCCESS**, full **106,379-character / 1,247-line decoded signed job log** inspected, all **seven P10 markers PASS**: `ANON`, `HIRED`, `REVOKE`, `EQUIP`, `EQUIP-REVOKE`, `AUTH`, `SIGNED`. Under actual disposable GoTrue/PostgREST/PG17/Next/Chromium, P10 withheld eager private items, authenticated independent read-only pagination, enforced current equipment CAS and revoke, evicted stale rows across logout/actor switches, and denied hidden/tagged Forge PC NPC scope. Instrumented **P10-only** client RPCs were strictly P9 slim + P7 page/equip; no P10 legacy API fallback.
+
+**Critical separate observation:** browser-wide trace contained **two `get_character_inventory_v1`** requests not made through the scoped P10 client, demonstrating that surrounding Next application components or older flows can still issue legacy full-row reads. Their exact initiator was *not* determined from this test. Do not characterize the whole page or original NPC/Profile as privacy-clean. Full nonmap legacy cutover and security tests remain a separate release gate. No original sources were replaced or deployed.
