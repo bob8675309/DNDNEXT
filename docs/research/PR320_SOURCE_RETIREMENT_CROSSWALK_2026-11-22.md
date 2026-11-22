@@ -38,3 +38,7 @@ This is a Git blob comparison of both full nontruncated branch trees (original 1
 ## Retireability conclusion
 
 **#320 qualifies under owner-authorized research consolidation: 13/13 original immediate paths classified, all original copied/archived paths present in #345, changed privacy reader explicitly superseded, original source tests and successor exact-head workflows successful.** The historical old unsafe NPC reader is retained as Git evidence, not carried into #345. The separate production world-map presentation review and coordinated Stage1–3 NPC SQL/Forge/role test and independent restore gates remain OPEN. #321/#322/#323 are **NOT approved for retirement by this dossier**; their deeper stacked/SQL/negative-work must be independently assessed. Close #320 without merging, deleting its branch, or changing game behavior.
+
+## Closure confirmation
+
+**GitHub status verified 2026-11-22T22:52:37Z:** [PR #320](https://github.com/bob8675309/DNDNEXT/pull/320) **closed, unmerged** with original head unchanged. Its exact original Git source remains available; #345 and #379 stay open and unchanged in gameplay. This retirement reflects owner-approved research preservation **only**, not signed production/mobile visual signoff or deployment. The original 13-path hash ledger above remains immutable.
