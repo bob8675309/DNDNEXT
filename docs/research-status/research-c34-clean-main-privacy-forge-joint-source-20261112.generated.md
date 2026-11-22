@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `988133c360e7bbaa92d266fdd201a0259d6b2203` |
+| Exact source commit represented by this archive snapshot | `d2cb7b10f231870aa919651e2b8f15050654e140` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): P19 disposable manager-only item INSERT policy restoring original GM/DM authoring shape |
+| Last source commit title | test(c34): compare P19 genuine GM/DM original RED with temporary manager-only RLS GREEN and exact rollback |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs`
 
 ## Research-branch change inventory versus main
 
