@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `73c3c349d78751074048c0213b07ba700c7dd884` |
+| Exact source commit represented by this archive snapshot | `8cddefdbee0b72e5ca14a47a07383b260b4a23f2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): P19 local manager read probe treat scalar UUID as text |
+| Last source commit title | test(c34): P19 lock original minimal-return INSERT and independent GM row SELECT visibility HOLD |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs`
 
 ## Research-branch change inventory versus main
 
