@@ -46,6 +46,13 @@ test("P19 original AssignItemButton owner shapes are NOT equivalent to P18 synth
   assert.ok(src.includes(name),"Original insert field missing: "+name);
  assert.ok(s.includes('...(targetType==="player"?{user_id:targetId}:{})'));
  assert.ok(s.includes('who.who.from("inventory_items").insert(payload(type,target,label))'));
+ assert.ok(s.includes('const r=await who.who.from("inventory_items").insert(payload(type,target,label));'));
+ assert.ok(!s.includes('insert(payload(type,target,label)).select('),
+  "Original AssignItemButton intentionally requests no RETURNING rows; never append .select to the source-shaped writer");
+ assert.ok(s.includes('Trusted disposable postgres readback only; NOT returned to the browser'));
+ assert.ok(s.includes('const gmRead=await gm.who.from("inventory_items").select'));
+ assert.ok(s.includes('PASS P19-MANAGER-READ-HOLD'),
+  "Original GM SELECT remains distinct from manager INSERT and needs held Stage4 reader cutover");
  assert.ok(!src.includes("c34_b14_p18_guard_character_item_creation_v1"));
  assert.ok(!src.includes("c34_b14_p19"));
  console.log("PASS P19-ASSIGN-SOURCE: true browser NPC/merchant payload omits user_id, unlike earlier synthetic successful GM insert");
@@ -92,6 +99,7 @@ test("P19 additive local manager-authoring policy enforces live actor role witho
  assert.ok(signedCode.includes('assert.equal(beforePolicies,"4"'));
  for(const marker of [
   "PASS P19-ROLE-AUTH","PASS P19-ASSIGN-TEMP-GREEN",
+  "PASS P19-MANAGER-READ-HOLD",
   "PASS P19-ASSIGN-TEMP-DENY","PASS P19-ACCOUNT-MINT-HOLD"
  ])assert.ok(signedCode.includes(marker));
  for(const file of [
