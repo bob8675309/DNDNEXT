@@ -1,6 +1,6 @@
 # C34 B14-P11 — Original full-row inventory reader origin and cutover graph
 
-**November 21, 2026 CST — research-only. Signed runtime attribution PENDING.**
+**November 21, 2026 CST — isolated disposable P11 signed runtime attribution ACCEPTED at `59044a2`; original UI/SQL cutover still HOLD.**
 Held draft PR [#379](https://github.com/bob8675309/DNDNEXT/pull/379).
 Read-only/source-preserving work. The earlier exact signed
 [run #44971006230](https://github.com/bob8675309/DNDNEXT/actions/runs/44971006230)
@@ -92,3 +92,14 @@ proof of which exact component emitted each of the previous two requests.
 
 No change to gameplay pages, original SQL, world map, hosted database, main,
 deployment, merchant stock, paid agents or automations.
+
+## Exact signed caller attribution accepted — November 21, 2026 CST
+
+[Actions #44972725926](https://github.com/bob8675309/DNDNEXT/actions/runs/44972725926), job **137055804071 SUCCESS**, code SHA `59044a2fd2bee58f5ef12b79616898c895474a11`, **106,846-character / 1,248-line** decoded signed log reviewed. Browser-wide trace recorded **two** `get_character_inventory_v1` RPCs outside the P10 scoped client. The temporary runtime stack capture explicitly emitted:
+
+- `NpcPanel.useCallback[loadInventoryRows]` from `webpack-internal:///(pages-dir-browser)/./components/NpcPanel.js:378:103`.
+- `NpcPanel.useEffect` from `webpack-internal:///(pages-dir-browser)/./components/NpcPanel.js:401:13`.
+
+These are **compiled browser source locations**; the original checked-in `components/NpcPanel.js` has the full-row RPC at original line 295 and effect at 312–314. `PASS T46-C2B14-P11-TRACE` confirms actual, not inferred, caller attribution: legacy fetch originates from **the original mounted `NpcPanel`**, not P10. The signed test independently checked that the global player Profile was suspended, demonstrating a hidden-but-mounted original reader on the test route. P10's own scoped client still called **only** P9 slim/P7 page/equip (`PASS T46-C2B14-P10-SIGNED`).
+
+**Not generalized to every route:** `pages/npcs.js` separately mounts `useNpcSheetActionData.js`, whose old full-row read and spell/action preload remain a source-confirmed cutover item but were *not* the two requests observed on the P10 test page. Do not remove persistent player-Forge mounts merely to suppress background fetches; correct the read lifecycle and PC/NPC taxonomy with signed character state preservation.
