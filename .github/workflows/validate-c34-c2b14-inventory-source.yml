@@ -35,6 +35,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p18_character_insert_gate_source.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs'
+      - 'scripts/research/c34_b14_p20_original_admin_account_mint_route_source_red.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql'
       - 'docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
@@ -71,6 +72,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p18_character_insert_gate_source.mjs'
       - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs'
+      - 'scripts/research/c34_b14_p20_original_admin_account_mint_route_source_red.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql'
       - 'docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
@@ -171,6 +173,10 @@ jobs:
           node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs
+      - name: P20 original deployed-source /admin blank-owner self-mint route and legacy RLS expected RED (no hosted access)
+        run: |
+          node --check scripts/research/c34_b14_p20_original_admin_account_mint_route_source_red.mjs
+          node --test scripts/research/c34_b14_p20_original_admin_account_mint_route_source_red.mjs
       - name: No merchant panel or protected world map edits
         run: |
           git diff --exit-code -- components/MapPageClient.js components/MerchantPanel.js components/c34/MerchantPanelT28P2Research.jsx pages/inventory.js components/AssignItemButton.js
