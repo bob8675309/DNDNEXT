@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `aaa4cabcaff535b20d8125d0442f3cad345d5cd9` |
+| Exact source commit represented by this archive snapshot | `62fee55ee034f02fe9bcde1cfe1741172a7c26e2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): avoid invalid inherited Forge child groups in T39 signed target selection |
-| Files changed relative to main | 387 (295 non-docs; 92 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | docs(c34): capture accepted T39 CI and P14 inventory status/grant cutover source blockers |
+| Files changed relative to main | 389 (296 non-docs; 93 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
-- `scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs`
+- `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
+- `scripts/research/c34_b14_p14_cutover_source_witness.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,9 +73,9 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P12_ORIGINAL_INVENTORY_CONSENT_CALLPATHS_2026-11-21.md`
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
+- `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P6_NPC_INTERACTION_READ_ONLY_AND_ITEM_CONSENT_2026-11-21.md`
-- `docs/research/C34_B14_P7_READONLY_NPC_BACKPACK_KEYSET_EQUIP_PENDING_SIGNED_2026-11-21.md`
-- … 337 more
+- … 339 more
 
 ## Trust and update procedure
 
