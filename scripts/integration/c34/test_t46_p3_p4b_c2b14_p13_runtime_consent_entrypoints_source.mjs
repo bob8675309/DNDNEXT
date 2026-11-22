@@ -54,11 +54,16 @@ function names(name){return [...new Set(calls.filter(x=>x.rpc===name).map(x=>x.f
 function expectPaths(name,expected){
  assert.deepEqual(names(name),expected.sort(),"Review unexpected or missing runtime caller of "+name);
 }
+const townResearch=[
+ "components/NpcPanelTownT28P2Research.jsx",
+ "components/NpcPanelTownT33Research.jsx"
+];
+const npcInventorySurfaces=["components/NpcPanel.js",...townResearch];
 const original={
- list_item_send_targets_v1:["components/NpcPanel.js","pages/inventory.js"],
- transfer_inventory_item_v1:["components/NpcPanel.js","pages/inventory.js"],
- get_character_inventory_v1:["components/NpcPanel.js","hooks/useNpcSheetActionData.js"],
- set_character_inventory_equipment_v1:["components/NpcPanel.js"],
+ list_item_send_targets_v1:[...npcInventorySurfaces,"pages/inventory.js"],
+ transfer_inventory_item_v1:[...npcInventorySurfaces,"pages/inventory.js"],
+ get_character_inventory_v1:[...npcInventorySurfaces,"hooks/useNpcSheetActionData.js"],
+ set_character_inventory_equipment_v1:[...npcInventorySurfaces],
  accept_trade:["components/TradeRequestsPanel.js"],
 };
 const proposed=[
@@ -94,6 +99,24 @@ test("P13 scan all mounted and research JS/TS runtime locations; no silently add
  const merchantBuyer=names("buy_from_merchant");
  assert.ok(merchantBuyer.includes("components/MerchantPanel.js"));
  assert.ok(names("stock_merchant_item").includes("components/MerchantPanel.js"));
+});
+test("P13 exact Town opt-in research panel copies retain the old RPCs; no world-map route",()=>{
+ const town=read("pages/town/[id].js");
+ assert.ok(town.includes('process.env.NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP === "1"'));
+ assert.ok(town.includes('process.env.NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE === "1"'));
+ assert.ok(town.includes("const TownProfileForRoute = T33_TOWN_SAFE_ENABLED"));
+ const t28=read("components/character/CharacterInteractionPanelTownT28P2Research.js");
+ const t33=read("components/character/CharacterInteractionPanelTownT33Research.js");
+ assert.ok(t28.includes('import NpcPanel from "../NpcPanelTownT28P2Research"'));
+ assert.ok(t33.includes('import NpcPanel from "../NpcPanelTownT33Research"'));
+ for(const file of townResearch){
+  const panel=read(file);
+  for(const rpc of ["get_character_inventory_v1","list_item_send_targets_v1",
+    "set_character_inventory_equipment_v1","transfer_inventory_item_v1"])
+   assert.ok(panel.includes('rpc("'+rpc+'"'),"Unexpected derived Town NPC RPC drift: "+file+" / "+rpc);
+ }
+ assert.ok(!read("components/MapPageClient.js").includes("NpcPanelTownT28P2Research"));
+ assert.ok(!read("components/MapPageClient.js").includes("NpcPanelTownT33Research"));
 });
 test("P13 preserve original source/role split: account trades, NPC, manager, merchant and Town remain different",()=>{
  const inv=read("pages/inventory.js");

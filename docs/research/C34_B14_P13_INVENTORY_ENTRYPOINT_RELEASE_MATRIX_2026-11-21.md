@@ -36,3 +36,11 @@
 5. **Owner:** separate explicit `main` merge, hosted SQL/grants, Vercel release and any world-map UI signoff; do not close original PR until full path/behavior negative evidence is classified with no loss.
 
 **NEXT SINGLE BOUNDED TASK:** review new P13 exact-head source workflow and inspect any unexpected runtime caller, then prepare owner-facing transaction/ACL migration ordering and current-status UX contract **without installing or touching runtime systems**.
+
+## P13 exact-head initial RED and corrected full Town-surface attribution
+
+**Initial P13 source-only Actions [#44983046680](https://github.com/bob8675309/DNDNEXT/actions/runs/44983046680) at `b7dfc69` FAILED 1 of 3 tests, not a gameplay or signed database failure.** The new recursive scanner correctly found **318** checked-out runtime JS/TS modules, but the initial expected old-RPC caller allowlist omitted two original source-derived Town panels: `components/NpcPanelTownT28P2Research.jsx` and `components/NpcPanelTownT33Research.jsx`. Both still directly call `get_character_inventory_v1`, `list_item_send_targets_v1`, `set_character_inventory_equipment_v1`, and `transfer_inventory_item_v1`; the earlier ten-blob P12 audit did not enumerate these derived copies. The other two P13 assertions (current RLS/surface separation, direct inventory/stock write graph) PASS in the same failing run.
+
+**Original registration verified without changing source:** T28 panel is imported through `components/character/CharacterInteractionPanelTownT28P2Research.js`, and T33 through `CharacterInteractionPanelTownT33Research.js`. `pages/town/[id].js` opts T28 in only via `NEXT_PUBLIC_C34_T28_P2_TOWN_SHOP=1` and T33 only when **both** that flag and `NEXT_PUBLIC_C34_T33_TOWN_STAGE2_SAFE_PROFILE=1` hold. Neither is a `MapPageClient` change. **Important:** a default-OFF feature flag is not permission to ignore its dormant copied legacy reader/transfer in a future release.
+
+The follow-up test now **explicitly names both derived panel callers in every affected old RPC allowlist** and asserts the precise Town opt-in import graph, while keeping the same bans on new unreviewed legacy endpoints or mounted held P2/P4/P6/P8 RPCs. No old app or map code modified; this revised P13 test is **PENDING NEW EXACT-HEAD CI**. The first failure remains historical evidence, not rewritten as green.
