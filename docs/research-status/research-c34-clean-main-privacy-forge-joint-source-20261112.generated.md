@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ca2809ba8d8b0c5a369589ef406d65248c27b244` |
+| Exact source commit represented by this archive snapshot | `1b35375045f34216beca0edbce0c43ddd0c48adf` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept P20C-P0 source 7/7 and archive exact PR335 J169 research before retirement |
+| Last source commit title | docs(c34): confirm complete source-preserved PR335 J169 retirement and 37-open register |
 | Files changed relative to main | 428 (319 non-docs; 109 docs) |
-| Last source commit | 7 files (0 non-docs; 7 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,10 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/archive/pr335_j169_original_2026-11-07/ACTIVE_WORK.md`
-- `docs/archive/pr335_j169_original_2026-11-07/Forge_Warlock_Child_Completion_2026-11-06.md`
-- `docs/archive/pr335_j169_original_2026-11-07/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md`
+- `docs/pr-integration/README.md`
 - `docs/research/PR335_J169_WARLOCK_CHROMIUM_SOURCE_RETIREMENT_CROSSWALK_2026-11-22.md`
 
 ## Research-branch change inventory versus main
