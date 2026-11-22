@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ec6b2854f6d215232e6bf05aae86847a21329fa4` |
+| Exact source commit represented by this archive snapshot | `9c493a5efad30fcda7713a7c78893fe1de518b12` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | security(c34): prevent P8 bulk child nonce preseed from bypassing atomic owner CAS |
+| Last source commit title | docs(c34): accept P10/P8 signed disposable research with explicit legacy release blockers |
 | Files changed relative to main | 378 (290 non-docs; 88 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,9 +19,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P8_SIGNED_DISPATCHER_CANDIDATE_ONLY_2026-11-21.md`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
 
 ## Research-branch change inventory versus main
 
