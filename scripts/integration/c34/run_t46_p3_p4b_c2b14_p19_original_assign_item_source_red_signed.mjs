@@ -157,8 +157,8 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
   // author an item for an NPC but cannot read that null-user_id row directly
   // with the historical strict-admin SELECT RLS. Do not declare a full
   // inventory-manager UI cutover until the held Stage4 reader matrix is tested.
-  const gmOwned=JSON.parse(sql("SELECT id::text FROM public.inventory_items WHERE item_name="+
-   lit("P19 GREEN unchanged GM NPC no user_id")));
+  const gmOwned=sql("SELECT id::text FROM public.inventory_items WHERE item_name="+
+   lit("P19 GREEN unchanged GM NPC no user_id"));
   const gmRead=await gm.who.from("inventory_items").select("id,owner_type,owner_id,user_id")
    .eq("id",gmOwned);
   assert.ifError(gmRead.error);
