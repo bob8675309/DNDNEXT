@@ -26,3 +26,7 @@ Both full original and successor Git trees were read without truncation. Origina
 ## Disposition
 
 Owner-approved **research consolidation** permits closing original #335 **only after this archive and audit commit is verified**. Close unmerged, keep original branch, no main merge, no gameplay deploy, no map change, no paid agent. The specific closure confirmation should be appended to this crosswalk and current handoff after GitHub returns its real status. Original full modal, Forge v3/Stage4 and production restore remain HOLD.
+
+## Confirmed actual GitHub closure, November 22, 2026
+
+[#335](https://github.com/bob8675309/DNDNEXT/pull/335) **CLOSED, merged=false**, original head still `19d7275d24d26f9641c9e6d98ea24cf9431f4d81`, actual closed_at `2026-11-22T23:42:11Z`. The three exact archived document blob SHAs shown above were verified on research archive commit `ca2809ba8d8b0c5a369589ef406d65248c27b244`. Source/preservation audit and handoff CI GREEN. Live open count 37; parent #334 and successor #345 OPEN. No gameplay/main merge/deployment implied.
