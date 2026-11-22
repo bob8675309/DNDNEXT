@@ -4,8 +4,28 @@
 // original JSX file stays Git-blob pinned and is NOT modified for the probe.
 import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import {fileURLToPath} from "node:url";
 
-export async function runC34B14P19OriginalAssignItemSourceRedSigned({sql,q,lit,roles,hired}){
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
+const candidate="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p19_disposable_game_manager_assignment_policy_pg17.sql";
+export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,lit,roles,hired}){
+ for(const [name,value] of Object.entries({
+  CI:"true",GITHUB_ACTIONS:"true",PGHOST:"127.0.0.1",PGPORT:"54322",
+  PGUSER:"postgres",PGDATABASE:"postgres",
+  DNDNEXT_C34_LOCAL_CONFIRM:"DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY",
+  DNDNEXT_C34_LOCAL_URL:"http://127.0.0.1:54321",
+  C34_P16_SIGNED_CONFIRM:"P16_NO_BYPASS_DISPOSABLE_PG17_ONLY",
+  C34_P18_SIGNED_CONFIRM:"P18_CHARACTER_INSERT_DISPOSABLE_PG17_ONLY",
+  C34_P19_SIGNED_CONFIRM:"P19_MANAGER_ASSIGN_DISPOSABLE_PG17_ONLY"
+ }))assert.equal(env[name],value,"P19 must run in original disposable signed stack");
+ const p19source=fs.readFileSync(path.join(root,candidate),"utf8");
+ assert.ok(p19source.includes("CREATE POLICY c34_b14_p19_temporary_game_manager_insert"));
+ assert.ok(p19source.includes("public.c34_b14_p16_is_item_grant_manager_v1()"));
+ assert.ok(!p19source.includes("ALTER POLICY inventory_items_insert_owner_or_admin"));
+ const beforePolicies=sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass");
+ assert.equal(beforePolicies,"4","P19 cannot run against nonoriginal Stage4 policy state");
  const gm=roles.GM,dm=roles.DM,admin=roles.ADMIN,owner=roles.OWNER,outsider=roles.OUTSIDER;
  for(const who of [gm,dm,admin,owner,outsider])
   assert.ok(who?.who&&who.id,"P19 requires independently signed original role actors");
@@ -16,7 +36,7 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({sql,q,lit,r
   "P19 expected original P16 and P18 authorization protections simultaneously");
 
  const merchant=randomUUID(),made=[];
- let merchantAdded=false;
+ let merchantAdded=false,policyInstalled=false;
  // Original AssignItemButton: cardPayload and item metadata, *no id*,
  // and user_id is present ONLY when finalType='player'. No extra runtime
  // entitlement was inferred and no new RPC is substituted.
@@ -94,12 +114,61 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({sql,q,lit,r
    "P19 forged foreign account item");
   deny(foreign,"Original player-account foreign ownership must remain denied","42501");
   console.log("PASS P19-ACCOUNT-MINT-RED: genuine signed player can still arbitrarily mint account-owned item; foreign account INSERT denied (P18 does not address this independent release gap)");
+  
+  // Apply only the incremental disposable policy AFTER original genuine RED.
+  // This is not an installed Stage4, not an approved production migration,
+  // and cannot be used to mask owner_type='player' unearned self-mint.
+  sql(p19source);policyInstalled=true;
+  assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"5");
+  const v=await Promise.all(["ADMIN","GM","DM","OWNER","OUTSIDER","OBSERVER"].map(async role=>{
+   const response=await roles[role].who.rpc("c34_b14_p16_is_item_grant_manager_v1");
+   assert.ifError(response.error);return [role,response.data];
+  }));
+  assert.deepEqual(Object.fromEntries(v),{
+   ADMIN:true,GM:true,DM:true,OWNER:false,OUTSIDER:false,OBSERVER:false
+  },"Current game manager authorization must never include Observer");
+  console.log("PASS P19-ROLE-AUTH: P16 source-original strict current-user manager predicate accepts exactly admin/gm/dm, not Observer/player");
+
+  for(const [who,type,target,label] of [
+   [gm,"npc",hired,"P19 GREEN unchanged GM NPC no user_id"],
+   [dm,"merchant",merchant,"P19 GREEN unchanged DM merchant no user_id"],
+   [gm,"player",outsider.id,"P19 GREEN original GM player grant"]
+  ]){
+   const r=await put(who,type,target,label);
+   assert.ifError(r.error);
+   assert.equal(r.data?.length,1);
+   assert.equal(r.data[0].owner_type,type);
+   assert.equal(r.data[0].owner_id,target);
+   assert.equal(row(r.data[0].id).user_id,type==="player"?outsider.id:null,
+    "P19 must preserve original actual AssignItemButton user_id shape");
+  }
+  console.log("PASS P19-ASSIGN-TEMP-GREEN: original GM NPC and DM merchant without user_id plus GM player-target assignment succeed via temporary current-role policy, no client rewrite");
+
+  for(const who of [owner,outsider,roles.OBSERVER]){
+   const label="P19 unprivileged raw NPC mint "+who.role+" "+who.id;
+   const r=await put(who,"npc",hired,label);
+   deny(r,"Player/Observer must never become NPC item manager","42501");
+   assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_name="+lit(label)),"0");
+  }
+  assert.equal(sql("SELECT has_table_privilege('anon','public.inventory_items','INSERT')"),"f");
+  console.log("PASS P19-ASSIGN-TEMP-DENY: signed player, outsider, Observer and anonymous grant excluded; no ghost rows");
+
+  const stillMint=await put(owner,"player",owner.id,
+   "P19 unchanged account mint under temporary manager policy RED");
+  assert.ifError(stillMint.error);
+  assert.equal(stillMint.data?.length,1);
+  console.log("PASS P19-ACCOUNT-MINT-HOLD: manager-only P19 policy does not repair ordinary unearned account-item mint; independent P20 prerequisite");
+
  } finally {
+  if(policyInstalled)
+   sql("DROP POLICY IF EXISTS c34_b14_p19_temporary_game_manager_insert ON public.inventory_items");
+  assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),
+   beforePolicies,"P19 must restore original four RLS policies");
   for(const id of made)sql("DELETE FROM public.inventory_items WHERE id="+q(id));
   if(merchantAdded)sql("DELETE FROM public.characters WHERE id="+q(merchant));
   assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.inventory_items'::regclass"+
    " AND tgname IN ('c34_b14_p16_guard_direct_inventory_dml',"+
    "'c34_b14_p18_guard_direct_character_item_creation') AND NOT tgisinternal"),"2");
-  console.log("PASS P19-ASSIGN-RESTORE: all source-shaped temporary inventory and merchant target records removed; P16/P18 triggers preserved for original finally blocks");
+  console.log("PASS P19-ASSIGN-RESTORE: temporary manager policy, source-shaped inventory/merchant rows removed; original four RLS and P16/P18 triggers intact");
  }
 }
