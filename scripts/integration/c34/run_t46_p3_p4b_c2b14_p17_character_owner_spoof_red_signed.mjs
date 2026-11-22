@@ -10,7 +10,7 @@ export async function runC34B14P17CharacterOwnerSpoofRedSigned({sql,q,roles}){
  assert.ok(attacker?.id && other?.id && attacker.id!==other.id,
   "P17 needs two independent genuine signed users");
  const target=randomUUID(),itemId=randomUUID();
- let characterCreated=false,itemCreated=false;
+ let characterCreated=false;
  try{
   sql("INSERT INTO public.characters(id,name,kind,state,is_hidden,tags) VALUES("+
    q(target)+",'P17 foreign character','npc','resting',false,ARRAY['player-character']::text[])");
@@ -31,7 +31,6 @@ export async function runC34B14P17CharacterOwnerSpoofRedSigned({sql,q,roles}){
   assert.ifError(response.error);
   assert.equal(response.data?.length,1,"Signed direct INSERT unexpectedly denied");
   const received=response.data[0];
-  itemCreated=true;
   assert.equal(received.owner_type,"character");
   assert.equal(received.owner_id,target);
   assert.equal(received.user_id,attacker.id);
@@ -42,8 +41,8 @@ export async function runC34B14P17CharacterOwnerSpoofRedSigned({sql,q,roles}){
  } finally {
   // Test fixture scoped cleanup, performed through the disposable local
   // postgres connection, never through hosted or client authority.
-  if(itemCreated)sql("DELETE FROM public.inventory_items WHERE id="+q(itemId));
   if(characterCreated){
+   sql("DELETE FROM public.inventory_items WHERE id="+q(itemId));
    sql("DELETE FROM public.character_permissions WHERE character_id="+q(target));
    sql("DELETE FROM public.characters WHERE id="+q(target));
   }
