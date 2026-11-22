@@ -9,7 +9,7 @@ import {randomUUID,createHash} from "node:crypto";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const file="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql";
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-export async function runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,hiddenNpc,forgePc}){
+export async function runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,another,hiddenNpc,forgePc}){
  for(const [k,v] of Object.entries({
   CI:"true",GITHUB_ACTIONS:"true",PGHOST:"127.0.0.1",
   PGPORT:"54322",PGDATABASE:"postgres",PGUSER:"postgres",
@@ -126,6 +126,25 @@ export async function runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,hiddenN
  const sourceSent=await rpc(actor,ONE,forgeOffer);assert.ifError(sourceSent.error);
  assert.equal(sourceSent.data.status,"pending");
  assert.equal(owner(forgeItem).owner_type,"character");
+ // NEW: a Forge-owned source can only offer to a currently controlled
+ // companion, not an arbitrary NPC who happens to be visible.
+ const uncontrolled=make("uncontrolled Forge source","character",forgeSource);
+ deny(await rpc(actor,ONE,request(uncontrolled,"npc",another,"character",forgeSource)),
+  "unrelated NPC cannot receive Forge-character gear even as pending","42501");
+ assert.equal(owner(uncontrolled).owner_type,"character");
+ assert.equal(sql("SELECT count(*) FROM private.c34_b14_p6_item_offers WHERE item_id="+
+  q(uncontrolled)),"0","Rejected offer must roll back P6 pending row");
+ const revokedSource=make("revoked companion source","character",forgeSource);
+ sql("UPDATE public.character_permissions SET can_control=false WHERE character_id="+
+  q(hired)+" AND user_id="+q(actor.id));
+ deny(await rpc(actor,ONE,request(revokedSource,"npc",hired,"character",forgeSource)),
+  "same-JWT revoked companion control denies Forge donation","42501");
+ assert.equal(owner(revokedSource).owner_type,"character");
+ assert.equal(sql("SELECT count(*) FROM private.c34_b14_p6_item_offers WHERE item_id="+
+  q(revokedSource)),"0");
+ sql("UPDATE public.character_permissions SET can_control=true WHERE character_id="+
+  q(hired)+" AND user_id="+q(actor.id));
+ console.log("PASS T46-C2B14-P8-CONTROLLED-FORGE: signed source-PC cannot offer to unrelated NPC or after same-JWT control revoke; no pending offer/item mutation");
  await grant("auto_accept_items",true);
  const donated=make("delegated auto accepted");
  const auto=await rpc(actor,ONE,request(donated,"npc",hired));

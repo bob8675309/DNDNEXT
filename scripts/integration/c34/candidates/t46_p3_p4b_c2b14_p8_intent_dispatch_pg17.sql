@@ -93,6 +93,19 @@ BEGIN
   -- auto_accept_items grant AND current can_control/can_edit.
   v_offer:=public.c34_b14_p6_offer_item_v1(
    p_request_id,p_item_id,v_source,v_source_id::text,v_target_id);
+  -- P6 takes ITEM → NPC → recipient permission SHARE locks, even for a
+  -- pending offer. Check target delegation AFTER P6 has acquired those
+  -- locks, retaining its accepted ordering. A 42501 raises within this
+  -- SAME transaction and rolls back the just-inserted P6 pending/auto offer
+  -- and any P6 item move. Never check cp before P6 (deadlock risk).
+  IF v_source='character' AND NOT EXISTS(
+   SELECT 1 FROM public.character_permissions cp
+   WHERE cp.character_id=v_target_id AND cp.user_id=v_actor
+     AND (coalesce(cp.can_control,false) OR coalesce(cp.can_edit,false))
+  ) THEN
+   RAISE EXCEPTION 'Forge-owned gear requires a currently delegated NPC companion'
+    USING ERRCODE='42501';
+  END IF;
   v_status:=v_offer->>'status';
   v_auto:=coalesce((v_offer->>'auto_accepted')::boolean,false);
   IF v_status NOT IN ('pending','accepted') THEN

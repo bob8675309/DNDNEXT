@@ -107,5 +107,5 @@ export async function runC34B14P9SlimNpcSigned({env,sql,q,lit,roles,hired,anothe
   "P9 changed original/P6/P7 function");
  console.log("PASS T46-C2B14-P9-SIGNED: local GoTrue/PostgREST/PG17 current grants, anon denied, P6/P7/legacy/buyer/role function bodies byte-preserved");
  await runC34B14P10SignedBrowser({env,root,browser,origin,roles,hired,another,hiddenNpc,forgePc,ids,sql,q});
- await runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,hiddenNpc,forgePc});
+ await runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,another,hiddenNpc,forgePc});
 }
