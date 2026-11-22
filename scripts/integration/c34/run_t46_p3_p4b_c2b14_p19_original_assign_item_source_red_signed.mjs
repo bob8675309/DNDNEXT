@@ -104,7 +104,7 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
    const p={...payload("npc",hired,label),user_id:who.id};
    const r=await who.who.from("inventory_items").insert(p).select("id,owner_type,owner_id,user_id");
    assert.ifError(r.error);
-   assert.equal(r.rows?.length,1);
+   assert.equal(r.data?.length,1);
    assert.equal(r.data[0].user_id,who.id);
    made.push(r.data[0].id);
   }
