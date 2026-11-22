@@ -48,10 +48,10 @@ test("P18 must not retire held original #345 Stage4 four-policy and owner-CHECK 
   "inventory_items_delete_owner_or_admin",
   "inventory_items_select_owner_or_admin"
  ])assert.ok(stage4.includes("ALTER POLICY "+policy),"Held #345 Stage4 must preserve "+policy);
- assert.match(stage4,/ALTER TABLE public\\.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk/);
+ assert.ok(stage4.includes("ALTER TABLE public.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk"));
  assert.match(stage4,/owner_type IS DISTINCT FROM 'character'/);
- assert.match(stage4,/private\\.can_access_character_v1\\(owner_id::uuid, 'inventory'\\)/);
- assert.match(stage4,/materialize_player_forge_starting_equipment_v1\\(uuid\\)/);
+ assert.ok(stage4.includes("private.can_access_character_v1(owner_id::uuid, 'inventory')"));
+ assert.ok(stage4.includes("materialize_player_forge_starting_equipment_v1(uuid)"));
  assert.doesNotMatch(sql,/ALTER POLICY|DROP CONSTRAINT inventory_items_owner_type_chk/);
  console.log("PASS P18-HELD345-INTEROP: original Stage4 INSERT/UPDATE/DELETE/SELECT, two owner CHECKs, creator materializer provenance remain separate integration dependencies, P18 does not supersede");
 });
