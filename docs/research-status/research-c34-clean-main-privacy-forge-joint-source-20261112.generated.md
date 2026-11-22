@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8a569c0c74f1a0c92ab91ab25af08871857852c0` |
+| Exact source commit represented by this archive snapshot | `6cc1f55d95b8e297461fad91af006f904b61bf44` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): co-reside P19 original GM/DM/admin AssignItemButton writer RED with accepted P18 |
-| Files changed relative to main | 405 (308 non-docs; 97 docs) |
+| Last source commit title | test(c34): pin P19 authentic item assignment RLS RED and held Forge Stage4 source-preservation gaps |
+| Files changed relative to main | 406 (309 non-docs; 97 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 355 more
+- … 356 more
 
 ## Trust and update procedure
 
