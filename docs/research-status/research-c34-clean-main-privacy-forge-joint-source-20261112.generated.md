@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3490b3e949cc3b7b1154da23f2330bad928376ea` |
+| Exact source commit represented by this archive snapshot | `8114862ec5e350d310541cc5b8c349aa31509a1f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): mark signed P19 prerequisite accepted; keep P20 provenance and hosted release held |
+| Last source commit title | docs(c34): checkpoint P19 signed JWT manager grant accepted, P20 self-account mint and Stage4 holds |
 | Files changed relative to main | 410 (311 non-docs; 99 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P20_ADMIN_ACCOUNT_MINT_ROUTE_AND_EARNED_ITEM_AUTHORITY_2026-11-22.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
