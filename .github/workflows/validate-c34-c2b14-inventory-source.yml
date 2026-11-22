@@ -25,6 +25,9 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs'
       - 'scripts/research/c34_b14_p14_cutover_source_witness.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p15_controller_and_legacy_cutover_source.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs'
       - 'docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
@@ -50,6 +53,9 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p13_runtime_consent_entrypoints_source.mjs'
       - 'scripts/research/c34_b14_p14_cutover_source_witness.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p15_controller_and_legacy_cutover_source.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs'
       - 'docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
@@ -129,6 +135,11 @@ jobs:
         run: |
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p15_controller_and_legacy_cutover_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p15_controller_and_legacy_cutover_source.mjs
+      - name: P16 isolated signed legacy NPC bypass and grant-restoration source witness (not hosted)
+        run: |
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs
       - name: No merchant panel or protected world map edits
         run: |
           git diff --exit-code -- components/MapPageClient.js components/MerchantPanel.js components/c34/MerchantPanelT28P2Research.jsx pages/inventory.js components/AssignItemButton.js
