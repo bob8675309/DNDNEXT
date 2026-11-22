@@ -87,7 +87,8 @@ export async function runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,hiddenN
  const replay=await rpc(actor,ONE,send);
  assert.ifError(replay.error);assert.deepEqual(replay.data,sent.data);
  assert.equal(sql("SELECT updated_at::text FROM public.inventory_items WHERE id="+q(playerItem)),beforeReplay);
- deny(await rpc(actor,ONE,{...send,p_target_id:actor.id}),"conflicting idempotence","22023");
+ deny(await rpc(actor,ONE,{...send,p_target_id:roles.OBSERVER.id}),
+  "conflicting idempotence","40001");
  console.log("PASS T46-C2B14-P8-PLAYER: signed immediate player-account send, six-field receipt, idempotent replay no second transfer, original player path preserved");
 
  // The P9/P10 grant may have toggled view/equip but never authorizes auto.
@@ -163,7 +164,10 @@ export async function runC34B14P8IntentSigned({env,sql,q,lit,roles,hired,hiddenN
  assert.equal(pbResult.data.receipts.length,2);
  assert.equal(owner(p1).owner_id,other.id);
  assert.equal(owner(p2).owner_id,other.id);
- const rollback=make("rollback valid"),wrong=make("rollback belongs to another");
+ const rollbackRows=[make("rollback valid"),make("rollback belongs to another")].sort();
+ // The valid first UUID MUST be committed speculatively before the second
+ // invalid UUID forces a rollback; avoids a false pass from random ordering.
+ const rollback=rollbackRows[0],wrong=rollbackRows[1];
  sql("UPDATE public.inventory_items SET owner_id="+q(other.id)+",user_id="+q(other.id)+
   " WHERE id="+q(wrong));
  const badBatch=bulk([rollback,wrong],"player",other.id);
