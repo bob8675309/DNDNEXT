@@ -116,3 +116,23 @@ test("P17 all checked-in historical SQL function candidate census, no false host
  }));
  console.log("PASS P17-DEFINER-CENSUS: historical SQL candidates identified, not certified as installed or safe to revoke");
 });
+
+test("P17 genuine JWT foreign-character RED executes only inside original P16 disposable signed phase",()=>{
+ const signed=read("scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs");
+ const parent=read("scripts/integration/c34/run_t46_p3_p4b_c2b14_p16_consent_cutover_signed.mjs");
+ assert.match(signed,/roles\.OWNER,other=roles\.OUTSIDER/);
+ assert.match(signed,/attacker\.who\.from\("inventory_items"\)\.insert/);
+ assert.match(signed,/owner_type:"character",owner_id:target,user_id:attacker\.id/);
+ assert.match(signed,/character_permissions WHERE character_id=/);
+ assert.match(signed,/PASS P17-CHARACTER-INSERT-SPOOF-RED/);
+ assert.match(signed,/finally \{/);
+ assert.match(signed,/DELETE FROM public\.inventory_items WHERE id=/);
+ assert.match(signed,/DELETE FROM public\.characters WHERE id=/);
+ assert.match(parent,/runC34B14P17CharacterOwnerSpoofRedSigned\(\{sql,q,roles\}\)/);
+ assert.ok(parent.indexOf("PASS P16-PRESERVE-DML")<
+  parent.indexOf("await runC34B14P17CharacterOwnerSpoofRedSigned("));
+ assert.ok(parent.indexOf("await runC34B14P17CharacterOwnerSpoofRedSigned(")<
+  parent.indexOf("PASS P16-PR312-CONTROL"));
+ assert.match(parent,/P16_NO_BYPASS_DISPOSABLE_PG17_ONLY/);
+ console.log("PASS P17-SIGNED-SOURCE: real attacker/outsider JWT red probe runs after original P16 legitimate writer positives, scratch rows cleaned, original consent and rollback preserved");
+});
