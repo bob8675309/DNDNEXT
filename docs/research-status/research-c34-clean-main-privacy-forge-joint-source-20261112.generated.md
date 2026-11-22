@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d3ad856d3338d2807af28eba3c1f0f42f8fab341` |
+| Exact source commit represented by this archive snapshot | `5a2350058040a433d91068fed7bffa2941872aab` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): run P17 original inventory writer and character owner RED census |
+| Last source commit title | fix(c34): P17 source census use safe raw regex literal for table callsites |
 | Files changed relative to main | 398 (303 non-docs; 95 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p17_inventory_writer_and_character_spoof_source.mjs`
 
 ## Research-branch change inventory versus main
 
