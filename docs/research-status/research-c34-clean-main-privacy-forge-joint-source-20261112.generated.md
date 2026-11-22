@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `17fc019e77bbaacb54fea9cb844c4a5305f185ef` |
+| Exact source commit represented by this archive snapshot | `2500ff9390c457ce47ff2cd3dba6bbd95b217b73` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): P19 source-green original GM/DM assignment and held signed test checkpoint |
+| Last source commit title | docs(c34): append P19 source and pending role-auth signed RLS research handoff |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
