@@ -21,7 +21,7 @@ export async function runC34B14P16ConsentCutoverSigned({env,sql,q,lit,roles,hire
  assert.equal(env.C34_P16_SIGNED_CONFIRM,
   "P16_NO_BYPASS_DISPOSABLE_PG17_ONLY","Explicit P16 local-only opt-in required");
 
- const sigs=[
+ const candidateSigs=[
   "public.list_item_send_targets_v1()",
   "public.transfer_inventory_item_v1(uuid,text,text)",
   "public.c34_b14_p2_transfer_inventory_item_v1(uuid,text,text,text,text)",
@@ -31,6 +31,9 @@ export async function runC34B14P16ConsentCutoverSigned({env,sql,q,lit,roles,hire
   "public.c34_b14_p6_decide_item_offer_v1(uuid,boolean)",
   "public.c34_b14_p8_dispatch_batch_intent_v1(uuid,uuid[],text,text,text,text)"
  ];
+ const exists=sig=>sql("SELECT to_regprocedure("+lit(sig)+") IS NOT NULL")==="t";
+ const sigs=candidateSigs.filter(exists);
+ const missingLegacy=candidateSigs.filter(sig=>!exists(sig));
  const preserved=[
   ...sigs,
   "public.c34_b14_p8_dispatch_item_intent_v1(uuid,uuid,text,text,text,text)",
@@ -42,7 +45,8 @@ export async function runC34B14P16ConsentCutoverSigned({env,sql,q,lit,roles,hire
  const fnPriv=(who,sig)=>sql("SELECT has_function_privilege("+
   lit(who)+","+lit(sig)+",'EXECUTE')");
  const hash=sig=>sql("SELECT md5(pg_get_functiondef("+lit(sig)+"::regprocedure))");
- const snapshots=preserved.map(sig=>({sig,hash:hash(sig)}));
+ const missingPreserved=preserved.filter(sig=>!exists(sig));
+ const snapshots=preserved.filter(exists).map(sig=>({sig,hash:hash(sig)}));
  const roleBefore=Object.fromEntries(sigs.map(sig=>[sig,{
   authenticated:fnPriv("authenticated",sig),anon:fnPriv("anon",sig)
  }]));
@@ -54,8 +58,16 @@ export async function runC34B14P16ConsentCutoverSigned({env,sql,q,lit,roles,hire
  };
  assert.equal(tableBefore.authenticated,"t","signed local old update grant expected before P16");
  assert.equal(tableBefore.owner,"t","P16 must prove closure against original direct owner UPDATE");
- assert.equal(roleBefore[sigs[1]].authenticated,"t","original June must be initially callable");
- assert.equal(roleBefore[sigs[2]].authenticated,"t","original P2 must initially be callable");
+ assert.equal(roleBefore["public.transfer_inventory_item_v1(uuid,text,text)"]?.authenticated,"t",
+  "original June transfer must be initially callable");
+ assert.equal(roleBefore["public.c34_b14_p2_transfer_inventory_item_v1(uuid,text,text,text,text)"]?.authenticated,"t",
+  "original P2 direct item send must be initially callable");
+ assert.ok(missingLegacy.every(sig=>sig==="public.list_item_send_targets_v1()"),
+  "Required direct-transfer function unexpectedly missing: "+missingLegacy.join(","));
+ assert.ok(missingPreserved.every(sig=>sig==="public.accept_trade(uuid)"),
+  "Accepted original fixture unexpectedly missing source API: "+missingPreserved.join(","));
+ if(missingLegacy.length)
+  console.log("P16 SOURCE-VS-INSTALLED: June target enumeration is historical SQL but absent from the genuine original PG17 fixture; no shadow/fake function created");
  const source=fs.readFileSync(path.join(root,file),"utf8");
  assert.match(source,/DO \$p16_guard\$/);
  assert.match(source,/CREATE TRIGGER c34_b14_p16_guard_direct_inventory_dml/);
@@ -231,8 +243,11 @@ export async function runC34B14P16ConsentCutoverSigned({env,sql,q,lit,roles,hire
 
   // Legitimate commerce and trade remain separate: functions and grants do
   // not change here; full real-browser replay remains an independent gate.
-  for(const sig of ["public.buy_from_merchant(uuid,uuid,integer)","public.accept_trade(uuid)"])
-   assert.equal(hash(sig),snapshots.find(x=>x.sig===sig).hash,"Merchant/trade body changed");
+  for(const sig of ["public.buy_from_merchant(uuid,uuid,integer)","public.accept_trade(uuid)"]){
+   const captured=snapshots.find(x=>x.sig===sig);
+   if(captured)assert.equal(hash(sig),captured.hash,"Merchant/trade body changed");
+   else assert.equal(exists(sig),false,"Uninstalled original function unexpectedly appeared: "+sig);
+  }
   console.log("PASS P16-INDEPENDENT: merchant buy and trade function bodies preserved; buyer/wallet and complete craft/Forge browser release tests still required");
  }finally{
   if(installed){

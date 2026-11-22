@@ -36,6 +36,10 @@ test("P16 original June/P2/P4/P6/P8 SQL remains source-identical, scratch overla
 });
 test("P16 local-only guard closes old EXECUTE signatures and full table UPDATE, preserving safe equipment column scope",()=>{
  assert.match(sql,/DO \$p16_guard\$/);
+ assert.match(sql,/to_regprocedure\('public\.list_item_send_targets_v1\(\)'\) IS NOT NULL/);
+ assert.match(signed,/missingLegacy/);
+ assert.match(signed,/SOURCE-VS-INSTALLED/);
+ assert.doesNotMatch(sql,/CREATE OR REPLACE FUNCTION public\.list_item_send_targets_v1\(/);
  assert.match(sql,/current_database\(\)<>'postgres'/);
  assert.match(sql,/server_version_num/);
  assert.match(signed,/C34_P16_SIGNED_CONFIRM/);

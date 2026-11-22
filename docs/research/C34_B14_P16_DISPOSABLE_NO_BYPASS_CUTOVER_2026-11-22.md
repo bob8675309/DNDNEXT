@@ -39,3 +39,7 @@ The scratch grant list covers all named old RPCs observed in P13 and P15, includ
 6. Verify independent **encrypted PostgreSQL 17 database restore** and **all 340 Storage objects byte-for-byte**, plus policy, grant and rollback restoration. A previous backup capture is not a restore. No world-map changes.
 
 **ONE NEXT BOUNDED TASK:** inspect exact new P16 signed/source CI at its executable SHA. On any RED, diagnose exact SQLSTATE/role and adjust only the disposable candidate or its signed fixture, not original validations. On genuine GREEN, append acceptance to `docs/ACTIVE_WORK.md` and `docs/HANDOFF_LOG.md`. No hosted release.
+
+## First P16 signed test failure: historical source vs installed fixture
+
+The first candidate f7ae02c7bd04468749d45be7e7f45c02c9e7c766 passed source-only #45034711291 but genuine guarded-buyer #45034711302 job 137245769973 failed **before P16 SQL**: list_item_send_targets_v1() is present in the original June SQL source but not installed in the authentic local fixture. The corrected P16 research candidate checks to_regprocedure and conditionally revokes this endpoint if installed; otherwise signed .rpc must still be denied, and no synthetic original function is introduced. June transfer and P2 are still required to exist/callable in baseline and to be denied after P16. Correction not accepted until exact-head signed CI. No production SQL, no original function redefinition, and all release holds remain.

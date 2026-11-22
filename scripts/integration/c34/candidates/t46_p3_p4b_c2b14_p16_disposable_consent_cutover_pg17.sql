@@ -131,8 +131,15 @@ CREATE TRIGGER c34_b14_p16_guard_direct_inventory_dml
 -- Also retire the unmapped P8 bulk and direct P6 offer entrypoint, while
 -- keeping versioned P8 single, P14 batch/status and P8 GM settlement.
 -- Do not revoke P6 sender cancellation or GM review/context grants.
-REVOKE ALL ON FUNCTION public.list_item_send_targets_v1()
- FROM PUBLIC,anon,authenticated;
+-- June source defines this endpoint, but the original fixture may install
+-- the transfer helper without the separate target-enumeration function.
+DO $p16_optional_june_target$
+BEGIN
+ IF to_regprocedure('public.list_item_send_targets_v1()') IS NOT NULL THEN
+  REVOKE ALL ON FUNCTION public.list_item_send_targets_v1()
+   FROM PUBLIC,anon,authenticated;
+ END IF;
+END $p16_optional_june_target$;
 REVOKE ALL ON FUNCTION public.transfer_inventory_item_v1(uuid,text,text)
  FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION public.c34_b14_p2_transfer_inventory_item_v1(
