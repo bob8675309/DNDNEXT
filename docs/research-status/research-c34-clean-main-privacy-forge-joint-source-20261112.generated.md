@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5a2350058040a433d91068fed7bffa2941872aab` |
+| Exact source commit represented by this archive snapshot | `f6ea30601047111afad4ee904f7cee504500d913` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | fix(c34): P17 source census use safe raw regex literal for table callsites |
-| Files changed relative to main | 398 (303 non-docs; 95 docs) |
+| Last source commit title | test(c34): add genuine signed P17 foreign-character inventory mint expected RED |
+| Files changed relative to main | 399 (304 non-docs; 95 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p17_inventory_writer_and_character_spoof_source.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 348 more
+- … 349 more
 
 ## Trust and update procedure
 
