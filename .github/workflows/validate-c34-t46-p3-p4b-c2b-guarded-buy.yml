@@ -118,6 +118,7 @@ jobs:
       PGDATABASE: postgres
       DNDNEXT_C34_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
       DNDNEXT_T46_P2_LOCAL_CONFIRM: T46_P2_EXACT_PRIVACY_REAL_NEXT_SIGNED_ONLY
+      C34_P14_SIGNED_CONFIRM: P14_STATUS_LOCAL_SIGNED_ONLY
     steps:
       - name: Checkout current research branch without retaining credentials
         uses: actions/checkout@v4
