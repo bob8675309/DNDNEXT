@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `3e7dd29fb732f780a6d6fffd4db6c35a50f2ec4c` |
+| Exact source commit represented by this archive snapshot | `d4d4dc690769c067aeacb85f2c6791ca58715975` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): checkpoint first P19 signed red, exact-source INSERT fix and still-pending JWT green |
+| Last source commit title | docs(c34): append authenticated P19 original red, SELECT/RLS test-shape root and signed retest receipt |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
