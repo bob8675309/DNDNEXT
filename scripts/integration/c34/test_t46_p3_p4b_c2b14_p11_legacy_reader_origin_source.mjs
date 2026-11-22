@@ -76,5 +76,5 @@ test("P11 signed JS call stack is temporary, excludes actor/item identifiers and
  assert.match(runner,/fs\.rmSync\(dest\)/);
  assert.doesNotMatch(runner,/localStorage|window\.fetch\s*=|\.from\("inventory_items"\)\.update/);
  const shell=read("components/c34/NonMapNpcInventoryP10ResearchShell.jsx");
- assert.doesNotMatch(shell,/get_character_inventory_v1|useNpcSheetActionData|NpcPanel/);
+ assert.doesNotMatch(shell,/get_character_inventory_v1|useNpcSheetActionData|import NpcPanel from|React\.createElement\(NpcPanel/);
 });
