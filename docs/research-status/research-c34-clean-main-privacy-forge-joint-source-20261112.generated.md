@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9c77698c80284eeef26c566b5d934ba525f7b1a5` |
+| Exact source commit represented by this archive snapshot | `f678df7a4dacd76156690239f48edc0d3a430b1d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append source P20 account item mint route and original writer preserve handoff |
+| Last source commit title | docs(c34): sign off genuine P19 red-to-green GM/DM minimal-return receipt, manager read and account-mint holds |
 | Files changed relative to main | 410 (311 non-docs; 99 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P19_ORIGINAL_ASSIGNMENT_AND_FORGE_STAGE4_COMPATIBILITY_2026-11-22.md`
 
 ## Research-branch change inventory versus main
 
