@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d4d4dc690769c067aeacb85f2c6791ca58715975` |
+| Exact source commit represented by this archive snapshot | `be1e155278c55aba27d97633463b0854480c5b61` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append authenticated P19 original red, SELECT/RLS test-shape root and signed retest receipt |
+| Last source commit title | docs(c34): source-trace /admin AssignItemButton default-owner path to signed account mint RED |
 | Files changed relative to main | 408 (310 non-docs; 98 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_B14_P19_ORIGINAL_ASSIGNMENT_AND_FORGE_STAGE4_COMPATIBILITY_2026-11-22.md`
 
 ## Research-branch change inventory versus main
 
