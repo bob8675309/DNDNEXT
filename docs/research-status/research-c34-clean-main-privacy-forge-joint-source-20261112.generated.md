@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `d7d905f36b4973672afeff42d54f18623d8af551` |
+| Exact source commit represented by this archive snapshot | `44d6a784a5d077acbad5b47defcbdb0bb7953ab1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept signed P20A disposable receipt and preserve Town/Stage4 release hold |
-| Files changed relative to main | 414 (314 non-docs; 100 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | research(c34): P20B signed atomic Town inscribe subset with source preservation |
+| Files changed relative to main | 418 (317 non-docs; 101 docs) |
+| Last source commit | 9 files (6 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,15 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P20A_DISPOSABLE_EARNED_ACCOUNT_ITEM_AUTHORITY_2026-11-22.md`
+- `docs/research/C34_B14_P20B_ATOMIC_TOWN_INSCRIBE_SOURCE_AND_SIGNED_2026-11-22.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20b_disposable_atomic_town_inscribe_pg17.sql`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p20a_earned_receipt_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p20b_atomic_town_inscribe_signed.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20b_atomic_town_inscribe_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +79,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 364 more
+- … 368 more
 
 ## Trust and update procedure
 
