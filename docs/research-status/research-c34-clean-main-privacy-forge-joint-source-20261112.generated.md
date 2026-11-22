@@ -5,27 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `dfd3a6ae491728ffdfc53316fc837ca8cacd37a3` |
+| Exact source commit represented by this archive snapshot | `18c3f1e3016c2a10351267e67dccce3b2d781f1c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): disposable signed P8 NPC consent dispatcher, unchanged legacy RED |
+| Last source commit title | test(c34): verify real P8 idempotent mismatch and deterministic second-item bulk rollback |
 | Files changed relative to main | 378 (290 non-docs; 88 docs) |
-| Last source commit | 9 files (5 non-docs; 4 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P8_SIGNED_DISPATCHER_CANDIDATE_ONLY_2026-11-21.md`
-- `docs/research/C34_B14_P8_TYPED_INTENT_CLIENT_CONTRACT_SOURCE_ONLY_2026-11-21.md`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_client.mjs`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p8_intent_dispatch_pg17.sql`
 - `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p9_slim_npc_signed.mjs`
 
 ## Research-branch change inventory versus main
 
