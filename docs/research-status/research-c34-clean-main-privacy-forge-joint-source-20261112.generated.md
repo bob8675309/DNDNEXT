@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `cca0b192af4a2f8081e33a7fd9f2060c1b5d49af` |
+| Exact source commit represented by this archive snapshot | `4aae4cc9824c24ed10c2ab0105b4bb7918e470ff` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): P18 disposable character-item mint gate, signed matrix and release holds |
+| Last source commit title | docs(c34): checkpoint signed P17 exploit and source-green P18 with signed result held |
 | Files changed relative to main | 404 (307 non-docs; 97 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P18_DISPOSABLE_CHARACTER_ITEM_MINT_AUTHORITY_2026-11-22.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
