@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ebd399fb2e5bd41fd71104ff2735ad27cdd1b45f` |
+| Exact source commit represented by this archive snapshot | `17d11a22737cc1664ff1c938630c9b8993c4c2b6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): full inherited source and negative-test preservation audit for #321–323 |
-| Files changed relative to main | 420 (317 non-docs; 103 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | docs(c34): record four original NPC privacy PR closures and 38-open snapshot |
+| Files changed relative to main | 421 (317 non-docs; 104 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/pr-integration/README.md`
 - `docs/research/PR321_PR323_NPC_PRIVACY_STACK_RETIREMENT_CROSSWALK_2026-11-22.md`
 
 ## Research-branch change inventory versus main
@@ -65,13 +68,13 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/C34_CLEAN_MAIN_PRIVACY_FORGE_SOURCE_RESEARCH_2026-11-13.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/pr-integration/README.md`
 - `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P12_ORIGINAL_INVENTORY_CONSENT_CALLPATHS_2026-11-21.md`
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
-- `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 370 more
+- … 371 more
 
 ## Trust and update procedure
 
