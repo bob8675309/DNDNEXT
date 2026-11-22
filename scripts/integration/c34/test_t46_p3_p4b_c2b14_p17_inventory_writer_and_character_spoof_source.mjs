@@ -37,7 +37,7 @@ const sqlSources=["sql","supabase"].flatMap(d=>walk(d,/\.sql$/i)).sort();
 const lineno=(s,i)=>s.slice(0,i).split("\n").length;
 function tableCalls(table){
  const out=[];
- const pat=new RegExp("\\.from\\(\\s*['\\"]"+table+"['\\"]\\s*\\)","g");
+ const pat=new RegExp(String.raw`\.from\(\s*[\x27\x22]${table}[\x27\x22]\s*\)`,"g");
  for(const file of runtime){
   const source=read(file);
   for(const m of source.matchAll(pat)){
