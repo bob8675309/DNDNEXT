@@ -25,6 +25,7 @@ test("P18 preserves original accepted P16/June/Forge/Inventory/Town blob identit
   "sql/20260614_02_phase_a_non_map_security_hardening.sql":"25d106dfc18f469948edf705e7997fa961a16cd0",
   "sql/20260624_01_inventory_item_send_rpc.sql":"2f1a5818ff0d5a7d87a239e5b1a8f0302b6ff5e6",
   "sql/20260808_51_player_forge_character_scoped_equipment_projection.sql":"7b84dfca57a5482fbc474db71ea4e00243ff58fb",
+  "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql":"4532ddb8db642d0d0ab14646a3e87c034d4134c6",
   "components/AssignItemButton.js":"dc09dc77c66896ed842d240c584225cde26581db",
   "pages/inventory.js":"02d52821d0f22aa82ad92263c5014712906ee385",
   "pages/town/[id].js":"c66508b798645e189bb900e63bc17b85b8662e10",
@@ -37,6 +38,22 @@ test("P18 preserves original accepted P16/June/Forge/Inventory/Town blob identit
  assert.match(read("components/TradeRequestsPanel.js"),/rpc\("accept_trade"/);
  assert.match(read("sql/20260808_51_player_forge_character_scoped_equipment_projection.sql"),/security definer[\s\S]*?insert into public\.inventory_items\(/i);
  console.log("PASS P18-ORIGINAL-BLOBS: P16 SQL, legacy RLS, June transfer, Forge definer and GM/Town/account/trade originals exact");
+});
+
+test("P18 must not retire held original #345 Stage4 four-policy and owner-CHECK security contract",()=>{
+ const stage4=read("sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql");
+ for(const policy of [
+  "inventory_items_insert_owner_or_admin",
+  "inventory_items_update_owner_or_admin",
+  "inventory_items_delete_owner_or_admin",
+  "inventory_items_select_owner_or_admin"
+ ])assert.ok(stage4.includes("ALTER POLICY "+policy),"Held #345 Stage4 must preserve "+policy);
+ assert.match(stage4,/ALTER TABLE public\\.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk/);
+ assert.match(stage4,/owner_type IS DISTINCT FROM 'character'/);
+ assert.match(stage4,/private\\.can_access_character_v1\\(owner_id::uuid, 'inventory'\\)/);
+ assert.match(stage4,/materialize_player_forge_starting_equipment_v1\\(uuid\\)/);
+ assert.doesNotMatch(sql,/ALTER POLICY|DROP CONSTRAINT inventory_items_owner_type_chk/);
+ console.log("PASS P18-HELD345-INTEROP: original Stage4 INSERT/UPDATE/DELETE/SELECT, two owner CHECKs, creator materializer provenance remain separate integration dependencies, P18 does not supersede");
 });
 
 test("P18 PG17-only SQL creates only narrow character INSERT trigger; no global inventory changes or new public minting RPC",()=>{
