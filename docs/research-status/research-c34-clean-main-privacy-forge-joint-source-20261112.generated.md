@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `55c4535f7b82c6b30614606b6f8fb5a77fd78fe4` |
+| Exact source commit represented by this archive snapshot | `a1ed3e652981ca7ed382763edb0f8ea7c67259d1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | research(c34): P20C source-locked Town plant/recipe/cost RED and strict request contract |
+| Last source commit title | test(c34): repair P20C original CraftingWorkspace SHA pin and retain source CI RED |
 | Files changed relative to main | 424 (319 non-docs; 105 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_town_craft_intent_research.mjs`
 - `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs`
 
 ## Research-branch change inventory versus main
