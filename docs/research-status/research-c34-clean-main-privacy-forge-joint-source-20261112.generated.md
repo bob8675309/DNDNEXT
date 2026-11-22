@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `9c7a5502d8f4974c05d48d64a904740f483fd9a3` |
+| Exact source commit represented by this archive snapshot | `8a569c0c74f1a0c92ab91ab25af08871857852c0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): signed P19 untouched AssignItemButton GM/DM original shape and account-mint expected RED |
+| Last source commit title | test(c34): co-reside P19 original GM/DM/admin AssignItemButton writer RED with accepted P18 |
 | Files changed relative to main | 405 (308 non-docs; 97 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs`
+- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p18_character_insert_guard_signed.mjs`
 
 ## Research-branch change inventory versus main
 
