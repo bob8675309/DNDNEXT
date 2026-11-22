@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `17d11a22737cc1664ff1c938630c9b8993c4c2b6` |
+| Exact source commit represented by this archive snapshot | `55c4535f7b82c6b30614606b6f8fb5a77fd78fe4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record four original NPC privacy PR closures and 38-open snapshot |
-| Files changed relative to main | 421 (317 non-docs; 104 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | research(c34): P20C source-locked Town plant/recipe/cost RED and strict request contract |
+| Files changed relative to main | 424 (319 non-docs; 105 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/pr-integration/README.md`
-- `docs/research/PR321_PR323_NPC_PRIVACY_STACK_RETIREMENT_CROSSWALK_2026-11-22.md`
+- `docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md`
+- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_town_craft_intent_research.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P12_ORIGINAL_INVENTORY_CONSENT_CALLPATHS_2026-11-21.md`
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
-- … 371 more
+- … 374 more
 
 ## Trust and update procedure
 
