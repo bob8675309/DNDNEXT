@@ -169,7 +169,7 @@ export async function runC34B14P18CharacterInsertGuardSigned({env,sql,q,lit,role
   // P19 records genuine unchanged original AssignItemButton shape under
   // independently signed GM, DM, Admin and player identities. The expected
   // old GM/DM/account RED is research evidence; NO client/RLS patch here.
-  await runC34B14P19OriginalAssignItemSourceRedSigned({sql,q,lit,roles,hired});
+  await runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,lit,roles,hired});
  } finally {
   if(installed){
    sql("DROP TRIGGER IF EXISTS c34_b14_p18_guard_direct_character_item_creation ON public.inventory_items");
