@@ -29,6 +29,7 @@ on:
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p17_inventory_writer_and_character_spoof_source.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs'
       - 'docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   pull_request:
@@ -58,6 +59,7 @@ on:
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p16_disposable_consent_cutover_pg17.sql'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p17_inventory_writer_and_character_spoof_source.mjs'
+      - 'scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs'
       - 'docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md'
       - '.github/workflows/validate-c34-c2b14-inventory-source.yml'
   workflow_dispatch:
@@ -144,6 +146,7 @@ jobs:
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p16_signed_cutover_source.mjs
       - name: P17 source-pinned direct inventory writers and character-owner spoof expected RED (research only)
         run: |
+          node --check scripts/integration/c34/run_t46_p3_p4b_c2b14_p17_character_owner_spoof_red_signed.mjs
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p17_inventory_writer_and_character_spoof_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p17_inventory_writer_and_character_spoof_source.mjs
       - name: No merchant panel or protected world map edits
