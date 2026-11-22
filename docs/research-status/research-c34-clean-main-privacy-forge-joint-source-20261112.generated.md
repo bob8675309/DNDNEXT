@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a58000daaa6b9342b37e4a5b7d69ad5064f874d2` |
+| Exact source commit represented by this archive snapshot | `c7b177ca46d8fd4ca6a2124c5580a167540e12e6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): preserve original #345 Stage4 four-policy and GM raw writer compatibility with P18 |
+| Last source commit title | fix(c34): P18 preserved Stage4 static assertion compare exact literal SQL, no regex overescaping |
 | Files changed relative to main | 404 (307 non-docs; 97 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P18_DISPOSABLE_CHARACTER_ITEM_MINT_AUTHORITY_2026-11-22.md`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p18_character_insert_gate_source.mjs`
 
 ## Research-branch change inventory versus main
 
