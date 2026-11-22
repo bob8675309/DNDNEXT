@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `72f4247f0ff1ab60ae6c22636ff2746f01a757c1` |
+| Exact source commit represented by this archive snapshot | `a966153e165b8f73c59018d071f4022c7fccbe21` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): add isolated signed P14 NPC batch status and private child-link candidate |
+| Last source commit title | ci(c34): propagate P14 disposable signed opt-in to guarded-buyer consumer job |
 | Files changed relative to main | 391 (298 non-docs; 93 docs) |
-| Last source commit | 8 files (5 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,14 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-joint-local-auth.yml`
+- `.github/workflows/validate-c34-t46-p3-p4b-c2b-guarded-buy.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p14_offer_status_and_links_pg17.sql`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p14_status_signed.mjs`
-- `scripts/integration/c34/run_t46_p3_p4b_c2b14_p8_intent_dispatch_signed.mjs`
-- `scripts/research/c34_b14_p14_cutover_source_witness.mjs`
 
 ## Research-branch change inventory versus main
 
