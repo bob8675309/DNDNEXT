@@ -8,6 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {randomUUID} from "node:crypto";
+import {runC34B14P19OriginalAssignItemSourceRedSigned} from "./run_t46_p3_p4b_c2b14_p19_original_assign_item_source_red_signed.mjs";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../../..");
 const file="scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p18_disposable_character_item_creation_gate_pg17.sql";
@@ -165,6 +166,10 @@ export async function runC34B14P18CharacterInsertGuardSigned({env,sql,q,lit,role
    if(sql("SELECT to_regprocedure("+lit(sig)+") IS NOT NULL")==="t")
     assert.equal(sql("SELECT pg_get_functiondef("+lit(sig)+"::regprocedure) IS NOT NULL"),"t");
   console.log("PASS P18-INDEPENDENT: June/P14/P8 function-body hash, original merchant/trade presence, raw owner UPDATE and original P16 grant separation preserved");
+  // P19 records genuine unchanged original AssignItemButton shape under
+  // independently signed GM, DM, Admin and player identities. The expected
+  // old GM/DM/account RED is research evidence; NO client/RLS patch here.
+  await runC34B14P19OriginalAssignItemSourceRedSigned({sql,q,lit,roles,hired});
  } finally {
   if(installed){
    sql("DROP TRIGGER IF EXISTS c34_b14_p18_guard_direct_character_item_creation ON public.inventory_items");
