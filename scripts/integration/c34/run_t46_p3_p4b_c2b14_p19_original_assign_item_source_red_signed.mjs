@@ -49,10 +49,19 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
   ...(targetType==="player"?{user_id:targetId}:{})
  });
  const put=async(who,type,target,label)=>{
-  const r=await who.who.from("inventory_items").insert(payload(type,target,label))
-   .select("id,owner_type,owner_id,user_id");
-  if(r.data?.length)for(const row of r.data)made.push(row.id);
-  return r;
+  // IMPORTANT: match original AssignItemButton's plain .insert(insertData),
+  // which does not request RETURNING rows. A .select() here adds a second
+  // RLS SELECT authorization requirement and invalidates the original
+  // merchant/NPC writer acceptance test.
+  const r=await who.who.from("inventory_items").insert(payload(type,target,label));
+  // Trusted disposable postgres readback only; NOT returned to the browser.
+  // Always capture scratch rows before assertions, even on an unexpected error.
+  const rows=JSON.parse(sql("SELECT coalesce(json_agg(json_build_object("+
+   "'id',id,'owner_type',owner_type,'owner_id',owner_id,"+
+   "'user_id',user_id,'item_name',item_name)), '[]'::json)::text "+
+   "FROM public.inventory_items WHERE item_name="+lit(label)));
+  for(const entry of rows)made.push(entry.id);
+  return {...r,rows};
  };
  const deny=(r,label,code)=>{
   assert.ok(r.error,label+" erroneously accepted: "+JSON.stringify(r.data));
@@ -80,10 +89,10 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
   ]){
    const r=await put(admin,type,id,label);
    assert.ifError(r.error);
-   assert.equal(r.data?.length,1);
-   assert.equal(r.data[0].owner_type,type);
-   assert.equal(r.data[0].owner_id,id);
-   assert.equal(row(r.data[0].id).user_id,null,
+   assert.equal(r.rows?.length,1);
+   assert.equal(r.rows[0].owner_type,type);
+   assert.equal(r.rows[0].owner_id,id);
+   assert.equal(row(r.rows[0].id).user_id,null,
     "Original Admin NPC/merchant assignment leaves account owner null");
   }
   console.log("PASS P19-ASSIGN-ADMIN-PRESERVE: genuine Admin original NPC+merchant direct source-shape INSERT succeeds without user_id; no new policy/grant");
@@ -95,7 +104,7 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
    const p={...payload("npc",hired,label),user_id:who.id};
    const r=await who.who.from("inventory_items").insert(p).select("id,owner_type,owner_id,user_id");
    assert.ifError(r.error);
-   assert.equal(r.data?.length,1);
+   assert.equal(r.rows?.length,1);
    assert.equal(r.data[0].user_id,who.id);
    made.push(r.data[0].id);
   }
@@ -107,9 +116,9 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
   const minted=await put(owner,"player",owner.id,
    "P19 arbitrary unearned self account item expected RED");
   assert.ifError(minted.error);
-  assert.equal(minted.data?.length,1);
-  assert.equal(minted.data[0].owner_id,owner.id);
-  assert.equal(minted.data[0].user_id,owner.id);
+  assert.equal(minted.rows?.length,1);
+  assert.equal(minted.rows[0].owner_id,owner.id);
+  assert.equal(minted.rows[0].user_id,owner.id);
   const foreign=await put(owner,"player",outsider.id,
    "P19 forged foreign account item");
   deny(foreign,"Original player-account foreign ownership must remain denied","42501");
@@ -136,13 +145,28 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
   ]){
    const r=await put(who,type,target,label);
    assert.ifError(r.error);
-   assert.equal(r.data?.length,1);
-   assert.equal(r.data[0].owner_type,type);
-   assert.equal(r.data[0].owner_id,target);
-   assert.equal(row(r.data[0].id).user_id,type==="player"?outsider.id:null,
+   assert.equal(r.rows?.length,1);
+   assert.equal(r.rows[0].owner_type,type);
+   assert.equal(r.rows[0].owner_id,target);
+   assert.equal(row(r.rows[0].id).user_id,type==="player"?outsider.id:null,
     "P19 must preserve original actual AssignItemButton user_id shape");
   }
   console.log("PASS P19-ASSIGN-TEMP-GREEN: original GM NPC and DM merchant without user_id plus GM player-target assignment succeed via temporary current-role policy, no client rewrite");
+
+  // The original SELECT policy is independent of INSERT. A GM may now
+  // author an item for an NPC but cannot read that null-user_id row directly
+  // with the historical strict-admin SELECT RLS. Do not declare a full
+  // inventory-manager UI cutover until the held Stage4 reader matrix is tested.
+  const gmOwned=JSON.parse(sql("SELECT id::text FROM public.inventory_items WHERE item_name="+
+   lit("P19 GREEN unchanged GM NPC no user_id")));
+  const gmRead=await gm.who.from("inventory_items").select("id,owner_type,owner_id,user_id")
+   .eq("id",gmOwned);
+  assert.ifError(gmRead.error);
+  assert.equal(gmRead.data?.length,0,
+   "P19 INSERT permission is separate from original strict-admin SELECT visibility");
+  console.log("PASS P19-MANAGER-READ-HOLD: unchanged GM NPC INSERT succeeds but original strict-admin SELECT still hides assigned row; held Stage4 reader migration remains required");
+
+
 
   for(const who of [owner,outsider,roles.OBSERVER]){
    const label="P19 unprivileged raw NPC mint "+who.role+" "+who.id;
@@ -156,7 +180,7 @@ export async function runC34B14P19OriginalAssignItemSourceRedSigned({env,sql,q,l
   const stillMint=await put(owner,"player",owner.id,
    "P19 unchanged account mint under temporary manager policy RED");
   assert.ifError(stillMint.error);
-  assert.equal(stillMint.data?.length,1);
+  assert.equal(stillMint.rows?.length,1);
   console.log("PASS P19-ACCOUNT-MINT-HOLD: manager-only P19 policy does not repair ordinary unearned account-item mint; independent P20 prerequisite");
 
  } finally {
