@@ -4,13 +4,13 @@
 
 | Captured UTC | GitHub main (not deployment verified) | Trigger source SHA | Open PRs |
 |---|---|---|---|
-| 2026-11-22T20:23:36Z | `bb3939eeb9a38cf416996a1dca3b196b156b2915` | `5093373f9046d45e3319a18998718a1838801618` | 42 |
+| 2026-11-22T22:52:52Z | `bb3939eeb9a38cf416996a1dca3b196b156b2915` | `25c21539de3a0feb8cc0e79f8f1df42243afe696` | 41 |
 
 Every open PR returned by **all pages** of the GitHub open-pulls API at capture time appears below, including draft and stacked research PRs. **Closed/merged PRs, unassociated branches and later PR activity are not included.**
 
 | PR / title | Exact HEAD | Branch → base | Draft? | GitHub updated UTC |
 |---|---|---|---|---|
-| [#379 — C34 T28-P2 HOLD: nonmap original merchant/wallet guard after T28-P1 signed PASS](https://github.com/bob8675309/DNDNEXT/pull/379) | `5093373f9046d45e3319a18998718a1838801618` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-22T20:23:17Z |
+| [#379 — C34 T28-P2 HOLD: nonmap original merchant/wallet guard after T28-P1 signed PASS](https://github.com/bob8675309/DNDNEXT/pull/379) | `25c21539de3a0feb8cc0e79f8f1df42243afe696` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-22T22:52:32Z |
 | [#371 — I2-G research: original signed level-up v1 account-overwrite RED and Option A no-mirror scratch GREEN](https://github.com/bob8675309/DNDNEXT/pull/371) | `6db27e720d0c2788774cc37d2f85d14244e61b95` | `research/i2g-signed-levelup-v1-option-a-20261112` → `research/i2f-source-species-projection-option-a-freeze-20261111` | yes | 2026-11-12T23:26:15Z |
 | [#370 — I2-F research: sourceChoices/species runtime private projection Option A no-mirror RED/GREEN](https://github.com/bob8675309/DNDNEXT/pull/370) | `ea43938da626292cb7b3f8f8459955b426874f9d` | `research/i2f-source-species-projection-option-a-freeze-20261111` → `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` | yes | 2026-11-12T03:54:47Z |
 | [#369 — I2-E research: signed original HP/Admin/Rage account-overwrite RED and Option A no-mirror GREEN](https://github.com/bob8675309/DNDNEXT/pull/369) | `1132a33b64e24197e974276cd58c48cbdded3baa` | `research/i2e-hp-admin-rage-action-option-a-freeze-20261111` → `research/i2d-private-forge-v3-option-a-freeze-20261111` | yes | 2026-11-12T03:14:06Z |
@@ -47,7 +47,6 @@ Every open PR returned by **all pages** of the GitHub open-pulls API at capture 
 | [#323 — Draft (stacked): reconcile centered NPC Profile-first UX with server-safe GM/creator access](https://github.com/bob8675309/DNDNEXT/pull/323) | `07ff6a4f68418a37d89527be79925922cb1a6775` | `feature/centered-secure-npc-profile-20261104` → `feature/npc-private-profile-readers-20261104` | yes | 2026-11-05T04:51:25Z |
 | [#322 — Draft (stacked): server-safe NPC Profile, GM dossier, and creator-only backstory UI](https://github.com/bob8675309/DNDNEXT/pull/322) | `4f4b8788744754ccf19af0e29546944f8ed8b3a3` | `feature/npc-private-profile-readers-20261104` → `research/p1-3-npc-profile-safe-rls-20261104` | yes | 2026-11-05T04:51:16Z |
 | [#321 — Draft: signed-in NPC safe Profile projection and full-sheet RLS research](https://github.com/bob8675309/DNDNEXT/pull/321) | `b220fb5ecbc9570f63bd85a95da8706340abd153` | `research/p1-3-npc-profile-safe-rls-20261104` → `main` | yes | 2026-11-05T04:32:09Z |
-| [#320 — Draft: centered Profile-first NPC interactions across map, town and inventory](https://github.com/bob8675309/DNDNEXT/pull/320) | `e7a64e827bfb2458bdfc5323b9d8706f44c100b4` | `feature/npc-profile-centered-everywhere-20261104` → `main` | yes | 2026-11-05T04:51:08Z |
 | [#318 — Draft: Admin inbox for player character creation notices (additive)](https://github.com/bob8675309/DNDNEXT/pull/318) | `ec741eca901aef062f3d472b33c5a8b451cec299` | `feature/admin-character-creation-notices-20261104` → `main` | yes | 2026-11-04T23:14:19Z |
 | [#317 — docs(security): P1.3 cross-command lock graph and concurrency proof gates](https://github.com/bob8675309/DNDNEXT/pull/317) | `69e741d7c7d8874c22467e2d30791e30c009ff6e` | `docs/p1-3-global-lock-order-design-20261101` → `main` | yes | 2026-11-05T19:38:54Z |
 | [#312 — Draft research: P2 spell recipe shadow-parity contracts (non-executing)](https://github.com/bob8675309/DNDNEXT/pull/312) | `26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254` | `work/spell-recipe-p2-shadow-parity-20261031` → `work/eldritch-blast-los-regression-20261030` | yes | 2026-11-01T17:18:05Z |

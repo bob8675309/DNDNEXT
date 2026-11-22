@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `5093373f9046d45e3319a18998718a1838801618` |
+| Exact source commit represented by this archive snapshot | `25c21539de3a0feb8cc0e79f8f1df42243afe696` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): accept genuine signed P20B narrow Town inscribe, preserve CI RED and rollout hold |
-| Files changed relative to main | 418 (317 non-docs; 101 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(c34): verify complete #320 source preservation in #345 before research retirement |
+| Files changed relative to main | 419 (317 non-docs; 102 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/C34_B14_P20B_ATOMIC_TOWN_INSCRIBE_SOURCE_AND_SIGNED_2026-11-22.md`
+- `docs/research/PR320_SOURCE_RETIREMENT_CROSSWALK_2026-11-22.md`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/C34_B14_P13_INVENTORY_ENTRYPOINT_RELEASE_MATRIX_2026-11-21.md`
 - `docs/research/C34_B14_P14_STATUS_AND_GRANT_CUTOVER_ORDER_2026-11-21.md`
 - `docs/research/C34_B14_P15_CONTROL_AUTHORITY_AND_LEGACY_CONSENT_CUTOVER_2026-11-22.md`
-- … 368 more
+- … 369 more
 
 ## Trust and update procedure
 
