@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `904e99f22d01d8511b91c2f8faf0fdbc7e1dfe7f` |
+| Exact source commit represented by this archive snapshot | `d88ca7e98681e08beeaa160a43f02487376357e4` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record recovered historical schema, P20C-P2 source green and offline body blocker |
+| Last source commit title | docs(c34): append exact P20C-P2 source CI, historic schema provenance and recovery hold |
 | Files changed relative to main | 431 (322 non-docs; 109 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
