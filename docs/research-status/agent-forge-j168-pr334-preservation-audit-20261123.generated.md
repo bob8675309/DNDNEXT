@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `83c936bf367801c95d1e61b736c69c2fe6eb3760` |
+| Exact source commit represented by this archive snapshot | `13fa18e8724000d681e016c4366de7142ff26a9d` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(handoff): append original helper-role source crosswalk and test-only next step [no deploy] |
-| Files changed relative to main | 5 (0 non-docs; 5 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | research(pr334): add isolated signed original-role RED and current-policy GM/DM candidate |
+| Files changed relative to main | 10 (4 non-docs; 6 docs) |
+| Last source commit | 7 files (4 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,15 +17,26 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-pr334-role-equivalence-signed.yml`
+- `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md`
+- `scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql`
+- `scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql`
+- `scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-pr334-role-equivalence-signed.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md`
 - `docs/research/PR334_J168_FULL_HEAD_54_PATH_SOURCE_MATRIX_2026-11-23.json`
 - `docs/research/PR334_J168_SOURCE_CUSTODY_2026-11-23.md`
 - `docs/research/PR334_P13_PRIVACY_FORGE_ROLE_CONSUMERS_2026-11-23.md`
+- `scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql`
+- `scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql`
+- `scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs`
 
 ## Forge source and authenticated evidence (branch-local only)
 
