@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `07bc783619bc23e3c03f2a98ca1c09558fe88cec` |
+| Exact source commit represented by this archive snapshot | `65e87e1302a5c5dcee7bf96c6e4f2bef3fbffb6d` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): execute inert P20C-P3 offline original body recovery gate tests |
+| Last source commit title | test(c34): accept documented capitalized Source-only marker in P20C-P1 provenance |
 | Files changed relative to main | 433 (324 non-docs; 109 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p3_offline_restore_gate_source.mjs`
 
 ## Research-branch change inventory versus main
 
