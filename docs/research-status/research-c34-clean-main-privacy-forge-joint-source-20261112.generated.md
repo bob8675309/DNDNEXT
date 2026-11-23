@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `b991b9fc751f11107d1e2aea0364c8d83026600b` |
+| Exact source commit represented by this archive snapshot | `0e14c765cf631333ce8fafb1ac4d7c3fe61b20c8` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | feat(c34): add inert offline PG17 source recovery evidence gate (no SQL connection) |
-| Files changed relative to main | 432 (323 non-docs; 109 docs) |
+| Last source commit title | test(c34): verify offline restore gate fail-closed without hosted database |
+| Files changed relative to main | 433 (324 non-docs; 109 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_p3_offline_recovery_gate.mjs`
+- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p3_offline_restore_gate_source.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/pr-integration/README.md`
 - `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
-- … 382 more
+- … 383 more
 
 ## Trust and update procedure
 
