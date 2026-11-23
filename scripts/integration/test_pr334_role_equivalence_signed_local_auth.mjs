@@ -60,10 +60,16 @@ db("INSERT INTO public.characters(id,name,background,motivation,quirk,mannerism,
  +"INSERT INTO public.character_permissions(character_id,user_id,can_edit) VALUES('"+id+"','"+users.creator.uid+"',true),('"+id+"','"+users.editor.uid+"',true);"
  +"INSERT INTO public.character_permissions(character_id,user_id,can_inventory) VALUES('"+id+"','"+users.inventory.uid+"',true);");
 db("NOTIFY pgrst, 'reload schema'");await sleep(1200);
-async function rpc(w,fn,args={}){
+async function rpc(w,fn,args={},missingSignatureIsDenial=false){
  const c=w==="anon"?make():users[w].c;
  for(let i=0;i<8;i++){const z=await c.rpc(fn,args);
- if(["PGRST202","PGRST200"].includes(z.error?.code)){await sleep(400);continue;}
+ if(["PGRST202","PGRST200"].includes(z.error?.code)){
+   // Anonymous EXECUTE is revoked, so PostgREST intentionally hides the RPC.
+   // An unexpected client-supplied uid also has no matching RPC signature.
+   // Keep retrying missing signatures for all *authorized* expected calls.
+   if(missingSignatureIsDenial) return z;
+   await sleep(400);continue;
+ }
  return z;}throw Error("PostgREST signature unavailable: "+fn);}
 function yes(z,n){assert.ifError(z.error);return z.data;}
 function no(z,n){assert.ok(z.error,n+" unexpectedly succeeded: "+JSON.stringify(z.data));}
@@ -115,8 +121,8 @@ assert.equal(yes(await rpc("creator","p13_research_can_edit_creator_backstory_v1
 assert.equal(yes(await rpc("creator","p13_research_get_editor_narrative_v1",{p_character_id:id}),"revoked narrative"),null);
 assert.equal(yes(await rpc("editor","p13_research_get_editor_narrative_v1",{p_character_id:id}),"retained editor").voice,"Voice");
 assert.equal(yes(await rpc("editor","p13_research_can_edit_creator_backstory_v1",{p_character_id:id}),"collaborator not creator"),false);
-no(await rpc("unknown","p13_research_current_actor_is_manager_v1",{uid:users.admin.uid}),"spoofed UID");
+no(await rpc("unknown","p13_research_current_actor_is_manager_v1",{uid:users.admin.uid},true),"spoofed UID");
 for(const fn of ["p13_research_current_actor_is_manager_v1","p13_research_get_npc_dossier_v1","p13_research_can_edit_creator_backstory_v1"])
- no(await rpc("anon",fn,fn.includes("dossier")||fn.includes("story")?{p_character_id:id}:{}),"anon "+fn);
+ no(await rpc("anon",fn,fn.includes("dossier")||fn.includes("story")?{p_character_id:id}:{},true),"anon "+fn);
 console.log("PR334-REVOKE-SPOOF-ANON-GREEN expected: same-JWT demotion and denial");
 console.log("PR334 ROLE RESEARCH PASS: disposable subset only, no main/production effect");
