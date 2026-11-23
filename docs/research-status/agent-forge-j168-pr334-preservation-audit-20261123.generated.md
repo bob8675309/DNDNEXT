@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `abaf3ffdeb8b949f738241c8bce89e12434ea874` |
+| Exact source commit represented by this archive snapshot | `bf76dd51e86ac01d7cb25ff0a5cfd52228ebb0d8` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(research): link 54-path inherited matrix and reconcile privacy/role blockers [no deploy] |
-| Files changed relative to main | 2 (0 non-docs; 2 docs) |
+| Last source commit title | docs(handoff): append J168 54-path original-source review and next privacy/role gate [no deploy] |
+| Files changed relative to main | 4 (0 non-docs; 4 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,10 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/PR334_J168_SOURCE_CUSTODY_2026-11-23.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 - `docs/research/PR334_J168_FULL_HEAD_54_PATH_SOURCE_MATRIX_2026-11-23.json`
 - `docs/research/PR334_J168_SOURCE_CUSTODY_2026-11-23.md`
 
