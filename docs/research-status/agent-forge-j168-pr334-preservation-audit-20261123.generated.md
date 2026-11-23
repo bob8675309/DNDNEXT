@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `bf76dd51e86ac01d7cb25ff0a5cfd52228ebb0d8` |
+| Exact source commit represented by this archive snapshot | `67a023a2bdbe9ef7cebb5a38730fd6ee96c745e9` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(handoff): append J168 54-path original-source review and next privacy/role gate [no deploy] |
-| Files changed relative to main | 4 (0 non-docs; 4 docs) |
+| Last source commit title | docs(research): trace original P1.3 privacy, Forge Story, NPC Profile and current GM role consumers [no deploy] |
+| Files changed relative to main | 5 (0 non-docs; 5 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/PR334_P13_PRIVACY_FORGE_ROLE_CONSUMERS_2026-11-23.md`
 
 ## Research-branch change inventory versus main
 
@@ -25,6 +25,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/HANDOFF_LOG.md`
 - `docs/research/PR334_J168_FULL_HEAD_54_PATH_SOURCE_MATRIX_2026-11-23.json`
 - `docs/research/PR334_J168_SOURCE_CUSTODY_2026-11-23.md`
+- `docs/research/PR334_P13_PRIVACY_FORGE_ROLE_CONSUMERS_2026-11-23.md`
 
 ## Forge source and authenticated evidence (branch-local only)
 
