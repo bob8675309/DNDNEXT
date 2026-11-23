@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `024192277c2ab9807b0dea8cbf1f4caedd069be3` |
+| Exact source commit represented by this archive snapshot | `81cf2b480713d52627f0583060491074b3386934` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j-p3): match original coalesced origin-feat exclusion; preserve first red CI |
-| Files changed relative to main | 229 (169 non-docs; 60 docs) |
-| Last source commit | 2 files (1 non-docs; 1 authored docs) |
+| Last source commit title | research(i2j-p4): add offline-only PG17 original function extraction intake and fail-closed source pins |
+| Files changed relative to main | 232 (171 non-docs; 61 docs) |
+| Last source commit | 4 files (3 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/I2J_P3_INVOCATION_RECOVERY_ORIGINAL_WRITER_2026-11-23.md`
-- `scripts/audits/test_i2j_p3_invocation_recovery_source.mjs`
+- `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
+- `docs/research/I2J_P4_OFFLINE_ORIGINAL_SOURCE_EXPORT_2026-11-23.md`
+- `scripts/audits/i2j_p4_offline_original_functions_export.mjs`
+- `scripts/audits/test_i2j_p4_offline_original_functions_export.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- … 179 more
+- … 182 more
 
 ## Trust and update procedure
 
