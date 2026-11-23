@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a8682bb7828c0b57e62791c449b3ded6129a5248` |
+| Exact source commit represented by this archive snapshot | `91dc33418b72c4575d78d0c69f3069bda1eef1b5` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record P20C-P3 offline source gate exact failed+success receipts |
+| Last source commit title | docs(c34): append P20C-P3 source preflight failed and corrected CI receipts |
 | Files changed relative to main | 433 (324 non-docs; 109 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
