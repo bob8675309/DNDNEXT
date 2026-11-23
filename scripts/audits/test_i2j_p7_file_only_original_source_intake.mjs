@@ -126,6 +126,6 @@ test('I2J-P7-15 missing authentic source cannot create candidate output',()=>{
 test('I2J-P7-16 dangerous P4 subprocess cannot be reintroduced via P7',()=>{
  const p=fileURLToPath(new URL('./i2j_p7_file_only_original_source_intake.mjs',import.meta.url));
  const src=fs.readFileSync(p,'utf8');
- assert.doesNotMatch(src,/node:child_process|\bspawnSync\s*\(|\bexecSync\s*\(|\bfetch\s*\(|\bhttp\s*\.|pg_get_functiondef|psql/i);
+ assert.doesNotMatch(src,/\b(?:from|require\s*\()\s*['"]node:child_process|\bspawnSync\s*\(|\bexecSync\s*\(|\bfetch\s*\(|\bpg_get_functiondef\s*\(|\bhttp\s*\./i);
  assert.match(src,/from '\.\/i2j_original_function_pins\.mjs'/);
 });

@@ -29,3 +29,7 @@ The output directory must be new, absolute and outside repo and input. P7 pins P
 `node --test scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs` verifies the old CLI is now disabled, no source subprocess path remains, rejection of host/SQL flags, no in-repo or symlink evidence, strict 4-file input, PG17 version, exact original MD5, P5 bundle interoperability, and refusal to write when source is missing. These are synthetic tests, not signed/database acceptance.
 
 **ONE NEXT TASK:** owner-approved independent full PG17 restore and offline `pg_get_functiondef` exports; only once independently authenticated original source is available can genuine disposable PG17 GoTrue/PostgREST signed role/replay/rollback RED→scratch GREEN proceed. Original writer coverage **remains 12/34**, 22 untested. No hosted SQL, world map, game deployment, original PR closures, main integration, or paid agents.
+
+## Initial test audit and correction
+
+[P7 initial Actions run #45242686496](https://github.com/bob8675309/DNDNEXT/actions/runs/45242686496) recorded **15/16 P7 tests passed; one source-guard assertion failed** because it rejected the word `psql` in an explanatory comment saying the intake has no psql. All existing P0–P6 tests remained green. The correction changes only this synthetic guard to reject actual process/network/function-invocation patterns; it does not alter the P7 runtime, P4 CLI disabling, historical original MD5s, source data, or signed evidence tally. Retain initial failed run in CI history.
