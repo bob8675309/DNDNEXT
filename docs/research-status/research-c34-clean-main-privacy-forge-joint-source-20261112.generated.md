@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `0ba2c66d1eddf8dcf987eb5dcc1aafed3c1d5653` |
+| Exact source commit represented by this archive snapshot | `3c5843d87ff2d7c9dc7e7aa468d95a128c59b7ab` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): source-authentic P20C-P1 completion and cost authority blockers |
+| Last source commit title | ci(c34): run bounded P20C-P1 original source authority tests |
 | Files changed relative to main | 429 (320 non-docs; 109 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
