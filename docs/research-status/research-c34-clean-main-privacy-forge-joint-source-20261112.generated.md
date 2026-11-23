@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `71d1db20720a097f45531a61901e00614a5106ff` |
+| Exact source commit represented by this archive snapshot | `f9f24fecab9eeaa5105727f68a9801e1d18d4de1` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record P20C-P1 original crafting authority and economic provenance blockers |
+| Last source commit title | docs(c34): append exact P20C-P1 source-only CI receipt and continued HOLD |
 | Files changed relative to main | 429 (320 non-docs; 109 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
