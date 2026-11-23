@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `8a5eb30368d0e0b54c7ae0ae3123fd0abe012f48` |
+| Exact source commit represented by this archive snapshot | `4772d1d8c35c063ce01d7157c334ba65419ba3ec` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j): certify 28-file inherited PR361–364 source custody and owner-gated closure candidates |
-| Files changed relative to main | 243 (177 non-docs; 66 docs) |
+| Last source commit title | research(i2j): source-lock six open PR355–360 original signed tests and 38-file retirement crosswalk |
+| Files changed relative to main | 246 (178 non-docs; 68 docs) |
 | Last source commit | 6 files (2 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
@@ -20,9 +20,9 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_PR361_364_RETIREMENT_CROSSWALK_2026-11-23.json`
-- `docs/research/I2J_PR361_364_RETIREMENT_READINESS_2026-11-23.md`
-- `scripts/audits/test_i2j_pr361_364_retirement_custody.mjs`
+- `docs/research/I2J_PR355_360_ORIGINAL_CUSTODY_2026-11-23.json`
+- `docs/research/I2J_PR355_360_RETIREMENT_READINESS_2026-11-23.md`
+- `scripts/audits/test_i2j_pr355_360_original_custody.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -76,7 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- … 193 more
+- … 196 more
 
 ## Trust and update procedure
 
