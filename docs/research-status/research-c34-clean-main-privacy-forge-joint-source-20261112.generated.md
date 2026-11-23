@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `022547a87ace9dd29356d5f10f95aadd4150c8de` |
+| Exact source commit represented by this archive snapshot | `904e99f22d01d8511b91c2f8faf0fdbc7e1dfe7f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(c34): verify P20C-P2 historical schema source without executing SQL |
+| Last source commit title | docs(c34): record recovered historical schema, P20C-P2 source green and offline body blocker |
 | Files changed relative to main | 431 (322 non-docs; 109 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
+- `docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md`
 
 ## Research-branch change inventory versus main
 
