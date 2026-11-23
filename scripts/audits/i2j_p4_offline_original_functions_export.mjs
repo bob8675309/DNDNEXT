@@ -1,11 +1,9 @@
-// I2J-P4 OFFLINE-ONLY export kit. Must never run on hosted/production DB.
-// This program executes local read-only SQL only if an operator opts in and
-// supplies an independently restored PostgreSQL 17 bound to loopback.
-// CI runs ONLY pure synthetic unit tests; it NEVER calls this CLI.
+// I2J-P4 pure historical exporter test helpers; database-connected CLI DISABLED.
+// Never invoke localhost psql: port-forwarding defeats the offline assumption.
+// Use I2J-P7 file-only candidate packager and P5 reader instead.
 import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
-import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
 import {ORIGINALS} from './i2j_original_function_pins.mjs';
@@ -121,26 +119,9 @@ export function runOfflineExtract(options,queryRunner){
  const accepted=assessOfflineSourceOutputs({serverVersion:ver,outputs});
  return writeOfflineBundle(options,accepted);
 }
-export function loopbackPsql(sql,options){
- // No arbitrary hostname, URL, connection-string database, PG env injection,
- // shell execution, psql stdin, or hidden service-file override.
- const env={PATH:process.env.PATH||'',HOME:process.env.HOME||'',LANG:'C',
-  LC_ALL:'C',PGSSLMODE:'disable',PGCONNECT_TIMEOUT:'4'};
- const result=spawnSync('psql',['-X','-w','-q','-A','-t','-P','footer=off',
-  '-v','ON_ERROR_STOP=1','-h','127.0.0.1','-p',String(options.port),
-  '-U',options.user,'-d',options.database,'-c',sql],
-  {env,encoding:'utf8',timeout:12000,maxBuffer:650000,shell:false});
- if(result.error||result.status!==0)fail('LOCAL_PSQL_QUERY_FAILED');
- return result.stdout;
-}
+// Historical P4 test helpers remain for source-only CI. The unsafe CLI was
+// retired deliberately, including its subprocess/psql code path.
 if(process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1]){
- try{
-  const opts=parseLocalOptions(process.argv.slice(2));
-  const status=runOfflineExtract(opts,loopbackPsql);
-  // Function bodies, credential data and query output NEVER go to stdout.
-  process.stdout.write(JSON.stringify(status,null,2)+'\n');
- }catch(e){
-  process.stderr.write((e.code||'OFFLINE_EXTRACTION_REJECTED')+'\n');
-  process.exitCode=1;
- }
+ process.stderr.write('OFFLINE_DATABASE_CONNECTION_CLI_DISABLED_USE_P7_FILE_ONLY_INTAKE\n');
+ process.exitCode=1;
 }

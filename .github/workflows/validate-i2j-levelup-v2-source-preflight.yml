@@ -22,6 +22,9 @@ on:
       - 'docs/research/I2J_P5_FILE_ONLY_BUNDLE_REVIEW_2026-11-23.md'
       - 'scripts/audits/i2j_original_function_pins.mjs'
       - 'docs/research/I2J_P6_REVIEWER_IMPORT_AND_NOFOLLOW_SECURITY_2026-11-23.md'
+      - 'scripts/audits/i2j_p7_file_only_original_source_intake.mjs'
+      - 'scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs'
+      - 'docs/research/I2J_P7_RETIRE_P4_DB_CLI_FILE_ONLY_INTAKE_2026-11-23.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -54,3 +57,5 @@ jobs:
         run: node --check scripts/audits/i2j_p4_offline_original_functions_export.mjs && node --check scripts/audits/test_i2j_p4_offline_original_functions_export.mjs && node --test scripts/audits/test_i2j_p4_offline_original_functions_export.mjs
       - name: Inert PG17 original function evidence reviewer (NO database)
         run: node --check scripts/audits/i2j_p5_inert_offline_bundle_review.mjs && node --check scripts/audits/test_i2j_p5_inert_offline_bundle_review.mjs && node --test scripts/audits/test_i2j_p5_inert_offline_bundle_review.mjs
+      - name: P7 retired-db-CLI gate and file-only candidate intake (NO PostgreSQL)
+        run: node --check scripts/audits/i2j_p7_file_only_original_source_intake.mjs && node --check scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs && node --test scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs

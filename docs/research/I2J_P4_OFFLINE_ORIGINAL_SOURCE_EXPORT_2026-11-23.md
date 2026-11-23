@@ -1,3 +1,5 @@
+> **SUPERSEDED 2026-11-23 BY I2J-P7:** The database-connected P4 CLI is **disabled** because localhost cannot prove offline restore isolation. **Do not use the P4 psql invocation described below.** Use the new file-only P7 intake from independently exported, authenticated original PG17 text and then P5's file-only reviewer. The remainder of this document is retained as historical research, not executable operational guidance.
+
 # I2J-P4 — authenticated offline source extraction intake (operator-only; no real restore available yet)
 
 **2026-11-23 CST. SOURCE-KIT ONLY. No extraction against any real database has been executed in this investigation.** The I2J-P0–P3 historical source analysis and 51 tests remain an independent evidence tier, NOT the 12/34 signed-writer tally. Owner restrictions prohibit hosted production SQL including SELECT, world map/gameplay changes, main merges, PR retirement and paid agents.
