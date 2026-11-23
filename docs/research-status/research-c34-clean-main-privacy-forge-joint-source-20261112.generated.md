@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `8e7cbc2cf532ef5238fbf0eb39ced12549a81197` |
+| Exact source commit represented by this archive snapshot | `c3dac8d91146996b578ced336a8ee881d4ab6165` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record six original I2A-F PR closed-unmerged receipts and 31-open inventory |
+| Last source commit title | docs(c34): append 6 closed-unmerged I2 research PR receipts, source custody and 31-open state |
 | Files changed relative to main | 434 (324 non-docs; 110 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/PR365_PR370_I2A_I2F_OPTION_A_SOURCE_RETIREMENT_CROSSWALK_2026-11-22.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
