@@ -1,0 +1,509 @@
+{
+  "schema_version": "i2j-pr355-360-original-custody-v1",
+  "reviewed_utc": "2026-11-23",
+  "successor": {
+    "pr": 371,
+    "head": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+    "held": true
+  },
+  "main_at_review": "bb3939eeb9a38cf416996a1dca3b196b156b2915",
+  "original_prs": {
+    "355": {
+      "head": "71840f27c68f5e34937b91f95ed88d3859ba06c4",
+      "success_signed_ci_run": 42768149280
+    },
+    "356": {
+      "head": "f6fe276a305e292ed343b1bae122924983fedc2d",
+      "success_signed_ci_run": 42864074187
+    },
+    "357": {
+      "head": "57730a4ae1e8a577ff88f2ab0f108188fa170bed",
+      "success_signed_ci_run": 42868209459
+    },
+    "358": {
+      "head": "969dd5b00ed4b8dc4491fed412e37288e4d5fdbf",
+      "success_signed_ci_run": 42881866894
+    },
+    "359": {
+      "head": "d0f6aad93772cbadee5c5547b37cbaf18de3ddd2",
+      "success_signed_ci_run": 42917997485
+    },
+    "360": {
+      "head": "4763a00a6a9afc387090b2853754dd22a7544b80",
+      "success_signed_ci_run": 42925201142
+    }
+  },
+  "counts": {
+    "total": 38,
+    "exact_copy": 22,
+    "deferred_preserved": 10,
+    "superseded_with_source_test": 6
+  },
+  "source_preservation_only": true,
+  "retirement_approved": false,
+  "production_release_allowed": false,
+  "entries": [
+    {
+      "pr": 355,
+      "path": ".github/workflows/validate-i1g-warlock-original-local-auth.yml",
+      "original_blob": "4790ed14c9e6e61d0fceef726057423548bca4f1",
+      "successor_blob": "4790ed14c9e6e61d0fceef726057423548bca4f1",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 355,
+      "path": "docs/I1_G_WARLOCK_ORIGINAL_INVOCATION_GUARDS_SIGNED_RESEARCH_2026-11-09.md",
+      "original_blob": "7c9424b01e7582222ab60f561e9fd903a6d96b16",
+      "successor_blob": "7c9424b01e7582222ab60f561e9fd903a6d96b16",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 355,
+      "path": "scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql",
+      "original_blob": "fe3a95f0562ddf804b10ef1938af383d09e74ea1",
+      "successor_blob": "fe3a95f0562ddf804b10ef1938af383d09e74ea1",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 355,
+      "path": "scripts/fixtures/i1g_warlock_original_acquisition_pg17.sql",
+      "original_blob": "7ec34da724bb22ed5d299ff27a5e07e0f0373180",
+      "successor_blob": "7ec34da724bb22ed5d299ff27a5e07e0f0373180",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 355,
+      "path": "scripts/fixtures/i1g_warlock_original_functions_pg17.sql",
+      "original_blob": "7a1cb66a17552b11e52c391563d0cf5aba52829a",
+      "successor_blob": "7a1cb66a17552b11e52c391563d0cf5aba52829a",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 355,
+      "path": "scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql",
+      "original_blob": "90fd7a3f7dc81fd146605de131747755312b4aa9",
+      "successor_blob": "90fd7a3f7dc81fd146605de131747755312b4aa9",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 355,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_blob": "64c71ac1736eee2907ecefd593961dac491ff933",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "original_change": "added",
+      "disposition": "superseded_with_source_test",
+      "proof": {
+        "method": "exact_original_signed_core",
+        "tag": "I1G",
+        "start": "const wPayload=",
+        "length": 13007,
+        "sha": "5b4dba455508591785edc41748bfb866201f7ae2"
+      }
+    },
+    {
+      "pr": 356,
+      "path": ".github/workflows/validate-i1h-warlock-original-local-auth.yml",
+      "original_blob": "8cd980a453df61573f6a5c9faee3b364c28c223c",
+      "successor_blob": "8cd980a453df61573f6a5c9faee3b364c28c223c",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 356,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_blob": "37ed9abdaa51f7000325eadeec644d3a2c670e74",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_suffix",
+        "length": 50541,
+        "sha": "37ed9abdaa51f7000325eadeec644d3a2c670e74"
+      }
+    },
+    {
+      "pr": 356,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_blob": "51d52351a92991736bedf23d4897e2921db33fbf",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_prefix",
+        "length": 146386,
+        "sha": "51d52351a92991736bedf23d4897e2921db33fbf"
+      }
+    },
+    {
+      "pr": 356,
+      "path": "docs/I1_H_WARLOCK_ORIGINAL_ACQUISITION_SIGNED_RESEARCH_2026-11-10.md",
+      "original_blob": "7e61ee7449a496b78a307c7006a2737eb545d455",
+      "successor_blob": "7e61ee7449a496b78a307c7006a2737eb545d455",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 356,
+      "path": "scripts/fixtures/i1h_warlock_acquisition_with_guards_pg17.sql",
+      "original_blob": "c8c22cafa567f986d8049060d02e687fd040601e",
+      "successor_blob": "c8c22cafa567f986d8049060d02e687fd040601e",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 356,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_blob": "046b1bcdc96425d434c9ccc89b41a2794bd6c819",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "original_change": "modified",
+      "disposition": "superseded_with_source_test",
+      "proof": {
+        "method": "exact_original_signed_core",
+        "tag": "I1H",
+        "start": "if(env.DNDNEXT_I1H_LOCAL_CONFIRM",
+        "length": 8949,
+        "sha": "b0b3b5c89764bb935a146a6dab13c43ce33577fd"
+      }
+    },
+    {
+      "pr": 357,
+      "path": ".github/workflows/validate-i1i-eladrin-original-local-auth.yml",
+      "original_blob": "ab02b5bbd468f1a517bef989e9fa7be349441fee",
+      "successor_blob": "ab02b5bbd468f1a517bef989e9fa7be349441fee",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 357,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_blob": "9b72bc0b3a030e28b47f0b7205135c8d8b4c4d4b",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_suffix",
+        "length": 52538,
+        "sha": "9b72bc0b3a030e28b47f0b7205135c8d8b4c4d4b"
+      }
+    },
+    {
+      "pr": 357,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_blob": "bd7a29b99b498fc2d4c4a14f7f98904e044acb06",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_prefix",
+        "length": 150241,
+        "sha": "bd7a29b99b498fc2d4c4a14f7f98904e044acb06"
+      }
+    },
+    {
+      "pr": 357,
+      "path": "docs/I1_I_ELADRIN_ORIGINAL_SEASON_SIGNED_RESEARCH_2026-11-10.md",
+      "original_blob": "102c981eb39abb3f4d3aee69a4f41b1aa215ca5e",
+      "successor_blob": "102c981eb39abb3f4d3aee69a4f41b1aa215ca5e",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 357,
+      "path": "scripts/fixtures/i1i_eladrin_original_materializer_pg17.sql",
+      "original_blob": "323ef20258d8b3a7c7bc96e0b1d279ba755fcce5",
+      "successor_blob": "323ef20258d8b3a7c7bc96e0b1d279ba755fcce5",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 357,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_blob": "f92e1f790c1fb4494f2a98b54f99e1370a2cc43d",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "original_change": "modified",
+      "disposition": "superseded_with_source_test",
+      "proof": {
+        "method": "exact_original_signed_core",
+        "tag": "I1I",
+        "start": "if(env.DNDNEXT_I1I_LOCAL_CONFIRM",
+        "length": 9222,
+        "sha": "b750039cf858f96feaa6f0f4a2c454eb0f949e1d"
+      }
+    },
+    {
+      "pr": 358,
+      "path": ".github/workflows/validate-i1j-khoravar-original-local-auth.yml",
+      "original_blob": "13f8cd737e4a581bb4d17ce1d57d8887909fe860",
+      "successor_blob": "13f8cd737e4a581bb4d17ce1d57d8887909fe860",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 358,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_blob": "702605d66a962355a83fafce5bd4bf09959cd7a2",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_suffix",
+        "length": 54518,
+        "sha": "702605d66a962355a83fafce5bd4bf09959cd7a2"
+      }
+    },
+    {
+      "pr": 358,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_blob": "b3486065abcb7fb9cb736c45cda78beb878fb6ea",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_prefix",
+        "length": 154619,
+        "sha": "b3486065abcb7fb9cb736c45cda78beb878fb6ea"
+      }
+    },
+    {
+      "pr": 358,
+      "path": "docs/I1_J_KHORAVAR_ORIGINAL_SKILL_VERSATILITY_SIGNED_RESEARCH_2026-11-10.md",
+      "original_blob": "a7298e5fa6483d7cfc52557230530fca71d8fc3d",
+      "successor_blob": "a7298e5fa6483d7cfc52557230530fca71d8fc3d",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 358,
+      "path": "scripts/fixtures/i1j_khoravar_original_skill_versatility_pg17.sql",
+      "original_blob": "d84d149b5bc4ef0e62f69a048ab77620f472a94a",
+      "successor_blob": "d84d149b5bc4ef0e62f69a048ab77620f472a94a",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 358,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_blob": "ca1b91abd58faa77ee521225507a3da2bacff8ea",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "original_change": "modified",
+      "disposition": "superseded_with_source_test",
+      "proof": {
+        "method": "exact_original_signed_core",
+        "tag": "I1J",
+        "start": "if(env.DNDNEXT_I1J_LOCAL_CONFIRM",
+        "length": 11618,
+        "sha": "173d9d1e651d1c712ea30774316709cf615fb0c3"
+      }
+    },
+    {
+      "pr": 359,
+      "path": ".github/workflows/validate-i1k-species-cantrip-original-local-auth.yml",
+      "original_blob": "df4b0e39459fe8d371230c77a5b6131d5a29a637",
+      "successor_blob": "df4b0e39459fe8d371230c77a5b6131d5a29a637",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 359,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_blob": "4d243e69556b9b1f3c79206f79faed6fb7900595",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_suffix",
+        "length": 56712,
+        "sha": "4d243e69556b9b1f3c79206f79faed6fb7900595"
+      }
+    },
+    {
+      "pr": 359,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_blob": "fd1d75e61086370590e559b73819981a1b645aad",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_prefix",
+        "length": 159475,
+        "sha": "fd1d75e61086370590e559b73819981a1b645aad"
+      }
+    },
+    {
+      "pr": 359,
+      "path": "docs/I1_K_SPECIES_CANTRIP_ORIGINAL_SIGNED_RESEARCH_2026-11-10.md",
+      "original_blob": "1ff7ffcba43d95e850fbb34adb3f2e826b5e52c1",
+      "successor_blob": "1ff7ffcba43d95e850fbb34adb3f2e826b5e52c1",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 359,
+      "path": "scripts/fixtures/i1k_species_cantrip_original_materializer_pg17.sql",
+      "original_blob": "5af193bb5f3de0cb84a1ba83b081b9d76a471a6a",
+      "successor_blob": "5af193bb5f3de0cb84a1ba83b081b9d76a471a6a",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 359,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_blob": "723cb3c220aea09a59a79000dc202b2507300fc1",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "original_change": "modified",
+      "disposition": "superseded_with_source_test",
+      "proof": {
+        "method": "exact_original_signed_core",
+        "tag": "I1K",
+        "start": "if(env.DNDNEXT_I1K_LOCAL_CONFIRM",
+        "length": 13958,
+        "sha": "61173f6c4303f38fcb2baa4a65b4947309b2b287"
+      }
+    },
+    {
+      "pr": 360,
+      "path": ".github/workflows/validate-i1l-artificer-original-local-auth.yml",
+      "original_blob": "c2c141977da54917e9c0a2469040eea7bc8c76be",
+      "successor_blob": "c2c141977da54917e9c0a2469040eea7bc8c76be",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 360,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_blob": "6dfa41238dd86342f24eb3496b6900946270986f",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_suffix",
+        "length": 59542,
+        "sha": "6dfa41238dd86342f24eb3496b6900946270986f"
+      }
+    },
+    {
+      "pr": 360,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_blob": "31557264bb477e6a1775e87a89f7235fabac919c",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "original_change": "modified",
+      "disposition": "deferred_preserved",
+      "proof": {
+        "method": "whole_utf8_prefix",
+        "length": 165117,
+        "sha": "31557264bb477e6a1775e87a89f7235fabac919c"
+      }
+    },
+    {
+      "pr": 360,
+      "path": "docs/I1_L_ARTIFICER_ORIGINAL_MAGIC_ITEM_PLANS_SIGNED_RESEARCH_2026-11-10.md",
+      "original_blob": "7fc6c5d8bf1134ce5b1202e51b1b438f58636183",
+      "successor_blob": "7fc6c5d8bf1134ce5b1202e51b1b438f58636183",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 360,
+      "path": "scripts/fixtures/i1l_artificer_original_plan_materializer_pg17.sql",
+      "original_blob": "975d92fa5fef8f77e4fb690921ebba84113dfa41",
+      "successor_blob": "975d92fa5fef8f77e4fb690921ebba84113dfa41",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 360,
+      "path": "scripts/fixtures/i1l_artificer_projection_null_parent_candidate_pg17.sql",
+      "original_blob": "f8e01104bf8d6cccf144808235dcacb372d843ff",
+      "successor_blob": "f8e01104bf8d6cccf144808235dcacb372d843ff",
+      "original_change": "added",
+      "disposition": "exact_copy",
+      "proof": {
+        "method": "original_git_blob"
+      }
+    },
+    {
+      "pr": 360,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_blob": "dd61d4fd760d9971f14ea7f08f17f59265d172b9",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "original_change": "modified",
+      "disposition": "superseded_with_source_test",
+      "proof": {
+        "method": "exact_original_signed_core",
+        "tag": "I1L",
+        "start": "if(env.DNDNEXT_I1L_LOCAL_CONFIRM",
+        "length": 16515,
+        "sha": "79a458d459ff6c3e2fa44679ebe91471f0ac40c7"
+      }
+    }
+  ]
+}

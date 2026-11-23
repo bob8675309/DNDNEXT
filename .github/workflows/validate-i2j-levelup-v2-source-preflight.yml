@@ -28,6 +28,9 @@ on:
       - 'docs/research/I2J_PR361_364_RETIREMENT_CROSSWALK_2026-11-23.json'
       - 'docs/research/I2J_PR361_364_RETIREMENT_READINESS_2026-11-23.md'
       - 'scripts/audits/test_i2j_pr361_364_retirement_custody.mjs'
+      - 'docs/research/I2J_PR355_360_ORIGINAL_CUSTODY_2026-11-23.json'
+      - 'docs/research/I2J_PR355_360_RETIREMENT_READINESS_2026-11-23.md'
+      - 'scripts/audits/test_i2j_pr355_360_original_custody.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -64,3 +67,5 @@ jobs:
         run: node --check scripts/audits/i2j_p7_file_only_original_source_intake.mjs && node --check scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs && node --test scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs
       - name: Audit full 28-entry original PR 361–364 preservation in held successor (NO DB)
         run: node --check scripts/audits/test_i2j_pr361_364_retirement_custody.mjs && node --test scripts/audits/test_i2j_pr361_364_retirement_custody.mjs
+      - name: Audit all 38 original PR355–360 file entries and signed test cores (NO DB)
+        run: node --check scripts/audits/test_i2j_pr355_360_original_custody.mjs && node --test scripts/audits/test_i2j_pr355_360_original_custody.mjs
