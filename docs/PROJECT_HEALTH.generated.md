@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-23T22:00:35Z | agent/forge-j168-pr334-preservation-audit-20261123 (bb3939eeb9a38cf416996a1dca3b196b156b2915) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
+| 2026-11-23T22:01:06Z | agent/forge-j168-pr334-preservation-audit-20261123 (e854b685842b6e9e4a126e6cb02b2a19a7e738e3) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

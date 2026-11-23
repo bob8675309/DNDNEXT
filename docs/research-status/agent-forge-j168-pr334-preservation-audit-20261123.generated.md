@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `bb3939eeb9a38cf416996a1dca3b196b156b2915` |
+| Exact source commit represented by this archive snapshot | `e854b685842b6e9e4a126e6cb02b2a19a7e738e3` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | Record verified source-only T28-P0 merge and exact CI/Vercel handoff |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(research): preserve PR334 J168 source, negative tests and full-HEAD ancestry [no deploy] |
+| Files changed relative to main | 1 (0 non-docs; 1 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/T28_P0_MAIN_SOURCE_ONLY_EXTRACTION_2026-11-15.md`
+- `docs/research/PR334_J168_SOURCE_CUSTODY_2026-11-23.md`
 
 ## Research-branch change inventory versus main
 
+- `docs/research/PR334_J168_SOURCE_CUSTODY_2026-11-23.md`
 
 ## Forge source and authenticated evidence (branch-local only)
 
