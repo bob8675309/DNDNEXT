@@ -43,6 +43,8 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p2_legacy_schema_source.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_p3_offline_recovery_gate.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p3_offline_restore_gate_source.mjs'
       - 'scripts/integration/c34/preserved/legacy_schema_export_context_only_2026.txt'
       - 'docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20a_earned_receipt_source.mjs'
@@ -92,6 +94,8 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p2_legacy_schema_source.mjs'
+      - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_p3_offline_recovery_gate.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p3_offline_restore_gate_source.mjs'
       - 'scripts/integration/c34/preserved/legacy_schema_export_context_only_2026.txt'
       - 'docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20a_earned_receipt_source.mjs'
@@ -214,6 +218,11 @@ jobs:
         run: |
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p2_legacy_schema_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p2_legacy_schema_source.mjs
+      - name: P20C-P3 offline restore evidence gate and fail-closed source positives/negatives (NO SQL)
+        run: |
+          node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_p3_offline_recovery_gate.mjs
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p3_offline_restore_gate_source.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p3_offline_restore_gate_source.mjs
       - name: P20 original deployed-source /admin blank-owner self-mint route and legacy RLS expected RED (no hosted access)
         run: |
           node --check scripts/research/c34_b14_p20_original_admin_account_mint_route_source_red.mjs
