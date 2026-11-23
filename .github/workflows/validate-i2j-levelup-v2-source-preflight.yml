@@ -1,0 +1,29 @@
+name: I2J historical level-up v2 source preflight (pure Node, no DB)
+on:
+  push:
+    branches:
+      - research/i2j-levelup-v2-source-preflight-20261123
+    paths:
+      - 'scripts/audits/test_i2j_levelup_v2_source_preflight.mjs'
+      - 'docs/research/I2J_LEVELUP_V2_MIRROR_SOURCE_PREFLIGHT_2026-11-23.md'
+      - '.github/workflows/validate-i2j-levelup-v2-source-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  historical-v2-source-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout isolated historical research branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node source syntax check
+        run: node --check scripts/audits/test_i2j_levelup_v2_source_preflight.mjs
+      - name: Pin original source and negative assertions (no SQL)
+        run: node --test scripts/audits/test_i2j_levelup_v2_source_preflight.mjs
