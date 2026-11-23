@@ -1,0 +1,77 @@
+name: PR334 signed P1.3 role-authority historical RED and current-policy candidate GREEN
+on:
+  push:
+    branches:
+      - agent/forge-j168-pr334-preservation-audit-20261123
+    paths:
+      - .github/workflows/validate-pr334-role-equivalence-signed.yml
+      - scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs
+      - scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql
+      - scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql
+      - sql/20260612_90_patch0_crafting_authorization_hardening.sql
+      - docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md
+      - docs/ACTIVE_WORK.md
+      - docs/HANDOFF_LOG.md
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  genuine-role-jwt-pg17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_PR334_ROLE_LOCAL_CONFIRM: PR334_DISPOSABLE_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check local-only source and syntax
+        run: |
+          node --check scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs
+          grep -F "up.role IN ('admin','gm','dm')" scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql
+          grep -F "up.role = 'admin'" sql/20260612_90_patch0_crafting_authorization_hardening.sql
+      - name: Install pinned repo dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Create empty disposable PostgreSQL 17 and GoTrue config
+        run: |
+          mkdir -p "$RUNNER_TEMP/pr334-role-only/supabase"
+          cat > "$RUNNER_TEMP/pr334-role-only/supabase/config.toml" <<'TOML'
+          project_id = "pr334-role-original-policy-signed"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable Auth and PostgREST
+        run: |
+          cd "$RUNNER_TEMP/pr334-role-only"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Original helper RED vs independent versioned policy GREEN using real JWT
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          (cd "$RUNNER_TEMP/pr334-role-only" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/pr334-role-env"
+          set -a
+          source "$RUNNER_TEMP/pr334-role-env"
+          set +a
+          export DNDNEXT_PR334_ROLE_LOCAL_URL='http://127.0.0.1:54321'
+          export DNDNEXT_PR334_ROLE_LOCAL_ANON_KEY="$ANON_KEY"
+          node scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs
+      - name: Erase ephemeral database and services
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/pr334-role-only"
+          npx --yes supabase@2.120.0 stop --no-backup || true
