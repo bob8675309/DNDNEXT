@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `91dc33418b72c4575d78d0c69f3069bda1eef1b5` |
+| Exact source commit represented by this archive snapshot | `e66f1e86abfb625edb8f75378880b9a442266df6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append P20C-P3 source preflight failed and corrected CI receipts |
+| Last source commit title | docs(c34): pin P20C-P3 green source gate and original function HOLD at handoff top |
 | Files changed relative to main | 433 (324 non-docs; 109 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
