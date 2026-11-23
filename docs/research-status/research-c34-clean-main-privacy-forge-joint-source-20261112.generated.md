@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c3dac8d91146996b578ced336a8ee881d4ab6165` |
+| Exact source commit represented by this archive snapshot | `2c9e9e4eec41300971b7e9b1e84c2442c46e9172` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append 6 closed-unmerged I2 research PR receipts, source custody and 31-open state |
+| Last source commit title | docs(c34): update top handoff with six preserved PR retirements and next Forge J168 audit |
 | Files changed relative to main | 434 (324 non-docs; 110 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
