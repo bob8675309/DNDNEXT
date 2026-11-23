@@ -20,6 +20,8 @@ on:
       - 'scripts/audits/i2j_p5_inert_offline_bundle_review.mjs'
       - 'scripts/audits/test_i2j_p5_inert_offline_bundle_review.mjs'
       - 'docs/research/I2J_P5_FILE_ONLY_BUNDLE_REVIEW_2026-11-23.md'
+      - 'scripts/audits/i2j_original_function_pins.mjs'
+      - 'docs/research/I2J_P6_REVIEWER_IMPORT_AND_NOFOLLOW_SECURITY_2026-11-23.md'
   workflow_dispatch:
 permissions:
   contents: read

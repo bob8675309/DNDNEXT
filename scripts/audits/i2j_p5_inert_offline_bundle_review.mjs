@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {ORIGINALS} from './i2j_p4_offline_original_functions_export.mjs';
+import {ORIGINALS} from './i2j_original_function_pins.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const hash=(alg,b)=>createHash(alg).update(b).digest('hex');
 const fail=code=>{const e=new Error('I2J-P5 rejected: '+code);e.code=code;throw e;};
@@ -30,7 +30,20 @@ export function readBundleFiles(dir){
  for(const name of names){
   const p=path.join(actual,name),s=fs.lstatSync(p);
   if(!s.isFile()||s.isSymbolicLink()||s.size>250000)fail('UNSAFE_EVIDENCE_FILE');
-  files[name]=fs.readFileSync(p);
+  // Fail closed where O_NOFOLLOW is unavailable. Never trust a pathname
+  // after lstat alone: it could be replaced with a symlink before open().
+  if(typeof fs.constants.O_NOFOLLOW!=='number')fail('NOFOLLOW_UNAVAILABLE');
+  let fd;
+  try{fd=fs.openSync(p,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW);}
+  catch{fail('UNSAFE_EVIDENCE_FILE');}
+  try{
+   const opened=fs.fstatSync(fd);
+   if(!opened.isFile()||opened.size>250000||opened.dev!==s.dev||opened.ino!==s.ino)
+    fail('EVIDENCE_FILE_CHANGED_WHILE_OPENING');
+   files[name]=fs.readFileSync(fd);
+   if(files[name].length!==opened.size)fail('EVIDENCE_FILE_CHANGED_WHILE_READING');
+  }finally{fs.closeSync(fd);}
+
  }
  return files;
 }

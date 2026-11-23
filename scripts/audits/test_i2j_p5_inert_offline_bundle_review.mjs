@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {ORIGINALS} from './i2j_p4_offline_original_functions_export.mjs';
+import {ORIGINALS} from './i2j_original_function_pins.mjs';
 import {parseBundleCli,readBundleFiles,inspectBundleFiles,inspectOfflineBundleDirectory} from './i2j_p5_inert_offline_bundle_review.mjs';
 const hash=(alg,b)=>createHash(alg).update(b).digest('hex');
 const bad=(code,fn)=>assert.throws(fn,e=>e.code===code);
@@ -122,4 +122,29 @@ test('I2J-P5-15 reports do not reveal original code or backup identifiers',()=>{
  assert.ok(!r.includes('CREATE OR REPLACE FUNCTION'));
  assert.ok(!r.includes('synthetic-only-backup-id'));
  assert.ok(!r.includes('synthetic-only-receipt'));
+});
+
+test('I2J-P6-16 inert reviewer has no transitive dependency on process-launching exporter',()=>{
+ const dir=path.dirname(new URL(import.meta.url).pathname);
+ const p5=fs.readFileSync(path.join(dir,'i2j_p5_inert_offline_bundle_review.mjs'),'utf8');
+ const pin=fs.readFileSync(path.join(dir,'i2j_original_function_pins.mjs'),'utf8');
+ assert.match(p5,/from '\.\/i2j_original_function_pins\.mjs'/);
+ assert.doesNotMatch(p5,/from '\.\/i2j_p4_offline_original_functions_export\.mjs'/);
+ assert.doesNotMatch(pin,/\bimport\s|\brequire\s*\(|child_process|spawnSync|execSync|psql/i);
+ assert.doesNotMatch(p5,/\bspawnSync\s*\(|\bexecSync\s*\(|\bfetch\s*\(/);
+ assert.match(p5,/fs\.constants\.O_NOFOLLOW/);
+});
+test('I2J-P6-17 evidence file open must use descriptor nofollow and verify identity',()=>{
+ const dir=path.dirname(new URL(import.meta.url).pathname);
+ const code=fs.readFileSync(path.join(dir,'i2j_p5_inert_offline_bundle_review.mjs'),'utf8');
+ assert.match(code,/fs\.openSync\(p,fs\.constants\.O_RDONLY\|fs\.constants\.O_NOFOLLOW\)/);
+ assert.match(code,/fs\.fstatSync\(fd\)/);
+ assert.match(code,/opened\.dev!==s\.dev\|\|opened\.ino!==s\.ino/);
+ assert.match(code,/fs\.readFileSync\(fd\)/);
+});
+test('I2J-P6-18 unsupported NOFOLLOW is documented as a refusal, never a fallback to following links',()=>{
+ const dir=path.dirname(new URL(import.meta.url).pathname);
+ const code=fs.readFileSync(path.join(dir,'i2j_p5_inert_offline_bundle_review.mjs'),'utf8');
+ assert.match(code,/typeof fs\.constants\.O_NOFOLLOW!=='number'\)fail\('NOFOLLOW_UNAVAILABLE'\)/);
+ assert.doesNotMatch(code,/fs\.readFileSync\(p\)/);
 });
