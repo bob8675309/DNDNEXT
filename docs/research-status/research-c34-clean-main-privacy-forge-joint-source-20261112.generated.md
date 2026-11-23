@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `a199b2fc34978f2197ed9a801b110d72231c0f48` |
+| Exact source commit represented by this archive snapshot | `2a1af749b47836f5d00627ba3e6c21524d4647e9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): place P20C-P1 signed HOLD and source receipt at handoff top |
-| Files changed relative to main | 429 (320 non-docs; 109 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | test(c34): preserve exact historical crafting-related schema context blob |
+| Files changed relative to main | 430 (321 non-docs; 109 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `scripts/integration/c34/preserved/legacy_schema_export_context_only_2026.txt`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/pr-integration/README.md`
 - `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
-- … 379 more
+- … 380 more
 
 ## Trust and update procedure
 
