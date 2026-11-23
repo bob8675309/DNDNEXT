@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f9f24fecab9eeaa5105727f68a9801e1d18d4de1` |
+| Exact source commit represented by this archive snapshot | `a199b2fc34978f2197ed9a801b110d72231c0f48` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): append exact P20C-P1 source-only CI receipt and continued HOLD |
+| Last source commit title | docs(c34): place P20C-P1 signed HOLD and source receipt at handoff top |
 | Files changed relative to main | 429 (320 non-docs; 109 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
