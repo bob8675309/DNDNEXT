@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `960b83805edd12a419f6797f3ded2a110ba12378` |
+| Exact source commit represented by this archive snapshot | `022547a87ace9dd29356d5f10f95aadd4150c8de` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(c34): pin historical plant composite, recipe ownership and unlimited-wallet source |
+| Last source commit title | ci(c34): verify P20C-P2 historical schema source without executing SQL |
 | Files changed relative to main | 431 (322 non-docs; 109 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p2_legacy_schema_source.mjs`
+- `.github/workflows/validate-c34-c2b14-inventory-source.yml`
 
 ## Research-branch change inventory versus main
 
