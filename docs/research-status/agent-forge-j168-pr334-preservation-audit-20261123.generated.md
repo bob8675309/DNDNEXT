@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `67a023a2bdbe9ef7cebb5a38730fd6ee96c745e9` |
+| Exact source commit represented by this archive snapshot | `fad9fce2c79362f0255d97fe4c4c7b7d707402d8` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(research): trace original P1.3 privacy, Forge Story, NPC Profile and current GM role consumers [no deploy] |
+| Last source commit title | docs(research): pin divergent original admin helpers and role alias security gate [no deploy] |
 | Files changed relative to main | 5 (0 non-docs; 5 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
