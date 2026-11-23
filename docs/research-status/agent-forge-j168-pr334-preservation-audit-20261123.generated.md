@@ -5,24 +5,18 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `13fa18e8724000d681e016c4366de7142ff26a9d` |
+| Exact source commit represented by this archive snapshot | `c2e860715de92e7b81cfd51a8c6cf5b216dbef0c` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | research(pr334): add isolated signed original-role RED and current-policy GM/DM candidate |
+| Last source commit title | test(pr334): accept PostgREST hidden RPC as anonymous and spoof denial |
 | Files changed relative to main | 10 (4 non-docs; 6 docs) |
-| Last source commit | 7 files (4 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-pr334-role-equivalence-signed.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md`
-- `scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql`
-- `scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql`
 - `scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs`
 
 ## Research-branch change inventory versus main
