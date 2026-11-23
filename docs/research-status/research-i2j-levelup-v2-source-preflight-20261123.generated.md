@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `fc29fcde630133f88bf4bb6c50c36395a130aa67` |
+| Exact source commit represented by this archive snapshot | `dfda806edfc6bfb882af6e368ab5e5b7c335266c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j-p6): isolate inert source pins and nofollow evidence file reads |
-| Files changed relative to main | 237 (174 non-docs; 63 docs) |
-| Last source commit | 6 files (5 non-docs; 1 authored docs) |
+| Last source commit title | research(i2j-p7): retire unsafe localhost psql CLI; replace with strict pre-exported file intake |
+| Files changed relative to main | 240 (176 non-docs; 64 docs) |
+| Last source commit | 6 files (4 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,11 +18,11 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
-- `docs/research/I2J_P6_REVIEWER_IMPORT_AND_NOFOLLOW_SECURITY_2026-11-23.md`
-- `scripts/audits/i2j_original_function_pins.mjs`
+- `docs/research/I2J_P4_OFFLINE_ORIGINAL_SOURCE_EXPORT_2026-11-23.md`
+- `docs/research/I2J_P7_RETIRE_P4_DB_CLI_FILE_ONLY_INTAKE_2026-11-23.md`
 - `scripts/audits/i2j_p4_offline_original_functions_export.mjs`
-- `scripts/audits/i2j_p5_inert_offline_bundle_review.mjs`
-- `scripts/audits/test_i2j_p5_inert_offline_bundle_review.mjs`
+- `scripts/audits/i2j_p7_file_only_original_source_intake.mjs`
+- `scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -76,7 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- … 187 more
+- … 190 more
 
 ## Trust and update procedure
 
