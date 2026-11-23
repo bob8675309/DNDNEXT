@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `81cf2b480713d52627f0583060491074b3386934` |
+| Exact source commit represented by this archive snapshot | `2af4ff3eae707d50af3b53d631823d06f5599656` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j-p4): add offline-only PG17 original function extraction intake and fail-closed source pins |
+| Last source commit title | test(i2j-p4): require PG17 before source reads and align synthetic rejection assertions |
 | Files changed relative to main | 232 (171 non-docs; 61 docs) |
-| Last source commit | 4 files (3 non-docs; 1 authored docs) |
+| Last source commit | 3 files (2 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `docs/research/I2J_P4_OFFLINE_ORIGINAL_SOURCE_EXPORT_2026-11-23.md`
 - `scripts/audits/i2j_p4_offline_original_functions_export.mjs`
 - `scripts/audits/test_i2j_p4_offline_original_functions_export.mjs`
