@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `ff560fa7fa18d8e248baa59dab30e6fd19115958` |
+| Exact source commit represented by this archive snapshot | `fc29fcde630133f88bf4bb6c50c36395a130aa67` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j-p5): file-only original function bundle integrity and trust boundary review |
-| Files changed relative to main | 235 (173 non-docs; 62 docs) |
-| Last source commit | 4 files (3 non-docs; 1 authored docs) |
+| Last source commit title | research(i2j-p6): isolate inert source pins and nofollow evidence file reads |
+| Files changed relative to main | 237 (174 non-docs; 63 docs) |
+| Last source commit | 6 files (5 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,7 +18,9 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
-- `docs/research/I2J_P5_FILE_ONLY_BUNDLE_REVIEW_2026-11-23.md`
+- `docs/research/I2J_P6_REVIEWER_IMPORT_AND_NOFOLLOW_SECURITY_2026-11-23.md`
+- `scripts/audits/i2j_original_function_pins.mjs`
+- `scripts/audits/i2j_p4_offline_original_functions_export.mjs`
 - `scripts/audits/i2j_p5_inert_offline_bundle_review.mjs`
 - `scripts/audits/test_i2j_p5_inert_offline_bundle_review.mjs`
 
@@ -74,7 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- … 185 more
+- … 187 more
 
 ## Trust and update procedure
 
