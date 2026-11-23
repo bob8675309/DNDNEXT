@@ -12,6 +12,8 @@ on:
       - 'docs/research/I2J_P1_OFFLINE_V2_EVIDENCE_GATE_2026-11-23.md'
       - 'docs/research/I2J_P2_WEAPON_MASTERY_ORIGINAL_WRITER_SOURCE_2026-11-23.md'
       - 'scripts/audits/test_i2j_p2_weapon_mastery_original_writer_source.mjs'
+      - 'scripts/audits/test_i2j_p3_invocation_recovery_source.mjs'
+      - 'docs/research/I2J_P3_INVOCATION_RECOVERY_ORIGINAL_WRITER_2026-11-23.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,3 +40,5 @@ jobs:
         run: node --test scripts/audits/test_i2j_offline_v2_pg17_evidence_gate.mjs
       - name: Check original Weapon Mastery writer historical source (no SQL)
         run: node --check scripts/audits/test_i2j_p2_weapon_mastery_original_writer_source.mjs && node --test scripts/audits/test_i2j_p2_weapon_mastery_original_writer_source.mjs
+      - name: Audit mounted Warlock recovery source and account history (no SQL)
+        run: node --check scripts/audits/test_i2j_p3_invocation_recovery_source.mjs && node --test scripts/audits/test_i2j_p3_invocation_recovery_source.mjs
