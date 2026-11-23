@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `dfda806edfc6bfb882af6e368ab5e5b7c335266c` |
+| Exact source commit represented by this archive snapshot | `abee524f659caa4009e30dcec4063eb0ec7c97fe` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j-p7): retire unsafe localhost psql CLI; replace with strict pre-exported file intake |
+| Last source commit title | test(i2j-p7): detect executable DB calls, not the negative psql comment |
 | Files changed relative to main | 240 (176 non-docs; 64 docs) |
-| Last source commit | 6 files (4 non-docs; 2 authored docs) |
+| Last source commit | 2 files (1 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
-- `docs/research/I2J_P4_OFFLINE_ORIGINAL_SOURCE_EXPORT_2026-11-23.md`
 - `docs/research/I2J_P7_RETIRE_P4_DB_CLI_FILE_ONLY_INTAKE_2026-11-23.md`
-- `scripts/audits/i2j_p4_offline_original_functions_export.mjs`
-- `scripts/audits/i2j_p7_file_only_original_source_intake.mjs`
 - `scripts/audits/test_i2j_p7_file_only_original_source_intake.mjs`
 
 ## Research-branch change inventory versus main
