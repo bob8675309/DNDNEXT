@@ -1,0 +1,416 @@
+{
+  "schema_version": "i2j-retirement-crosswalk-pr361-364-v1",
+  "snapshot_date_utc": "2026-11-23",
+  "source_type": "LIVE_GITHUB_EXACT_ORIGINAL_HEAD_AND_FULL_NONTRUNCATED_SUCCESSOR_TREE",
+  "successor": {
+    "pr": 371,
+    "head": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+    "branch": "research/i2g-signed-levelup-v1-option-a-20261112",
+    "held_research": true
+  },
+  "main_at_audit": "bb3939eeb9a38cf416996a1dca3b196b156b2915",
+  "original_prs": {
+    "361": {
+      "number": 361,
+      "sha": "99f8000994fd9194ebe21ab0801636ad24ad6760",
+      "base": "4763a00a6a9afc387090b2853754dd22a7544b80",
+      "run": 42950531273,
+      "desc": "Original I1-M Artificer 2-character account mirror signed RED and local scratch predicate GREEN",
+      "original_exact_head_actions_conclusion": "success"
+    },
+    "362": {
+      "number": 362,
+      "sha": "61f7e8f109f5327049cd1dc7f62322f13e891a2b",
+      "base": "99f8000994fd9194ebe21ab0801636ad24ad6760",
+      "run": 42957014765,
+      "desc": "I1-N original 34-source writer/consumer census and static source tests",
+      "original_exact_head_actions_conclusion": "success"
+    },
+    "363": {
+      "number": 363,
+      "sha": "0c413bc5b0d1378a55891f070f76e74394bd0044",
+      "base": "61f7e8f109f5327049cd1dc7f62322f13e891a2b",
+      "run": 42960316507,
+      "desc": "I1-O original HP and Admin progression signed RED plus scratch local GREEN",
+      "original_exact_head_actions_conclusion": "success"
+    },
+    "364": {
+      "number": 364,
+      "sha": "f969af0a15cc8a7e517808cb2eeeefea3119f6fd",
+      "base": "0c413bc5b0d1378a55891f070f76e74394bd0044",
+      "run": 42964470451,
+      "desc": "I1-P original earned level-up v5 and rest/Rage signed RED and scratch local GREEN",
+      "original_exact_head_actions_conclusion": "success"
+    }
+  },
+  "original_changed_file_occurrences": 28,
+  "dispositions_expected": {
+    "exact_copy": 19,
+    "deferred_preserved": 8,
+    "superseded_with_source_test": 1
+  },
+  "source_only": true,
+  "release_authorized": false,
+  "pr_retirement_authorized": false,
+  "closure_requirements": [
+    "Confirm all original fixtures/RED and source prose retained, not merely HEAD ancestry",
+    "Reverify original HEAD statuses and descendant at owner approval time",
+    "Owner explicit approval to close EACH original PR unmerged; retain head branches and original CI",
+    "No research source moved to deployed main; independent encrypted DB+340 Storage restore and remaining 22/34 writers hold"
+  ],
+  "entries": [
+    {
+      "original_pr": 361,
+      "path": ".github/workflows/validate-i1m-artificer-legacy-local-auth.yml",
+      "original_status": "added",
+      "original_blob": "07b5c25d2e60e1bef1fdefdfdcd53a142a240d30",
+      "successor_blob": "07b5c25d2e60e1bef1fdefdfdcd53a142a240d30",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "07b5c25d2e60e1bef1fdefdfdcd53a142a240d30"
+      }
+    },
+    {
+      "original_pr": 361,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_status": "modified",
+      "original_blob": "7c07b44ad53b369bc2fba149fcb9541b85624c56",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original ACTIVE_WORK exact UTF8 byte suffix preserved",
+        "slice": "suffix",
+        "bytes": 61581,
+        "expected_blob": "7c07b44ad53b369bc2fba149fcb9541b85624c56"
+      }
+    },
+    {
+      "original_pr": 361,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_status": "modified",
+      "original_blob": "36e464dd8cfc13f48905cc702a3236814f4defe4",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original HANDOFF_LOG exact UTF8 byte prefix preserved",
+        "slice": "prefix",
+        "bytes": 168291,
+        "expected_blob": "36e464dd8cfc13f48905cc702a3236814f4defe4"
+      }
+    },
+    {
+      "original_pr": 361,
+      "path": "docs/I1_M_ARTIFICER_LEGACY_MULTI_CHARACTER_RESEARCH_2026-11-11.md",
+      "original_status": "added",
+      "original_blob": "4a0e1b08e21fe0679c25a821896565c4de86c1f7",
+      "successor_blob": "4a0e1b08e21fe0679c25a821896565c4de86c1f7",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "4a0e1b08e21fe0679c25a821896565c4de86c1f7"
+      }
+    },
+    {
+      "original_pr": 361,
+      "path": "scripts/fixtures/i1m_artificer_legacy_projection_candidate_pg17.sql",
+      "original_status": "added",
+      "original_blob": "0d439a30e35d8504b5bd24a51a71746dfd38dcba",
+      "successor_blob": "0d439a30e35d8504b5bd24a51a71746dfd38dcba",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "0d439a30e35d8504b5bd24a51a71746dfd38dcba"
+      }
+    },
+    {
+      "original_pr": 361,
+      "path": "scripts/fixtures/i1m_legacy_v2_source_guard_local_pg17.sql",
+      "original_status": "added",
+      "original_blob": "0d4ad2ab541ea4904ed5981954daa325757f028f",
+      "successor_blob": "0d4ad2ab541ea4904ed5981954daa325757f028f",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "0d4ad2ab541ea4904ed5981954daa325757f028f"
+      }
+    },
+    {
+      "original_pr": 361,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_status": "modified",
+      "original_blob": "51b67dbc475be4b6d95f10283bb12e0b2b4f1caf",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "disposition": "superseded_with_source_test",
+      "verification": {
+        "method": "Original 8,167-byte I1-M signed RED/GREEN core exactly retained inside later I1-O extended script; original signed I1-M and I1-O actions passed",
+        "original_block_blob": "8c06ff71249c1a4ed2599b9a6f186fea954eab88",
+        "expected_successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508"
+      }
+    },
+    {
+      "original_pr": 362,
+      "path": ".github/workflows/validate-i1n-legacy-sheet-census.yml",
+      "original_status": "added",
+      "original_blob": "8609ca1fb610d8b8b6818c69a704292a517cc24e",
+      "successor_blob": "8609ca1fb610d8b8b6818c69a704292a517cc24e",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "8609ca1fb610d8b8b6818c69a704292a517cc24e"
+      }
+    },
+    {
+      "original_pr": 362,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_status": "modified",
+      "original_blob": "af974605a008c52c2c409270632376e141ee5b61",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original ACTIVE_WORK exact UTF8 byte suffix preserved",
+        "slice": "suffix",
+        "bytes": 63827,
+        "expected_blob": "af974605a008c52c2c409270632376e141ee5b61"
+      }
+    },
+    {
+      "original_pr": 362,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_status": "modified",
+      "original_blob": "ba09fe7d393cf8d5e10d05afc2c9fa00673b28b1",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original HANDOFF_LOG exact UTF8 byte prefix preserved",
+        "slice": "prefix",
+        "bytes": 172166,
+        "expected_blob": "ba09fe7d393cf8d5e10d05afc2c9fa00673b28b1"
+      }
+    },
+    {
+      "original_pr": 362,
+      "path": "docs/I1_N_LEGACY_PLAYER_SHEET_AUTHORITY_REVIEW_2026-11-11.md",
+      "original_status": "added",
+      "original_blob": "2b4381055ba8db1cafd5f8c65bd4d25c4803bcc5",
+      "successor_blob": "2b4381055ba8db1cafd5f8c65bd4d25c4803bcc5",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "2b4381055ba8db1cafd5f8c65bd4d25c4803bcc5"
+      }
+    },
+    {
+      "original_pr": 362,
+      "path": "docs/I1_N_LEGACY_SHEET_LIVE_SOURCE_CENSUS_2026-11-11.json",
+      "original_status": "added",
+      "original_blob": "f8d1d42b2e8f651027f27d416df6419b7b40f2c5",
+      "successor_blob": "f8d1d42b2e8f651027f27d416df6419b7b40f2c5",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "f8d1d42b2e8f651027f27d416df6419b7b40f2c5"
+      }
+    },
+    {
+      "original_pr": 362,
+      "path": "scripts/research/i1n_legacy_player_sheet_live_readonly_census.sql",
+      "original_status": "added",
+      "original_blob": "49575c8c1ebaa9ea387773036ca9263da48848f8",
+      "successor_blob": "49575c8c1ebaa9ea387773036ca9263da48848f8",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "49575c8c1ebaa9ea387773036ca9263da48848f8"
+      }
+    },
+    {
+      "original_pr": 362,
+      "path": "scripts/validate_i1n_legacy_sheet_census.mjs",
+      "original_status": "added",
+      "original_blob": "d91b7894c2b57d3a2666b07835e9c53b4e6ad47c",
+      "successor_blob": "d91b7894c2b57d3a2666b07835e9c53b4e6ad47c",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "d91b7894c2b57d3a2666b07835e9c53b4e6ad47c"
+      }
+    },
+    {
+      "original_pr": 363,
+      "path": ".github/workflows/validate-i1o-cross-family-legacy-local-auth.yml",
+      "original_status": "added",
+      "original_blob": "ac02f800f8e14c3f5cdbe96261a6316dd8d2eccc",
+      "successor_blob": "ac02f800f8e14c3f5cdbe96261a6316dd8d2eccc",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "ac02f800f8e14c3f5cdbe96261a6316dd8d2eccc"
+      }
+    },
+    {
+      "original_pr": 363,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_status": "modified",
+      "original_blob": "8dfdf005c49feb9a89f9cae042ee50f00149ac0f",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original ACTIVE_WORK exact UTF8 byte suffix preserved",
+        "slice": "suffix",
+        "bytes": 66158,
+        "expected_blob": "8dfdf005c49feb9a89f9cae042ee50f00149ac0f"
+      }
+    },
+    {
+      "original_pr": 363,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_status": "modified",
+      "original_blob": "9998baaef3462b1b2b115291294423f16572a8bd",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original HANDOFF_LOG exact UTF8 byte prefix preserved",
+        "slice": "prefix",
+        "bytes": 176848,
+        "expected_blob": "9998baaef3462b1b2b115291294423f16572a8bd"
+      }
+    },
+    {
+      "original_pr": 363,
+      "path": "docs/I1_O_CROSS_FAMILY_SIGNED_LEGACY_SHEET_RESEARCH_2026-11-11.md",
+      "original_status": "added",
+      "original_blob": "2b37fe455a169e90e725253d3d10f49bdbd817bb",
+      "successor_blob": "2b37fe455a169e90e725253d3d10f49bdbd817bb",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "2b37fe455a169e90e725253d3d10f49bdbd817bb"
+      }
+    },
+    {
+      "original_pr": 363,
+      "path": "scripts/fixtures/i1o_original_progression_hp_shared_forge_pg17.sql",
+      "original_status": "added",
+      "original_blob": "3c34a06abd94d0044ecba9c77056bb5128ebf884",
+      "successor_blob": "3c34a06abd94d0044ecba9c77056bb5128ebf884",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "3c34a06abd94d0044ecba9c77056bb5128ebf884"
+      }
+    },
+    {
+      "original_pr": 363,
+      "path": "scripts/fixtures/i1o_progression_hp_legacy_mirror_candidate_pg17.sql",
+      "original_status": "added",
+      "original_blob": "f604bbed76e48baa47be6bb31ecce03905a76708",
+      "successor_blob": "f604bbed76e48baa47be6bb31ecce03905a76708",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "f604bbed76e48baa47be6bb31ecce03905a76708"
+      }
+    },
+    {
+      "original_pr": 363,
+      "path": "scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs",
+      "original_status": "modified",
+      "original_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "successor_blob": "0bb0217682299fea8225b6480ef794eefbc61508",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "0bb0217682299fea8225b6480ef794eefbc61508"
+      }
+    },
+    {
+      "original_pr": 364,
+      "path": ".github/workflows/validate-i1p-earned-v5-rest-legacy-local-auth.yml",
+      "original_status": "added",
+      "original_blob": "fd4b9b2228fdddbbc4e196e7b97c9f9d9027e3b0",
+      "successor_blob": "fd4b9b2228fdddbbc4e196e7b97c9f9d9027e3b0",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "fd4b9b2228fdddbbc4e196e7b97c9f9d9027e3b0"
+      }
+    },
+    {
+      "original_pr": 364,
+      "path": "docs/ACTIVE_WORK.md",
+      "original_status": "modified",
+      "original_blob": "4b182335e1179229b9c6935923efa80e0569f2e1",
+      "successor_blob": "b5dc62d7ea109e852db8e3d94bf8bcf4c75246de",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original ACTIVE_WORK exact UTF8 byte suffix preserved",
+        "slice": "suffix",
+        "bytes": 68574,
+        "expected_blob": "4b182335e1179229b9c6935923efa80e0569f2e1"
+      }
+    },
+    {
+      "original_pr": 364,
+      "path": "docs/HANDOFF_LOG.md",
+      "original_status": "modified",
+      "original_blob": "bf93a7753cc8518d1b4a2ed9d345a73463274b98",
+      "successor_blob": "e567b3238d2d401e6504e846b380ec9c33a00c97",
+      "disposition": "deferred_preserved",
+      "verification": {
+        "method": "Entire original HANDOFF_LOG exact UTF8 byte prefix preserved",
+        "slice": "prefix",
+        "bytes": 181818,
+        "expected_blob": "bf93a7753cc8518d1b4a2ed9d345a73463274b98"
+      }
+    },
+    {
+      "original_pr": 364,
+      "path": "docs/I1_P_EARNED_V5_REST_LEGACY_SHEET_RESEARCH_2026-11-11.md",
+      "original_status": "added",
+      "original_blob": "44f2e8590e0d7399dcf2d63c061c364f89e7ce96",
+      "successor_blob": "44f2e8590e0d7399dcf2d63c061c364f89e7ce96",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "44f2e8590e0d7399dcf2d63c061c364f89e7ce96"
+      }
+    },
+    {
+      "original_pr": 364,
+      "path": "scripts/fixtures/i1p_earned_levelup_rest_mirror_candidate_pg17.sql",
+      "original_status": "added",
+      "original_blob": "9e064ac60d1601411e566e9bdcee96f1e583f1ba",
+      "successor_blob": "9e064ac60d1601411e566e9bdcee96f1e583f1ba",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "9e064ac60d1601411e566e9bdcee96f1e583f1ba"
+      }
+    },
+    {
+      "original_pr": 364,
+      "path": "scripts/fixtures/i1p_original_rest_shared_p13_pg17.sql",
+      "original_status": "added",
+      "original_blob": "039868c4ac5cdd62e0efc1e46f584df2bdc34a9c",
+      "successor_blob": "039868c4ac5cdd62e0efc1e46f584df2bdc34a9c",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "039868c4ac5cdd62e0efc1e46f584df2bdc34a9c"
+      }
+    },
+    {
+      "original_pr": 364,
+      "path": "scripts/test_i1p_earned_rest_local_auth.mjs",
+      "original_status": "added",
+      "original_blob": "4c9a0935cbfe7c979ff38eadd401d54a1213efb9",
+      "successor_blob": "4c9a0935cbfe7c979ff38eadd401d54a1213efb9",
+      "disposition": "exact_copy",
+      "verification": {
+        "method": "Git blob SHA equals original HEAD changed-file blob",
+        "expected_blob": "4c9a0935cbfe7c979ff38eadd401d54a1213efb9"
+      }
+    }
+  ]
+}
