@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `d416405e68d9fc10d13a2bcc0b4eba0389648bea` |
+| Exact source commit represented by this archive snapshot | `024192277c2ab9807b0dea8cbf1f4caedd069be3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j-p3): verify mounted Warlock recovery account mirror and canonical grants |
+| Last source commit title | test(i2j-p3): match original coalesced origin-feat exclusion; preserve first red CI |
 | Files changed relative to main | 229 (169 non-docs; 60 docs) |
-| Last source commit | 3 files (2 non-docs; 1 authored docs) |
+| Last source commit | 2 files (1 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `docs/research/I2J_P3_INVOCATION_RECOVERY_ORIGINAL_WRITER_2026-11-23.md`
 - `scripts/audits/test_i2j_p3_invocation_recovery_source.mjs`
 
