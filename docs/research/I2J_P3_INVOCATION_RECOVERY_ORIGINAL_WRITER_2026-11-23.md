@@ -23,3 +23,8 @@ To obtain genuine signed acceptance, first independently authenticate approved *
 4. Recheck current v5 level-up, class source UI/choice renderer, normalizer and full role/31-trigger graph. This does not authorize production Option A, release or closure. Independent DB+340 Storage object restore and owner GO remain mandatory.
 
 **ONE NEXT BOUNDED TASK:** obtain/restored-offline source authority or, until authentic restore exists, prioritize existing mounted/unmounted untested original writers for independent signed tests rather than repeatedly declaring static tests as executable acceptance.
+
+## CI trace: original assertion typo and corrected rerun
+
+- First P3 source-only exact-head run [#45223862847](https://github.com/bob8675309/DNDNEXT/actions/runs/45223862847) **FAILED 1/16 new tests**: I2J-P3-09 used a literal regex that omitted the unchanged original SQL `coalesce(o.choice_schema->>'kind','')<> 'origin-feat'` structure. P0=11/11, P1=11/11, P2=13/13 and P3=15/16 passed. No runtime, source SQL, or legacy behavior was modified.
+- Corrected only P3-09 regex to assert the **original coalesce-enclosed exclusion**; kept the original SQL Git blob pin and preserved the failed CI run rather than relabeling it signed RED. All work remains source-only, not authenticated transaction acceptance.

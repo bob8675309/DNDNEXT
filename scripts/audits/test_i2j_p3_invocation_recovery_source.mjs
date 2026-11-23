@@ -72,7 +72,7 @@ test('I2J-P3-08 partial normalized state aborts instead of writing invalid grant
 });
 test('I2J-P3-09 ambiguous Lessons of the First Ones effects explicitly require GM reconciliation',()=>{
  assert.match(original,/Lessons of the First Ones requires GM reconciliation/i);
- assert.match(original,/choice_schema->>'kind'\)<>'origin-feat'/i);
+ assert.match(original,/coalesce\s*\(\s*o\.choice_schema->>'kind'\s*,\s*''\s*\)\s*<>\s*'origin-feat'/i);
 });
 test('I2J-P3-10 recovery honors original legacy names and prevents invented invocation list',()=>{
  assert.match(original,/Invocation recovery must preserve the current Invocation names already recorded on the legacy sheet/i);
