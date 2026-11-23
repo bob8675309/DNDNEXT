@@ -45,7 +45,7 @@ test('I2J-P4-05 functions queried by static read-only SELECT, not custom SQL or 
 test('I2J-P4-06 base64 is lossless incl original trailing newline and rejects altered data',()=>{
  for(const spec of ORIGINALS)assert.equal(decodeExactFunctionBase64(fakeOutput[spec.key]),bodies[spec.key]);
  bad('INVALID_FUNCTION_BASE64',()=>decodeExactFunctionBase64('INVALID?'));
- bad('MISSING_LOCAL_FUNCTION_TEXT',()=>decodeExactFunctionBase64(''));
+ bad('INVALID_FUNCTION_BASE64',()=>decodeExactFunctionBase64(''));
 });
 test('I2J-P4-07 refuse PG16/PG18/non-numeric server version',()=>{
  for(const v of ['160012','180000','bad',''])bad('NOT_POSTGRESQL_17',()=>assessOfflineSourceOutputs({serverVersion:v,outputs:fakeOutput,expectedMd5:fakeMd5}));
@@ -60,7 +60,7 @@ test('I2J-P4-09 valid synthetic source can be accepted ONLY by explicitly test-i
 });
 test('I2J-P4-10 missing one original source prevents any bundle write',()=>{
  const missing={...fakeOutput,invocation_recovery:''};
- bad('MISSING_LOCAL_FUNCTION_TEXT',()=>assessOfflineSourceOutputs({serverVersion:'170001',outputs:missing,expectedMd5:fakeMd5}));
+ bad('INVALID_FUNCTION_BASE64',()=>assessOfflineSourceOutputs({serverVersion:'170001',outputs:missing,expectedMd5:fakeMd5}));
 });
 test('I2J-P4-11 secure local-only synthetic bundle self-asserts lineage and never signed PASS',()=>{
  const out=path.join(os.tmpdir(),'i2j-p4-test-'+process.pid+'-'+Math.floor(Math.random()*1e6));
@@ -80,7 +80,7 @@ test('I2J-P4-11 secure local-only synthetic bundle self-asserts lineage and neve
   bad('OUTPUT_DIRECTORY_ALREADY_EXISTS',()=>writeOfflineBundle(opts(out),data));
  }finally{fs.rmSync(out,{recursive:true,force:true});}
 });
-test('I2J-P4-12 no psql needed to test order, all functions fail closed before disk writes',()=>{
+test('I2J-P4-12 no psql is needed to prove original MD5 is required before writing',()=>{
  const out=path.join(os.tmpdir(),'i2j-p4-fail-'+process.pid);
  let count=0;
  const fakeRunner=(query)=>{
@@ -90,6 +90,14 @@ test('I2J-P4-12 no psql needed to test order, all functions fail closed before d
   if(count===3)return fakeOutput.weapon_mastery;
   return '';
  };
- bad('MISSING_LOCAL_FUNCTION_TEXT',()=>runOfflineExtract(opts(out),fakeRunner));
+ bad('ORIGINAL_FINGERPRINT_MISMATCH_LEVELUP_V2',()=>runOfflineExtract(opts(out),fakeRunner));
+ assert.equal(fs.existsSync(out),false);
+});
+
+test('I2J-P4-13 invalid PG major stops BEFORE any original function queries',()=>{
+ const out=path.join(os.tmpdir(),'i2j-p4-major-bad-'+process.pid);
+ let calls=0;
+ bad('NOT_POSTGRESQL_17',()=>runOfflineExtract(opts(out),()=>{calls++;return '160012';}));
+ assert.equal(calls,1,'Must never read function text from a wrong-major server');
  assert.equal(fs.existsSync(out),false);
 });

@@ -62,9 +62,13 @@ export function decodeExactFunctionBase64(stdout){
  if(!/^CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\./i.test(content.trim()))fail('FUNCTION_DEFINITION_NOT_FOUND');
  return content;
 }
-export function assessOfflineSourceOutputs({serverVersion,outputs,expectedMd5=null}){
+export function assertPg17Version(serverVersion){
  const major=Number(String(serverVersion).trim());
  if(!Number.isInteger(major)||major<170000||major>=180000)fail('NOT_POSTGRESQL_17');
+ return major;
+}
+export function assessOfflineSourceOutputs({serverVersion,outputs,expectedMd5=null}){
+ assertPg17Version(serverVersion);
  const accepted=[];
  for(const spec of ORIGINALS){
   const body=decodeExactFunctionBase64(outputs?.[spec.key]);
@@ -113,6 +117,8 @@ export function writeOfflineBundle(options,accepted){
 export function runOfflineExtract(options,queryRunner){
  if(typeof queryRunner!=='function')fail('QUERY_RUNNER_REQUIRED');
  const ver=queryRunner('SELECT current_setting('+ "'server_version_num'"+')',options);
+ // Reject PostgreSQL 16/18 BEFORE any function source queries.
+ assertPg17Version(ver);
  const outputs={};
  for(const spec of ORIGINALS)outputs[spec.key]=queryRunner(readOnlySql(spec),options);
  const accepted=assessOfflineSourceOutputs({serverVersion:ver,outputs});
