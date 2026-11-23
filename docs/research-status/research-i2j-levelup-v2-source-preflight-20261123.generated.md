@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `cd1e8b8e37ac4b56fd1533326e8798d2195be26d` |
+| Exact source commit represented by this archive snapshot | `b3bb3cdbe0d91fa4c309413638768e97e4de85ec` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j): pin historical v2 double mirror and 11-case source-only preflight |
-| Files changed relative to main | 222 (165 non-docs; 57 docs) |
-| Last source commit | 3 files (2 non-docs; 1 authored docs) |
+| Last source commit title | research(i2j): add fail-closed offline PG17 v2 provenance gate with 11 synthetic negatives |
+| Files changed relative to main | 225 (167 non-docs; 58 docs) |
+| Last source commit | 4 files (3 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,8 +18,9 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
-- `docs/research/I2J_LEVELUP_V2_MIRROR_SOURCE_PREFLIGHT_2026-11-23.md`
-- `scripts/audits/test_i2j_levelup_v2_source_preflight.mjs`
+- `docs/research/I2J_P1_OFFLINE_V2_EVIDENCE_GATE_2026-11-23.md`
+- `scripts/audits/i2j_offline_v2_pg17_evidence_gate.mjs`
+- `scripts/audits/test_i2j_offline_v2_pg17_evidence_gate.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- … 172 more
+- … 175 more
 
 ## Trust and update procedure
 
