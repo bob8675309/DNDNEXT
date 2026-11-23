@@ -41,6 +41,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20b_atomic_town_inscribe_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_town_craft_intent_research.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs'
       - 'docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20a_earned_receipt_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs'
@@ -87,6 +88,7 @@ on:
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20b_atomic_town_inscribe_source.mjs'
       - 'scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_town_craft_intent_research.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs'
+      - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs'
       - 'docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p20a_earned_receipt_source.mjs'
       - 'scripts/integration/c34/test_t46_p3_p4b_c2b14_p19_original_writer_and_forge_stage4_source.mjs'
@@ -200,6 +202,10 @@ jobs:
           node --check scripts/integration/c34/candidates/t46_p3_p4b_c2b14_p20c_town_craft_intent_research.mjs
           node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs
           node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_town_craft_authority_source.mjs
+      - name: P20C-P1 original completion, plant/recipe/GP and manager release blockers (source only)
+        run: |
+          node --check scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs
+          node --test scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs
       - name: P20 original deployed-source /admin blank-owner self-mint route and legacy RLS expected RED (no hosted access)
         run: |
           node --check scripts/research/c34_b14_p20_original_admin_account_mint_route_source_red.mjs
