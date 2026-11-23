@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e58216d76c74894c0e06f77ca59d4cf50926329a` |
+| Exact source commit represented by this archive snapshot | `8e7cbc2cf532ef5238fbf0eb39ced12549a81197` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): audit all 51 original I2A-F PR source entries and verified descendant #371 custody |
+| Last source commit title | docs(c34): record six original I2A-F PR closed-unmerged receipts and 31-open inventory |
 | Files changed relative to main | 434 (324 non-docs; 110 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
