@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `6db27e720d0c2788774cc37d2f85d14244e61b95` |
+| Exact source commit represented by this archive snapshot | `cd1e8b8e37ac4b56fd1533326e8798d2195be26d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Merge original signed Admin feat/boon Option A RED/GREEN research to I2-G parent |
-| Files changed relative to main | 219 (163 non-docs; 56 docs) |
-| Last source commit | 0 files (0 non-docs; 0 authored docs) |
+| Last source commit title | research(i2j): pin historical v2 double mirror and 11-case source-only preflight |
+| Files changed relative to main | 222 (165 non-docs; 57 docs) |
+| Last source commit | 3 files (2 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-The latest commit did not change non-docs source files. Do not infer a technical behavior change.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- No changed paths found
+- `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
+- `docs/research/I2J_LEVELUP_V2_MIRROR_SOURCE_PREFLIGHT_2026-11-23.md`
+- `scripts/audits/test_i2j_levelup_v2_source_preflight.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -49,6 +51,7 @@ The latest commit did not change non-docs source files. Do not infer a technical
 - `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
 - `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
 - `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
+- `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `components/CreatorBackstoryPanel.js`
@@ -70,8 +73,7 @@ The latest commit did not change non-docs source files. Do not infer a technical
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- `docs/C3_3_NPC_READER_COMPATIBILITY_MATRIX_2026-11-07.md`
-- … 169 more
+- … 172 more
 
 ## Trust and update procedure
 
