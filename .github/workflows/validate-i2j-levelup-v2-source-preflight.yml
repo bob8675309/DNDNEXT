@@ -14,6 +14,9 @@ on:
       - 'scripts/audits/test_i2j_p2_weapon_mastery_original_writer_source.mjs'
       - 'scripts/audits/test_i2j_p3_invocation_recovery_source.mjs'
       - 'docs/research/I2J_P3_INVOCATION_RECOVERY_ORIGINAL_WRITER_2026-11-23.md'
+      - 'scripts/audits/i2j_p4_offline_original_functions_export.mjs'
+      - 'scripts/audits/test_i2j_p4_offline_original_functions_export.mjs'
+      - 'docs/research/I2J_P4_OFFLINE_ORIGINAL_SOURCE_EXPORT_2026-11-23.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -42,3 +45,5 @@ jobs:
         run: node --check scripts/audits/test_i2j_p2_weapon_mastery_original_writer_source.mjs && node --test scripts/audits/test_i2j_p2_weapon_mastery_original_writer_source.mjs
       - name: Audit mounted Warlock recovery source and account history (no SQL)
         run: node --check scripts/audits/test_i2j_p3_invocation_recovery_source.mjs && node --test scripts/audits/test_i2j_p3_invocation_recovery_source.mjs
+      - name: Offline extraction kit inert harness (NO PostgreSQL calls)
+        run: node --check scripts/audits/i2j_p4_offline_original_functions_export.mjs && node --check scripts/audits/test_i2j_p4_offline_original_functions_export.mjs && node --test scripts/audits/test_i2j_p4_offline_original_functions_export.mjs
