@@ -120,3 +120,20 @@ Original immutable HEAD `ea43938da626292cb7b3f8f8459955b426874f9d`; [exact-head 
 ## Actual GitHub closure receipt
 
 Pending GitHub status recheck and conditional safe `state=closed` (no merge). **Append real closed timestamps/HEAD/ref/remaining count here only after GitHub confirms.** All original parent/source and tests must remain addressable.
+
+## Actual verified GitHub retirement — November 22 CST / November 23 UTC
+
+All six PR closures were independently rechecked via GitHub REST after transition, not inferred from assistant mutation results. **All six are `state=closed, merged=false`**; original heads and parent branch names are unchanged. The original source branches remain preserved (first #365 branch verified live after closure; no branch-delete operation performed anywhere). Each original PR has an explanatory Conversation comment linking to this crosswalk.
+
+| Retired PR | Immutable original head | Actual GitHub closed_at (UTC) | Result |
+| --- | --- | --- | --- |
+| [#365](https://github.com/bob8675309/DNDNEXT/pull/365) | `04f2bcd34b1c2935125ad2369717e10140025047` | `2026-11-23T03:48:28Z` | CLOSED, unmerged |
+| [#366](https://github.com/bob8675309/DNDNEXT/pull/366) | `e568c43ab39c759847f750f14eb4664a57a824de` | `2026-11-23T03:48:59Z` | CLOSED, unmerged |
+| [#367](https://github.com/bob8675309/DNDNEXT/pull/367) | `963a04a9bc897e247f7e088ef5a99319c1ae3cdf` | `2026-11-23T03:49:08Z` | CLOSED, unmerged |
+| [#368](https://github.com/bob8675309/DNDNEXT/pull/368) | `88a39d5e7a888dc63ebe53736aa2734a480442ac` | `2026-11-23T03:49:17Z` | CLOSED, unmerged |
+| [#369](https://github.com/bob8675309/DNDNEXT/pull/369) | `1132a33b64e24197e974276cd58c48cbdded3baa` | `2026-11-23T03:49:25Z` | CLOSED, unmerged |
+| [#370](https://github.com/bob8675309/DNDNEXT/pull/370) | `ea43938da626292cb7b3f8f8459955b426874f9d` | `2026-11-23T03:49:35Z` | CLOSED, unmerged |
+
+**Open PR count actually verified: 37 → 31**; parent [#371](https://github.com/bob8675309/DNDNEXT/pull/371) remains `state=open, merged=false`, unchanged exact head `6db27e720d0c2788774cc37d2f85d14244e61b95` and base branch `research/i2f-source-species-projection-option-a-freeze-20261111`. Open [#379](https://github.com/bob8675309/DNDNEXT/pull/379) owns this source-preserving audit only. Before closure, crosswalk commit `e58216d76c74894c0e06f77ca59d4cf50926329a` successfully passed PR full inherited-source audit [#45108033274](https://github.com/bob8675309/DNDNEXT/actions/runs/45108033274), handoff continuity [#45108033312](https://github.com/bob8675309/DNDNEXT/actions/runs/45108033312) and research-docs maintenance [#45108030386](https://github.com/bob8675309/DNDNEXT/actions/runs/45108030386). No role, source SQL, production function, RLS, original signed fixture or browser runtime was modified.
+
+**No production delivery:** `main` remains `bb3939eeb9a38cf416996a1dca3b196b156b2915` at verification; no PR merge, original branch deletion, deployment, world map edit, hosted SQL (even SELECT), or paid-agent invocation. Original Option A release remains blocked for 22/34 untested original writer paths and full browser/backup/restore/role gates. This is a genuine backlog reduction with source, owner decisions and negative tests maintained.
