@@ -96,7 +96,7 @@ test("P20C-P3 original P20B, P20A, actual role and resource blockers remain sepa
  const dossier=read("docs/research/C34_B14_P20C_ORIGINAL_TOWN_V6_PLAN_AND_RESOURCE_AUTHORITY_2026-11-22.md");
  const prior=read("scripts/integration/c34/test_t46_p3_p4b_c2b14_p20c_p1_original_completion_authority_source.mjs");
  assert.match(dossier,/P20C signed PG17 \*\*NOT RUN\*\*/);
- assert.match(prior,/source-only/);
+ assert.match(prior,/[Ss]ource-only/);
  assert.match(read("utils/useWallet.js"),/Supports -1 \(infinite\) semantics/);
  console.log("PASS P20C-P3-NO-PROMOTION: source/PG17/role/economic release separation retained");
 });
