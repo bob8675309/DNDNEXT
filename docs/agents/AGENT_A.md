@@ -7,8 +7,8 @@ Next bounded task: Commit original #332 two-fixture custody ledger and branch ha
 Schedule (Central):
 ```
 BEGIN:VEVENT
-DTSTART;TZID=America/Chicago:20261123T210500
-RRULE:FREQ=HOURLY;INTERVAL=1;BYHOUR=0,1,2,3,4,5,6,21,22,23;BYMINUTE=5
+DTSTART;TZID=America/Chicago:20261124T180500
+RRULE:FREQ=HOURLY;INTERVAL=1;BYMINUTE=05
 END:VEVENT
 ```
 
