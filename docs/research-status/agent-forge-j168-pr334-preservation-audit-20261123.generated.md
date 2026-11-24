@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `e9ca272244543f2b3c349bc999c0c0f24f71f326` |
+| Exact source commit represented by this archive snapshot | `1357c4b5b07c403f9a4b60a35f93a6385abc6c74` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | test(pr334): verify source-derived original site activity in isolated signed Next Chromium |
+| Last source commit title | test(pr334): tolerate legitimate visit-tracker last_path changes in signed browser |
 | Files changed relative to main | 15 (6 non-docs; 9 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-pr334-role-equivalence-signed.yml`
-- `scripts/integration/pr334_derive_site_activity_probe.mjs`
 - `scripts/integration/pr334_signed_site_activity_browser.mjs`
-- `scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
