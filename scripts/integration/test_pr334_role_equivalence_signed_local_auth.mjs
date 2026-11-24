@@ -125,4 +125,49 @@ no(await rpc("unknown","p13_research_current_actor_is_manager_v1",{uid:users.adm
 for(const fn of ["p13_research_current_actor_is_manager_v1","p13_research_get_npc_dossier_v1","p13_research_can_edit_creator_backstory_v1"])
  no(await rpc("anon",fn,fn.includes("dossier")||fn.includes("story")?{p_character_id:id}:{},true),"anon "+fn);
 console.log("PR334-REVOKE-SPOOF-ANON-GREEN expected: same-JWT demotion and denial");
-console.log("PR334 ROLE RESEARCH PASS: disposable subset only, no main/production effect");
+
+// Tactical-encounter source consumer: execute the actual original map-control SQL
+// in the same disposable instance, then version only the guard predicate.
+const originalTactical=readFileSync("sql/20260727_01_encounter_map_foundation.sql","utf8");
+assert.equal(createHash("sha1").update("blob "+Buffer.byteLength(originalTactical)+"\0").update(originalTactical).digest("hex"),
+ "0429f6dc5bd51bc17e7b8403cbdae02306b28b34");
+assert.match(originalTactical,/not public\.is_admin\(v_uid\)/);
+file("sql/20260727_01_encounter_map_foundation.sql");
+db("NOTIFY pgrst, 'reload schema'");await sleep(1200);
+// Restore the same signed GM identity after the already-proven demotion denial.
+db("UPDATE public.user_profiles SET role='gm' WHERE id='"+users.gm.uid+"'");
+const callMap=(who,fn)=>rpc(who,fn,{p_name:"pr334-tactical-"+randomUUID()},who==="anon");
+const isUUID=s=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s||"");
+for(const who of ["admin","gm","dm","unknown"]){
+ const result=yes(await callMap(who,"admin_upsert_encounter_map_v1"),who+" original tactical upsert");
+ assert.ok(isUUID(result),who+" map UUID");
+}
+for(const who of ["player","creator","editor","inventory"])
+ no(await callMap(who,"admin_upsert_encounter_map_v1"),who+" original tactical");
+no(await callMap("anon","admin_upsert_encounter_map_v1"),"anon original tactical");
+assert.equal(Number(db("select count(*) from public.encounter_maps where name like 'pr334-tactical-%'")),4);
+console.log("PR334-ORIGINAL-TACTICAL-RED: signed noncanonical role can create map via exact original tactical SECURITY DEFINER RPC");
+// Same unmodified original SQL body except a versioned name and single new-policy guard.
+const tacticalStart=originalTactical.indexOf("create or replace function public.admin_upsert_encounter_map_v1(");
+const tacticalEndMark="end;$function$;";
+const tacticalEnd=originalTactical.indexOf(tacticalEndMark,tacticalStart);
+assert.ok(tacticalStart>=0&&tacticalEnd>tacticalStart);
+const actualBody=originalTactical.slice(tacticalStart,tacticalEnd+tacticalEndMark.length);
+assert.equal((actualBody.match(/not public\.is_admin\(v_uid\)/g)||[]).length,1);
+const guardedBody=actualBody
+ .replace("public.admin_upsert_encounter_map_v1(","public.p13_research_admin_upsert_encounter_map_v1(")
+ .replace("not public.is_admin(v_uid)","not private.p13_research_current_actor_is_manager_v1()");
+assert.ok(guardedBody!==actualBody);
+db(guardedBody
+ +"\nREVOKE ALL ON FUNCTION public.p13_research_admin_upsert_encounter_map_v1(uuid,text,text,integer,integer,text,text,boolean,jsonb) FROM PUBLIC,anon;"
+ +"\nGRANT EXECUTE ON FUNCTION public.p13_research_admin_upsert_encounter_map_v1(uuid,text,text,integer,integer,text,text,boolean,jsonb) TO authenticated;");
+db("NOTIFY pgrst, 'reload schema'");await sleep(1200);
+for(const who of ["admin","gm","dm"])
+ assert.ok(isUUID(yes(await callMap(who,"p13_research_admin_upsert_encounter_map_v1"),who+" tactical new-policy")),who+" guarded map");
+for(const who of ["player","unknown","creator","editor","inventory"])
+ no(await callMap(who,"p13_research_admin_upsert_encounter_map_v1"),who+" guarded tactical");
+no(await callMap("anon","p13_research_admin_upsert_encounter_map_v1"),"anon guarded tactical");
+assert.equal(Number(db("select count(*) from public.encounter_maps where name like 'pr334-tactical-%'")),7);
+console.log("PR334-TACTICAL-JWT-GREEN: exact source-body role substitution; admin/gm/dm yes, unknown/player/anon no");
+console.log("PR334 ROLE RESEARCH PASS: disposable selected NPC privacy and tactical map admin RPC, no production effect");
+
