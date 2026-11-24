@@ -276,6 +276,9 @@ assert.ok(siteBegin>=0&&siteEnd>siteBegin,"Original site activity RPC source una
 const originalSiteFn=siteOriginal.slice(siteBegin,siteEnd+3);
 const oldSiteGuard="if not private.current_user_is_admin() then";
 assert.equal(originalSiteFn.split(oldSiteGuard).length-1,1,"Original website reporter must have exactly one strict helper guard");
+// Earlier encounter same-JWT demotion intentionally left GM as player. Restore
+// ONLY its disposable role before independently testing current owner policy.
+db("UPDATE public.user_profiles SET role='gm' WHERE id='"+users.gm.uid+"'");
 assert.equal(db("SELECT to_regclass('public.players') IS NULL"),"t");
 db("CREATE TABLE public.players(user_id uuid PRIMARY KEY REFERENCES auth.users(id),name text);"
  +"REVOKE ALL ON public.players FROM PUBLIC,anon,authenticated;"
