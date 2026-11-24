@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs'
       - 'scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs'
+      - 'scripts/integration/i2j/i1c_versioned_atomic_story_research_tail.mjs'
       - '.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml'
   workflow_dispatch:
 permissions:
@@ -36,6 +37,7 @@ jobs:
           node --check scripts/test_i1c_forge_private_story_nonce_local_auth.mjs
           node --check scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs
           node --check scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs
+          node --check scripts/integration/i2j/i1c_versioned_atomic_story_research_tail.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
           node scripts/validate_npc_private_profile_cutover.mjs
       - name: Install existing pinned application dependencies

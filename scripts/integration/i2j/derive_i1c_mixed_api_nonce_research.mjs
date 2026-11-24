@@ -6,4 +6,7 @@ const pins={"scripts/test_i1c_forge_private_story_nonce_local_auth.mjs":"90fb305
 for(const [path,sha] of Object.entries(pins)){const b=fs.readFileSync(path);assert.equal(createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),sha,path+' source drift');}
 const source=fs.readFileSync('scripts/test_i1c_forge_private_story_nonce_local_auth.mjs','utf8');
 const tail=fs.readFileSync('scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs','utf8');
-fs.writeFileSync('scripts/.i2j_i1c_mixed_api_research_tmp.mjs',source+'\n'+tail,{flag:'wx'});
+const p1=fs.readFileSync('scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs');
+assert.equal(createHash('sha1').update('blob '+p1.length+'\0').update(p1).digest('hex'),'481459b4ad1e4aa8ffb372b50a6732e464366e5e','P1 historical extension drift');
+const p2=fs.readFileSync('scripts/integration/i2j/i1c_versioned_atomic_story_research_tail.mjs','utf8');
+fs.writeFileSync('scripts/.i2j_i1c_mixed_api_research_tmp.mjs',source+'\n'+tail+'\n'+p2,{flag:'wx'});
