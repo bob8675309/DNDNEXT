@@ -261,5 +261,73 @@ for(const who of ["admin","gm","dm","unknown","player","creator","editor","inven
  no(await rpc(who,"wallet_add",{p_user:users.player.uid,p_delta:100},true),who+" generic wallet_add denial");
 assert.equal(Number(db("SELECT count(*) FROM public.player_wallets")),0);
 console.log("PR334-WALLET-BROWSER-DENIAL-GREEN: generic wallet_add service-only; no balance writes");
-console.log("PR334 ROLE RESEARCH PASS: original NPC privacy, tactical map, encounter lifecycle and wallet grant subset; no production effect");
+
+// Nov 16 OWNER policy supersedes historic C34 T34 site-Admin-only scope:
+// admin/gm/dm are ONE in-application administrator tier, including carefully
+// scoped website activity. C34 T34 historical RED/GREEN MUST remain untouched.
+// Test a distinct versioned original-source site reader, not a global helper
+// edit or an unauthorized change to the real /admin/activity UI.
+const siteOriginal=readFileSync("sql/20260921_01_admin_site_activity_v1.sql","utf8");
+assert.equal(createHash("sha1").update("blob "+Buffer.byteLength(siteOriginal)+"\0").update(siteOriginal).digest("hex"),
+ "e3a5c7ae7c712a8657e151cf9ccf60ffaccf465a");
+const siteBegin=siteOriginal.indexOf("create or replace function public.get_recent_site_activity_v1(");
+const siteEnd=siteOriginal.indexOf("$;",siteBegin);
+assert.ok(siteBegin>=0&&siteEnd>siteBegin,"Original site activity RPC source unavailable");
+const originalSiteFn=siteOriginal.slice(siteBegin,siteEnd+3);
+const oldSiteGuard="if not private.current_user_is_admin() then";
+assert.equal(originalSiteFn.split(oldSiteGuard).length-1,1,"Original website reporter must have exactly one strict helper guard");
+assert.equal(db("SELECT to_regclass('public.players') IS NULL"),"t");
+db("CREATE TABLE public.players(user_id uuid PRIMARY KEY REFERENCES auth.users(id),name text);"
+ +"REVOKE ALL ON public.players FROM PUBLIC,anon,authenticated;"
+ +"INSERT INTO public.players(user_id,name) VALUES('"+users.player.uid+"','Local Test Player');");
+file("sql/20260921_01_admin_site_activity_v1.sql");
+const anonVisit=randomUUID(),signedVisit=randomUUID();
+db("NOTIFY pgrst, 'reload schema'");await sleep(1100);
+yes(await rpc("anon","record_site_visit_v1",{p_visitor_key:anonVisit,p_path:"/landing"}),"source original anon visit");
+yes(await rpc("player","record_site_visit_v1",{p_visitor_key:signedVisit,p_path:"/character"}),"source original signed visit");
+assert.equal(db("SELECT count(*) FROM public.site_visit_activity"),"2");
+const originalSiteData=yes(await rpc("admin","get_recent_site_activity_v1"),"original strict Admin site report");
+assert.ok(Array.isArray(originalSiteData)&&originalSiteData.length>=2);
+for(const role of ["gm","dm","unknown","player","creator","editor","inventory"])
+ no(await rpc(role,"get_recent_site_activity_v1"),role+" historic original site policy");
+no(await rpc("anon","get_recent_site_activity_v1",{},true),"anon original site read");
+console.log("PR334-SITE-HISTORICAL-RED: exact original site report denies GM/DM under superseded T34 policy");
+const versionedSiteFn=originalSiteFn
+ .replace("public.get_recent_site_activity_v1(","public.p13_research_get_recent_site_activity_v1(")
+ .replace(oldSiteGuard,"if not private.p13_research_current_actor_is_manager_v1() then");
+assert.equal(versionedSiteFn.split("private.current_user_is_admin()").length-1,0);
+db(versionedSiteFn
+ +"\nREVOKE ALL ON FUNCTION public.p13_research_get_recent_site_activity_v1() FROM PUBLIC,anon;"
+ +"\nGRANT EXECUTE ON FUNCTION public.p13_research_get_recent_site_activity_v1() TO authenticated;");
+db("NOTIFY pgrst, 'reload schema'");await sleep(1100);
+const allowedFields=["activity_kind","activity_key","email","display_name","role",
+ "account_created_at","last_sign_in_at","first_seen","last_seen",
+ "visit_count","last_path","last_activity_at"].sort();
+assert.deepEqual(yes(await rpc("admin","p13_research_get_recent_site_activity_v1"),"candidate admin site"),originalSiteData);
+for(const role of ["gm","dm"]){
+ const rows=yes(await rpc(role,"p13_research_get_recent_site_activity_v1"),role+" candidate site");
+ assert.deepEqual(rows,originalSiteData,role+" website report full source parity");
+ assert.ok(rows.length>=2);
+ for(const row of rows)assert.deepEqual(Object.keys(row).sort(),allowedFields);
+ const anonRow=rows.find(row=>row.activity_kind==="visitor"&&row.activity_key===anonVisit);
+ assert.ok(anonRow,"Missing source original anonymous row");
+ assert.equal(anonRow.email,null,"Cannot attach an email to an anonymous visitor");
+ assert.equal(anonRow.last_path,"/landing");
+ const signedRow=rows.find(row=>row.activity_kind==="account"&&row.activity_key===users.player.uid);
+ assert.equal(signedRow?.last_path,"/character","Site report lost real signed visit attribution");
+ assert.equal(signedRow?.display_name,"Local Test Player");
+}
+for(const role of ["unknown","player","creator","editor","inventory"])
+ no(await rpc(role,"p13_research_get_recent_site_activity_v1"),role+" current owner policy deny");
+no(await rpc("anon","p13_research_get_recent_site_activity_v1",{},true),"anon revised site denial");
+db("UPDATE public.user_profiles SET role='GM' WHERE id='"+users.unknown.uid+"'");
+no(await rpc("unknown","p13_research_get_recent_site_activity_v1"),"noncanonical uppercase GM denial");
+db("UPDATE public.user_profiles SET role='unknown' WHERE id='"+users.unknown.uid+"'");
+db("UPDATE public.user_profiles SET role='player' WHERE id='"+users.dm.uid+"'");
+no(await rpc("dm","p13_research_get_recent_site_activity_v1"),"same signed JWT demoted DM website report");
+assert.equal(db("SELECT count(*) FROM public.site_visit_activity"),"2");
+assert.equal(db("SELECT has_function_privilege('anon','public.p13_research_get_recent_site_activity_v1()','EXECUTE')"),"f");
+assert.equal(db("SELECT has_function_privilege('authenticated','public.p13_research_get_recent_site_activity_v1()','EXECUTE')"),"t");
+console.log("PR334-SITE-REVISED-JWT-GREEN: owner one-tier app site report, unchanged fields, visitor privacy, exact role/anon/revocation negatives");
+console.log("PR334 ROLE RESEARCH PASS: original RPCs + November16 owner-equivalent revised site report, disposable only; UI/production HOLD");
 
