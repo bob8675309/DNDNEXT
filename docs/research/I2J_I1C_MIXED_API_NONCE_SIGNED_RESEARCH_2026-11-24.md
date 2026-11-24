@@ -1,0 +1,10 @@
+# I2J — original I1C mixed API nonce signed research (2026-11-24)
+
+**Authored / CI pending.** Independent I2J only. Owner requested needed tests and bounded follow-up. Exact original I1C harness and SQL pins retained, original #324 and Stage3 unchanged. Derive a temporary runner in CI; execute all 11 prior signed cases then added original characterization, private REST boundary, rolled-back SQL-role probe, and candidate guard in same disposable PG17/GoTrue/PostgREST fixture. No production access. New workflow is branch-pinned, path-scoped, read-only contents, local Supabase only, with cleanup.
+
+- Original Story-first vs augmented direct v3 same-owner replay, foreign JWT rejection and full selected-row snapshot parity; reverse direct-first Story adoption; pre-guard reservation created for compatibility negative.
+- Actual signed REST private function and schema denial; separate SQL-role-only authenticated EXECUTE probe with rollback. SQL role simulation is NOT a signed JWT invocation. This identifies a grant boundary, not deployed exposure.
+- Source-derived scratch v2/v3 ingress guard only. Exact prepatch function hashes, one anchor, unchanged remainder and ACLs; original source inner v3 unchanged. Test null/string marker, absent nonce, ordinary v2/v3 and Story replay, changed intent, concurrency, same-JWT revocation. No live candidate migration authored or applied.
+- Residual pre-existing ambiguous reservation adoption explicitly tested; guard-only cannot be called complete if residual or private SQL-role exposure persists. All source-derived results pending actual CI. Existing 193 source checks, original signed #350/351 receipts and #371 remain untouched.
+
+**NEXT:** inspect exact-head signed job actual logs; preserve any failure, correct only reproducible fixture issues. If RED reproduced, consider versioned nonce namespace/cutover and private bridge authority without weakening Story RLS; owner release hold. Wizard resource/collision/rest and Battle Master full catalog tests still separate. No PR closure, hosted SQL, main, world map, gameplay, deployment, paid agents or agent settings.

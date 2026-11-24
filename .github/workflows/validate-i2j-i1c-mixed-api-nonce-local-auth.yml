@@ -1,0 +1,85 @@
+name: I2J signed I1C mixed API nonce research (disposable only)
+on:
+  push:
+    branches:
+      - research/i2j-levelup-v2-source-preflight-20261123
+    paths:
+      - 'scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs'
+      - 'scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs'
+      - '.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  story-complete-intent-signed:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_I1C_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate local-only signed fixture syntax
+        run: |
+          node --check scripts/test_i1c_forge_private_story_nonce_local_auth.mjs
+          node --check scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs
+          node --check scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+          node scripts/validate_npc_private_profile_cutover.mjs
+      - name: Install existing pinned application dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure isolated PostgreSQL 17 + GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/i1c-local/supabase"
+          cat > "$RUNNER_TEMP/i1c-local/supabase/config.toml" <<'TOML'
+          project_id = "i1c-forge-story-nonce-local-only"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local Supabase services
+        run: |
+          cd "$RUNNER_TEMP/i1c-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Signed original Forge v2/v3 plus private Story and #324 nonce research
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_I1C_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          (cd "$RUNNER_TEMP/i1c-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i1c-local-env"
+          set -a
+          source "$RUNNER_TEMP/i1c-local-env"
+          set +a
+          export DNDNEXT_I1C_LOCAL_URL='http://127.0.0.1:54321'
+          export DNDNEXT_I1C_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
+            -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          trap 'rm -f scripts/.i2j_i1c_mixed_api_research_tmp.mjs' EXIT
+          node scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs
+          node --check scripts/.i2j_i1c_mixed_api_research_tmp.mjs
+          node scripts/.i2j_i1c_mixed_api_research_tmp.mjs
+      - name: Stop and discard local test services and data
+        if: always()
+        run: |
+          rm -f scripts/.i2j_i1c_mixed_api_research_tmp.mjs
+          cd "$RUNNER_TEMP/i1c-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
