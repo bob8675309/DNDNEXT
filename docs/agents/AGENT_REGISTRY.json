@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "checkpoint_date": "2026-11-24",
+  "repository": "bob8675309/DNDNEXT",
+  "registry_branch": "docs/agent-rollover-registry",
+  "visibility": "public",
+  "private_identifier_policy": "Never publish automation IDs, conversation IDs, account identifiers, credentials, or private transcripts. Resolve current IDs through private task discovery; saved live task definition is authoritative.",
+  "agent_roles": {
+    "A": {
+      "role": "PR Integration / C34 #379",
+      "title_at_checkpoint": "DNDNext A — PR Integration :05",
+      "stable_role_marker": "DNDNext A",
+      "exclusive_branch": "research/c34-clean-main-privacy-forge-joint-source-20261112",
+      "write_scope": "own research branch only",
+      "schedule": "BEGIN:VEVENT\nDTSTART;TZID=America/Chicago:20261123T210500\nRRULE:FREQ=HOURLY;INTERVAL=1;BYHOUR=0,1,2,3,4,5,6,21,22,23;BYMINUTE=5\nEND:VEVENT",
+      "timezone": "America/Chicago",
+      "enabled_at_checkpoint": true,
+      "head_at_checkpoint": "2c9e9e4eec41300971b7e9b1e84c2442c46e9172",
+      "next_bounded_task": "Commit original #332 two-fixture custody ledger and branch handoff; advance one unresolved original source path.",
+      "handoff_path": "docs/agents/AGENT_A.md"
+    },
+    "B": {
+      "role": "CI Reliability / issue #389",
+      "title_at_checkpoint": "DNDNext B — CI Reliability :25",
+      "stable_role_marker": "DNDNext B",
+      "exclusive_branch": "research/c34-ci-efficiency-independent-20261121",
+      "write_scope": "own research branch only",
+      "schedule": "BEGIN:VEVENT\nDTSTART;TZID=America/Chicago:20261123T212500\nRRULE:FREQ=HOURLY;INTERVAL=1;BYHOUR=0,1,2,3,4,5,6,21,22,23;BYMINUTE=25\nEND:VEVENT",
+      "timezone": "America/Chicago",
+      "enabled_at_checkpoint": true,
+      "head_at_checkpoint": "5e6c93e6098a8496fa085ddbbe81ec8eb277bc97",
+      "next_bounded_task": "Commit current-workflow fail-closed pure Node classifier and executable negative tests on own branch.",
+      "handoff_path": "docs/agents/AGENT_B.md"
+    },
+    "C": {
+      "role": "Spell & Combat original preservation",
+      "title_at_checkpoint": "DNDNext C — Spell & Combat :45",
+      "stable_role_marker": "DNDNext C",
+      "exclusive_branch": "research/spell-tactical-preservation-independent-20261123",
+      "write_scope": "own research branch only",
+      "schedule": "BEGIN:VEVENT\nDTSTART;TZID=America/Chicago:20261123T214500\nRRULE:FREQ=HOURLY;INTERVAL=1;BYHOUR=0,1,2,3,4,5,6,21,22,23;BYMINUTE=45\nEND:VEVENT",
+      "timezone": "America/Chicago",
+      "enabled_at_checkpoint": true,
+      "head_at_checkpoint": "bb3939eeb9a38cf416996a1dca3b196b156b2915",
+      "next_bounded_task": "Commit original #309/#312 signed Eldritch Blast source preservation ledger; then one unresolved negative contract.",
+      "handoff_path": "docs/agents/AGENT_C.md"
+    },
+    "D": {
+      "role": "Engineering Supervisor / registry administration only",
+      "title_at_checkpoint": "Agent D — Supervisor (New)",
+      "stable_role_marker": "Supervisor",
+      "exclusive_branch": "docs/agent-rollover-registry",
+      "write_scope": "docs/agents/** on registry branch only, plus owner-approved task rollover operations",
+      "schedule": "BEGIN:VEVENT\nDTSTART;TZID=America/Chicago:20261124T215500\nRRULE:FREQ=HOURLY;INTERVAL=1;BYHOUR=0,1,2,3,4,5,6,21,22,23;BYMINUTE=55\nEND:VEVENT",
+      "timezone": "America/Chicago",
+      "enabled_at_checkpoint": true,
+      "head_at_checkpoint": null,
+      "next_bounded_task": "Check A-C actual completed run reports, HEADs and exact CI after each active cycle; propose bounded corrections and manage rollover checkpoints.",
+      "handoff_path": "docs/agents/AGENT_D.md"
+    }
+  },
+  "protected_owner_branches": [
+    "agent/forge-j168-pr334-preservation-audit-20261123",
+    "research/i2j-levelup-v2-source-preflight-20261123"
+  ],
+  "owner_approval_required_for": [
+    "production SQL including SELECT",
+    "deployments",
+    "gameplay and protected world map",
+    "PR closure/merge/rebase",
+    "paid agents or services",
+    "scope changes",
+    "task schedule changes beyond authorized rollover"
+  ],
+  "rollover_policy": {
+    "owner_authorized": true,
+    "stable_role_only": true,
+    "exactly_one_active_per_role": true,
+    "require_distinct_conversation": true,
+    "require_no_active_run": true,
+    "automatic_context_capacity_detection": false,
+    "create_target_conversation_supported": false,
+    "first_run_verification_required": true
+  }
+}

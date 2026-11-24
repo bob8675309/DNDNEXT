@@ -1,0 +1,3 @@
+# DNDNext agent continuity registry
+
+Read [AGENT_REGISTRY.json](AGENT_REGISTRY.json), [ROLLOVER_PROTOCOL.md](ROLLOVER_PROTOCOL.md), [SUPERVISOR_HANDOFF.md](SUPERVISOR_HANDOFF.md) and the appropriate [A](AGENT_A.md), [B](AGENT_B.md), [C](AGENT_C.md), [D](AGENT_D.md) role checkpoint. [Rollover history](ROLLOVER_LOG.md) is append-only. This public docs-only branch is intentionally separate from main and all engineering agents. Current live saved tasks, exact source HEAD and branch-local handoffs override dated checkpoints. Never publish task IDs, chat IDs or private data. Owner authorization applies only to same-role rollover and registry maintenance; no new paid services or engineering privileges.
