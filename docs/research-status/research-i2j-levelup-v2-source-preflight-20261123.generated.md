@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `43670bc7f1bb02a5de3ce7c03df12b8992eef8b6` |
+| Exact source commit represented by this archive snapshot | `a423e7276b5c06d7e31ddba4b6735965689533dd` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j): verify Signature resources and earned maneuver helper in disposable original fixture |
+| Last source commit title | test(i2j): terminate E02 overlay UPDATE and preserve first signed failure receipt |
 | Files changed relative to main | 259 (186 non-docs; 73 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_I1EF_RESOURCE_AND_MANEUVER_RESEARCH_2026-11-24.md`
-- `scripts/integration/i2j/derive_i1ef_resource_progression_research.mjs`
 - `scripts/integration/i2j/i1ef_resource_progression_research_tail.mjs`
 
 ## Research-branch change inventory versus main
