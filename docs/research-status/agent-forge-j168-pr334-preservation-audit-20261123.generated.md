@@ -5,25 +5,29 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `3c39259b8a761713fbc02fd8158c5d86c8b83048` |
+| Exact source commit represented by this archive snapshot | `012b6b3025003bf7cb1066a701587a5251f31122` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | test(pr334): execute original tactical map admin RPC under exact signed roles |
-| Files changed relative to main | 10 (4 non-docs; 6 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(pr334): record signed role/tactical RED-GREEN and SQL/UI consumer contract |
+| Files changed relative to main | 11 (4 non-docs; 7 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/PR334_CURRENT_ROLE_CONSUMER_SOURCE_INVENTORY_2026-11-23.md`
+- `docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-pr334-role-equivalence-signed.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/PR334_CURRENT_ROLE_CONSUMER_SOURCE_INVENTORY_2026-11-23.md`
 - `docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md`
 - `docs/research/PR334_J168_FULL_HEAD_54_PATH_SOURCE_MATRIX_2026-11-23.json`
 - `docs/research/PR334_J168_SOURCE_CUSTODY_2026-11-23.md`
