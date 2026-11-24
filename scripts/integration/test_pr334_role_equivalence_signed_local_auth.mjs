@@ -49,7 +49,7 @@ for(const role of ["admin","gm","dm","player","unknown","creator","editor","inve
  const u=await c.auth.getUser();assert.ifError(u.error);
  const jwt=await c.auth.getClaims();assert.ifError(jwt.error);
  assert.equal(jwt.data.claims.sub,u.data.user.id);
- users[role]={c,uid:u.data.user.id};
+ users[role]={c,uid:u.data.user.id,email};
  const dbRole=["creator","editor","inventory"].includes(role)?"player":role;
  db("INSERT INTO public.user_profiles(id,role) VALUES('"+u.data.user.id+"','"+dbRole+"')");
 }
@@ -340,5 +340,11 @@ assert.equal(db("SELECT count(*) FROM public.site_visit_activity"),"2");
 assert.equal(db("SELECT has_function_privilege('anon','public.p13_research_get_recent_site_activity_v1()','EXECUTE')"),"f");
 assert.equal(db("SELECT has_function_privilege('authenticated','public.p13_research_get_recent_site_activity_v1()','EXECUTE')"),"t");
 console.log("PR334-SITE-REVISED-JWT-GREEN: owner one-tier app site report, unchanged fields, visitor privacy, exact role/anon/revocation negatives");
-console.log("PR334 ROLE RESEARCH PASS: original RPCs + November16 owner-equivalent revised site report, disposable only; UI/production HOLD");
+// Independent current-source Next browser gate runs only after ALL previous
+// original-source signed checks. The temporary page is written+deleted by its
+// own harness; this audit adds no permanent /admin/activity runtime change.
+db("UPDATE public.user_profiles SET role='dm' WHERE id='"+users.dm.uid+"'");
+const {verifyPr334SiteBrowser}=await import("./pr334_signed_site_activity_browser.mjs");
+await verifyPr334SiteBrowser({users,password:pass,db});
+console.log("PR334 ROLE RESEARCH PASS: exact-source signed SQL plus actual temporary Next/Chromium website-role actor isolation, nonproduction only");
 

@@ -6,6 +6,8 @@ on:
     paths:
       - .github/workflows/validate-pr334-role-equivalence-signed.yml
       - scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs
+      - scripts/integration/pr334_derive_site_activity_probe.mjs
+      - scripts/integration/pr334_signed_site_activity_browser.mjs
       - scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql
       - scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql
       - sql/20260612_90_patch0_crafting_authorization_hardening.sql
@@ -48,10 +50,16 @@ jobs:
       - name: Check local-only source and syntax
         run: |
           node --check scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs
+          node --check scripts/integration/pr334_derive_site_activity_probe.mjs
+          node --check scripts/integration/pr334_signed_site_activity_browser.mjs
           grep -F "up.role IN ('admin','gm','dm')" scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql
           grep -F "up.role = 'admin'" sql/20260612_90_patch0_crafting_authorization_hardening.sql
-      - name: Install pinned repo dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned app dependencies and temporary local Chromium controller
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          mkdir -p "$RUNNER_TEMP/pr334-site-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/pr334-site-browser-tools" --no-save --package-lock=false --no-audit --no-fund --no-progress playwright-core@1.56.1
+          test -n "$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)" || { echo "No local Chrome; no remote fallback" >&2; exit 1; }
       - name: Create empty disposable PostgreSQL 17 and GoTrue config
         run: |
           mkdir -p "$RUNNER_TEMP/pr334-role-only/supabase"
@@ -79,9 +87,17 @@ jobs:
           set +a
           export DNDNEXT_PR334_ROLE_LOCAL_URL='http://127.0.0.1:54321'
           export DNDNEXT_PR334_ROLE_LOCAL_ANON_KEY="$ANON_KEY"
+          export PR334_SITE_BROWSER_CONFIRM=TEMP_SOURCE_DERIVED_NEXT_CHROMIUM_ONLY
+          export PR334_BROWSER_TOOL_ROOT="$RUNNER_TEMP/pr334-site-browser-tools"
+          export PR334_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test ! -e pages/admin/__pr334_site_activity_research.jsx
           node scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs
-      - name: Erase ephemeral database and services
+          test ! -e pages/admin/__pr334_site_activity_research.jsx
+      - name: Erase ephemeral database, browser and temporary research route
         if: always()
         run: |
-          cd "$RUNNER_TEMP/pr334-role-only"
-          npx --yes supabase@2.120.0 stop --no-backup || true
+          rm -f pages/admin/__pr334_site_activity_research.jsx
+          if [ -d "$RUNNER_TEMP/pr334-role-only" ]; then
+            cd "$RUNNER_TEMP/pr334-role-only"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          fi
