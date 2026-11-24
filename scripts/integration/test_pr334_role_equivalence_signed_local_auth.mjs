@@ -169,5 +169,97 @@ for(const who of ["player","unknown","creator","editor","inventory"])
 no(await callMap("anon","p13_research_admin_upsert_encounter_map_v1"),"anon guarded tactical");
 assert.equal(Number(db("select count(*) from public.encounter_maps where name like 'pr334-tactical-%'")),7);
 console.log("PR334-TACTICAL-JWT-GREEN: exact source-body role substitution; admin/gm/dm yes, unknown/player/anon no");
-console.log("PR334 ROLE RESEARCH PASS: disposable selected NPC privacy and tactical map admin RPC, no production effect");
+// ORIGINAL encounter lifecycle source, not TC1/lock/replay acceptance.
+const lifecycle=readFileSync("sql/20260727_03_live_encounter_sessions.sql","utf8");
+assert.equal(createHash("sha1").update("blob "+Buffer.byteLength(lifecycle)+"\0").update(lifecycle).digest("hex"),
+ "1a985be6a3b32196cafc52d5eebaeff29a6a6c1c");
+db("CREATE TABLE public.npc_visual_assets(id uuid primary key); ALTER TABLE public.characters ADD COLUMN visual_asset_id uuid;");
+file("sql/20260727_03_live_encounter_sessions.sql");
+db("NOTIFY pgrst, 'reload schema'");await sleep(1100);
+const mapId=db("SELECT id FROM public.encounter_maps WHERE name LIKE 'pr334-tactical-%' AND is_active ORDER BY created_at LIMIT 1");
+assert.ok(isUUID(mapId));
+const createEncounter=(who,fn)=>rpc(who,fn,{p_map_id:mapId,p_name:"pr334-encounter-"+randomUUID()},who==="anon");
+const originalEncounters=[];
+for(const who of ["admin","gm","dm","unknown"]){
+ const result=yes(await createEncounter(who,"admin_create_encounter_v1"),who+" original encounter");
+ assert.ok(isUUID(result));originalEncounters.push(result);
+}
+for(const who of ["player","creator","editor","inventory"])
+ no(await createEncounter(who,"admin_create_encounter_v1"),who+" original create");
+no(await createEncounter("anon","admin_create_encounter_v1"),"anon original create");
+assert.equal(Number(db("SELECT count(*) FROM public.encounters WHERE name LIKE 'pr334-encounter-%'")),4);
+const origSession=originalEncounters[0];
+yes(await rpc("unknown","admin_set_encounter_status_v1",{p_encounter_id:origSession,p_status:"ready"}),"unknown original status");
+assert.equal(db("SELECT status FROM public.encounters WHERE id='"+origSession+"'"),"ready");
+assert.equal(Number(db("SELECT version FROM public.encounters WHERE id='"+origSession+"'")),2);
+console.log("PR334-ORIGINAL-LIFECYCLE-RED: signed unknown created encounter and changed original status");
+function preservedVersionedLifecycle(name,renamed){
+ const first=lifecycle.indexOf("create or replace function public."+name+"(");
+ assert.ok(first>=0,"Missing original function "+name);
+ const end=lifecycle.indexOf("$function$;",first);
+ assert.ok(end>first);
+ const body=lifecycle.slice(first,end+"$function$;".length),check="not public.is_admin(v_uid)";
+ assert.equal(body.split(check).length-1,1,"Unexpected original guard count");
+ return body.replace("public."+name+"(","public."+renamed+"(")
+  .replace(check,"not private.p13_research_current_actor_is_manager_v1()");
+}
+const newCreate="p13_research_admin_create_encounter_v1",newStatus="p13_research_admin_set_encounter_status_v1";
+db(preservedVersionedLifecycle("admin_create_encounter_v1",newCreate)
+ +"\n"+preservedVersionedLifecycle("admin_set_encounter_status_v1",newStatus)
+ +"\nREVOKE ALL ON FUNCTION public."+newCreate+"(uuid,text,jsonb) FROM PUBLIC,anon;"
+ +"\nGRANT EXECUTE ON FUNCTION public."+newCreate+"(uuid,text,jsonb) TO authenticated;"
+ +"\nREVOKE ALL ON FUNCTION public."+newStatus+"(uuid,text) FROM PUBLIC,anon;"
+ +"\nGRANT EXECUTE ON FUNCTION public."+newStatus+"(uuid,text) TO authenticated;");
+db("NOTIFY pgrst, 'reload schema'");await sleep(1100);
+const newEncounters=[];
+for(const who of ["admin","gm","dm"]){
+ const result=yes(await createEncounter(who,newCreate),who+" new encounter");
+ assert.ok(isUUID(result));newEncounters.push(result);
+}
+for(const who of ["unknown","player","creator","editor","inventory"])
+ no(await createEncounter(who,newCreate),who+" new encounter deny");
+no(await createEncounter("anon",newCreate),"anon new encounter deny");
+assert.equal(Number(db("SELECT count(*) FROM public.encounters WHERE name LIKE 'pr334-encounter-%'")),7);
+const guardedSession=newEncounters[0];
+for(const who of ["unknown","player","creator","editor","inventory"])
+ no(await rpc(who,newStatus,{p_encounter_id:guardedSession,p_status:"ready"}),who+" status denial");
+no(await rpc("anon",newStatus,{p_encounter_id:guardedSession,p_status:"ready"},true),"anon status denial");
+assert.equal(db("SELECT status FROM public.encounters WHERE id='"+guardedSession+"'"),"draft");
+assert.equal(Number(db("SELECT version FROM public.encounters WHERE id='"+guardedSession+"'")),1);
+yes(await rpc("gm",newStatus,{p_encounter_id:guardedSession,p_status:"ready"}),"GM status");
+assert.equal(db("SELECT status FROM public.encounters WHERE id='"+guardedSession+"'"),"ready");
+assert.equal(Number(db("SELECT version FROM public.encounters WHERE id='"+guardedSession+"'")),2);
+db("UPDATE public.user_profiles SET role='player' WHERE id='"+users.gm.uid+"'");
+no(await rpc("gm",newStatus,{p_encounter_id:guardedSession,p_status:"initiative"}),"same JWT demoted GM");
+assert.equal(db("SELECT status FROM public.encounters WHERE id='"+guardedSession+"'"),"ready");
+assert.equal(Number(db("SELECT version FROM public.encounters WHERE id='"+guardedSession+"'")),2);
+yes(await rpc("dm",newStatus,{p_encounter_id:guardedSession,p_status:"initiative"}),"DM status");
+assert.equal(db("SELECT status FROM public.encounters WHERE id='"+guardedSession+"'"),"initiative");
+assert.equal(Number(db("SELECT version FROM public.encounters WHERE id='"+guardedSession+"'")),3);
+console.log("PR334-LIFECYCLE-JWT-GREEN: exact-source body guards; status and version atomicity");
+
+// The original generic wallet_add function is service-role-only, despite its
+// strict private-admin check. Never broaden to browser managers accidentally.
+const wallet=readFileSync("sql/20260724_01_security_hardening_roadmap.sql","utf8");
+assert.equal(createHash("sha1").update("blob "+Buffer.byteLength(wallet)+"\0").update(wallet).digest("hex"),
+ "d7dc873a141f25745aeb9ce29023da1f176b396d");
+const walletStart=wallet.indexOf("CREATE OR REPLACE FUNCTION public.wallet_add(");
+const walletEnd=wallet.indexOf("$function$;",walletStart);
+assert.ok(walletStart>=0&&walletEnd>walletStart);
+const walletBody=wallet.slice(walletStart,walletEnd+"$function$;".length);
+assert.match(walletBody,/NOT private\.current_user_is_admin\(\)/);
+db("CREATE TABLE public.player_wallets(user_id uuid PRIMARY KEY REFERENCES auth.users(id),gp numeric NOT NULL DEFAULT 0,updated_at timestamptz NOT NULL DEFAULT now());"
+ +"ALTER TABLE public.player_wallets ENABLE ROW LEVEL SECURITY;"
+ +"REVOKE ALL ON public.player_wallets FROM PUBLIC,anon,authenticated;");
+db(walletBody
+ +"\nREVOKE EXECUTE ON FUNCTION public.wallet_add(uuid,numeric) FROM PUBLIC,anon,authenticated;"
+ +"\nGRANT EXECUTE ON FUNCTION public.wallet_add(uuid,numeric) TO service_role;");
+assert.equal(db("SELECT has_function_privilege('authenticated','public.wallet_add(uuid,numeric)','EXECUTE')"),"f");
+assert.equal(db("SELECT has_function_privilege('service_role','public.wallet_add(uuid,numeric)','EXECUTE')"),"t");
+db("NOTIFY pgrst, 'reload schema'");await sleep(1100);
+for(const who of ["admin","gm","dm","unknown","player","creator","editor","inventory","anon"])
+ no(await rpc(who,"wallet_add",{p_user:users.player.uid,p_delta:100},true),who+" generic wallet_add denial");
+assert.equal(Number(db("SELECT count(*) FROM public.player_wallets")),0);
+console.log("PR334-WALLET-BROWSER-DENIAL-GREEN: generic wallet_add service-only; no balance writes");
+console.log("PR334 ROLE RESEARCH PASS: original NPC privacy, tactical map, encounter lifecycle and wallet grant subset; no production effect");
 
