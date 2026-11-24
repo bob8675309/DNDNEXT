@@ -8,6 +8,7 @@ on:
       - scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs
       - scripts/integration/pr334_derive_site_activity_probe.mjs
       - scripts/integration/pr334_signed_site_activity_browser.mjs
+      - docs/research/PR334_REAL_NEXT_SITE_ACTIVITY_SIGNED_BROWSER_2026-11-24.md
       - scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql
       - scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql
       - sql/20260612_90_patch0_crafting_authorization_hardening.sql

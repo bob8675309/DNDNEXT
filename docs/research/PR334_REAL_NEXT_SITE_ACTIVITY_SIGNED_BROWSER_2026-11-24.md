@@ -1,0 +1,43 @@
+# PR334 — original-derived REAL Next.js /admin/activity signed Chromium role & actor isolation (2026-11-24 CST)
+
+**Result:** Independently executed real Next.js 16 Pages Router + installed Chromium + genuine local signed GoTrue/PostgREST/PostgreSQL 17 **PASS** at original research code head a06cf71a0b7ffe37013170b236d75ffd9a30e71b, [GitHub Actions #45338523880](https://github.com/bob8675309/DNDNEXT/actions/runs/45338523880), job 138256243677. This is *not* deployed functionality, a production vulnerability report, an active route, a complete security release, or final acceptance of the held original PR integrations.
+
+## Pre-work custody and no-duplication audit
+
+- Active independent audit branch: agent/forge-j168-pr334-preservation-audit-20261123; unmodified main bb3939eeb9a38cf416996a1dca3b196b156b2915. Held integration [#379](https://github.com/bob8675309/DNDNEXT/pull/379) original research head 2c9e9e4eec41300971b7e9b1e84c2442c46e9172 also unchanged.
+- Earlier accepted [PR334 original-source signed site authorization](PR334_C34_OWNER_REVISED_SITE_ACTIVITY_SIGNED_2026-11-23.md) had already proved the **latest post-T37 owner role policy**: exact admin/gm/dm can read app site reports, while noncanonical/player/anon and same-JWT demotion fail; original 12-column report, anonymized visitor rows, and raw table denial preserved. Old [C34 T34 signed original old-policy #43950730956](https://github.com/bob8675309/DNDNEXT/actions/runs/43950730956) remains valid historical strict-site-Admin evidence; the **later** owner policy supersedes its *authorization requirement*. Original T29–B14 merchant/wallet tests were already signed; not duplicated.
+- Reviewed original [pages/admin/activity.js](../../pages/admin/activity.js) Git blob **47fe5943e6e0f7f0759016125c6100f671a0c732**, current _app.js, singleton utils/supabaseClient.js, C34 T22/T24 browser harnesses, original CSS/Next Page imports and existing source-preserving temporary route/Chromium patterns. No original page text, original SQL, original historical tests or protected world map changed.
+- New files: [derive exact original admin site page](../../scripts/integration/pr334_derive_site_activity_probe.mjs) and [signed original-derived real Next Chromium test](../../scripts/integration/pr334_signed_site_activity_browser.mjs). Extended **only the isolated existing PR334 fixture runner** and its dedicated free GitHub Actions workflow.
+
+## How the actual Next Page was tested without deployment
+
+- At CI runtime the derivative requires the original page to match exact Git blob 47fe5943e6e0f7f0759016125c6100f671a0c732; if not, refuses drift. It preserves original imported Supabase client, original JSX/heading, account-and-visitor rows, Refresh and presentation. It replaces **only the isolated temporary page's** strict is_admin() gating/report RPC with a separately signed current-actor exact-role helper and separately versioned report RPC, plus auth event epoch guards to prevent stale private rows. The original page stays byte-identical on disk.
+- CI writes a private ephemeral Pages Router route at pages/admin/__pr334_site_activity_research.jsx with exclusive-create; starts actual local Next dev on 127.0.0.1 random port using only local Supabase anon/public test key, builds and visits that *real* page in local installed Chromium/Playwright, refuses third-party Supabase requests, then removes temporary route in finally. Workflow teardown repeats route removal and stops/erases the disposable database. This route is NOT committed, deployed, mounted in the current UI or otherwise accessible outside the short-lived CI runner.
+- Previous original SQL/GoTrue/PG17 source tests run first in the same disposable database: authentic Patch0 admin/UID helper discrepancy, NPC Stage2/Story and editor separation, tactical encounter map/creation/status source-original guard mismatches, generic wallet_add service-only and revised website report, raw visitor-table denied. Site visitor table contains *only artificial visits and test users*. No hosted SQL (including SELECT), live service-role secret, production account or visitor data was used.
+- Auth callbacks immediately invalidate the epoch and clear rows before delayed previous-actor responses can write. Current session identity is checked before committing report rows; backend always rechecks signed current DB role. A failed report/refreshed demoted account clears the private view. The original live page still uses old zero-argument is_admin() and has NOT been patched.
+
+## Real signed browser PASS assertions (actual decoded CI log)
+
+[Final verified #45338523880](https://github.com/bob8675309/DNDNEXT/actions/runs/45338523880) succeeded with these discrete markers:
+
+- PASS PR334-SITE-REAL-NEXT — original source SHA pinned; temporary Next page actually compiled.
+- PASS PR334-SITE-BROWSER-ANON — unsigned browser failed closed.
+- PASS PR334-SITE-BROWSER-ADMIN — signed Admin saw genuine source report rows, Refresh and no direct visitor table.
+- PASS PR334-SITE-BROWSER-GM — same-page Admin→GM switch retained owner-authorized report.
+- PASS PR334-SITE-BROWSER-DM — signed DM original report visible.
+- PASS PR334-SITE-BROWSER-LATE — pending previous-actor report delayed, signed session switched to player; private report did not repopulate.
+- PASS PR334-SITE-BROWSER-DENY — player, noncanonical unknown, creator/editor/inventory-only actors fail closed.
+- PASS PR334-SITE-BROWSER-LOGOUT — signout clears the sensitive rows and current session.
+- PASS PR334-SITE-BROWSER-REVOKE — while the same signed DM JWT remains, the DB role is demoted to player and Refresh denies access and erases previously displayed rows.
+- PASS PR334-SITE-BROWSER-SIGNED — no prohibited offsite requests, browser page errors or permanent route.
+- Final original helper/Story/tactical/lifecycle/wallet/site signed source fixture PASS; temporary route and local Supabase containers destroyed without backup.
+
+**Preserved first RED:** [Run #45338130659](https://github.com/bob8675309/DNDNEXT/actions/runs/45338130659), initial code e9ca272244543f2b3c349bc999c0c0f24f71f326, **failed** only after the real original Next page compiled and anon/Admin/GM/DM, delayed old report and multi-role denies had passed. The browser harness incorrectly required the account last_path to remain "/character" *after* the application's real SiteVisitTracker legitimately changed it during new navigation. Historical source-only SQL already proves initial signed "/character" attribution. Final harness correctly preserves the intentionally anonymous visitor's "/landing" path, real account row, no stale private values and all server/role negatives without assuming signed last_path immutability. Fix is test assertion only; no source policies or app logic weakened. Intermediate fixture-format code is retained in Git history. Repeated CI on new code passed.
+
+## Distinct unfinished release gates and one next task
+
+1. **No deployed page authorization change:** current pages/admin/activity.js STILL calls old no-arg public.is_admin(), not the revised report-capability RPC. Current app navbar/login and auth event lifecycle need paired review. Avoid a global shared helper replacement because original world-map RLS, Forge triggers, tactical service and site report have noninterchangeable role contracts.
+2. **Fixture does not equal full production shape:** original Sep21 site recorder follow-up hardening, exact installed hosted grants, full real site's 340 Storage objects, legacy 22/34 account sheet writers, original Forge 31-trigger, Stage1–3 privacy+PDF, merchant purchase and delegated tactical lock/replay have independent release tests. No actual production data or API key touched.
+3. **ONE NEXT NONMAP TASK:** prepare a dependency-complete, **unmounted source-only paired rollout/rollback design** for the original /admin/activity page and site reader with owner-revised exact-role capability, including original Sep21 recorder hardening and AuthStateChange current-actor invalidation. Explicitly distinguish old site-report reader from current policy, preserve site tracker output privacy and test real Next browser after assembly. Present migration+frontend release requirements to owner; DO NOT deploy/merge/change main or hosted SQL without explicit owner go/no-go and independent restored encrypted PG17 + **340 Storage objects**.
+
+Rollback: revert PR334 independent research-only commits, or discard temporary CI route; original deployed application and SQL were never changed. No paid agent activation, other agents' branches, PR close/merge, world map or Vercel deployment.
