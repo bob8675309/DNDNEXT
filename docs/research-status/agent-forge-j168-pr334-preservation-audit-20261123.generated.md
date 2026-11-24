@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `0a0f97eb69e5f23315983d896503b365bd57e91d` |
+| Exact source commit represented by this archive snapshot | `1b311f6c6d2601bca9dd355162bfe1c4813d998c` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | test(pr334): restore sandbox GM role before independent site activity policy matrix |
+| Last source commit title | test(pr334): deny direct raw visitor-table reads for every signed role |
 | Files changed relative to main | 12 (4 non-docs; 8 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
