@@ -323,6 +323,14 @@ for(const role of ["gm","dm"]){
 for(const role of ["unknown","player","creator","editor","inventory"])
  no(await rpc(role,"p13_research_get_recent_site_activity_v1"),role+" current owner policy deny");
 no(await rpc("anon","p13_research_get_recent_site_activity_v1",{},true),"anon revised site denial");
+// Application report authorization must never imply direct raw table access.
+for(const who of ["admin","gm","dm","player","unknown","creator","editor","inventory","anon"]){
+ const client=who==="anon"?make():users[who].c;
+ const direct=await client.from("site_visit_activity").select("visitor_key,user_id").limit(1);
+ assert.ok(direct.error||(Array.isArray(direct.data)&&direct.data.length===0),
+  who+" gained forbidden raw site_visit_activity access");
+}
+console.log("PR334-SITE-BASE-TABLE-DENY: all app roles including managers barred from raw visitor table");
 db("UPDATE public.user_profiles SET role='GM' WHERE id='"+users.unknown.uid+"'");
 no(await rpc("unknown","p13_research_get_recent_site_activity_v1"),"noncanonical uppercase GM denial");
 db("UPDATE public.user_profiles SET role='unknown' WHERE id='"+users.unknown.uid+"'");
