@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `b36f4d5e087ba0d0a1e583945abace2570a8bd20` |
+| Exact source commit represented by this archive snapshot | `42efe1697e97e7fefcd90809eb20abe732f4e273` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): preserve feature audit and new Story nonce boundary before retirement |
-| Files changed relative to main | 250 (179 non-docs; 71 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(i2j): signed original I1C mixed API nonce boundary and scratch guard research |
+| Files changed relative to main | 254 (182 non-docs; 72 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_PR350_354_FEATURE_SECURITY_RETIREMENT_REVIEW_2026-11-24.md`
+- `docs/research/I2J_I1C_MIXED_API_NONCE_SIGNED_RESEARCH_2026-11-24.md`
+- `scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs`
+- `scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -51,6 +54,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
 - `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
 - `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
+- `.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml`
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
@@ -72,8 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_INVENTORY_RELEASE_PREFLIGHT_2026-11-08.md`
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
-- `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- … 200 more
+- … 204 more
 
 ## Trust and update procedure
 
