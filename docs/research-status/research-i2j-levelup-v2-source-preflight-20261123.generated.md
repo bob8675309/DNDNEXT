@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `8f62931957c12dcebd007d94d4fa85b7d03ec169` |
+| Exact source commit represented by this archive snapshot | `43670bc7f1bb02a5de3ce7c03df12b8992eef8b6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | research(i2j): test versioned atomic Story bridge after reproduced mixed API RED |
-| Files changed relative to main | 255 (183 non-docs; 72 docs) |
+| Last source commit title | research(i2j): verify Signature resources and earned maneuver helper in disposable original fixture |
+| Files changed relative to main | 259 (186 non-docs; 73 docs) |
 | Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
@@ -17,12 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml`
+- `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_I1C_MIXED_API_NONCE_SIGNED_RESEARCH_2026-11-24.md`
-- `scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs`
-- `scripts/integration/i2j/i1c_versioned_atomic_story_research_tail.mjs`
+- `docs/research/I2J_I1EF_RESOURCE_AND_MANEUVER_RESEARCH_2026-11-24.md`
+- `scripts/integration/i2j/derive_i1ef_resource_progression_research.mjs`
+- `scripts/integration/i2j/i1ef_resource_progression_research_tail.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -55,6 +55,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
 - `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
 - `.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml`
+- `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
@@ -75,8 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRINT_VISUAL_QA_2026-11-08.md`
 - `docs/C3_3_NPC_PRIVACY_INVENTORY_RELEASE_PREFLIGHT_2026-11-08.md`
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
-- `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
-- … 205 more
+- … 209 more
 
 ## Trust and update procedure
 
