@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `ec77ee9f7c5488bdeed22f8c399437140f78b6d2` |
+| Exact source commit represented by this archive snapshot | `b36f4d5e087ba0d0a1e583945abace2570a8bd20` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): record 193 source passes and complete inherited I1B-F tree custody |
-| Files changed relative to main | 249 (179 non-docs; 70 docs) |
+| Last source commit title | docs(i2j): preserve feature audit and new Story nonce boundary before retirement |
+| Files changed relative to main | 250 (179 non-docs; 71 docs) |
 | Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
@@ -19,7 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_PR350_354_SOURCE_CUSTODY_2026-11-24.md`
+- `docs/research/I2J_PR350_354_FEATURE_SECURITY_RETIREMENT_REVIEW_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_SOURCE_PROVENANCE_2026-11-07.json`
-- … 199 more
+- … 200 more
 
 ## Trust and update procedure
 
