@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `d5c718f1b7ee71427b98e28c2265ea450050102e` |
+| Exact source commit represented by this archive snapshot | `760256d9823e468b0a870606efb5519140102aeb` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(pr334): preserve exact-page signed Chromium site-role acceptance and safe handoff |
-| Files changed relative to main | 16 (6 non-docs; 10 docs) |
-| Last source commit | 5 files (1 non-docs; 4 authored docs) |
+| Last source commit title | docs(pr334): plan source-complete site activity and PR318 notices rollout without agent conflicts |
+| Files changed relative to main | 17 (6 non-docs; 11 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-pr334-role-equivalence-signed.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/PR334_C34_OWNER_REVISED_SITE_ACTIVITY_SIGNED_2026-11-23.md`
-- `docs/research/PR334_REAL_NEXT_SITE_ACTIVITY_SIGNED_BROWSER_2026-11-24.md`
+- `docs/research/PR334_SITE_ACTIVITY_PR318_PAIRED_INTEGRATION_BLUEPRINT_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
@@ -36,6 +34,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/PR334_ORIGINAL_ENCOUNTER_LIFECYCLE_WALLET_SOURCE_JWT_2026-11-23.md`
 - `docs/research/PR334_P13_PRIVACY_FORGE_ROLE_CONSUMERS_2026-11-23.md`
 - `docs/research/PR334_REAL_NEXT_SITE_ACTIVITY_SIGNED_BROWSER_2026-11-24.md`
+- `docs/research/PR334_SITE_ACTIVITY_PR318_PAIRED_INTEGRATION_BLUEPRINT_2026-11-24.md`
 - `scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql`
 - `scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql`
 - `scripts/integration/pr334_derive_site_activity_probe.mjs`
