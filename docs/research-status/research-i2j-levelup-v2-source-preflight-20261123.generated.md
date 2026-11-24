@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `42efe1697e97e7fefcd90809eb20abe732f4e273` |
+| Exact source commit represented by this archive snapshot | `8f62931957c12dcebd007d94d4fa85b7d03ec169` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): signed original I1C mixed API nonce boundary and scratch guard research |
-| Files changed relative to main | 254 (182 non-docs; 72 docs) |
+| Last source commit title | research(i2j): test versioned atomic Story bridge after reproduced mixed API RED |
+| Files changed relative to main | 255 (183 non-docs; 72 docs) |
 | Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
@@ -22,7 +22,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_I1C_MIXED_API_NONCE_SIGNED_RESEARCH_2026-11-24.md`
 - `scripts/integration/i2j/derive_i1c_mixed_api_nonce_research.mjs`
-- `scripts/integration/i2j/i1c_mixed_api_nonce_research_tail.mjs`
+- `scripts/integration/i2j/i1c_versioned_atomic_story_research_tail.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -76,7 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_NPC_PRIVACY_INVENTORY_RELEASE_PREFLIGHT_2026-11-08.md`
 - `docs/C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md`
 - `docs/C3_3_NPC_PROFILE_INTEGRATION_REVIEW_2026-11-07.md`
-- … 204 more
+- … 205 more
 
 ## Trust and update procedure
 
