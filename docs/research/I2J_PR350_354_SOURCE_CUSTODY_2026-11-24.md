@@ -22,3 +22,22 @@ The original I1B successful research job explicitly printed KNOWN GAP CONFIRMED;
 ## Holds and next
 Previous I2J #355–364: 66 source occurrences, 168 historical exact-head Node tests. Together 89 immediate source occurrences across 15 originals now accounted for at T0, but only the previous 10 have the prior completed custody package; #350–354 still require the full inherited-source disposition review and exact new source CI. No retirement approved. 22/34 original UPDATE writer families, 3 UPSERT variants, full original 31-trigger graph, mounted browser and independent PG17+340 Storage restore remain held. No hosted SQL even SELECT, original PR changes, Agent A/B/C/D settings, map, gameplay, main, deploy or paid agents.
 **ONE NEXT:** inspect exact-HEAD I2J source CI; complete inherited #345→#371 exceptions separately without duplicating Agent A, then request owner review of retirement candidates.
+
+## 2026-11-24 — exact-head CI and complete inherited Git-tree custody receipt
+
+Exact executable research commit e37bb918937deb314ef873942a54c72eaa5392b0: [source CI #45468520077](https://github.com/bob8675309/DNDNEXT/actions/runs/45468520077), job 138709818560, all 193/193 Node cases across ten groups (11+11+13+16+13+18+16+30+40+25), zero failures; [tactical #45468520157](https://github.com/bob8675309/DNDNEXT/actions/runs/45468520157) and [docs #45468520008](https://github.com/bob8675309/DNDNEXT/actions/runs/45468520008) success. Actual logs inspected. No new signed DB execution.
+
+Recovered prior disconnected tree retrieval: nontruncated recursive trees for #345 and all five original #350–354 HEADs compared path-by-path to held #371 6db27e720d0c2788774cc37d2f85d14244e61b95. Every original blob is exact at its original path except the SAME two evolving handoff documents in each tree. Zero absent original paths.
+
+| Original | Original blobs | Exact same path | Whole historical handoffs |
+|---|---:|---:|---:|
+| #345 (inherited base; not a retirement candidate) | 2071 | 2069 | 2 |
+| #350 | 2074 | 2072 | 2 |
+| #351 | 2078 | 2076 | 2 |
+| #352 | 2084 | 2082 | 2 |
+| #353 | 2089 | 2087 | 2 |
+| #354 | 2094 | 2092 | 2 |
+
+All six original trees share ACTIVE_WORK blob 09a4b4619734067a04a5bed1ec46d2bba1f161f9 (48,828 UTF-8 bytes), verified whole verbatim suffix of held #371 blob b5dc62d7ea109e852db8e3d94bf8bcf4c75246de and independent branch at tested HEAD. HANDOFF_LOG blob 8a6c4c30ac26aabcb0930b1b794d4ed3246c1bfc (142,891 UTF-8 bytes), verified whole verbatim prefix of held #371 blob e567b3238d2d401e6504e846b380ec9c33a00c97 and independent branch. Both exceptions disposition deferred_preserved (whole historical content, not a behavioral rewrite). Every other original inherited source file, including all #345 privacy candidates, is exact_copy; do NOT infer deployed behavior or security approval. #345 itself remains held. This completes inherited Git-tree custody, not a fresh semantic certification of all inherited #345 consumers, production ACL or release. Original signed I1B–F logs retained as bounded historical evidence; existing review restrictions remain.
+
+**ONE NEXT:** Owner decision on retirement of previously reviewed #355–364, plus #350–354 only after owner review of inherited custody and remaining semantic scope. Recheck original heads/base/ancestry/status before any permitted closure. No closure authorized by this receipt; no main, SQL, gameplay, map, paid agent, agent configuration or deployment change.
