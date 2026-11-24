@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `a423e7276b5c06d7e31ddba4b6735965689533dd` |
+| Exact source commit represented by this archive snapshot | `cf90c02afe916dc43adbd3abd6ab736e309960b4` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): terminate E02 overlay UPDATE and preserve first signed failure receipt |
+| Last source commit title | docs(i2j): retain signed Wizard PASS and cross-PR no-retread audit for earned Battle Master |
 | Files changed relative to main | 259 (186 non-docs; 73 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,7 +20,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_I1EF_RESOURCE_AND_MANEUVER_RESEARCH_2026-11-24.md`
-- `scripts/integration/i2j/i1ef_resource_progression_research_tail.mjs`
 
 ## Research-branch change inventory versus main
 
