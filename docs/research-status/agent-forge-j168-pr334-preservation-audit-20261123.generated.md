@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `1357c4b5b07c403f9a4b60a35f93a6385abc6c74` |
+| Exact source commit represented by this archive snapshot | `a06cf71a0b7ffe37013170b236d75ffd9a30e71b` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | test(pr334): tolerate legitimate visit-tracker last_path changes in signed browser |
+| Last source commit title | test(pr334): retain anonymous path assertion with valid multiline syntax |
 | Files changed relative to main | 15 (6 non-docs; 9 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
