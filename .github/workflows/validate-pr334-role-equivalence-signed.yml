@@ -9,6 +9,11 @@ on:
       - scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql
       - scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql
       - sql/20260612_90_patch0_crafting_authorization_hardening.sql
+      - sql/20260727_01_encounter_map_foundation.sql
+      - sql/20260727_03_live_encounter_sessions.sql
+      - sql/20260724_01_security_hardening_roadmap.sql
+      - docs/research/PR334_CURRENT_ROLE_CONSUMER_SOURCE_INVENTORY_2026-11-23.md
+      - docs/research/PR334_ORIGINAL_ENCOUNTER_LIFECYCLE_WALLET_SOURCE_JWT_2026-11-23.md
       - docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md
       - docs/ACTIVE_WORK.md
       - docs/HANDOFF_LOG.md
