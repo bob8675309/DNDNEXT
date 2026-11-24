@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `c2e860715de92e7b81cfd51a8c6cf5b216dbef0c` |
+| Exact source commit represented by this archive snapshot | `3c39259b8a761713fbc02fd8158c5d86c8b83048` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | test(pr334): accept PostgREST hidden RPC as anonymous and spoof denial |
+| Last source commit title | test(pr334): execute original tactical map admin RPC under exact signed roles |
 | Files changed relative to main | 10 (4 non-docs; 6 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
