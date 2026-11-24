@@ -841,3 +841,10 @@ P2 authored: same exact runner plus pinned original P1 extension, source-derived
 - 8f62931957c12dcebd007d94d4fa85b7d03ec169, [signed run 45498577107](https://github.com/bob8675309/DNDNEXT/actions/runs/45498577107), job 138815485254, actual log: 11 original I1C PASS, historical RED and residual adoption preserved, all seven versioned atomic bridge cases PASS; all three workflows green. Scratch only. Explicit definer policy equivalence and old legitimate retry compatibility unresolved.
 - New [I1E/F dossier](research/I2J_I1EF_RESOURCE_AND_MANEUVER_RESEARCH_2026-11-24.md) and branch-only derived signed runner/workflow. Original I1F bytes preserved; Wizard exact historical resource DDL minus historical backfill, reduced auth fixture; Battle Master privileged exact historical helper, legacy writer RED rolled back then scratch Option A, 12/20 catalog identities and 7/10/15 helper cases. No new result claimed before CI. No new writer coverage claimed. No hosted SQL, production, map, main, deploy, Daybreak, paid agents, closures.
 - **ONE NEXT:** inspect exact-head signed CI logs and retain any failures; complete bounded resource/helper proof, then review v5 and catalog blockers.
+
+
+## 2026-11-24 CST — I2J I1E/F first signed failure retained, E02 test-only correction
+
+Exact prior executable `43670bc7f1bb02a5de3ce7c03df12b8992eef8b6`, [failed signed run 45499863376](https://github.com/bob8675309/DNDNEXT/actions/runs/45499863376), job 138819971669: original I1C/D/E/F and new E01 passed; E02 stopped because the new UPDATE lacked a terminating semicolon before the original rejectedTransaction helper appended COMMIT. Actual PostgreSQL error was syntax error at or near COMMIT, not the expected original Signature overlay rejection. Corrected only the new E02 statement terminator; original helper, SQL, error matcher and rollback hash assertion remain unchanged. E02–E05 and F01/F02 are NOT yet accepted; exact new-head CI pending.
+
+**NEXT:** verify exact-head CI and distinguish historical signed resource RPCs from privileged helper research. No production, map, main, deployment, paid services, agent writes or PR retirements.

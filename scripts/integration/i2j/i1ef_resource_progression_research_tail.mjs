@@ -53,7 +53,7 @@ assert.match(i2jNonSig,/^[0-9a-f-]{36}$/);
 sql("UPDATE public.character_spells SET uses_max=2,uses_remaining=1,recharge='long_rest',raw_payload=raw_payload||'{\"resourceLabel\":\"I2J unrelated resource\",\"resourceFeature\":\"I2J unrelated feature\"}'::jsonb WHERE id="+i2jQ(i2jNonSig));
 const i2jSpellHash=()=>sql("SELECT md5(coalesce(string_agg(md5(to_jsonb(cs)::text),'' ORDER BY cs.id),'')) FROM public.character_spells cs WHERE character_id="+i2jQ(i2jSig));
 const i2jBeforeOverlay=i2jSpellHash();
-rejectedTransaction("UPDATE public.character_spells SET raw_payload=raw_payload||'{\"signatureSpell\":true}'::jsonb,uses_max=1,uses_remaining=1,recharge='short_rest' WHERE id="+i2jQ(i2jNonSig),"unrelated resource overlay",/Signature Spells cannot overwrite another limited-use resource/i);
+rejectedTransaction("UPDATE public.character_spells SET raw_payload=raw_payload||'{\"signatureSpell\":true}'::jsonb,uses_max=1,uses_remaining=1,recharge='short_rest' WHERE id="+i2jQ(i2jNonSig)+";","unrelated resource overlay",/Signature Spells cannot overwrite another limited-use resource/i);
 assert.equal(i2jSpellHash(),i2jBeforeOverlay);
 console.log('PASS I2J-E02 exact original overlay trigger rejects unrelated limited-use replacement and rolls back');
 // Both requests share a real JWT; row lock prevents the same free use being consumed twice.
