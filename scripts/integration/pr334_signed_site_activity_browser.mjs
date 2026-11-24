@@ -95,7 +95,7 @@ export async function verifyPr334SiteBrowser({users,password,db}){
    await page.getByText("Local Test Player").waitFor({timeout:23000});
    assert.ok((await page.getByText("Anonymous visitor",{exact:false}).count())>=1,label+" anonymous row lost");
    const body=await page.locator("body").innerText();
-   assert.ok(body.includes("/landing")&&body.includes("/character"),label+" original visitor path missing");
+   // _app SiteVisitTracker updates a signed account\'s last_path during navigation;\n   // original source SQL test already asserts the initial /character attribution.\n   // Only the intentionally seeded immutable anonymous visitor must retain /landing.\n   assert.ok(body.includes("/landing"),label+" anonymous visitor source path missing");
    assert.ok(!body.includes("service_role"),"Browser exposed internal service role");
    const raw=await api("rawVisit");
    assert.ok(raw.error||raw.data?.length===0,label+" raw site visitor table exposed");
