@@ -1,0 +1,89 @@
+name: I2J I1E-F Signature resources and earned maneuver research (disposable only)
+on:
+  push:
+    branches:
+      - research/i2j-levelup-v2-source-preflight-20261123
+    paths:
+      - 'scripts/integration/i2j/derive_i1ef_resource_progression_research.mjs'
+      - 'scripts/integration/i2j/i1ef_resource_progression_research_tail.mjs'
+      - '.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  battle-master-original-grants-joint-signed:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '55422'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_I1F_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate local-only signed fixture syntax
+        run: |
+          node --check scripts/validate_i1d_trigger_gap_manifest.mjs
+          node scripts/validate_i1d_trigger_gap_manifest.mjs
+          node --check scripts/test_i1f_battle_master_original_joint_local_auth.mjs
+          node --check scripts/integration/i2j/derive_i1ef_resource_progression_research.mjs
+          node --check scripts/integration/i2j/i1ef_resource_progression_research_tail.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+          node scripts/validate_npc_private_profile_cutover.mjs
+      - name: Install existing pinned application dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure isolated PostgreSQL 17 + GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/i1f-local/supabase"
+          cat > "$RUNNER_TEMP/i1f-local/supabase/config.toml" <<'TOML'
+          project_id = "i1f-battle-master-original-local-only"
+          [api]
+          port = 55421
+          [db]
+          port = 55422
+          shadow_port = 55420
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local Supabase services
+        run: |
+          cd "$RUNNER_TEMP/i1f-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Signed original Forge v2/v3 plus private Story and #324 nonce research
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '55422'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_I1F_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          (cd "$RUNNER_TEMP/i1f-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i1f-local-env"
+          set -a
+          source "$RUNNER_TEMP/i1f-local-env"
+          set +a
+          export DNDNEXT_I1F_LOCAL_URL='http://127.0.0.1:55421'
+          export DNDNEXT_I1F_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
+            -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          node scripts/integration/i2j/derive_i1ef_resource_progression_research.mjs
+          node --check scripts/.i2j_i1ef_resource_progression_generated.mjs
+          node scripts/.i2j_i1ef_resource_progression_generated.mjs
+      - name: Stop and discard local test services and data
+        if: always()
+        run: |
+          rm -f scripts/.i2j_i1ef_resource_progression_generated.mjs
+          cd "$RUNNER_TEMP/i1f-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
