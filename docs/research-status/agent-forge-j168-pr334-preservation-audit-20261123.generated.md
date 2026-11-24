@@ -5,24 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-j168-pr334-preservation-audit-20261123` |
-| Exact source commit represented by this archive snapshot | `f4db8e67e2703cb25590de4ebaf905ee09f8fa51` |
+| Exact source commit represented by this archive snapshot | `e9ca272244543f2b3c349bc999c0c0f24f71f326` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(pr334): preserve latest owner site-report role policy and signed JWT proof |
-| Files changed relative to main | 13 (4 non-docs; 9 docs) |
-| Last source commit | 6 files (1 non-docs; 5 authored docs) |
+| Last source commit title | test(pr334): verify source-derived original site activity in isolated signed Next Chromium |
+| Files changed relative to main | 15 (6 non-docs; 9 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
 - `.github/workflows/validate-pr334-role-equivalence-signed.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/PR334_C34_OWNER_REVISED_SITE_ACTIVITY_SIGNED_2026-11-23.md`
-- `docs/research/PR334_CURRENT_ROLE_CONSUMER_SOURCE_INVENTORY_2026-11-23.md`
-- `docs/research/PR334_CURRENT_ROLE_SOURCE_RED_GREEN_2026-11-23.md`
+- `scripts/integration/pr334_derive_site_activity_probe.mjs`
+- `scripts/integration/pr334_signed_site_activity_browser.mjs`
+- `scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -38,6 +36,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/research/PR334_P13_PRIVACY_FORGE_ROLE_CONSUMERS_2026-11-23.md`
 - `scripts/fixtures/pr334_role_current_policy_candidate_pg17.sql`
 - `scripts/fixtures/pr334_role_original_consumers_disposable_pg17.sql`
+- `scripts/integration/pr334_derive_site_activity_probe.mjs`
+- `scripts/integration/pr334_signed_site_activity_browser.mjs`
 - `scripts/integration/test_pr334_role_equivalence_signed_local_auth.mjs`
 
 ## Forge source and authenticated evidence (branch-local only)
