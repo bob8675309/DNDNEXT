@@ -1,0 +1,310 @@
+{
+  "schema_version": "i2j-pr350-354-original-custody-v1",
+  "reviewed": "2026-11-24 CST",
+  "main_at_review": "bb3939eeb9a38cf416996a1dca3b196b156b2915",
+  "successor": {
+    "pr": 371,
+    "head": "6db27e720d0c2788774cc37d2f85d14244e61b95",
+    "held": true
+  },
+  "independent_precommit": "4772d1d8c35c063ce01d7157c334ba65419ba3ec",
+  "original_prs": {
+    "350": {
+      "head": "503e95a1cc1ee7151b5f16f8de60a45645bb818c",
+      "base": "4f5f8ff7587aff1a68f21581ad68a4752789f54a",
+      "ancestor_of_successor": true,
+      "state_at_review": "open_draft",
+      "success_signed_ci_run": 42740782047,
+      "signed_job": 129580999844,
+      "tag": "I1B",
+      "verified_log_contract": "Original changed-only Story nonce accepted (expected historical RED); changed base payload and other actor denied; CHECK rollback and revoked editor replay denied.",
+      "full_head_vs_main": {
+        "exact": 1966,
+        "different": 41,
+        "absent": 67,
+        "total": 2074
+      }
+    },
+    "351": {
+      "head": "5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7",
+      "base": "503e95a1cc1ee7151b5f16f8de60a45645bb818c",
+      "ancestor_of_successor": true,
+      "state_at_review": "open_draft",
+      "success_signed_ci_run": 42754079207,
+      "signed_job": 129624259496,
+      "tag": "I1C",
+      "verified_log_contract": "Changed-only Story rejected 22023; opaque digest only; mixed API and forged digest denied; concurrent conflicting/identical intent and null/blank normalization; current permission recheck.",
+      "full_head_vs_main": {
+        "exact": 1966,
+        "different": 41,
+        "absent": 71,
+        "total": 2078
+      }
+    },
+    "352": {
+      "head": "79c9607d12c6bc186f8208d9a3e715242060d806",
+      "base": "5561d0e5e941f44d6a2f2e4fea99166ba92fdcc7",
+      "ancestor_of_successor": true,
+      "state_at_review": "open_draft",
+      "success_signed_ci_run": 42756702918,
+      "signed_job": 129632636942,
+      "tag": "I1D",
+      "verified_log_contract": "Obsolete NOT VALID owner CHECK reproduced rollback; exact Stage4 candidate rollback/install; nonce retry and gear/currency idempotency; creator mint/launder/delete, outsider read and revoked editor replay denied. Historical 31-trigger census not joint 31/31 execution.",
+      "full_head_vs_main": {
+        "exact": 1967,
+        "different": 41,
+        "absent": 76,
+        "total": 2084
+      }
+    },
+    "353": {
+      "head": "2b10b86f1237de484974d686acbd16d47c29a1d6",
+      "base": "79c9607d12c6bc186f8208d9a3e715242060d806",
+      "ancestor_of_successor": true,
+      "state_at_review": "open_draft",
+      "success_signed_ci_run": 42759971826,
+      "signed_job": 129643101363,
+      "tag": "I1E",
+      "verified_log_contract": "Original Evoker level3 Savant and level20 Signature positive; missing or duplicate Savant and missing Signature rollback; inert replay preserves later authorized Story.",
+      "full_head_vs_main": {
+        "exact": 1967,
+        "different": 41,
+        "absent": 81,
+        "total": 2089
+      }
+    },
+    "354": {
+      "head": "83aa403c725b3a05e6f32b1623801b8ffccf64b8",
+      "base": "2b10b86f1237de484974d686acbd16d47c29a1d6",
+      "ancestor_of_successor": true,
+      "state_at_review": "open_draft",
+      "success_signed_ci_run": 42763237930,
+      "signed_job": 129653616140,
+      "tag": "I1F",
+      "verified_log_contract": "Original level3/10 maneuver grant positive; missing, duplicate, unknown, tampered, subclass-change and level-gating negatives; outsider nonce and direct grant-row forgery denied; Wizard/Stage4 intact.",
+      "full_head_vs_main": {
+        "exact": 1967,
+        "different": 41,
+        "absent": 86,
+        "total": 2094
+      }
+    }
+  },
+  "counts": {
+    "total": 23,
+    "exact_copy": 23
+  },
+  "source_preservation_only": true,
+  "full_inherited_semantic_review_complete": false,
+  "retirement_approved": false,
+  "production_release_allowed": false,
+  "entries": [
+    {
+      "pr": 350,
+      "path": ".github/workflows/validate-i1b-forge-story-nonce-local-auth.yml",
+      "original_change": "added",
+      "original_blob": "0a22318ce681e96c4835986b14eb3ba8082907ca",
+      "successor_blob": "0a22318ce681e96c4835986b14eb3ba8082907ca",
+      "independent_precommit_blob": "0a22318ce681e96c4835986b14eb3ba8082907ca",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 350,
+      "path": "docs/I1_B_FORGE_STORY_NONCE_JOINT_NEGATIVE_2026-11-09.md",
+      "original_change": "added",
+      "original_blob": "8edda44cd2ee5a2a0b017080e46641b8d14ebe37",
+      "successor_blob": "8edda44cd2ee5a2a0b017080e46641b8d14ebe37",
+      "independent_precommit_blob": "8edda44cd2ee5a2a0b017080e46641b8d14ebe37",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 350,
+      "path": "scripts/test_i1b_forge_private_story_nonce_local_auth.mjs",
+      "original_change": "added",
+      "original_blob": "08f44d19f132a92659de01e9c62a0d141bb93349",
+      "successor_blob": "08f44d19f132a92659de01e9c62a0d141bb93349",
+      "independent_precommit_blob": "08f44d19f132a92659de01e9c62a0d141bb93349",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 351,
+      "path": ".github/workflows/validate-i1c-forge-story-nonce-local-auth.yml",
+      "original_change": "added",
+      "original_blob": "d2287a9bc689018bb54c1f484b65d68b1ebbbe6e",
+      "successor_blob": "d2287a9bc689018bb54c1f484b65d68b1ebbbe6e",
+      "independent_precommit_blob": "d2287a9bc689018bb54c1f484b65d68b1ebbbe6e",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 351,
+      "path": "docs/I1_C_FORGE_STORY_COMPLETE_INTENT_RESEARCH_2026-11-09.md",
+      "original_change": "added",
+      "original_blob": "627ef4000ef4c339d46df2a80f237e017bdc6ed4",
+      "successor_blob": "627ef4000ef4c339d46df2a80f237e017bdc6ed4",
+      "independent_precommit_blob": "627ef4000ef4c339d46df2a80f237e017bdc6ed4",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 351,
+      "path": "scripts/test_i1c_forge_private_story_nonce_local_auth.mjs",
+      "original_change": "added",
+      "original_blob": "90fb3058bc1c93ef72a331bad0747920c3c1202e",
+      "successor_blob": "90fb3058bc1c93ef72a331bad0747920c3c1202e",
+      "independent_precommit_blob": "90fb3058bc1c93ef72a331bad0747920c3c1202e",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 351,
+      "path": "sql/candidates/20261109_player_story_complete_intent_i1c_research.sql",
+      "original_change": "added",
+      "original_blob": "91f5fb918bf205f2d4462e2ff0089f656601328e",
+      "successor_blob": "91f5fb918bf205f2d4462e2ff0089f656601328e",
+      "independent_precommit_blob": "91f5fb918bf205f2d4462e2ff0089f656601328e",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 352,
+      "path": ".github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml",
+      "original_change": "added",
+      "original_blob": "e10b1d1cb36fe0ead005e762d045a483fc36ad1b",
+      "successor_blob": "e10b1d1cb36fe0ead005e762d045a483fc36ad1b",
+      "independent_precommit_blob": "e10b1d1cb36fe0ead005e762d045a483fc36ad1b",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 352,
+      "path": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+      "original_change": "added",
+      "original_blob": "5d3a32c5b6661e47b36794bfe7723296c4b0631b",
+      "successor_blob": "5d3a32c5b6661e47b36794bfe7723296c4b0631b",
+      "independent_precommit_blob": "5d3a32c5b6661e47b36794bfe7723296c4b0631b",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 352,
+      "path": "docs/I1_D_FORGE_TRIGGER_INVENTORY_JOINT_2026-11-09.md",
+      "original_change": "added",
+      "original_blob": "31c453c18a6f188ab6994239305780ff8f949b76",
+      "successor_blob": "31c453c18a6f188ab6994239305780ff8f949b76",
+      "independent_precommit_blob": "31c453c18a6f188ab6994239305780ff8f949b76",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 352,
+      "path": "scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql",
+      "original_change": "added",
+      "original_blob": "fff1f4e507ec7446ff760d3cde3eba80eace0153",
+      "successor_blob": "fff1f4e507ec7446ff760d3cde3eba80eace0153",
+      "independent_precommit_blob": "fff1f4e507ec7446ff760d3cde3eba80eace0153",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 352,
+      "path": "scripts/test_i1d_forge_story_inventory_joint_local_auth.mjs",
+      "original_change": "added",
+      "original_blob": "8532550f995515743aa66315d750a4c7002d4dd7",
+      "successor_blob": "8532550f995515743aa66315d750a4c7002d4dd7",
+      "independent_precommit_blob": "8532550f995515743aa66315d750a4c7002d4dd7",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 352,
+      "path": "scripts/validate_i1d_trigger_gap_manifest.mjs",
+      "original_change": "added",
+      "original_blob": "05ec44bb34f8729f5df41f623e00f26cdc9160fc",
+      "successor_blob": "05ec44bb34f8729f5df41f623e00f26cdc9160fc",
+      "independent_precommit_blob": "05ec44bb34f8729f5df41f623e00f26cdc9160fc",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 353,
+      "path": ".github/workflows/validate-i1e-wizard-original-finalizer-local-auth.yml",
+      "original_change": "added",
+      "original_blob": "aa4e7baf89283c0e2544ff41d26d4cdeeb8a2ef6",
+      "successor_blob": "aa4e7baf89283c0e2544ff41d26d4cdeeb8a2ef6",
+      "independent_precommit_blob": "aa4e7baf89283c0e2544ff41d26d4cdeeb8a2ef6",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 353,
+      "path": "docs/I1_E_WIZARD_ORIGINAL_FINALIZER_SIGNED_RESEARCH_2026-11-09.md",
+      "original_change": "added",
+      "original_blob": "200138540bdf6856b22fa076844f2c16752c4191",
+      "successor_blob": "200138540bdf6856b22fa076844f2c16752c4191",
+      "independent_precommit_blob": "200138540bdf6856b22fa076844f2c16752c4191",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 353,
+      "path": "scripts/fixtures/i1e_wizard_joint_setup_pg17.sql",
+      "original_change": "added",
+      "original_blob": "0b833150367ce01297acf82d750de3f01be66044",
+      "successor_blob": "0b833150367ce01297acf82d750de3f01be66044",
+      "independent_precommit_blob": "0b833150367ce01297acf82d750de3f01be66044",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 353,
+      "path": "scripts/fixtures/i1e_wizard_original_functions_pg17.sql",
+      "original_change": "added",
+      "original_blob": "c0322578db9e848b20a476b32681c07e316f0870",
+      "successor_blob": "c0322578db9e848b20a476b32681c07e316f0870",
+      "independent_precommit_blob": "c0322578db9e848b20a476b32681c07e316f0870",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 353,
+      "path": "scripts/test_i1e_wizard_original_finalizer_joint_local_auth.mjs",
+      "original_change": "added",
+      "original_blob": "c0c29c7511fd7bc8a9fc090069817dfa0d1f4b85",
+      "successor_blob": "c0c29c7511fd7bc8a9fc090069817dfa0d1f4b85",
+      "independent_precommit_blob": "c0c29c7511fd7bc8a9fc090069817dfa0d1f4b85",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 354,
+      "path": ".github/workflows/validate-i1f-battle-master-original-local-auth.yml",
+      "original_change": "added",
+      "original_blob": "79862cd9567f03be0026712604d620fd30a92730",
+      "successor_blob": "79862cd9567f03be0026712604d620fd30a92730",
+      "independent_precommit_blob": "79862cd9567f03be0026712604d620fd30a92730",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 354,
+      "path": "docs/I1_F_BATTLE_MASTER_ORIGINAL_GRANTS_SIGNED_RESEARCH_2026-11-09.md",
+      "original_change": "added",
+      "original_blob": "cd932cdb969dc045980180ebf5377e5e328c2660",
+      "successor_blob": "cd932cdb969dc045980180ebf5377e5e328c2660",
+      "independent_precommit_blob": "cd932cdb969dc045980180ebf5377e5e328c2660",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 354,
+      "path": "scripts/fixtures/i1f_battle_master_joint_setup_pg17.sql",
+      "original_change": "added",
+      "original_blob": "c5ae0b31605d9374b295eee01eefdda0718afb80",
+      "successor_blob": "c5ae0b31605d9374b295eee01eefdda0718afb80",
+      "independent_precommit_blob": "c5ae0b31605d9374b295eee01eefdda0718afb80",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 354,
+      "path": "scripts/fixtures/i1f_battle_master_original_functions_pg17.sql",
+      "original_change": "added",
+      "original_blob": "fbda236e3c1b96ef9a93c44f0a2f99a6cd77adf9",
+      "successor_blob": "fbda236e3c1b96ef9a93c44f0a2f99a6cd77adf9",
+      "independent_precommit_blob": "fbda236e3c1b96ef9a93c44f0a2f99a6cd77adf9",
+      "disposition": "exact_copy"
+    },
+    {
+      "pr": 354,
+      "path": "scripts/test_i1f_battle_master_original_joint_local_auth.mjs",
+      "original_change": "added",
+      "original_blob": "85ad0863723994c2efcd2f4bc316a8e97b2e85fa",
+      "successor_blob": "85ad0863723994c2efcd2f4bc316a8e97b2e85fa",
+      "independent_precommit_blob": "85ad0863723994c2efcd2f4bc316a8e97b2e85fa",
+      "disposition": "exact_copy"
+    }
+  ]
+}
