@@ -1,0 +1,643 @@
+name: C34 real signed PG17 GoTrue Story nonce and inventory integration
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/integration/c34/**'
+      - 'components/c34/**'
+      - 'utils/c34/**'
+      - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
+      - 'scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql'
+      - 'sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql'
+      - 'sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql'
+      - 'sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql'
+      - 'sql/candidates/20261105_player_creation_immutable_intent_v1.sql'
+      - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
+      - 'sql/candidates/20261109_player_story_complete_intent_i1c_research.sql'
+      - '.github/workflows/validate-c34-joint-local-auth.yml'
+  push:
+    branches:
+      - 'research/c34-clean-main-privacy-forge-joint-source-20261112'
+    paths:
+      - 'scripts/integration/c34/**'
+      - '.github/workflows/validate-c34-joint-local-auth.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-real-original-research:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref == 'refs/heads/research/c34-clean-main-privacy-forge-joint-source-20261112')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_I1C_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_C34_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      C34_P14_SIGNED_CONFIRM: P14_STATUS_LOCAL_SIGNED_ONLY
+      C34_P16_SIGNED_CONFIRM: P16_NO_BYPASS_DISPOSABLE_PG17_ONLY
+      C34_P18_SIGNED_CONFIRM: P18_CHARACTER_INSERT_DISPOSABLE_PG17_ONLY
+      C34_P19_SIGNED_CONFIRM: P19_MANAGER_ASSIGN_DISPOSABLE_PG17_ONLY
+    steps:
+      - name: Checkout current research head
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check exact source provenance and local-only JS syntax
+        run: |
+          node scripts/integration/c34/validate_source_contract.mjs --json
+          node scripts/integration/c34/validate_joint_fixture_blobs.mjs
+          node scripts/integration/c34/verify_original_trigger_coverage.mjs
+          node --check scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs
+          node --check scripts/integration/c34/test_joint_pg17_local_auth.mjs
+          node --test scripts/integration/c34/test_source_contract.mjs
+          node --test scripts/integration/c34/test_t23_nonmap_npc_manager_candidate.mjs
+          node --check scripts/integration/c34/test_t24_current_next_manager_browser.mjs
+          node --test scripts/integration/c34/test_t24_source_contract.mjs
+      - name: Install lockfile-pinned application dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prepare disposable Supabase PostgreSQL 17 and GoTrue project
+        run: |
+          mkdir -p "$RUNNER_TEMP/c34-original-joint/supabase"
+          cat > "$RUNNER_TEMP/c34-original-joint/supabase/config.toml" <<'TOML'
+          project_id = "c34-original-joint-disposable"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start local-only GoTrue, PostgREST, and PG17
+        run: |
+          cd "$RUNNER_TEMP/c34-original-joint"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Run source-original signed I1C then new inventory RED/GREEN co-residence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          (cd "$RUNNER_TEMP/c34-original-joint" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/c34-local-env"
+          set -a
+          source "$RUNNER_TEMP/c34-local-env"
+          set +a
+          export DNDNEXT_I1C_LOCAL_URL='http://127.0.0.1:54321'
+          export DNDNEXT_I1C_LOCAL_ANON_KEY="$ANON_KEY"
+          export DNDNEXT_C34_LOCAL_URL='http://127.0.0.1:54321'
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
+            -f scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          node scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs
+          node scripts/integration/c34/test_joint_pg17_local_auth.mjs
+      # T20 uses the full original #345 app in a SECOND local checkout.
+      # Never import these archived UI files into #379 or touch production.
+      - name: Checkout original #345 browser app at pinned historical commit
+        uses: actions/checkout@v4
+        with:
+          ref: 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          path: held345
+          persist-credentials: false
+      - name: Pin actual held #345 browser source before any test
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C held345 rev-parse HEAD)" = 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          while read -r src expected_sha; do
+            test "$(git -C held345 hash-object "$src")" = "$expected_sha" || {
+              echo "T20 original #345 source changed: $src" >&2; exit 1;
+            }
+          done <<'SOURCEPINS'
+          components/GlobalNpcProfileOverlay.js a0e133a7c2446cba3f8c672a1df78f6a5aa73763
+          utils/npcProfileOverlay.js 3d809c47a9aaae18d0e7e5ec6500199a9266baac
+          components/CreatorBackstoryPanel.js 23b0e86aab7a80b7243365ba107c1d37a5ec5812
+          styles/npc-profile-centered.css 150eb9ad78aeba268be955e63c8451e3c0ed0e14
+          scripts/browser/verify_c33_creator_backstory_dom.mjs 7b3a813d11d4b9e0fcd1ba8aef9d4e8463f58aa4
+          scripts/browser/verify_c33_next_town_route.mjs d19b134fdb4e4b58833fe339f918c027959eae02
+          scripts/browser/verify_c33_npc_pdf_visual.mjs 1ee0f29a5c017906f2029eff25a9b1c1b88c5760
+          scripts/fixtures/c33_next_town_route_pg17.sql 0d3f1b261b7600944121c9be6f808fa190e8dddc
+          SOURCEPINS
+          node --check held345/scripts/browser/verify_c33_creator_backstory_dom.mjs
+          node --check held345/scripts/browser/verify_c33_next_town_route.mjs
+          echo 'PASS C34-T20-SOURCE: original #345 browser tree and sources pinned'
+      - name: Install held app and local-only Chromium tooling separately
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd held345 && npm ci --ignore-scripts --no-audit --no-fund)
+          mkdir -p "$RUNNER_TEMP/c34-t20-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/c34-t20-browser-tools" \
+            --no-save --package-lock=false --no-audit --no-fund --no-progress \
+            esbuild@0.25.12 playwright-core@1.56.1
+      - name: T20 original #345 Chromium creator/Profile/PDF and real Next town/inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1C_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$(git -C held345 rev-parse HEAD)" = 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM=DISPOSABLE_LOCAL_GOTRUE_ONLY
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_ANON_KEY="$ANON_KEY"
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME" || { echo 'Local Chromium missing; no remote fallback' >&2; exit 1; }
+          # C34-only scratch source-qualified T19 Forge seed compatibility;
+          # all ORIGINAL browser assertions and React components unchanged.
+          node scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs
+          node --check held345/scripts/browser/verify_c33_creator_backstory_dom.mjs
+          (cd held345 && node scripts/browser/verify_c33_creator_backstory_dom.mjs)
+          psql -X -v ON_ERROR_STOP=1 -f held345/scripts/fixtures/c33_next_town_route_pg17.sql
+          # Original #345 hardcoded 41820 can collide with unrelated local
+          # runner processes. Reserve a free LOOPBACK port; only its two
+          # transport literals are adapted in this scratch checkout.
+          export C34_T20_TOWN_PORT="$(node -e 'const net=require("node:net");const s=net.createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})')"
+          node scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs town-port
+          node --check held345/scripts/browser/verify_c33_next_town_route.mjs
+          (cd held345 && node scripts/browser/verify_c33_next_town_route.mjs)
+          echo 'PASS C34-T20: held #345 Chromium and Next browser against same T19 29/31 disposable DB'
+      - name: T20 render original #345 public, GM and dense official PDF pages (synthetic data only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$(git -C held345 rev-parse HEAD)" = 4f5f8ff7587aff1a68f21581ad68a4752789f54a
+          test "$(git -C held345 hash-object scripts/browser/verify_c33_npc_pdf_visual.mjs)" = 1ee0f29a5c017906f2029eff25a9b1c1b88c5760
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          command -v pdftotext
+          command -v pdftoppm
+          mkdir -p "$RUNNER_TEMP/c34-t20-npc-pdf"
+          (cd held345 && DNDNEXT_PDF_VISUAL_OUT="$RUNNER_TEMP/c34-t20-npc-pdf" \
+             DNDNEXT_PDF_VISUAL_LOG_IMAGES=0 \
+             node scripts/browser/verify_c33_npc_pdf_visual.mjs)
+          echo 'PASS C34-T20-PDF: held #345 original 3-page PDF public/GM/dense content and JPEG previews'
+      # T22 starts the ACTUAL CURRENT #379 Next Pages Router, not held #345.
+      # Only a generated untracked route points to the separate Bootstrap shell;
+      # the runner removes it in a finally block. No _app, town, map, or NPC
+      # manager files are replaced, and no hosted Supabase URLs are accepted.
+      - name: T22 genuine current Next non-map Profile Chromium signed roles (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T22_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t22_probe.jsx
+          node --check scripts/integration/c34/test_t22_current_next_browser.mjs
+          node scripts/integration/c34/test_t22_current_next_browser.mjs
+          test ! -e pages/__c34_t22_probe.jsx
+          echo 'PASS C34-T22 CURRENT-NEXT: real signed local original privacy DB and current-head isolated Bootstrap NPC Profile UI, no map/hosted app'
+
+      # T24 runs on the same disposable, signed original stage1–3 PG17,
+      # after T22. It uses a second temporary localhost-only current Next
+      # route, unchanged _app and the ORIGINAL current three-page PDF renderer.
+      # It is not the mounted NPC manager; no production route is committed.
+      - name: T24 genuine current Next non-map NPC manager roles, revocation, race and true PDF (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T24_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          command -v pdftotext
+          test ! -e pages/__c34_t24_probe.jsx
+          node scripts/integration/c34/test_t24_current_next_manager_browser.mjs
+          test ! -e pages/__c34_t24_probe.jsx
+          echo 'PASS C34-T24 CURRENT-NEXT: local real signed manager, revocation, race and original 3-page PDF, no active route'
+
+      # T25 derives the ACTUAL current 2420-line manager in a temporary route,
+      # retaining the original sheet, notes, portrait, merchant and PDF surface.
+      # All user identities and PostgREST calls remain inside disposable PG17.
+      - name: T25 derived real NPC manager Next Chromium, signed roles, merchant and PDF (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T25_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          command -v pdftotext
+          test ! -e pages/__c34_t25_probe.jsx
+          node --check scripts/integration/c34/test_t25_derived_current_manager_browser.mjs
+          node scripts/integration/c34/test_t25_derived_current_manager_browser.mjs
+          test ! -e pages/__c34_t25_probe.jsx
+          echo 'PASS C34-T25 derived CURRENT manager first signed browser acceptance; NO active route cutover'
+
+      # T26 uses the exact T25 current-manager source with a scratch-only,
+      # source-authenticated non-map Profile overlay. The actual ORIGINAL
+      # MerchantPanel and MerchantStorefrontView execute in the signed browser.
+      # Original protected shared NpcPanel and world map are NEVER modified.
+      - name: T26+T27+T28-P1 original shop-wallet real signed persistent late response RED and scoped GREEN (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_ACTIONS" = true
+          test "$CI" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T26_BROWSER_CONFIRM=CURRENT_NEXT_DISPOSABLE_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          command -v pdftotext
+          test ! -e pages/__c34_t26_probe.jsx
+          test ! -e pages/__c34_t28_persistent_probe.jsx
+          test ! -e pages/__c34_t28_p2_probe.jsx
+          node --check scripts/integration/c34/derive_t28_p2_mounted_probe.mjs
+          node --check scripts/integration/c34/run_t28_p2_mounted_signed_browser.mjs
+          node --check scripts/integration/c34/test_t28_p2_signed_source_contract.mjs
+          node --check scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
+          node scripts/integration/c34/test_t28_p2_town_preview_contract.mjs
+          node --check scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs
+          node scripts/integration/c34/test_t28_p2_purchase_refresh_unit.mjs
+          node scripts/integration/c34/test_t28_p2_signed_source_contract.mjs
+          node --check scripts/integration/c34/derive_t28_persistent_probe.mjs
+          node --check scripts/integration/c34/run_t28_persistent_signed_browser.mjs
+          node --check scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs
+          node scripts/integration/c34/test_t26_current_merchant_shop_browser.mjs
+          test ! -e pages/__c34_t28_persistent_probe.jsx
+          test ! -e pages/__c34_t28_p2_probe.jsx
+          test ! -e pages/__c34_t26_probe.jsx
+          echo 'PASS C34-T26/T27 original real shop + T28-P1 persistent original stock/wallet delayed signed RED and scoped guarded GREEN; no active route cutover'
+
+      - name: T29 owner commerce only Admin GM DM original RPC and stock RLS signed matrix (disposable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T29_ROLE_CONFIRM=OWNER_APPROVED_COMMERCE_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t29_commerce_source_parity.mjs
+          node --test scripts/integration/c34/test_t29_commerce_source_parity.mjs
+          node --check scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
+          node scripts/integration/c34/test_t29_commerce_signed_pg17.mjs
+          echo 'PASS C34-T29 signed Admin GM DM commerce only, original buyer and all original T26/T27/T28 gates retained'
+      - name: T30 signed strict town commerce/travel/dossier role and Stage2 projection (disposable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T30_ROLE_CONFIRM=SIGNED_TOWN_STAGE2_LOCAL_ONLY
+          node --test scripts/integration/c34/test_t30_town_role_source.mjs
+          node scripts/integration/c34/test_t30_town_role_profile_signed_pg17.mjs
+          echo 'PASS T30 WORKFLOW: signed strict town role + original Stage2 privacy, NO active route'
+      - name: T31 signed owner-revised equal Admin GM DM game access (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T31_ROLE_CONFIRM=OWNER_REVISED_EQUAL_GAME_ADMIN_LOCAL_ONLY
+          node --test scripts/integration/c34/test_t31_game_manager_role_source.mjs
+          node scripts/integration/c34/test_t31_game_manager_role_signed_pg17.mjs
+          echo 'PASS T31: signed equal GAME management roles, unchanged real buyer, no active UI'
+      - name: T33 genuine current Next town and Stage2 Admin GM DM Chrome signed browser (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T33_BROWSER_CONFIRM=SIGNED_STAGE2_TOWN_GAME_MASTER_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t33_auth_probe.jsx
+          test ! -e pages/__c34_t33_npc_probe.jsx
+          node --check scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs
+          node scripts/integration/c34/test_t33_town_stage2_signed_browser.mjs
+          test ! -e pages/__c34_t33_auth_probe.jsx
+          test ! -e pages/__c34_t33_npc_probe.jsx
+          echo 'PASS T33: genuine current Next/Chromium town Stage2 safe GM DM browser; research only'
+      - name: T34 signed source-original campaign GM DM versus technical site Admin-only isolation (disposable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T34_SIGNED_CONFIRM=SOURCE_EXACT_GAME_TECH_BOUNDARY_PG17_ONLY
+          node --check scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs
+          node scripts/integration/c34/test_t34_game_manager_campaign_site_signed_pg17.mjs
+          echo 'PASS T34: signed original game-admin item pool, technical site-only Admin; no production change'
+      - name: T35 genuine source-derived FULL NPC manager signed Admin GM DM unknown revocation and true PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T35_BROWSER_CONFIRM=CURRENT_FULL_MANAGER_THREE_GAME_MASTER_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t35_probe.jsx
+          node --check scripts/integration/c34/test_t35_full_manager_signed_browser.mjs
+          node scripts/integration/c34/test_t35_full_manager_signed_browser.mjs
+          test ! -e pages/__c34_t35_probe.jsx
+          echo 'PASS T35: full original NPC manager source with signed Stage2 Admin/GM/DM and true PDF'
+      - name: T36 actual /npcs flag OFF and ON, full signed Admin GM DM, original UI narrative save and PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T36_BROWSER_CONFIRM=ACTUAL_NPCS_REWRITE_THREE_GAME_MASTERS_LOCAL_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t36_npcs.jsx
+          node --check scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs
+          node scripts/integration/c34/test_t36_real_npcs_route_signed_browser.mjs
+          echo 'T36 signed Node test returned; checking exact generated route absent'
+          if test -e pages/__c34_t36_npcs.jsx; then
+            echo 'FAIL T36: disposable NPC Manager page regenerated after cleanup'
+            exit 1
+          fi
+          echo 'PASS T36: full /npcs original OFF and derived ON, canonical roles, original save/PDF and cleanup, no production'
+      - name: T38-P2 original signed conversion authorization and merchant stock REDs (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T38_P2_SIGNED_CONFIRM=ORIGINAL_CONVERSION_DISPOSABLE_RED_ONLY
+          node --check scripts/integration/c34/test_t38_p2_original_conversion_signed_pg17.mjs
+          node --test scripts/integration/c34/test_t38_p2_conversion_source.mjs
+          node scripts/integration/c34/test_t38_p2_original_conversion_signed_pg17.mjs
+          echo 'PASS T38-P2-R1 exact original signed RED characterization; research only'
+      - name: T38-P2-R2 strict conversion authorization and safe stock candidate signed GREEN (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T38_P2_SIGNED_CONFIRM=ORIGINAL_CONVERSION_DISPOSABLE_RED_ONLY
+          export C34_T38_P2_GREEN_CONFIRM=STRICT_CONVERSION_DISPOSABLE_GREEN_ONLY
+          node --check scripts/integration/c34/test_t38_p2_conversion_hardening_signed_pg17.mjs
+          node --test scripts/integration/c34/test_t38_p2_conversion_source.mjs
+          node scripts/integration/c34/test_t38_p2_conversion_hardening_signed_pg17.mjs
+          echo 'PASS T38-P2-R2 strict signed candidate GREEN, no production migration'
+      - name: T38-P2-R3 genuine original NPC KindPicker UI signed GM and editor negatives (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T38_P2_BROWSER_CONFIRM=ORIGINAL_KINDPICKER_DISPOSABLE_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t36_npcs.jsx
+          node --check scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs
+          node --test scripts/integration/c34/test_t38_p2_conversion_source.mjs
+          node scripts/integration/c34/test_t38_p2_kindpicker_signed_browser.mjs
+          test ! -e pages/__c34_t36_npcs.jsx
+          echo 'PASS T38-P2-R3 genuine original KindPicker signed browser; no production route'
+      - name: T38-P2-R4 signed original convert-only UI RED and public Profile-only candidate GREEN (disposable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T38_R4_BROWSER_CONFIRM=SIGNED_CONVERT_ONLY_UI_PG17_LOCAL_ONLY
+          export NEXT_PUBLIC_C34_T36_NPCS_RESEARCH=0
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t36_npcs.jsx
+          test ! -e pages/__c34_t38_convert_only.jsx
+          node --check scripts/integration/c34/test_t38_p2_convert_only_signed_browser.mjs
+          node --test scripts/integration/c34/test_t38_convert_only_source.mjs
+          node scripts/integration/c34/test_t38_p2_convert_only_signed_browser.mjs
+          test ! -e pages/__c34_t38_convert_only.jsx
+          echo 'PASS T38-P2-R4 signed convert-only public Profile control GREEN; no active route'
+      - name: T38-P2-R5 source-original merchant Profile Shop Inventory wallet browser parity (disposable only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T38_P2_BROWSER_CONFIRM=ORIGINAL_MERCHANT_SHOP_INVENTORY_DISPOSABLE_ONLY
+          export C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c34-t20-browser-tools"
+          export C33_BROWSER_CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$C33_BROWSER_CHROME"
+          test ! -e pages/__c34_t36_npcs.jsx
+          node --check scripts/integration/c34/test_t38_p2_r5_merchant_profile_shop_signed_browser.mjs
+          node --test scripts/integration/c34/test_t38_p2_r5_source.mjs
+          node scripts/integration/c34/test_t38_p2_r5_merchant_profile_shop_signed_browser.mjs
+          test ! -e pages/__c34_t36_npcs.jsx
+          echo 'PASS T38-P2-R5 original merchant Profile Shop wallet inventory parity (no production route)'
+      - name: T39 source-original Weapon Mastery signed two-account RED and NON-ORIGINAL Option A GREEN (disposable PG17 only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T39_SIGNED_CONFIRM=SIGNED_ORIGINAL_WEAPON_MASTERY_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs
+          node scripts/integration/c34/test_t39_weapon_mastery_signed_pg17.mjs
+          echo 'PASS T39 signed source-original RED + explicitly non-original local Option A GREEN; no release'
+      - name: T40 source-original Rage action signed two-account RED + explicit NON-ORIGINAL Option A GREEN (local PG17)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T40_SIGNED_CONFIRM=SIGNED_ORIGINAL_RAGE_ACTION_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t40_rage_action_signed_pg17.mjs
+          node scripts/integration/c34/test_t40_rage_action_signed_pg17.mjs
+          echo 'PASS T40 standalone Rage original RED + isolated action-only Option A GREEN; separate rest mirror HOLD'
+      - name: T41 exact-original Rest orchestration signed historical-account RED and strictly NON-ORIGINAL Option A GREEN (local PG17)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T41_SIGNED_CONFIRM=SIGNED_ORIGINAL_REST_ACCOUNT_MIRROR_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t41_rest_action_signed_pg17.mjs
+          node --test scripts/integration/c34/test_t41_rest_action_legacy_mirror_source.mjs
+          node scripts/integration/c34/test_t41_rest_action_signed_pg17.mjs
+          echo 'PASS T41 source-original rest RED and deliberate one-clause Rest Option A GREEN; release HOLD'
+      - name: T42 original Sorcerer additional choices signed three-account RED and local Option A GREEN (helper-only; NOT earned v5)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = true
+          test "$GITHUB_ACTIONS" = true
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_C34_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          source "$RUNNER_TEMP/c34-local-env"
+          export DNDNEXT_C34_LOCAL_URL=http://127.0.0.1:54321
+          export DNDNEXT_C34_LOCAL_ANON_KEY="$ANON_KEY"
+          export C34_T42_SIGNED_CONFIRM=ADDITIONAL_CLASS_CHOICES_ORIGINAL_HELPER_LOCAL_ONLY
+          node --check scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs
+          node --test scripts/integration/c34/test_t42_additional_class_choices_source.mjs
+          node scripts/integration/c34/test_t42_additional_class_choices_signed_pg17.mjs
+          echo 'PASS T42 signed original helper RED + non-original Option A GREEN; v5/UI still HOLD'
+      - name: Preserve only synthetic PDF/page image evidence (no real user records)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c34-t20-held345-synthetic-pdf-page-previews
+          path: ${{ runner.temp }}/c34-t20-npc-pdf/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Discard local databases and credentials
+        if: always()
+        run: |
+          if test -d "$RUNNER_TEMP/c34-original-joint/supabase"; then
+            cd "$RUNNER_TEMP/c34-original-joint"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          fi
