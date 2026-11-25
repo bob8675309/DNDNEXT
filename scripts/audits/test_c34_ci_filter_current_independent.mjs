@@ -340,3 +340,34 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(extendedHistoricalEvidence('').closureProven,false);
  assert.equal(extendedHistoricalEvidence('').bypassAuthorized,false);
  console.log('Extended historical lexical evidence assertions passed; closure NOT PROVEN');
+
+ // Connect selected lexical receipts to graph traversal; unknowns remain explicit.
+ export function extendedHistoricalGraph(rows, tree) {
+   const edges=Object.create(null);
+   for(const row of rows) {
+     if(Object.hasOwn(edges,row.path)) throw new Error('duplicate graph receipt');
+     const evidence=extendedHistoricalEvidence(row.source);
+     const targets=new Set();
+     for(const spec of [...evidence.staticRefs,...evidence.dynamicRefs]) {
+       if(!spec.startsWith('.')) continue;
+       const resolved=resolveHistoricalCandidate(row.path,spec,tree);
+       targets.add(resolved.reason==='candidate'?resolved.candidates[0].path:
+         'unresolved:'+row.path+':'+spec+':'+resolved.reason);
+     }
+     for(const asset of evidence.assets) targets.add('asset:public'+asset);
+     if(evidence.unresolvedDynamic) targets.add('computed-import:'+row.path);
+     edges[row.path]=[...targets].sort();
+   }
+   return historicalGraphWalk(rows.map(r=>r.path),edges);
+ }
+ const connectedRows=secondLevelReceipts.map(r=>({path:r.path,source:r.lines.join('\n')+
+   (r.path==='utils/printableCharacterSheet.js'?'\n'+multilineHistoricalReceipt.excerpt:'')}));
+ const connectedWalk=extendedHistoricalGraph(connectedRows,localTreeReceipt);
+ assert.ok(connectedWalk.missing.some(x=>x.includes('characterSheetRules.js')));
+ assert.ok(connectedWalk.missing.some(x=>x.includes('CraftingWorkspace')));
+ assert.ok(connectedWalk.missing.includes('asset:public/forms/5E_CharacterSheet_Fillable.pdf'));
+ assert.ok(extendedHistoricalGraph([{path:'a.js',source:'import(target)'}],localTreeReceipt).missing.includes('computed-import:a.js'));
+ assert.throws(()=>extendedHistoricalGraph([connectedRows[0],connectedRows[0]],localTreeReceipt),/duplicate graph receipt/);
+ assert.equal(connectedWalk.closureProven,false);
+ assert.equal(connectedWalk.bypassAuthorized,false);
+ console.log('Connected historical graph assertions; missing evidence:',connectedWalk.missing.length);
