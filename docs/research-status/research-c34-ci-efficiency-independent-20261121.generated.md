@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `a2c726426f6e1af267c0c9b3707a831f77d4d3ca` |
+| Exact source commit represented by this archive snapshot | `c29a2e00a9e1de9e4afa62b4b4e5945aa4501734` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): inventory literal signed workflow dependencies without authorizing bypass |
+| Last source commit title | test(ci): distinguish pinned historical checkout references |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
