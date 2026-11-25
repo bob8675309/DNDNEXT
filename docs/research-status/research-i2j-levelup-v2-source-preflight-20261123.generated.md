@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `893aa7e4b3b74f4bfd03a72795c2b57638e49a32` |
+| Exact source commit represented by this archive snapshot | `d3d669934d3632e19f125e4f76ac3cd4508c596c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): trace shared class grant writers, deletion path and earned Warlock queued-event risk |
+| Last source commit title | docs(i2j): record exact signed earned Wizard Savant and Signature acceptance and next Warlock scope |
 | Files changed relative to main | 266 (190 non-docs; 76 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 5 files (0 non-docs; 5 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_OPTION_A_CROSS_BRANCH_RECEIPT_RECONCILIATION_2026-11-24.md`
 - `docs/research/I2J_SHARED_CLASS_GRANT_INTEGRITY_AND_DELETE_PREFLIGHT_2026-11-24.md`
+- `docs/research/I2J_WIZARD_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
