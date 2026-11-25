@@ -241,3 +241,43 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(historicalImportInventory([]).closureProven,false);
  assert.equal(historicalImportInventory([]).bypassAuthorized,false);
  console.log('Historical import evidence assertions passed; selected lines only; closure NOT PROVEN');
+
+ // Selected historical tree receipts; candidate resolution, not bundler semantics.
+ const localTreeReceipt = {"ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","entries":[{"path":"components/character/CharacterInteractionPanel.js","sha":"28a2dde5696376ee39c01a498b76a146f30aaffa","mode":"100644","type":"blob"},{"path":"utils/npcProfileOverlay.js","sha":"3d809c47a9aaae18d0e7e5ec6500199a9266baac","mode":"100644","type":"blob"},{"path":"utils/officialCharacterSheetPdf.js","sha":"c3ba3651e2e3d8aafbae3b4ad195d53ee25199f0","mode":"100644","type":"blob"},{"path":"utils/printableCharacterSheet.js","sha":"adbb1ca2a5482622711f0ec5601d42cd0d8bd7ae","mode":"100644","type":"blob"},{"path":"utils/supabaseClient.js","sha":"13b3339c4c99702bc667f1a1bc9b2ea36a70b18b","mode":"100644","type":"blob"}]};
+ export function resolveHistoricalCandidate(importer, specifier, receipt) {
+   const unresolved = reason => ({reason, candidates:[], closureProven:false,bypassAuthorized:false});
+   if(receipt?.ref!==sourcePins.ref || !Array.isArray(receipt.entries)) return unresolved('wrong-tree');
+   if(typeof importer!=='string' || typeof specifier!=='string' ||
+      !/^[A-Za-z0-9_./-]+$/.test(importer) || importer.split('/').some(p=>!p||p==='.'||p==='..') ||
+      !/^\.\.?\/[A-Za-z0-9_./-]+$/.test(specifier)) return unresolved('unsupported-path');
+   const parts=importer.split('/').slice(0,-1);
+   for(const part of specifier.split('/')) {
+     if(part==='.') continue;
+     if(part==='..') { if(!parts.length) return unresolved('outside-tree'); parts.pop(); }
+     else if(!part) return unresolved('unsupported-path');
+     else parts.push(part);
+   }
+   const base=parts.join('/');
+   const extensions=['.js','.jsx','.mjs','.cjs','.ts','.tsx','.json'];
+   const names=new Set([base,...extensions.map(e=>base+e),...extensions.map(e=>base+'/index'+e)]);
+   const candidates=receipt.entries.filter(e=>names.has(e.path));
+   if(candidates.length!==1) return {reason:candidates.length?'ambiguous':'missing',candidates,closureProven:false,bypassAuthorized:false};
+   const e=candidates[0];
+   if(e.type!=='blob'||!['100644','100755'].includes(e.mode)||!/^[0-9a-f]{40}$/.test(e.sha)) return unresolved('unsupported-entry');
+   return {reason:'candidate',candidates,closureProven:false,bypassAuthorized:false};
+ }
+ const resolveCandidate=(s,r=localTreeReceipt)=>resolveHistoricalCandidate('components/GlobalNpcProfileOverlay.js',s,r);
+ assert.equal(resolveCandidate('../utils/supabaseClient').candidates[0].path,'utils/supabaseClient.js');
+ assert.equal(resolveCandidate('./character/CharacterInteractionPanel').reason,'candidate');
+ assert.equal(resolveCandidate('../utils/missing').reason,'missing');
+ assert.equal(resolveCandidate('../../outside').reason,'outside-tree');
+ assert.equal(resolveCandidate('../utils/supabaseClient',{...localTreeReceipt,ref:'wrong'}).reason,'wrong-tree');
+ assert.equal(resolveCandidate('../utils/supabaseClient',{...localTreeReceipt,entries:[...localTreeReceipt.entries,{...localTreeReceipt.entries.find(e=>e.path==='utils/supabaseClient.js'),path:'utils/supabaseClient.ts'}]}).reason,'ambiguous');
+ assert.equal(resolveCandidate('../utils/supabaseClient',{...localTreeReceipt,entries:localTreeReceipt.entries.map(e=>({...e,mode:'120000'}))}).reason,'unsupported-entry');
+ for(const row of importEvidence) for(const specifier of row.local) {
+   const result=resolveHistoricalCandidate(row.path,specifier,localTreeReceipt);
+   assert.equal(result.reason,'candidate');
+   assert.equal(result.bypassAuthorized,false);
+ }
+ assert.equal(resolveCandidate('../utils/supabaseClient').closureProven,false);
+ console.log('Historical local candidate resolution assertions passed; selected tree receipts only; closure NOT PROVEN');
