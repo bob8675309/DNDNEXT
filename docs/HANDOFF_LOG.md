@@ -2296,3 +2296,8 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 ### Agent A — J168 #334 manifest custody row 2/8
 
 - Ledger commit `eb80e5b8913d93d060a405a409e0b6726842dfc4` verified; ACTIVE_WORK `22cf4c5ef9cefe336d78b80a72a84d946969a0c4`. Original #334, #345 and #379 seeded manifest exact blob `f30c9d25f39acfaab214a3135c6b7be34d21aea6`; all four ordered cases/seeds retained. No runtime execution or acceptance. Six paths unmapped; next map `scripts/agents/forge_warlock_client_wire.mjs`. All prior holds and scope unchanged. Exact final HEAD CI to be inspected.
+
+
+### Agent A — client wire custody
+
+J168 #334 row 3/8: client wire executor blob `a90013d3dbb590af4dfae76e87863453daa04d9b` exact in original #334 and both #345/#379; original selection, serialization, deterministic and two negative assertions recorded in ledger commit `4411493902d351557331fe7136544a7aac1fdb38`. No runtime tests; imported dependency equivalence, signed results and #345 wrapper semantics OPEN. Five paths unmapped. Next: map `scripts/test_forge_immutable_creation_replay_local_auth.mjs` original scenario assertions. All inherited review and release/retirement holds unchanged.
