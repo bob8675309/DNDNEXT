@@ -6,11 +6,13 @@ on:
     paths:
       - 'scripts/audits/test_c34_ci_filter_independent.mjs'
       - 'scripts/audits/test_c34_ci_filter_current_independent.mjs'
+      - 'scripts/audits/fixtures/c34-current-signed-workflow.yml.txt'
       - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
   pull_request:
     paths:
       - 'scripts/audits/test_c34_ci_filter_independent.mjs'
       - 'scripts/audits/test_c34_ci_filter_current_independent.mjs'
+      - 'scripts/audits/fixtures/c34-current-signed-workflow.yml.txt'
       - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
   workflow_dispatch:
 permissions:
