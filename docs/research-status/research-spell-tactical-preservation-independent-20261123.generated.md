@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `bd3f2b3b08a3f1643db650b81da57ecb44f22f07` |
+| Exact source commit represented by this archive snapshot | `fecc15b2feed8f1667252d18bc85ff36abfb059d` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): preserve delegated profile sync tripwire and fixture boundary |
+| Last source commit title | docs(spell): preserve multiclass beam scaling boundary |
 | Files changed relative to main | 1 (0 non-docs; 1 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
