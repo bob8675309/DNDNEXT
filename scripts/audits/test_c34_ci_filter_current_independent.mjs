@@ -433,3 +433,18 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(fifthLevelWalk.closureProven,false);
  assert.equal(fifthLevelWalk.bypassAuthorized,false);
  console.log('Fourth-level historical tree receipts: metadata only; closure NOT PROVEN');
+
+ // Fourth-level selected lexical excerpts; not byte or closure proof.
+ const fourthLevelSourceRows=[{"path":"components/CharacterClassPanel.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"d39d2bceab944d3d4ec42cc2cfda92609ce51a2b","source":"import { useCallback, useEffect, useMemo, useState } from \"react\"\nimport CharacterLevelUpChoices from \"./CharacterLevelUpChoices\"\nimport useSubclassCatalog from \"../hooks/useSubclassCatalog\"\nimport { findSubclassOption } from \"../utils/classes/subclassCompatibility\"\nimport { supabase } from \"../utils/supabaseClient\"\n"},{"path":"components/SpellCard.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"979735e2aebf11232ab8e3b97fb9c61254807181","source":"import React from \"react\"\nimport SourceRuleContent from \"./SourceRuleContent\"\nimport { spellRuleReferenceDetail } from \"../utils/spellRuleReferences\"\n"},{"path":"utils/characterOptionPresentation.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"3ae801817cb3ffcf8f12dc24755828e617048bee","source":"\n"},{"path":"utils/classes/classArtwork.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"f564dd08d20404f91ce9c2bdc1e1266310761bd0","source":"import artificerHero from \"../forgeGeneratedArt/artificerHero.js\"\nimport barbarianHero from \"../forgeGeneratedArt/barbarianHero.js\"\nimport artificerMenu from \"../forgeGeneratedArt/artificerMenu.js\"\nimport barbarianMenu from \"../forgeGeneratedArt/barbarianMenu.js\"\n"},{"path":"utils/classes/subclassCompatibility.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"ae66c842edcabaceedb27a42b2b38fc96817c5dc","source":"\n"},{"path":"utils/featRulePresentation.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"957dfe6eb4f9160e81a4cf2ef98436acaaaf46a7","source":"import { formatPlayerFacingText } from \"./playerFacingText\"\n"},{"path":"utils/formatPrerequisiteText.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"db5ef1ec270fc2bf71c3d0e9ebdcdaa6003d063f","source":"\n"},{"path":"utils/spells/classSpellbookRules.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"43b8c004390f8ca62e7b84bd3cdcc8348e0a4b42","source":"import classProgression from \"../../public/spells/class-progression.json\"\nimport { spellMatchesExpandedList } from \"../backgroundMechanics.js\"\n"}];
+ for(const row of fourthLevelSourceRows){
+   assert.equal(row.ref,fourthLevelTreeReceipt.ref);
+   assert.equal(row.sha,fourthLevelTreeReceipt.entries.find(e=>e.path===row.path)?.sha);
+ }
+ const sixthLevelWalk=extendedHistoricalGraph([...connectedRows,...thirdLevelSourceRows,...fourthLevelSourceRows],fourthLevelExpandedTree);
+ assert.equal(sixthLevelWalk.visited.length,connectedRows.length+thirdLevelSourceRows.length+fourthLevelSourceRows.length);
+ for(const row of fourthLevelSourceRows) assert.ok(!sixthLevelWalk.missing.includes(row.path));
+ assert.ok(sixthLevelWalk.missing.includes('components/CraftingWorkspace.js'));
+ assert.ok(sixthLevelWalk.missing.includes('asset:public/forms/5E_CharacterSheet_Fillable.pdf'));
+ assert.equal(sixthLevelWalk.closureProven,false);
+ assert.equal(sixthLevelWalk.bypassAuthorized,false);
+ console.log('Fourth-level selected source excerpts connected; closure NOT PROVEN');
