@@ -128,3 +128,105 @@ if(outcome.error){
 }
 verify();assert.equal(md5(helper),actual);
 console.log('I2J-BM RESULT: characterization only; no Option A correction, full catalog, parent/browser or release acceptance');
+
+// I2J candidate extension. Original characterization above remains byte-identical.
+// Fail closed unless exact historical original RED reproduced and recorded MD5 matched.
+assert.ok(outcome.error,'candidate requires reproduced original RED');
+assert.equal(actual,recorded,'candidate requires original earned helper MD5');
+const validator='private.validate_existing_battle_master_maneuvers_v1()';
+const definition=n=>sql('SELECT pg_get_functiondef('+q(n)+'::regprocedure)');
+const replaceOnce=(s,old,replacement)=>{assert.equal(s.split(old).length,2,'candidate source anchor drift: '+old);return s.replace(old,replacement)};
+const originalValidator=definition(validator);
+assert.equal(md5(validator),'8bc8a467e95b07e93df833bcfc585e80');
+// A deferred constraint should evaluate final transaction state, not an earlier
+// queued NEW level. Retain trigger identity, timing, ACL, count and source checks.
+// Missing final CP fails closed; deletion lifecycle is not accepted by this test.
+let candidateValidator=replaceOnce(originalValidator,'  v_expected integer:=0;','  v_current public.character_progression%rowtype;\n  v_expected integer:=0;');
+candidateValidator=replaceOnce(candidateValidator,'  v_battle_master:=private.is_xphb_battle_master_v1(new.class_id,new.subclass_name,new.subclass_source);',
+ '  select * into v_current from public.character_progression where character_id=new.character_id;\n  if not found then raise exception \'Battle Master progression missing at deferred validation.\'; end if;\n  v_battle_master:=private.is_xphb_battle_master_v1(v_current.class_id,v_current.subclass_name,v_current.subclass_source);');
+candidateValidator=replaceOnce(candidateValidator,'private.battle_master_maneuver_count_v1(new.class_level)','private.battle_master_maneuver_count_v1(v_current.class_level)');
+candidateValidator=replaceOnce(candidateValidator,"instance(s); found %.',new.class_level,v_expected,v_actual;","instance(s); found %.',v_current.class_level,v_expected,v_actual;");
+sql(candidateValidator);
+const candidateHash=md5(validator);assert.notEqual(candidateHash,'8bc8a467e95b07e93df833bcfc585e80');
+assert.equal(sql("SELECT has_function_privilege('authenticated',"+q(validator)+",'EXECUTE')"),'f');
+const triggerDef=()=>sql("SELECT string_agg(pg_get_triggerdef(oid,true), E'\\n' ORDER BY tgname) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass AND tgname IN ('character_progression_materialize_battle_master_maneuvers_v1','character_progression_validate_battle_master_maneuvers_v1') AND tgdeferrable AND tginitdeferred AND tgenabled='O'");
+const defBefore=triggerDef();assert.match(defBefore,/AFTER INSERT/);assert.match(defBefore,/AFTER UPDATE OF/);
+assert.equal(md5(helper),recorded);verify();
+const acct=a=>sql('SELECT md5(to_jsonb(p)::text) FROM public.players p WHERE user_id='+q(a.id));
+const originalAccounts=[owner,editor,outsider].map(acct);
+function finalState(id,g){
+ const w=' WHERE character_id='+q(id);
+ assert.equal(sql('SELECT class_level FROM public.character_progression'+w),'7');
+ assert.equal(sql("SELECT sheet->>'level' FROM public.character_sheets"+w),'7');
+ assert.equal(sql("SELECT sheet#>>'{meta,level}' FROM public.character_sheets"+w),'7');
+ assert.equal(sql("SELECT sheet->>'hp' FROM public.character_sheets"+w),'55');
+ assert.equal(sql("SELECT sheet->>'maxHp' FROM public.character_sheets"+w),'55');
+ assert.equal(sql('SELECT count(*) FROM public.character_class_option_grant_instances'+w),'5');
+ assert.equal(sql('SELECT count(DISTINCT option_catalog_id) FROM public.character_class_option_grant_instances'+w),'5');
+ assert.equal(sql('SELECT count(*) FROM public.character_class_option_grant_instances'+w+' AND acquired_level=3'),'3');
+ assert.equal(sql('SELECT count(*) FROM public.character_class_option_grant_instances'+w+' AND acquired_level=7'),'2');
+ const replacement=JSON.parse(sql("SELECT jsonb_build_object('key',o.option_key,'level',g.acquired_level,'previous',g.metadata->>'previousOptionKey','at',g.metadata->>'lastReplacementLevel') FROM public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o ON o.id=g.option_catalog_id WHERE g.character_id="+q(id)+" AND g.instance_key="+q(g.replace[0])));
+ assert.equal(replacement.key,g.with[0]);assert.equal(replacement.level,3);assert.equal(replacement.at,'7');assert.ok(replacement.previous);
+ const keys=JSON.parse(sql("SELECT jsonb_agg(o.option_key ORDER BY o.option_key) FROM public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o ON o.id=g.option_catalog_id WHERE g.character_id="+q(id)));
+ const projected=JSON.parse(sql("SELECT sheet#>"+q('{classFeatureChoices,'+group+',selections}')+" FROM public.character_sheets"+w)).map(x=>x.key).sort();
+ assert.deepEqual(projected,keys);assert.ok(g.maneuvers.every(k=>keys.includes(k)));assert.ok(keys.includes(g.with[0]));assert.ok(!keys.includes(replacement.previous));
+ assert.equal(sql("SELECT count(*) FROM public.character_level_events"+w+" AND event_type='level_up_completed' AND from_level=6 AND to_level=7"),'1');
+ assert.equal(sql("SELECT count(*) FROM public.character_level_up_sessions"+w+" AND status='completed' AND from_level=6 AND to_level=7"),'1');
+ assert.equal(sql("SELECT jsonb_array_length(level_choices#>'{7,replacements}') FROM public.character_progression"+w),'3');
+ assert.equal(sql("SELECT jsonb_array_length(selections->'replacements') FROM public.character_level_up_sessions"+w),'3');
+ assert.equal(sql("SELECT jsonb_array_length(details->'replacements') FROM public.character_level_events"+w+" AND event_type='level_up_completed'"),'3');
+}
+const corrected=await level(editor,picked);assert.ifError(corrected.error);finalState(target,picked);
+assert.notEqual(acct(owner),originalAccounts[0]);assert.notEqual(acct(editor),originalAccounts[1]);assert.equal(acct(outsider),originalAccounts[2]);
+console.log('PASS I2J-BM05 scratch final-state validator permits genuine v5 acquisition/replacement, HP/session/event; original account mirrors now independently RED');
+const baseName='private.complete_character_level_up_base_v3(uuid,jsonb)',summaryName='private.sync_player_forge_class_spell_summary_v1(uuid)';
+const baseBody=definition(baseName),summaryBody=definition(summaryName),helperBody=definition(helper);
+const baseMirror="  update public.players p set sheet = v_sheet, updated_at = now()\n  where p.user_id in (\n    select cp.user_id from public.character_permissions cp where cp.character_id = p_character_id\n  );";
+const summaryMirror="  update public.players p set sheet=v_sheet,updated_at=now()\n  where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);";
+const bmMirror="  update public.players p set sheet=v_sheet,updated_at=now() where p.user_id in(select cp.user_id from public.character_permissions cp where cp.character_id=p_character_id);";
+for(const [body,mirror] of [[baseBody,baseMirror],[summaryBody,summaryMirror],[helperBody,bmMirror]])sql(replaceOnce(body,mirror,'  -- I2J NON-ORIGINAL scratch Option A: preserve historical account sheet.'));
+for(const n of [baseName,summaryName,helper])assert.doesNotMatch(definition(n),/update public\.players/i);
+const originalUntouched=fingerprints.filter(([n])=>n!==baseName&&n!==summaryName);
+for(const [n,d] of originalUntouched)assert.equal(md5(n),d);
+assert.equal(triggerDef(),defBefore);
+function seed(id,xp=23000){
+ sql("BEGIN; INSERT INTO public.characters(id,name) VALUES("+q(id)+",'I2J BM candidate'); INSERT INTO public.character_progression(character_id,class_id,class_level,experience_points,pending_level_up,subclass_name,subclass_source,created_by) VALUES("+q(id)+","+q(cls)+",6,"+xp+",true,'Battle Master','XPHB',"+q(owner.id)+"); INSERT INTO public.character_sheets(character_id,sheet) VALUES("+q(id)+","+json(sheet)+"); INSERT INTO public.character_permissions(character_id,user_id,can_edit) VALUES("+q(id)+","+q(owner.id)+",true),("+q(id)+","+q(editor.id)+",true); INSERT INTO public.character_level_up_sessions(character_id,from_level,to_level,status,metadata_ready,created_by) VALUES("+q(id)+",6,7,'open',true,"+q(owner.id)+"); COMMIT;");
+}
+const green=randomUUID();seed(green);
+const w=' WHERE character_id='+q(green);
+const snap=id=>Object.fromEntries(['character_progression','character_sheets','character_class_option_grant_instances','character_level_up_sessions','character_level_events','character_spells','character_permissions'].map(t=>[t,sql("SELECT md5(coalesce(string_agg(to_jsonb(t)::text,'' ORDER BY to_jsonb(t)::text),'')) FROM public."+t+" t WHERE character_id="+q(id))]).concat([['players',sql("SELECT md5(string_agg(to_jsonb(p)::text,'' ORDER BY user_id)) FROM public.players p")]]));
+for(const [a,mark] of [[owner,'owner'],[editor,'editor'],[outsider,'outsider']])sql("UPDATE public.players SET sheet="+json({historical:'green-unrelated-'+mark})+",updated_at=now() WHERE user_id="+q(a.id));
+const stableAccounts=[owner,editor,outsider].map(acct);
+const untouchedCanon=sql("SELECT md5(to_jsonb(t)::text) FROM public.character_sheets t WHERE character_id="+q(target));
+const complete=(a,id,g)=>a.client.rpc('complete_character_level_up_v5',{p_character_id:id,p_selections:input(g)});
+const gb=snap(green);
+assert.equal((await complete(outsider,green,picked)).error?.code,'42501');assert.deepEqual(snap(green),gb);
+assert.match((await complete(owner,green,{...picked,with:[picked.maneuvers[0]]})).error?.message||'',/replacement maneuver must be different/i);assert.deepEqual(snap(green),gb);
+sql("UPDATE public.character_permissions SET can_edit=false"+w+" AND user_id="+q(owner.id));
+const rev=snap(green);assert.equal((await complete(owner,green,picked)).error?.code,'42501');assert.deepEqual(snap(green),rev);
+const ok=await complete(editor,green,picked);assert.ifError(ok.error);finalState(green,picked);
+assert.deepEqual([owner,editor,outsider].map(acct),stableAccounts);
+assert.equal(sql("SELECT md5(to_jsonb(t)::text) FROM public.character_sheets t WHERE character_id="+q(target)),untouchedCanon);
+const post=snap(green);assert.ok((await complete(editor,green,picked)).error);assert.deepEqual(snap(green),post);
+console.log('PASS I2J-BM06 genuine signed candidate v5 after three isolated Option A mirror removals, separate account histories frozen, revoked/outsider/replay denied');
+const low=randomUUID();seed(low,22000);
+const lowBefore=snap(low);assert.match((await complete(editor,low,picked)).error?.message||'',/required XP threshold/i);assert.deepEqual(snap(low),lowBefore);
+console.log('PASS I2J-BM07 original XP veto rolls back earlier maneuver writes and all historical accounts');
+// Privileged stress transactions deliberately mutate grants AND progression to
+// exercise the existing deferred UPDATE trigger; grant-only coverage not claimed.
+function rejectTx(stmt,pattern){
+ const x=spawnSync('psql',['-X','-v','ON_ERROR_STOP=1','-qAt'],{input:'BEGIN;\n'+stmt+'\nCOMMIT;\n',encoding:'utf8',timeout:30000,env:{...env,PGUSER:'postgres'}});
+ assert.notEqual(x.status,0,'invalid final state committed');assert.match(x.stderr,pattern);assert.deepEqual(snap(green),post);
+}
+const touch="UPDATE public.character_progression SET level_choices=level_choices||'{\"i2jTamper\":true}'::jsonb"+w+";";
+const slot=" AND instance_key='battle-master-maneuver-slot-5'";
+rejectTx('DELETE FROM public.character_class_option_grant_instances'+w+slot+'; '+touch,/level 7 requires 5 normalized maneuver instance\(s\); found 4/);
+rejectTx("UPDATE public.character_class_option_grant_instances SET option_catalog_id=(SELECT option_catalog_id FROM public.character_class_option_grant_instances"+w+" AND instance_key='battle-master-maneuver-slot-4')"+w+slot+"; "+touch,/distinct canonical XPHB maneuvers/);
+const fake=randomUUID();
+rejectTx("INSERT INTO public.class_feature_option_catalog(id,option_key,option_type,name,source,class_key) VALUES("+q(fake)+",'i2j-invalid-phb','battle-master-maneuver','I2J synthetic invalid source','PHB','fighter'); UPDATE public.character_class_option_grant_instances SET option_catalog_id="+q(fake)+w+slot+"; "+touch,/distinct canonical XPHB maneuvers/);
+assert.equal(sql("SELECT count(*) FROM public.class_feature_option_catalog WHERE id="+q(fake)),'0');
+rejectTx("UPDATE public.character_progression SET subclass_name='Champion'"+w+";",/non-Battle-Master progression cannot retain/);
+assert.equal(triggerDef(),defBefore);assert.equal(md5(validator),candidateHash);
+for(const [n,d] of originalUntouched)assert.equal(md5(n),d);
+console.log('PASS I2J-BM08 final-state validator still rejects missing/duplicate/wrong-source grants and invalid subclass, full rollback, unchanged trigger timing');
+console.log('I2J-BM CANDIDATE RESULT: bounded scratch RED/GREEN only; no migration or release, no full role/catalog/trigger/lifecycle parity');
