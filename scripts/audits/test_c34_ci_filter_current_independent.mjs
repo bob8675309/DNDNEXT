@@ -211,3 +211,33 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(verifyHistoricalReceipts(sourcePins,historicalReceipts.map(r=>({...r,sha:'0'.repeat(40)}))),false);
  assert.equal(verifyHistoricalReceipts(sourcePins,[...historicalReceipts.slice(1),historicalReceipts[1]]),false);
  console.log('6 historical metadata receipt assertions passed; closure NOT PROVEN');
+
+ // Historical import evidence: selected source lines, not a parser or full source fixture.
+ const historicalImportReceipts = [{"path":"components/GlobalNpcProfileOverlay.js","sha":"a0e133a7c2446cba3f8c672a1df78f6a5aa73763","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":["import { useCallback, useEffect, useRef, useState } from \"react\";","import dynamic from \"next/dynamic\";","import { useRouter } from \"next/router\";","import { supabase } from \"../utils/supabaseClient\";","import { OPEN_NPC_PROFILE_EVENT } from \"../utils/npcProfileOverlay\";","  () => import(\"./character/CharacterInteractionPanel\"), { ssr: false }"]},{"path":"utils/npcProfileOverlay.js","sha":"3d809c47a9aaae18d0e7e5ec6500199a9266baac","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":[]},{"path":"components/CreatorBackstoryPanel.js","sha":"23b0e86aab7a80b7243365ba107c1d37a5ec5812","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":["import { useEffect, useState } from \"react\";","import { supabase } from \"../utils/supabaseClient\";"]},{"path":"styles/npc-profile-centered.css","sha":"150eb9ad78aeba268be955e63c8451e3c0ed0e14","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":[]},{"path":"scripts/browser/verify_c33_creator_backstory_dom.mjs","sha":"7b3a813d11d4b9e0fcd1ba8aef9d4e8463f58aa4","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":["import assert from \"node:assert/strict\";","import { randomUUID } from \"node:crypto\";","import { execFileSync, spawnSync } from \"node:child_process\";","import { createServer } from \"node:http\";","import { mkdtempSync, readFileSync, rmSync } from \"node:fs\";","import { tmpdir } from \"node:os\";","import path from \"node:path\";","import { createRequire } from \"node:module\";","import { createClient } from \"@supabase/supabase-js\";","import { PDFDocument } from \"pdf-lib\";","const required=createRequire(path.join(toolsRoot,\"c33-playwright-anchor.cjs\"));"]},{"path":"scripts/browser/verify_c33_next_town_route.mjs","sha":"d19b134fdb4e4b58833fe339f918c027959eae02","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":["import assert from \"node:assert/strict\";","import {randomUUID} from \"node:crypto\";","import {spawn,spawnSync} from \"node:child_process\";","import {createRequire} from \"node:module\";","import path from \"node:path\";","import {createClient} from \"@supabase/supabase-js\";","const {chromium}=createRequire(path.join(e.C33_BROWSER_TOOL_ROOT,\"c33-playwright-anchor.cjs\"))(\"playwright-core\");"]},{"path":"scripts/browser/verify_c33_npc_pdf_visual.mjs","sha":"1ee0f29a5c017906f2029eff25a9b1c1b88c5760","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":["import assert from \"node:assert/strict\";","import fs from \"node:fs\";","import os from \"node:os\";","import path from \"node:path\";","import { execFileSync } from \"node:child_process\";","import { PDFDocument } from \"pdf-lib\";","import { buildPrintableCharacterSheetModel } from \"../../utils/printableCharacterSheet.js\";","import { buildOfficialCharacterSheetPdf } from \"../../utils/officialCharacterSheetPdf.js\";"]},{"path":"scripts/fixtures/c33_next_town_route_pg17.sql","sha":"0d3f1b261b7600944121c9be6f808fa190e8dddc","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","lines":[]}];
+ export function historicalImportInventory(lines) {
+   const local=new Set(), external=new Set(), builtin=new Set(), unresolved=[];
+   for(const line of lines) {
+     const m=/^\s*(?:import|export)\s+.*?\bfrom\s*["']([^"']+)["']/.exec(line)
+       || /^\s*import\s*["']([^"']+)["']/.exec(line);
+     if(m) {
+       const s=m[1];
+       if(s.startsWith('.')) local.add(s);
+       else if(s.startsWith('node:')) builtin.add(s);
+       else if(/^(?:@[^/]+\/)?[A-Za-z0-9_-]/.test(s)) external.add(s);
+       else unresolved.push(line);
+     } else unresolved.push(line);
+   }
+   return {local:[...local].sort(),external:[...external].sort(),builtin:[...builtin].sort(),unresolved,closureProven:false,bypassAuthorized:false};
+ }
+ assert.equal(verifyHistoricalReceipts(sourcePins,historicalImportReceipts),true);
+ const importEvidence=historicalImportReceipts.map(r=>({path:r.path,...historicalImportInventory(r.lines)}));
+ const overlayImports=importEvidence.find(r=>r.path==='components/GlobalNpcProfileOverlay.js');
+ assert.ok(overlayImports.local.includes('../utils/supabaseClient'));
+ assert.ok(overlayImports.external.includes('next/dynamic'));
+ assert.ok(overlayImports.unresolved.some(l=>l.includes('CharacterInteractionPanel')));
+ assert.ok(importEvidence.some(r=>r.builtin.includes('node:fs')));
+ assert.ok(importEvidence.some(r=>r.external.includes('pdf-lib')));
+ assert.deepEqual(historicalImportInventory(['import(target)']).unresolved,['import(target)']);
+ assert.equal(historicalImportInventory([]).closureProven,false);
+ assert.equal(historicalImportInventory([]).bypassAuthorized,false);
+ console.log('Historical import evidence assertions passed; selected lines only; closure NOT PROVEN');
