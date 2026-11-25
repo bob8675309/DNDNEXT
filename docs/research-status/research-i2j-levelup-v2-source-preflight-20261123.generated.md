@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `110b436cbb32213b646969a4959771f6798490d5` |
+| Exact source commit represented by this archive snapshot | `0bc4d700feb2112821b55ef82bcc9dce24b2234c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): extend Battle Master all acquisition tiers, isolate mirror and characterize grant/deletion boundaries |
-| Files changed relative to main | 261 (188 non-docs; 73 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | docs(i2j): reconcile existing C34 Option A receipts and pin earned Wizard source lineage |
+| Files changed relative to main | 262 (188 non-docs; 74 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,8 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_I1EF_RESOURCE_AND_MANEUVER_RESEARCH_2026-11-24.md`
-- `scripts/integration/i2j/test_bm_earned_v5_signed.mjs`
+- `docs/research/I2J_OPTION_A_CROSS_BRANCH_RECEIPT_RECONCILIATION_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_MIGRATION_HISTORY_RECONCILIATION_2026-11-08.md`
 - `docs/C3_3_NPC_PRINT_VISUAL_QA_2026-11-08.md`
 - `docs/C3_3_NPC_PRIVACY_INVENTORY_RELEASE_PREFLIGHT_2026-11-08.md`
-- … 211 more
+- … 212 more
 
 ## Trust and update procedure
 
