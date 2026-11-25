@@ -14,12 +14,12 @@
       "write_scope": "own research branch only",
       "schedule": "BEGIN:VEVENT\nDTSTART;TZID=America/Chicago:20261124T180500\nRRULE:FREQ=HOURLY;INTERVAL=1;BYMINUTE=05\nEND:VEVENT",
       "timezone": "America/Chicago",
-      "enabled_at_checkpoint": true,
+      "enabled_at_checkpoint": false,
       "head_at_checkpoint": "2c9e9e4eec41300971b7e9b1e84c2442c46e9172",
       "next_bounded_task": "Create docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md with exact fixture custody and explicit unresolved semantics; verify commit, then branch handoffs.",
       "handoff_path": "docs/agents/AGENT_A.md",
       "timing_mode": "exact_schedule",
-      "rollover_state": "owner_approved_prepared_pause_pending"
+      "rollover_state": "old_task_paused_verified_awaiting_fresh_chat"
     },
     "B": {
       "role": "CI Reliability / issue #389",
