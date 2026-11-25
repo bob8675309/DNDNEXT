@@ -16,9 +16,10 @@
       "timezone": "America/Chicago",
       "enabled_at_checkpoint": true,
       "head_at_checkpoint": "2c9e9e4eec41300971b7e9b1e84c2442c46e9172",
-      "next_bounded_task": "Commit original #332 two-fixture custody ledger and branch handoff; advance one unresolved original source path.",
+      "next_bounded_task": "Create docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md with exact fixture custody and explicit unresolved semantics; verify commit, then branch handoffs.",
       "handoff_path": "docs/agents/AGENT_A.md",
-      "timing_mode": "exact_schedule"
+      "timing_mode": "exact_schedule",
+      "rollover_state": "owner_approved_prepared_pause_pending"
     },
     "B": {
       "role": "CI Reliability / issue #389",
