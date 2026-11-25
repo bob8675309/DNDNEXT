@@ -168,3 +168,30 @@ assert.equal(historicalSourcePins('').valid,false);
 assert.equal(sourcePins.bypassAuthorized,false);
 assert.equal(sourcePins.closureProven,false);
 console.log('11 historical source manifest assertions passed; actual historical bytes and closure NOT PROVEN');
+
+ // Adapter dependency receipt: source inspection only; never import or execute adapter.
+ export const adapterReceipt = {"path":"scripts/integration/c34/t20_adapt_held345_browser_fixture.mjs","sha":"d9c9557bcf16d24a09594c962a0c411cc7036573","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","targets":[{"path":"scripts/browser/verify_c33_creator_backstory_dom.mjs","sha":"7b3a813d11d4b9e0fcd1ba8aef9d4e8463f58aa4"},{"path":"scripts/browser/verify_c33_next_town_route.mjs","sha":"d19b134fdb4e4b58833fe339f918c027959eae02"}]};
+ export function adapterDependencyEvidence(workflow, receipt) {
+   const pins = historicalSourcePins(workflow);
+   const modes = workflow.split('\n').map(l=>l.trim()).filter(l=>l.startsWith('node '+adapterReceipt.path));
+   const valid = pins.valid && receipt?.sha === adapterReceipt.sha &&
+     receipt.ref === pins.ref && Array.isArray(receipt.targets) &&
+     receipt.targets.length === 2 &&
+     adapterReceipt.targets.every(expected=>receipt.targets.some(t=>t.path===expected.path && t.sha===expected.sha) &&
+       pins.pins.some(p=>p.path===expected.path && p.sha===expected.sha)) &&
+     modes.length===2 && modes.includes('node '+adapterReceipt.path) &&
+     modes.includes('node '+adapterReceipt.path+' town-port');
+   return {valid:Boolean(valid),scratchWrites:valid?receipt.targets.map(t=>({path:'held345/'+t.path,originalBlob:t.sha})):[],
+     closureProven:false,bypassAuthorized:false};
+ }
+ const adapterWorkflow=bytes.toString('utf8');
+ const adapterEvidence=adapterDependencyEvidence(adapterWorkflow,adapterReceipt);
+ assert.equal(adapterEvidence.valid,true);
+ assert.equal(adapterEvidence.scratchWrites.length,2);
+ assert.equal(adapterDependencyEvidence(adapterWorkflow,{...adapterReceipt,sha:'0'.repeat(40)}).valid,false);
+ assert.equal(adapterDependencyEvidence(adapterWorkflow,{...adapterReceipt,targets:[]}).valid,false);
+ assert.equal(adapterDependencyEvidence(adapterWorkflow.replace('node '+adapterReceipt.path+' town-port','node '+adapterReceipt.path+' unknown'),adapterReceipt).valid,false);
+ assert.equal(adapterDependencyEvidence(adapterWorkflow,{...adapterReceipt,ref:'0'.repeat(40)}).valid,false);
+ assert.equal(adapterEvidence.closureProven,false);
+ assert.equal(adapterEvidence.bypassAuthorized,false);
+ console.log('Adapter dependency receipt assertions passed; runtime and closure NOT PROVEN');
