@@ -281,3 +281,38 @@ console.log('11 historical source manifest assertions passed; actual historical 
  }
  assert.equal(resolveCandidate('../utils/supabaseClient').closureProven,false);
  console.log('Historical local candidate resolution assertions passed; selected tree receipts only; closure NOT PROVEN');
+
+
+ // Second-level selected source evidence; never a complete parser or closure proof.
+ const secondLevelReceipts = [{"path":"components/character/CharacterInteractionPanel.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"28a2dde5696376ee39c01a498b76a146f30aaffa","lines":["import React from \"react\";","import dynamic from \"next/dynamic\";","import NpcPanel from \"../NpcPanel\";","import { resolveCraftProfession } from \"../../utils/craftProfession\";","import { supabase } from \"../../utils/supabaseClient\";","import { CharacterInteractionContext } from \"./CharacterInteractionContext\";","const CraftingWorkspace = dynamic(() => import(\"../CraftingWorkspace\"), { ssr: false });","const CharacterClassWorkspace = dynamic(() => import(\"../CharacterClassWorkspace\"), { ssr: false });","const CharacterSpellbookPanel = dynamic(() => import(\"../CharacterSpellbookPanel\"), { ssr: false });","const CharacterFeaturesPanel = dynamic(() => import(\"../CharacterFeaturesPanel\"), { ssr: false });","export const CHARACTER_INTERACTION_VIEWS = [\"profile\", \"class\", \"features\", \"sheet\", \"inventory\", \"spells\", \"account\", \"shop\", \"craft\"];","export function normalizeCharacterInteractionView(value) {","export function buildCharacterInteractionTabs({ hasCraftCapability = false, hasShopCapability = false, hasAccountCapability = false } = {}) {","export default function CharacterInteractionPanel({ character = null, npc = null, initialView = \"profile\", onInteractionViewChange = null, useCharacterInteractionShell = false, accountContent = null, ...props }) {"]},{"path":"utils/npcProfileOverlay.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"3d809c47a9aaae18d0e7e5ec6500199a9266baac","lines":["export const OPEN_NPC_PROFILE_EVENT = \"dndnext:open-npc-profile\";","export function openNpcProfile(characterId) {"]},{"path":"utils/officialCharacterSheetPdf.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"c3ba3651e2e3d8aafbae3b4ad195d53ee25199f0","lines":["import { PDFDocument, StandardFonts, rgb } from \"pdf-lib\";","import { formatPlayerFacingText } from \"./playerFacingText.js\";","export const OFFICIAL_CHARACTER_SHEET_TEMPLATE_URL = \"/forms/5E_CharacterSheet_Fillable.pdf\";","export async function buildOfficialCharacterSheetPdf({","export function safeOfficialSheetFilename(name) {"]},{"path":"utils/printableCharacterSheet.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"adbb1ca2a5482622711f0ec5601d42cd0d8bd7ae","lines":["import {","import { buildCharacterSheetActions } from \"./characterSheetActions.js\";","import { formatPlayerFacingText } from \"./playerFacingText.js\";","export const PRINTABLE_ABILITIES = Object.freeze([","export const PRINTABLE_SKILLS = Object.freeze([","export function formatPrintableModifier(value) {","export function buildPrintableCharacterSheetModel({"]},{"path":"utils/supabaseClient.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"13b3339c4c99702bc667f1a1bc9b2ea36a70b18b","lines":["import { createClient } from \"@supabase/supabase-js\";","export const supabase ="]}];
+ export function historicalGraphWalk(roots, edges) {
+   const visited=new Set(), active=new Set(), cycles=[], missing=new Set();
+   function visit(node) {
+     if(active.has(node)){cycles.push(node);return;}
+     if(visited.has(node))return;
+     if(!Object.hasOwn(edges,node)){missing.add(node);return;}
+     active.add(node);
+     for(const target of edges[node])visit(target);
+     active.delete(node);visited.add(node);
+   }
+   for(const root of roots)visit(root);
+   return {visited:[...visited].sort(),cycles,missing:[...missing].sort(),closureProven:false,bypassAuthorized:false};
+ }
+ for(const receipt of secondLevelReceipts){
+   assert.equal(receipt.ref,localTreeReceipt.ref);
+   assert.equal(receipt.sha,localTreeReceipt.entries.find(e=>e.path===receipt.path)?.sha);
+ }
+ assert.equal(secondLevelReceipts.length,localTreeReceipt.entries.length);
+ const secondLevelEvidence=secondLevelReceipts.map(r=>({path:r.path,...historicalImportInventory(r.lines)}));
+ const secondLevelEdges=Object.fromEntries(secondLevelEvidence.map(r=>[r.path,r.local.map(specifier=>{
+   const resolved=resolveHistoricalCandidate(r.path,specifier,localTreeReceipt);
+   return resolved.reason==='candidate'?resolved.candidates[0].path:r.path+' :: '+specifier;
+ })]));
+ const secondLevelWalk=historicalGraphWalk(secondLevelReceipts.map(r=>r.path),secondLevelEdges);
+ assert.equal(secondLevelWalk.visited.length,5);
+ assert.deepEqual(historicalGraphWalk(['a'],{a:['b'],b:['a']}).cycles,['a']);
+ assert.deepEqual(historicalGraphWalk(['a'],{a:['missing']}).missing,['missing']);
+ assert.deepEqual(historicalGraphWalk(['a'],{a:['b','c'],b:['c'],c:[]}).cycles,[]);
+ assert.equal(secondLevelWalk.closureProven,false);
+ assert.equal(secondLevelWalk.bypassAuthorized,false);
+ console.log('Second-level historical graph evidence; unresolved targets:',secondLevelWalk.missing.length,'; closure NOT PROVEN');
