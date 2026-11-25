@@ -230,3 +230,138 @@ assert.equal(triggerDef(),defBefore);assert.equal(md5(validator),candidateHash);
 for(const [n,d] of originalUntouched)assert.equal(md5(n),d);
 console.log('PASS I2J-BM08 final-state validator still rejects missing/duplicate/wrong-source grants and invalid subclass, full rollback, unchanged trigger timing');
 console.log('I2J-BM CANDIDATE RESULT: bounded scratch RED/GREEN only; no migration or release, no full role/catalog/trigger/lifecycle parity');
+
+// I2J extended independent writer, all acquisition tiers, and integrity boundary.
+// Retain original RED and BM05–08 as byte-identical prefix.
+const viewer=await actor();
+sql("INSERT INTO public.players(user_id,sheet) VALUES("+q(viewer.id)+","+json({historical:'unrelated-viewer'})+")");
+const linked=[owner,editor,viewer],allActors=[...linked,outsider];
+const accountSet=()=>allActors.map(acct);
+function markHist(label){for(const [i,a] of allActors.entries())sql("UPDATE public.players SET sheet="+json({historical:label+'-'+i})+",updated_at=now() WHERE user_id="+q(a.id))}
+function addViewer(id){sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit) VALUES("+q(id)+","+q(viewer.id)+",false)")}
+const safeHelper=definition(helper),safeHelperHash=md5(helper);
+assert.notEqual(safeHelperHash,recorded);
+const safeBaseHash=md5(baseName),safeSummaryHash=md5(summaryName);
+sql(helperBody);assert.equal(md5(helper),recorded);
+assert.equal(md5(baseName),safeBaseHash);assert.equal(md5(summaryName),safeSummaryHash);
+const isolated=randomUUID();seed(isolated);addViewer(isolated);markHist('isolated-bm-red');
+const isolatedHistory=accountSet(),isolatedBefore=snap(isolated);
+assert.equal((await complete(viewer,isolated,picked)).error?.code,'42501');assert.deepEqual(snap(isolated),isolatedBefore);
+const isolatedResult=await complete(editor,isolated,picked);assert.ifError(isolatedResult.error);finalState(isolated,picked);
+const overwritten=accountSet();for(let i=0;i<3;i++)assert.notEqual(overwritten[i],isolatedHistory[i]);
+assert.equal(overwritten[3],isolatedHistory[3]);
+assert.equal(md5(baseName),safeBaseHash);assert.equal(md5(summaryName),safeSummaryHash);
+console.log('I2J-BM09 ISOLATED WRITER RED: original exact BM helper alone overwrites owner/editor/read-only viewer; other two account writers already frozen');
+sql(safeHelper);assert.equal(md5(helper),safeHelperHash);
+const isolatedGreen=randomUUID();seed(isolatedGreen);addViewer(isolatedGreen);markHist('isolated-bm-green');
+const isolatedFrozen=accountSet();const isolateOK=await complete(editor,isolatedGreen,picked);assert.ifError(isolateOK.error);finalState(isolatedGreen,picked);assert.deepEqual(accountSet(),isolatedFrozen);
+console.log('PASS I2J-BM09 isolated scratch BM writer omission preserves all four historical sheets and timestamps; no double count of base/summary');
+
+// Expand ONLY explicitly reduced unrelated helper gates and level metadata.
+// Keep exact v5/v4/v3, materializer, original slot/count helpers and paired trigger DDL.
+sql("CREATE OR REPLACE FUNCTION private.p13_only_plain_fighter(p_character_id uuid,p_to_level int) RETURNS void LANGUAGE plpgsql STABLE AS $bm$ BEGIN IF p_to_level NOT IN (3,7,10,15) OR NOT EXISTS(SELECT 1 FROM public.character_progression cp JOIN public.class_catalog cc ON cc.id=cp.class_id WHERE cp.character_id=p_character_id AND cc.class_key='fighter' AND cc.source='XPHB' AND cp.class_level IN (p_to_level-1,p_to_level) AND (cp.subclass_name='Battle Master' OR (p_to_level=3 AND cp.class_level=2 AND cp.subclass_name IS NULL))) THEN RAISE EXCEPTION 'I2J reduced fixture restricts unrelated tails to Battle Master acquisition tiers'; END IF; END $bm$;");
+sql("CREATE OR REPLACE FUNCTION private.apply_level_up_wizard_savant_v1(uuid,int,jsonb,text) RETURNS jsonb LANGUAGE plpgsql AS $bm$ BEGIN PERFORM private.p13_only_plain_fighter($1,$2); PERFORM private.p13_only_empty($3); IF nullif($4,'') IS NOT NULL AND NOT ($2=3 AND $4='Battle Master') THEN RAISE EXCEPTION 'I2J unrelated Wizard choice not staged'; END IF; RETURN '[]'::jsonb; END $bm$;");
+sql("CREATE OR REPLACE FUNCTION private.sync_character_eldritch_invocations_v1(uuid) RETURNS void LANGUAGE plpgsql AS $bm$ DECLARE n int; BEGIN SELECT class_level INTO n FROM public.character_progression WHERE character_id=$1; PERFORM private.p13_only_plain_fighter($1,n); END $bm$;");
+sql("CREATE OR REPLACE FUNCTION private.level_up_persistent_choice_gaps_v1(text,text,int,int) RETURNS jsonb LANGUAGE plpgsql IMMUTABLE AS $bm$ BEGIN IF $1<>'fighter' OR $2<>'XPHB' OR $4 NOT IN (3,7,10,15) OR $3<>$4-1 THEN RAISE EXCEPTION 'I2J unrelated gap metadata not staged'; END IF; RETURN '[]'::jsonb; END $bm$;");
+sql("CREATE OR REPLACE FUNCTION public.xp_threshold_for_level_v1(int) RETURNS bigint LANGUAGE sql IMMUTABLE AS $bm$ SELECT CASE $1 WHEN 1 THEN 0 WHEN 2 THEN 300 WHEN 3 THEN 900 WHEN 4 THEN 2700 WHEN 6 THEN 14000 WHEN 7 THEN 23000 WHEN 8 THEN 34000 WHEN 9 THEN 48000 WHEN 10 THEN 64000 WHEN 11 THEN 85000 WHEN 14 THEN 140000 WHEN 15 THEN 165000 WHEN 16 THEN 195000 ELSE 100000 END $bm$;");
+for(const [n,xp,pb] of [[3,900,2],[9,48000,4],[10,64000,4],[14,140000,5],[15,165000,5]])sql("INSERT INTO public.class_level_progression(class_id,class_level,xp_threshold,features,proficiency_bonus,spell_slots) VALUES("+q(cls)+","+n+","+xp+",'[]',"+pb+",'{}')");
+sql("REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA private FROM PUBLIC,anon,authenticated");
+function seedTier(from,to,known,xp){
+ const id=randomUUID(),w=' WHERE character_id='+q(id);
+ const prior=known?{[group]:{kind:'battle-master-maneuver',subclassName:'Battle Master',source:'XPHB',count:known,selections:catalog.slice(0,known)}}:{};
+ const sh={classKey:'fighter',rulesetSource:'XPHB',ruleset:'2024',level:from,hp:48,maxHp:48,abilities:{con:{score:12}},classFeatureChoices:prior,meta:{classKey:'fighter',rulesetSource:'XPHB',level:from,creator:'shared_character_forge_player_v2',classFeatureChoices:prior}};
+ if(known){sh.subclassName='Battle Master';sh.subclassSource='XPHB';sh.meta.subclassName='Battle Master';sh.meta.subclassSource='XPHB'}
+ const sub=known?"'Battle Master','XPHB'":"NULL,NULL";
+ sql("BEGIN; INSERT INTO public.characters(id,name) VALUES("+q(id)+",'I2J BM tier'); INSERT INTO public.character_progression(character_id,class_id,class_level,experience_points,pending_level_up,subclass_name,subclass_source,created_by) VALUES("+q(id)+","+q(cls)+","+from+","+xp+",true,"+sub+","+q(owner.id)+"); INSERT INTO public.character_sheets(character_id,sheet) VALUES("+q(id)+","+json(sh)+"); INSERT INTO public.character_permissions(character_id,user_id,can_edit) VALUES("+q(id)+","+q(owner.id)+",true),("+q(id)+","+q(editor.id)+",true),("+q(id)+","+q(viewer.id)+",false); INSERT INTO public.character_level_up_sessions(character_id,from_level,to_level,status,metadata_ready,created_by) VALUES("+q(id)+","+from+","+to+",'open',true,"+q(owner.id)+"); COMMIT;");
+ assert.equal(sql('SELECT class_level FROM public.character_progression'+w),String(from));
+ assert.equal(sql("SELECT sheet->>'level' FROM public.character_sheets"+w),String(from));
+ assert.equal(sql('SELECT count(*) FROM public.character_class_option_grant_instances'+w),String(known));
+ const groupData=JSON.parse(sql('SELECT private.level_up_battle_master_maneuver_group_v1('+q(id)+','+to+')'));
+ assert.equal(groupData.length,1);assert.equal(groupData[0].metadata.delta,to===3?3:2);
+ const fields=groupData[0].fields,opts=fields.find(x=>x.id==='maneuvers').options.map(x=>x.key);
+ return {id,w,fields,opts};
+}
+function tierInput(g,to){return {...input(g),...(to===3?{subclass_name:'Battle Master',subclass_source:'XPHB'}:{})}}
+const tierRpc=(a,id,g,to)=>a.client.rpc('complete_character_level_up_v5',{p_character_id:id,p_selections:tierInput(g,to)});
+function assertTier(t,from,to,known,g){
+ const {id,w}=t,delta=to===3?3:2,total=known+delta,n=delta+g.replace.length;
+ assert.equal(sql('SELECT class_level FROM public.character_progression'+w),String(to));
+ assert.equal(sql("SELECT subclass_name||'|'||subclass_source FROM public.character_progression"+w),'Battle Master|XPHB');
+ assert.equal(sql("SELECT sheet->>'level' FROM public.character_sheets"+w),String(to));
+ assert.equal(sql("SELECT sheet#>>'{meta,level}' FROM public.character_sheets"+w),String(to));
+ assert.equal(sql("SELECT sheet->>'maxHp' FROM public.character_sheets"+w),'55');
+ assert.equal(sql('SELECT count(*) FROM public.character_class_option_grant_instances'+w),String(total));
+ assert.equal(sql('SELECT count(DISTINCT option_catalog_id) FROM public.character_class_option_grant_instances'+w),String(total));
+ assert.equal(sql('SELECT count(*) FROM public.character_class_option_grant_instances'+w+' AND acquired_level='+to),String(delta));
+ const levels=JSON.parse(sql('SELECT jsonb_agg(acquired_level ORDER BY acquired_level) FROM public.character_class_option_grant_instances'+w));
+ assert.deepEqual(levels,[3,3,3,7,7,10,10,15,15].slice(0,total));
+ const keys=JSON.parse(sql("SELECT jsonb_agg(o.option_key ORDER BY o.option_key) FROM public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o ON o.id=g.option_catalog_id WHERE g.character_id="+q(id)));
+ const proj=JSON.parse(sql("SELECT sheet#>"+q('{classFeatureChoices,'+group+',selections}')+" FROM public.character_sheets"+w)).map(x=>x.key).sort();
+ assert.deepEqual(proj,keys);assert.ok(g.maneuvers.every(x=>keys.includes(x)));
+ if(g.replace.length){const data=JSON.parse(sql("SELECT jsonb_build_object('key',o.option_key,'level',g.acquired_level,'old',g.metadata->>'previousOptionKey','at',g.metadata->>'lastReplacementLevel') FROM public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o ON o.id=g.option_catalog_id WHERE g.character_id="+q(id)+" AND g.instance_key="+q(g.replace[0])));assert.equal(data.key,g.with[0]);assert.equal(data.at,String(to));assert.ok(data.level<to);assert.ok(!keys.includes(data.old))}
+ assert.equal(sql("SELECT count(*) FROM public.character_level_events"+w+" AND event_type='level_up_completed' AND from_level="+from+" AND to_level="+to),'1');
+ assert.equal(sql("SELECT count(*) FROM public.character_level_up_sessions"+w+" AND status='completed' AND from_level="+from+" AND to_level="+to),'1');
+ assert.equal(sql("SELECT jsonb_array_length(level_choices#>"+q('{'+to+',replacements}')+") FROM public.character_progression"+w),String(n));
+ assert.equal(sql("SELECT jsonb_array_length(selections->'replacements') FROM public.character_level_up_sessions"+w),String(n));
+ assert.equal(sql("SELECT jsonb_array_length(details->'replacements') FROM public.character_level_events"+w+" AND event_type='level_up_completed'"),String(n));
+}
+const tiers=[];
+for(const [from,to,known,xp,replace] of [[2,3,0,900,false],[9,10,5,64000,true],[14,15,7,165000,false]]){
+ const t=seedTier(from,to,known,xp);tiers.push(t);
+ const delta=to===3?3:2;
+ const g={maneuvers:t.opts.slice(0,delta),replace:replace?[t.fields.find(x=>x.id==='replace').options[0].key]:[],with:replace?[t.opts[delta]]:[]};
+ const prior=snap(t.id);
+ assert.equal((await tierRpc(viewer,t.id,g,to)).error?.code,'42501');assert.deepEqual(snap(t.id),prior);
+ const bad={...g,maneuvers:Array(delta).fill(g.maneuvers[0])};
+ assert.match((await tierRpc(owner,t.id,bad,to)).error?.message||'',/new Battle Master maneuvers must be distinct/i);assert.deepEqual(snap(t.id),prior);
+ if(to===10){const race=await Promise.all([tierRpc(owner,t.id,g,to),tierRpc(editor,t.id,g,to)]);assert.equal(race.filter(x=>!x.error).length,1,JSON.stringify(race));assert.equal(race.filter(x=>x.error).length,1)}
+ else {const x=await tierRpc(editor,t.id,g,to);assert.ifError(x.error)}
+ assertTier(t,from,to,known,g);assert.deepEqual(accountSet(),isolatedFrozen);
+ const final=snap(t.id);assert.ok((await tierRpc(editor,t.id,g,to)).error);assert.deepEqual(snap(t.id),final);
+ console.log('PASS I2J-BM10 signed tier '+from+'→'+to+', '+(known+delta)+' distinct source grants, exact acquisition chronology, canonical history, frozen accounts and inert rejected replay'+(to===10?', concurrent authorized calls exactly one commit':''));
+}
+
+// Preserve original direct authority guard from checked-in class-option migration.
+// Reduced table RLS has no client policies/grants; do not claim full production ACL.
+const authority=pinned('sql/20260808_21_player_forge_class_option_instance_authority.sql','81db89dad30e5bbc2c9f07a8f4fbd72782a09294');
+sql(fn(authority,'private.guard_direct_class_option_authority_mutation_v1'));
+const gs=authority.indexOf('create trigger character_class_option_instances_direct_authority_guard_v1'),ge=authority.indexOf(';',gs);
+assert.ok(gs>=0&&ge>gs);sql(authority.slice(gs,ge+1));
+sql("REVOKE ALL ON FUNCTION private.guard_direct_class_option_authority_mutation_v1() FROM PUBLIC,anon,authenticated; NOTIFY pgrst,'reload schema'");
+for(const priv of ['INSERT','UPDATE','DELETE'])assert.equal(sql("SELECT has_table_privilege('authenticated','public.character_class_option_grant_instances',"+q(priv)+")"),'f');
+const guardBefore=sql("SELECT pg_get_triggerdef(oid,true) FROM pg_trigger WHERE tgname='character_class_option_instances_direct_authority_guard_v1' AND tgrelid='public.character_class_option_grant_instances'::regclass");
+assert.match(guardBefore,/BEFORE INSERT OR DELETE OR UPDATE|BEFORE INSERT OR UPDATE OR DELETE/);
+const protectedBefore=snap(green);
+const direct=await editor.client.from('character_class_option_grant_instances').delete().eq('character_id',green);
+assert.ok(direct.error,'signed direct grant delete unexpectedly accepted');assert.deepEqual(snap(green),protectedBefore);
+// Existing CP deferred validator is not queued by grant-only mutation. Exercise
+// SET CONSTRAINTS ALL IMMEDIATE before explicit rollback, no corrupt commit.
+const grantOnly=sql("BEGIN; DELETE FROM public.character_class_option_grant_instances"+w+slot+"; SET CONSTRAINTS ALL IMMEDIATE; SELECT 'GRANT_ONLY_FINAL_COUNT='||count(*) FROM public.character_class_option_grant_instances"+w+"; ROLLBACK;");
+assert.match(grantOnly,/GRANT_ONLY_FINAL_COUNT=4/);assert.deepEqual(snap(green),protectedBefore);
+console.log('I2J-BM11 BOUNDARY: signed direct grant write denied; privileged grant-only delete not covered by CP trigger (forced deferred checks, rolled back). No universal grant invariant or exploit claimed');
+
+// Character deletion after an earlier queued CP event: first record the
+// fail-closed candidate v1 behavior, then allow ONLY complete character teardown.
+// The P1.3 fixture has restrictive non-grant FKs, so explicitly delete those
+// children; actual production deletion RPC/cascade graph not represented.
+const deleted=randomUUID();seed(deleted);addViewer(deleted);
+const dw=' WHERE character_id='+q(deleted),deleteBefore=snap(deleted);
+const queue="UPDATE public.character_progression SET level_choices=level_choices||'{\"deleteProbe\":true}'::jsonb"+dw+";";
+const teardown=queue+['character_level_events','character_level_up_sessions','character_permissions','character_spells','character_sheets','character_progression'].map(t=>' DELETE FROM public.'+t+dw+';').join('')+" DELETE FROM public.characters WHERE id="+q(deleted)+";";
+function deletionTx(stmt,expected){
+ const x=spawnSync('psql',['-X','-v','ON_ERROR_STOP=1','-qAt'],{input:'BEGIN;\n'+stmt+'\nSET CONSTRAINTS ALL IMMEDIATE;\nCOMMIT;\n',encoding:'utf8',timeout:30000,env:{...env,PGUSER:'postgres'}});
+ assert.notEqual(x.status,0,'unexpected deletion commit');assert.match(x.stderr,expected);
+}
+deletionTx(teardown,/Battle Master progression missing at deferred validation/);assert.deepEqual(snap(deleted),deleteBefore);
+const lifecycleValidator=replaceOnce(candidateValidator,"  if not found then raise exception 'Battle Master progression missing at deferred validation.'; end if;",
+ "  if not found then\n    if not exists(select 1 from public.characters where id=new.character_id) and not exists(select 1 from public.character_class_option_grant_instances where character_id=new.character_id) then return new; end if;\n    raise exception 'Battle Master progression missing at deferred validation.';\n  end if;");
+sql(lifecycleValidator);const lifecycleHash=md5(validator);assert.notEqual(lifecycleHash,candidateHash);
+deletionTx(queue+' DELETE FROM public.character_progression'+dw+';',/Battle Master progression missing at deferred validation/);assert.deepEqual(snap(deleted),deleteBefore);
+sql('BEGIN; '+teardown+' SET CONSTRAINTS ALL IMMEDIATE; COMMIT;');
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE id="+q(deleted)),'0');
+for(const t of ['character_progression','character_sheets','character_class_option_grant_instances','character_level_up_sessions','character_level_events','character_spells','character_permissions'])assert.equal(sql('SELECT count(*) FROM public.'+t+dw),'0',t);
+assert.deepEqual(snap(green),protectedBefore);assert.deepEqual(accountSet(),isolatedFrozen);
+assert.equal(triggerDef(),defBefore);assert.equal(md5(validator),lifecycleHash);assert.equal(md5(helper),safeHelperHash);
+for(const [n,d] of originalUntouched)assert.equal(md5(n),d);
+console.log('PASS I2J-BM12 local queued-event full character teardown succeeds only when character and grants absent; missing live CP still rejected; unrelated state frozen');
+console.log('I2J-BM EXTENDED RESULT: all acquisition tiers, isolated BM writer RED/GREEN, signed direct-write denial, privileged grant-only gap and bounded deletion lifecycle; actual delete RPC, full catalog, lock graph, full role/source and production HOLD');
