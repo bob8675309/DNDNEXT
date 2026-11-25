@@ -5,10 +5,12 @@ on:
       - research/c34-ci-efficiency-independent-20261121
     paths:
       - 'scripts/audits/test_c34_ci_filter_independent.mjs'
+      - 'scripts/audits/test_c34_ci_filter_current_independent.mjs'
       - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
   pull_request:
     paths:
       - 'scripts/audits/test_c34_ci_filter_independent.mjs'
+      - 'scripts/audits/test_c34_ci_filter_current_independent.mjs'
       - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
   workflow_dispatch:
 permissions:
@@ -30,5 +32,9 @@ jobs:
         run: node --check scripts/audits/test_c34_ci_filter_independent.mjs
       - name: Original workflow Git SHA and changed-file trigger matrix
         run: node scripts/audits/test_c34_ci_filter_independent.mjs
+      - name: Current workflow model syntax check
+        run: node --check scripts/audits/test_c34_ci_filter_current_independent.mjs
+      - name: Current workflow fail-closed decision matrix (not signed acceptance)
+        run: node scripts/audits/test_c34_ci_filter_current_independent.mjs
       - name: Do not alter protected maps, live CI or gameplay
         run: git diff --exit-code -- .github/workflows/validate-c34-joint-local-auth.yml components/MapPageClient.js pages/town/'[id].js'
