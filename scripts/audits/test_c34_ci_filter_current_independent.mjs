@@ -60,3 +60,26 @@ const bytes=readFileSync(new URL('./fixtures/c34-current-signed-workflow.yml.txt
 assert.equal(gitBlob(bytes),blob,'exact signed workflow fixture');
 assert.notEqual(gitBlob(Buffer.concat([bytes,Buffer.from('\n')])),blob,'modified bytes must invalidate lock');
 console.log('2 exact-byte source lock assertions passed; signed acceptance NOT RUN');
+
+// Literal inventory is a lower bound, not a shell parser or transitive graph.
+export function inventory(source) {
+  const paths = [...new Set(source.match(/(?:scripts|sql|supabase|pages|components|lib|utils|docs|\.github)\/[A-Za-z0-9_./-]+\.(?:mjs|cjs|js|jsx|ts|tsx|sql|json|md|yml|yaml|sh|html|css|scss)\b/g) || [])].sort();
+  const dynamicLines = source.split('\n').flatMap((line,i) =>
+    /\$\{|\$\(|\b(?:eval|source|find|xargs|npm|npx|docker)\b/.test(line) ? [i+1] : []);
+  return {paths, dynamicLines, closureProven:false, bypassAuthorized:false};
+}
+const inv = inventory(bytes.toString('utf8'));
+for (const p of [
+ 'scripts/integration/c34/validate_source_contract.mjs',
+ 'scripts/integration/c34/validate_joint_fixture_blobs.mjs',
+ 'scripts/integration/c34/test_joint_pg17_local_auth.mjs',
+ 'scripts/browser/verify_c33_creator_backstory_dom.mjs'
+]) assert.ok(inv.paths.includes(p), p);
+assert.ok(inv.paths.some(p=>p.endsWith('.sql')), 'SQL references');
+assert.ok(inv.dynamicLines.length>0, 'dynamic commands remain unresolved');
+assert.equal(inv.closureProven,false);
+assert.equal(inv.bypassAuthorized,false);
+assert.equal(inventory('node $SCRIPT').bypassAuthorized,false);
+assert.equal(inventory('').closureProven,false);
+assert.deepEqual(inventory('node scripts/a.mjs\nnode scripts/a.mjs').paths,['scripts/a.mjs']);
+console.log('11 literal inventory assertions passed; '+inv.paths.length+' literal paths; closure NOT PROVEN');
