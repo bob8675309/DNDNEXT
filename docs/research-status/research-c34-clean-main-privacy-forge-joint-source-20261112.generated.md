@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `089881b17daff7fdd77920d6d86b1d8358d6512e` |
+| Exact source commit represented by this archive snapshot | `0a45f0e95543d75880f2232b5cb0da284decd2fb` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): preserve original J168 workflow custody |
+| Last source commit title | docs(c34): map original Warlock dossier custody |
 | Files changed relative to main | 435 (324 non-docs; 111 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
