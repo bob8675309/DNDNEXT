@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e7fccc31ff5c6b6d546c6591e7bb396d86e97755` |
+| Exact source commit represented by this archive snapshot | `5b389bc1d3519233c24f57fc61ac3128752ce454` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): preserve original Forge fixture custody |
+| Last source commit title | docs(c34): checkpoint J168 custody progress |
 | Files changed relative to main | 435 (324 non-docs; 111 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
