@@ -1,0 +1,72 @@
+name: I2J Warlock earned v5 invocation acquisition research (disposable only)
+on:
+  push:
+    branches:
+      - research/i2j-levelup-v2-source-preflight-20261123
+    paths:
+      - 'scripts/integration/i2j/test_warlock_earned_v5_signed.mjs'
+      - '.github/workflows/validate-i2j-warlock-earned-v5.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  warlock-earned-signed:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+      DNDNEXT_I2J_WARLOCK_CONFIRM: I2J_DISPOSABLE_WARLOCK_V5_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Static syntax and existing original source validator
+        run: |
+          node --check scripts/integration/i2j/test_warlock_earned_v5_signed.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure disposable local PostgreSQL17 and Auth
+        run: |
+          mkdir -p "$RUNNER_TEMP/i2j-warlock/supabase"
+          cat > "$RUNNER_TEMP/i2j-warlock/supabase/config.toml" <<'TOML'
+          project_id = "i2j-warlock-actual-v5-local"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start isolated local services
+        run: |
+          cd "$RUNNER_TEMP/i2j-warlock"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Original P1.3 fixture and narrow signed Warlock earned research
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          test "$DNDNEXT_I2J_WARLOCK_CONFIRM" = I2J_DISPOSABLE_WARLOCK_V5_ONLY
+          (cd "$RUNNER_TEMP/i2j-warlock" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i2j-warlock-env"
+          source "$RUNNER_TEMP/i2j-warlock-env"
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          node scripts/integration/i2j/test_warlock_earned_v5_signed.mjs
+      - name: Destroy disposable services and data
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/i2j-warlock"
+          npx --yes supabase@2.120.0 stop --no-backup || true
