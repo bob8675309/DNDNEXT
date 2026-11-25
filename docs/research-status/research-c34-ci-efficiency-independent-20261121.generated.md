@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `70b74b6f90b24b5dc126de88f8601138dab18244` |
+| Exact source commit represented by this archive snapshot | `b61e7f3ab754088bded92fd2d66a2c861bbd1735` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): resolve historical local import candidates fail closed |
+| Last source commit title | test(ci): track second-level historical dependency graph evidence |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
