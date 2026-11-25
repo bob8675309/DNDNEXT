@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `0bc4d700feb2112821b55ef82bcc9dce24b2234c` |
+| Exact source commit represented by this archive snapshot | `88ebe9e84fac30cc6caea806106a637c6b51ba29` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): reconcile existing C34 Option A receipts and pin earned Wizard source lineage |
+| Last source commit title | docs(i2j): record exact signed all-tier Battle Master and isolated writer acceptance |
 | Files changed relative to main | 262 (188 non-docs; 74 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,6 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_I1EF_RESOURCE_AND_MANEUVER_RESEARCH_2026-11-24.md`
 - `docs/research/I2J_OPTION_A_CROSS_BRANCH_RECEIPT_RECONCILIATION_2026-11-24.md`
 
 ## Research-branch change inventory versus main
