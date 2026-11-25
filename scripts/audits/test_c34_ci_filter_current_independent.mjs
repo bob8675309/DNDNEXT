@@ -316,3 +316,27 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(secondLevelWalk.closureProven,false);
  assert.equal(secondLevelWalk.bypassAuthorized,false);
  console.log('Second-level historical graph evidence; unresolved targets:',secondLevelWalk.missing.length,'; closure NOT PROVEN');
+
+ // Lower-bound lexical evidence only: comments/strings and computed expressions
+ // require a real parser and runtime asset inventory before closure can be proven.
+ export function extendedHistoricalEvidence(source) {
+   const staticRefs = [...source.matchAll(/^\s*(?:import|export)\s+(?:\{[^}]*\}|[^;\n]+?)\s*from\s*["']([^"']+)["']/gm)].map(m=>m[1]);
+   const dynamicRefs = [...source.matchAll(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/g)].map(m=>m[1]);
+   const assets = [...source.matchAll(/["'](\/[^"'\s]+\.(?:pdf|png|svg|json))["']/gi)].map(m=>m[1]);
+   const dynamicCount = [...source.matchAll(/\bimport\s*\(/g)].length;
+   return {staticRefs,dynamicRefs,assets,unresolvedDynamic:dynamicCount-dynamicRefs.length,closureProven:false,bypassAuthorized:false};
+ }
+
+ const multilineHistoricalReceipt = {"sha":"adbb1ca2a5482622711f0ec5601d42cd0d8bd7ae","excerpt":"import {\n  calculateArmorClass,\n  calculateInitiativeModifier,\n  calculatePassivePerception,\n  resolveClassUnarmoredDefense,\n} from \"./characterSheetRules.js\";"};
+
+ assert.equal(multilineHistoricalReceipt.sha,localTreeReceipt.entries.find(e=>e.path==='utils/printableCharacterSheet.js').sha);
+ assert.equal(extendedHistoricalEvidence(multilineHistoricalReceipt.excerpt).staticRefs.length,1);
+ const extendedRows=secondLevelReceipts.map(r=>({path:r.path,...extendedHistoricalEvidence(r.lines.join('\n'))}));
+ assert.ok(extendedRows.find(r=>r.path==='components/character/CharacterInteractionPanel.js').dynamicRefs.includes('../CraftingWorkspace'));
+ assert.ok(extendedRows.find(r=>r.path==='utils/officialCharacterSheetPdf.js').assets.includes('/forms/5E_CharacterSheet_Fillable.pdf'));
+ assert.deepEqual(extendedHistoricalEvidence('import {\n a,\n b\n} from "./x.js";').staticRefs,['./x.js']);
+ assert.equal(extendedHistoricalEvidence('import(target)').unresolvedDynamic,1);
+ assert.equal(extendedHistoricalEvidence('import("./x.js")').unresolvedDynamic,0);
+ assert.equal(extendedHistoricalEvidence('').closureProven,false);
+ assert.equal(extendedHistoricalEvidence('').bypassAuthorized,false);
+ console.log('Extended historical lexical evidence assertions passed; closure NOT PROVEN');
