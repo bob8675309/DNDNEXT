@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `a55aee023cb702a1f5ab41b53b052945155d8c7c` |
+| Exact source commit represented by this archive snapshot | `a5783558f68f2a18b01f7bbb0779088fcc1c612e` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): add current signed workflow fail-closed classifier |
+| Last source commit title | ci(research): execute current fail-closed classifier alongside historical proof |
 | Files changed relative to main | 339 (263 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/audits/test_c34_ci_filter_current_independent.mjs`
+- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
 
 ## Research-branch change inventory versus main
 
