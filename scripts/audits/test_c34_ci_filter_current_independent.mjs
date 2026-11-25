@@ -417,3 +417,19 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(fourthLevelWalk.closureProven,false);
  assert.equal(fourthLevelWalk.bypassAuthorized,false);
  console.log('Third-level selected source excerpts connected; closure NOT PROVEN');
+
+ // Fourth-level historical tree metadata only, not source-byte or closure proof.
+ const fourthLevelTreeReceipt = {"ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","entries":[{"path":"components/CharacterClassPanel.js","mode":"100644","type":"blob","sha":"d39d2bceab944d3d4ec42cc2cfda92609ce51a2b","size":27908},{"path":"components/SpellCard.js","mode":"100644","type":"blob","sha":"979735e2aebf11232ab8e3b97fb9c61254807181","size":6299},{"path":"utils/characterOptionPresentation.js","mode":"100644","type":"blob","sha":"3ae801817cb3ffcf8f12dc24755828e617048bee","size":3568},{"path":"utils/classes/classArtwork.js","mode":"100644","type":"blob","sha":"f564dd08d20404f91ce9c2bdc1e1266310761bd0","size":5307},{"path":"utils/classes/subclassCompatibility.js","mode":"100644","type":"blob","sha":"ae66c842edcabaceedb27a42b2b38fc96817c5dc","size":9959},{"path":"utils/featRulePresentation.js","mode":"100644","type":"blob","sha":"957dfe6eb4f9160e81a4cf2ef98436acaaaf46a7","size":2559},{"path":"utils/formatPrerequisiteText.js","mode":"100644","type":"blob","sha":"db5ef1ec270fc2bf71c3d0e9ebdcdaa6003d063f","size":3843},{"path":"utils/spells/classSpellbookRules.js","mode":"100644","type":"blob","sha":"43b8c004390f8ca62e7b84bd3cdcc8348e0a4b42","size":3873}]};
+ const fourthLevelExpandedTree = {...thirdLevelExpandedTree,entries:[...thirdLevelExpandedTree.entries,...fourthLevelTreeReceipt.entries]};
+ assert.equal(verifyThirdLevelTreeReceipt(fourthLevelTreeReceipt,fourthLevelTreeReceipt).metadataMatches,true);
+ assert.equal(verifyThirdLevelTreeReceipt(fourthLevelTreeReceipt,{...fourthLevelTreeReceipt,entries:fourthLevelTreeReceipt.entries.slice(1)}).metadataMatches,false);
+ assert.equal(verifyThirdLevelTreeReceipt(fourthLevelTreeReceipt,{...fourthLevelTreeReceipt,entries:fourthLevelTreeReceipt.entries.map((e,i)=>i===0?{...e,size:e.size+1}:e)}).metadataMatches,false);
+ const fifthLevelWalk=extendedHistoricalGraph([...connectedRows,...thirdLevelSourceRows],fourthLevelExpandedTree);
+ for(const entry of fourthLevelTreeReceipt.entries) {
+   assert.ok(fifthLevelWalk.missing.includes(entry.path), 'metadata-only target must remain missing: '+entry.path);
+ }
+ assert.ok(fifthLevelWalk.missing.includes('components/CraftingWorkspace.js'));
+ assert.ok(fifthLevelWalk.missing.includes('asset:public/forms/5E_CharacterSheet_Fillable.pdf'));
+ assert.equal(fifthLevelWalk.closureProven,false);
+ assert.equal(fifthLevelWalk.bypassAuthorized,false);
+ console.log('Fourth-level historical tree receipts: metadata only; closure NOT PROVEN');
