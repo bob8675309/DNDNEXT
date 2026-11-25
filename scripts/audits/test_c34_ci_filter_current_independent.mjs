@@ -195,3 +195,19 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(adapterEvidence.closureProven,false);
  assert.equal(adapterEvidence.bypassAuthorized,false);
  console.log('Adapter dependency receipt assertions passed; runtime and closure NOT PROVEN');
+
+ // Historical GitHub blob metadata receipts; not a transitive closure proof.
+ const historicalReceipts = [{"path":"components/GlobalNpcProfileOverlay.js","sha":"a0e133a7c2446cba3f8c672a1df78f6a5aa73763","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"},{"path":"utils/npcProfileOverlay.js","sha":"3d809c47a9aaae18d0e7e5ec6500199a9266baac","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"},{"path":"components/CreatorBackstoryPanel.js","sha":"23b0e86aab7a80b7243365ba107c1d37a5ec5812","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"},{"path":"styles/npc-profile-centered.css","sha":"150eb9ad78aeba268be955e63c8451e3c0ed0e14","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"},{"path":"scripts/browser/verify_c33_creator_backstory_dom.mjs","sha":"7b3a813d11d4b9e0fcd1ba8aef9d4e8463f58aa4","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"},{"path":"scripts/browser/verify_c33_next_town_route.mjs","sha":"d19b134fdb4e4b58833fe339f918c027959eae02","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"},{"path":"scripts/browser/verify_c33_npc_pdf_visual.mjs","sha":"1ee0f29a5c017906f2029eff25a9b1c1b88c5760","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"},{"path":"scripts/fixtures/c33_next_town_route_pg17.sql","sha":"0d3f1b261b7600944121c9be6f808fa190e8dddc","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a"}];
+ export function verifyHistoricalReceipts(manifest, receipts) {
+   return Boolean(manifest.valid && Array.isArray(receipts) &&
+     receipts.length === manifest.pins.length &&
+     new Set(receipts.map(r=>r.path)).size === receipts.length &&
+     manifest.pins.every(p=>receipts.some(r=>r.path===p.path && r.sha===p.sha && r.ref===manifest.ref)));
+ }
+ assert.equal(verifyHistoricalReceipts(sourcePins,historicalReceipts),true);
+ assert.equal(verifyHistoricalReceipts(sourcePins,[]),false);
+ assert.equal(verifyHistoricalReceipts(sourcePins,historicalReceipts.slice(1)),false);
+ assert.equal(verifyHistoricalReceipts(sourcePins,historicalReceipts.map(r=>({...r,ref:'wrong'}))),false);
+ assert.equal(verifyHistoricalReceipts(sourcePins,historicalReceipts.map(r=>({...r,sha:'0'.repeat(40)}))),false);
+ assert.equal(verifyHistoricalReceipts(sourcePins,[...historicalReceipts.slice(1),historicalReceipts[1]]),false);
+ console.log('6 historical metadata receipt assertions passed; closure NOT PROVEN');
