@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `106c29921f1dcc40090b06c16c5220f6412aeaa7` |
+| Exact source commit represented by this archive snapshot | `a8059ae3d056b30c64a0d4717f61f25cc02cb905` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): track scratch adapter historical source receipts |
+| Last source commit title | test(ci): validate historical source metadata receipts |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
