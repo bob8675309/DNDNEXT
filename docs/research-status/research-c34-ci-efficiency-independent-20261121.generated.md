@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `4ac71ff0220e1abff3289d48447df79385122cb9` |
+| Exact source commit represented by this archive snapshot | `c9601a6991bb7d3dc04f949fa8c76922d9b4ea49` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): connect extended historical dependency evidence to graph |
+| Last source commit title | test(ci): pin third-level historical dependency tree receipts |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
