@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `b7888011ef422a4a2180572eba62654dca812af9` |
+| Exact source commit represented by this archive snapshot | `b4a7d38aa76c984cf6b95ce1af047de57a33b51e` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): record owner isolated PG17 restore and five restored source fingerprints |
+| Last source commit title | docs(i2j): record actual restored source P7 intake and P5 candidate review |
 | Files changed relative to main | 273 (194 non-docs; 79 docs) |
 | Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
