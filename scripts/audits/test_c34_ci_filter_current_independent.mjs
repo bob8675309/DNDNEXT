@@ -1,4 +1,4 @@
-// Issue #389 review-only model. Full byte fixture and dependency closure pending.
+// Issue #389 review-only model. Exact-byte fixture pinned; dependency closure pending.
 // Never use this model to authorize a live skip or infer signed acceptance.
 import assert from 'node:assert/strict';
 export const blob = '7343fcffdca0ee76c0785b6e9e341b48a7951d2e';
@@ -50,3 +50,13 @@ for (const [name,patch,want,candidate] of cases) {
  assert.equal(got.job,job,name);
 }
 console.log(cases.length+' review-only cases passed; signed acceptance NOT RUN');
+
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+function gitBlob(bytes) {
+  return createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+}
+const bytes=readFileSync(new URL('./fixtures/c34-current-signed-workflow.yml.txt',import.meta.url));
+assert.equal(gitBlob(bytes),blob,'exact signed workflow fixture');
+assert.notEqual(gitBlob(Buffer.concat([bytes,Buffer.from('\n')])),blob,'modified bytes must invalidate lock');
+console.log('2 exact-byte source lock assertions passed; signed acceptance NOT RUN');
