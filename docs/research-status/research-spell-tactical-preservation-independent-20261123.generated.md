@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `efa132035158f583e9f6e5b19591ccebb624bbcf` |
+| Exact source commit represented by this archive snapshot | `5267626f5f3e7adfcad4f91421f9032333419758` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): preserve delegated visibility and guarded replay boundaries |
+| Last source commit title | docs(spell): reconcile original delegated auth negative coverage |
 | Files changed relative to main | 1 (0 non-docs; 1 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
