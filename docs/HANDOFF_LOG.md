@@ -925,3 +925,8 @@ WZ01 original graph and source/ACL checks; WZ02 genuine signed 4→5 source grou
 ## 2026-11-24 CST — proactive fixture extractor correction (CI not yet accepted)
 
 At initial executable `cf7590ff16744baf94d514ddc2986a3d72101bed`, original I1-E setup contains both a commented example and actual `CREATE CONSTRAINT TRIGGER` for the Wizard Forge finalizer. The new generic DDL extractor used unconstrained indexOf and could start within the comment. Correct only extractor to require a unique executable line beginning with the exact trigger declaration. No original SQL or feature assertion changed. Initial CI status at observation: [{"id":45527037908,"status":"in_progress","conclusion":null},{"id":45527037867,"status":"in_progress","conclusion":null},{"id":45527038047,"status":"in_progress","conclusion":null}]. This is a source-review finding, not an observed runtime failure unless actual logs subsequently establish it. Re-run exact corrected executable and inspect WZ01–08.
+
+
+> **2026-11-24 CST — shared class-grant/delete source preflight:** [Dossier](research/I2J_SHARED_CLASS_GRANT_INTEGRITY_AND_DELETE_PREFLIGHT_2026-11-24.md) records actual mounted delete RPC, historical six mutation families and exact captured Warlock validator queued-level risk (NOT signed reproduction). Do not add broad grant constraint or run actual world-roster deletion before dependency/role/lock review. Wizard exact executable 4cef189 [45527080230](https://github.com/bob8675309/DNDNEXT/actions/runs/45527080230) running; **ONE NEXT** actual WZ01–08 logs then bounded genuine earned Warlock if unproved. No production/hosted SQL/maps/main/deploy or agent edits.
+
+Source review only; no new runtime or release acceptance.
