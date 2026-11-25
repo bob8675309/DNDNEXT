@@ -137,3 +137,34 @@ assert.equal(cwdSynthetic.closureProven,false);
 assert.equal(cwdSynthetic.bypassAuthorized,false);
 assert.equal(checkoutContextEvidence('').bypassAuthorized,false);
 console.log('8 checkout context evidence assertions passed; closure NOT PROVEN');
+
+
+// Historical source pin manifest: evidence only, not proof of transitive closure.
+export function historicalSourcePins(source) {
+  const blocks = [...source.matchAll(/done <<'SOURCEPINS'\s*\n([\s\S]*?)^\s*SOURCEPINS\s*$/gm)];
+  const pins = new Map();
+  const ref = checkoutInventory(source).historicalRef;
+  let valid = blocks.length === 1 && Boolean(ref);
+  if (valid) for (const line of blocks[0][1].trim().split('\n')) {
+    const m = /^([A-Za-z0-9_./-]+) ([0-9a-f]{40})$/.exec(line.trim());
+    if (!m || m[1].startsWith('/') || m[1].split('/').some(p=>!p || p==='.' || p==='..') || pins.has(m[1])) { valid=false; break; }
+    pins.set(m[1],m[2]);
+  }
+  return {ref,pins:valid?[...pins].map(([path,sha])=>({path,sha})):[],valid:valid&&pins.size>0,closureProven:false,bypassAuthorized:false};
+}
+const sourcePins=historicalSourcePins(bytes.toString('utf8'));
+assert.equal(sourcePins.valid,true);
+assert.equal(sourcePins.pins.length,8);
+assert.equal(sourcePins.ref,provenance.historicalRef);
+assert.ok(sourcePins.pins.some(p=>p.path==='scripts/browser/verify_c33_npc_pdf_visual.mjs'&&p.sha==='1ee0f29a5c017906f2029eff25a9b1c1b88c5760'));
+const pinPrefix="ref: "+provenance.historicalRef+"\n path: held345\n done <<'SOURCEPINS'\n";
+const pinRow='scripts/a.mjs '+ 'a'.repeat(40);
+const pinBlock=rows=>pinPrefix+rows+'\n SOURCEPINS\n';
+assert.equal(historicalSourcePins(pinBlock(pinRow)).valid,true);
+assert.equal(historicalSourcePins(pinBlock(pinRow+'\n'+pinRow)).valid,false);
+assert.equal(historicalSourcePins(pinBlock('../a.mjs '+'a'.repeat(40))).valid,false);
+assert.equal(historicalSourcePins(pinBlock('scripts/a.mjs bad')).valid,false);
+assert.equal(historicalSourcePins('').valid,false);
+assert.equal(sourcePins.bypassAuthorized,false);
+assert.equal(sourcePins.closureProven,false);
+console.log('11 historical source manifest assertions passed; actual historical bytes and closure NOT PROVEN');
