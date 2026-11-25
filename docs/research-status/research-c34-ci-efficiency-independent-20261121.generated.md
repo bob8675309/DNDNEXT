@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `6003aef9f6298a567b91c2dc96dab2e0b0bcbd9a` |
+| Exact source commit represented by this archive snapshot | `4ac71ff0220e1abff3289d48447df79385122cb9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): inventory multiline imports and runtime asset references |
+| Last source commit title | test(ci): connect extended historical dependency evidence to graph |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
