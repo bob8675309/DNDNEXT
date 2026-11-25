@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `c066da4868b2412f3cc58eba46f8fa28eed69cf5` |
+| Exact source commit represented by this archive snapshot | `110b436cbb32213b646969a4959771f6798490d5` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): verify final-state Battle Master validator and isolated Option A mirror candidates |
+| Last source commit title | test(i2j): extend Battle Master all acquisition tiers, isolate mirror and characterize grant/deletion boundaries |
 | Files changed relative to main | 261 (188 non-docs; 73 docs) |
 | Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
