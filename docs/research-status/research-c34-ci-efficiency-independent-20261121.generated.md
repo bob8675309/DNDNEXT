@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `c29a2e00a9e1de9e4afa62b4b4e5945aa4501734` |
+| Exact source commit represented by this archive snapshot | `12d7227a0a794051bc6f591c0731f548305310fa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): distinguish pinned historical checkout references |
+| Last source commit title | test(ci): record historical cwd and unresolved shell references |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
