@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `82bc75094e1bbedb49e743de9e69ef6c64893416` |
+| Exact source commit represented by this archive snapshot | `d1c9d64c9205c541ef4bac86c14625aa83bd53bb` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): preserve activation refresh lock and rollback boundary |
+| Last source commit title | docs(spell): preserve slot bridge guard and historical race receipts |
 | Files changed relative to main | 1 (0 non-docs; 1 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
