@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `3cd4c4215a1be9e2b6f2cb9c45ea5578c71a8246` |
+| Exact source commit represented by this archive snapshot | `106c29921f1dcc40090b06c16c5220f6412aeaa7` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): inventory historical source blob pins fail closed |
+| Last source commit title | test(ci): track scratch adapter historical source receipts |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
