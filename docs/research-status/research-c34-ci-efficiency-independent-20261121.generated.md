@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `a5783558f68f2a18b01f7bbb0779088fcc1c612e` |
+| Exact source commit represented by this archive snapshot | `ea6fb8111bffc222a4f30df8124f3c1f6fa2dfaa` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(research): execute current fail-closed classifier alongside historical proof |
-| Files changed relative to main | 339 (263 non-docs; 76 docs) |
+| Last source commit title | test(ci): preserve current signed workflow source fixture for issue 389 |
+| Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
+- `scripts/audits/fixtures/c34-current-signed-workflow.yml.txt`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
-- … 289 more
+- … 290 more
 
 ## Trust and update procedure
 

@@ -4,7 +4,7 @@
 
 | Captured UTC | GitHub main (not deployment verified) | Trigger source SHA | Open PRs |
 |---|---|---|---|
-| 2026-11-25T05:03:13Z | `bb3939eeb9a38cf416996a1dca3b196b156b2915` | `6ae5e19e9cb53d7628c2c291616fd940eb7f3938` | 31 |
+| 2026-11-25T05:24:42Z | `bb3939eeb9a38cf416996a1dca3b196b156b2915` | `ea6fb8111bffc222a4f30df8124f3c1f6fa2dfaa` | 31 |
 
 Every open PR returned by **all pages** of the GitHub open-pulls API at capture time appears below, including draft and stacked research PRs. **Closed/merged PRs, unassociated branches and later PR activity are not included.**
 
