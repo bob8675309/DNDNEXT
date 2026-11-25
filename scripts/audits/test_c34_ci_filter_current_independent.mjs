@@ -83,3 +83,34 @@ assert.equal(inventory('node $SCRIPT').bypassAuthorized,false);
 assert.equal(inventory('').closureProven,false);
 assert.deepEqual(inventory('node scripts/a.mjs\nnode scripts/a.mjs').paths,['scripts/a.mjs']);
 console.log('11 literal inventory assertions passed; '+inv.paths.length+' literal paths; closure NOT PROVEN');
+
+// Checkout provenance is a conservative literal inventory, not shell resolution.
+export function checkoutInventory(source) {
+  const historical = [];
+  const currentOrUnresolved = [];
+  const checkoutBlocks = [...source.matchAll(/^[ \t]*uses: actions\/checkout@[^\n]+/gm)];
+  // Explicit historical path/ref pair is pinned by the exact-byte fixture.
+  const pinned = /ref: ([0-9a-f]{40})\s*\n\s*path: held345\b/.exec(source);
+  for (const line of source.split('\n')) {
+    const paths = inventory(line).paths;
+    for (const path of paths) {
+      // Only explicit held345/ prefixes qualify; cwd, variables and copies remain unresolved.
+      if (pinned && line.includes('held345/'+path))
+        historical.push({path,ref:pinned[1]});
+      else currentOrUnresolved.push(path);
+    }
+  }
+  return {historical,currentOrUnresolved,checkoutCount:checkoutBlocks.length,
+    historicalRef:pinned?.[1] ?? null,closureProven:false,bypassAuthorized:false};
+}
+const provenance = checkoutInventory(bytes.toString('utf8'));
+assert.equal(provenance.historicalRef,'4f5f8ff7587aff1a68f21581ad68a4752789f54a');
+assert.equal(provenance.checkoutCount,2);
+assert.ok(provenance.currentOrUnresolved.includes('scripts/integration/c34/test_joint_pg17_local_auth.mjs'));
+const synthetic = 'ref: '+provenance.historicalRef+'\n  path: held345\nnode held345/scripts/a.mjs\nnode scripts/b.mjs';
+assert.deepEqual(checkoutInventory(synthetic).historical,[{path:'scripts/a.mjs',ref:provenance.historicalRef}]);
+assert.deepEqual(checkoutInventory(synthetic).currentOrUnresolved,['scripts/b.mjs']);
+assert.equal(checkoutInventory('node held345/scripts/a.mjs').historical.length,0);
+assert.equal(checkoutInventory(synthetic).bypassAuthorized,false);
+assert.equal(provenance.closureProven,false);
+console.log('8 checkout provenance assertions passed; closure NOT PROVEN');
