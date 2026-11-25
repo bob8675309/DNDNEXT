@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `659f63ff1e4471d3aaa940897454d46d9eba2fdf` |
+| Exact source commit represented by this archive snapshot | `ef65fc849bbb35353595936c09c1c6407f0ece59` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): preserve original signed EB auth and unresolved coverage |
+| Last source commit title | docs(spell): specify revoked cached replay mutation negative |
 | Files changed relative to main | 1 (0 non-docs; 1 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
