@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `4cef1898b5902aba06538628842ab41a0da64fa2` |
+| Exact source commit represented by this archive snapshot | `893aa7e4b3b74f4bfd03a72795c2b57638e49a32` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): anchor Wizard trigger extraction to executable DDL line |
-| Files changed relative to main | 265 (190 non-docs; 75 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | docs(i2j): trace shared class grant writers, deletion path and earned Warlock queued-event risk |
+| Files changed relative to main | 266 (190 non-docs; 76 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,8 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_WIZARD_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
-- `scripts/integration/i2j/test_wizard_earned_v5_signed.mjs`
+- `docs/research/I2J_SHARED_CLASS_GRANT_INTEGRITY_AND_DELETE_PREFLIGHT_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +73,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md`
 - `docs/C3_3_MIGRATION_HISTORY_RECONCILIATION_2026-11-08.md`
 - `docs/C3_3_NPC_PRINT_VISUAL_QA_2026-11-08.md`
-- … 215 more
+- … 216 more
 
 ## Trust and update procedure
 
