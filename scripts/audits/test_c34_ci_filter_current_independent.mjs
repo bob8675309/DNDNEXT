@@ -399,3 +399,21 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(thirdLevelWalk.closureProven,false);
  assert.equal(thirdLevelWalk.bypassAuthorized,false);
  console.log('Third-level tree metadata receipts validated; source and asset bytes remain pending');
+
+ // Selected third-level lexical excerpts, not complete source bytes.
+ const thirdLevelSourceRows=[{"path":"utils/characterSheetRules.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"2eda6512e44bf54a1bc6fc282469fc52b998b339","source":""},{"path":"components/CharacterClassWorkspace.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"4a5730b252fcad39f09bedc65985105101bd355e","source":"import { useCallback, useEffect, useMemo, useRef, useState } from \"react\"\nimport CharacterClassPanel from \"./CharacterClassPanel\"\nimport { classArtworkFor, handleClassArtworkError } from \"../utils/classes/classArtwork\"\nimport {\n  findSubclassOption,\n  guideSubclassFeatures,\n  resolveSubclassCatalog,\n  subclassIntroduction,\n} from \"../utils/classes/subclassCompatibility\"\nimport { formatPlayerFacingText } from \"../utils/playerFacingText\"\nimport { supabase } from \"../utils/supabaseClient\""},{"path":"components/CharacterFeaturesPanel.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"eb761f7497b6ae409edf7ef4c67e702d5e9142d5","source":"import { useCallback, useEffect, useMemo, useState } from \"react\"\nimport { supabase } from \"../utils/supabaseClient\"\nimport { formatPrerequisiteText } from \"../utils/formatPrerequisiteText\"\nimport { featRuleSectionsFromDescription } from \"../utils/featRulePresentation\"\nimport { mergeKnownCharacterOptions } from \"../utils/characterOptionPresentation\""},{"path":"components/CharacterSpellbookPanel.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"afa86aeb0644ef893a9bd28a8e151847a5ebca2d","source":"import { useCallback, useEffect, useMemo, useState } from \"react\"\nimport SpellCard from \"./SpellCard\"\nimport { supabase } from \"../utils/supabaseClient\"\nimport {\n  highestUnlockedSpellLevel,\n  isSpellUnlockedForCharacter,\n  normalizeClassKey,\n  resolveCharacterSpellProfile,\n  spellLevelLabel,\n  spellMatchesCharacterProfile,\n  spellMatchesClass,\n} from \"../utils/spells/classSpellbookRules\""}];
+ for(const row of thirdLevelSourceRows){
+   assert.equal(row.ref,thirdLevelTreeReceipt.ref);
+   assert.equal(row.sha,thirdLevelTreeReceipt.entries.find(e=>e.path===row.path)?.sha);
+ }
+ const fourthLevelWalk=extendedHistoricalGraph([...connectedRows,...thirdLevelSourceRows],thirdLevelExpandedTree);
+ assert.equal(fourthLevelWalk.visited.length,connectedRows.length+thirdLevelSourceRows.length);
+ assert.ok(!fourthLevelWalk.missing.includes('utils/characterSheetRules.js'));
+ assert.ok(fourthLevelWalk.missing.some(x=>x.includes('classSpellbookRules')));
+ assert.ok(fourthLevelWalk.missing.some(x=>x.includes('subclassCompatibility')));
+ assert.ok(fourthLevelWalk.missing.some(x=>x.includes('characterOptionPresentation')));
+ assert.ok(fourthLevelWalk.missing.includes('components/CraftingWorkspace.js'));
+ assert.ok(fourthLevelWalk.missing.includes('asset:public/forms/5E_CharacterSheet_Fillable.pdf'));
+ assert.equal(fourthLevelWalk.closureProven,false);
+ assert.equal(fourthLevelWalk.bypassAuthorized,false);
+ console.log('Third-level selected source excerpts connected; closure NOT PROVEN');
