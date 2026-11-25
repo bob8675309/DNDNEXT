@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `ea6fb8111bffc222a4f30df8124f3c1f6fa2dfaa` |
+| Exact source commit represented by this archive snapshot | `a0c7f762efd58eb7e79b432c9a4ae6fc3adebbac` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): preserve current signed workflow source fixture for issue 389 |
+| Last source commit title | test(ci): verify current workflow Git blob and reject modified bytes |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/audits/fixtures/c34-current-signed-workflow.yml.txt`
+- `scripts/audits/test_c34_ci_filter_current_independent.mjs`
 
 ## Research-branch change inventory versus main
 
