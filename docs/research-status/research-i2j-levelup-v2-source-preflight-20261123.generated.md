@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `5e5c8322eb9f40b0117718ef7c3efc8c4c11b12f` |
+| Exact source commit represented by this archive snapshot | `c066da4868b2412f3cc58eba46f8fa28eed69cf5` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): characterize actual signed Battle Master earned v5 with coherent sheet and original deferrals |
+| Last source commit title | test(i2j): verify final-state Battle Master validator and isolated Option A mirror candidates |
 | Files changed relative to main | 261 (188 non-docs; 73 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-bm-earned-v5.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_I1EF_RESOURCE_AND_MANEUVER_RESEARCH_2026-11-24.md`
