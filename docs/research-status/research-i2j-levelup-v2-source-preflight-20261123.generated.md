@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `cf7590ff16744baf94d514ddc2986a3d72101bed` |
+| Exact source commit represented by this archive snapshot | `4cef1898b5902aba06538628842ab41a0da64fa2` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): add signed earned Wizard Savant and Signature v5 source and Option A research |
+| Last source commit title | test(i2j): anchor Wizard trigger extraction to executable DDL line |
 | Files changed relative to main | 265 (190 non-docs; 75 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-wizard-earned-v5.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_WIZARD_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
