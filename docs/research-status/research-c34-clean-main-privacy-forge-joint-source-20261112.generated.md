@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `903cac6e88c39c18f66bbda666030c4385d572ac` |
+| Exact source commit represented by this archive snapshot | `902a8a15c26492102b7cedf2586597af39398014` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): map original J168 handoff receipt custody |
-| Files changed relative to main | 435 (324 non-docs; 111 docs) |
+| Last source commit title | docs(c34): archive original PR334 Warlock dossier |
+| Files changed relative to main | 436 (324 non-docs; 112 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
+- `docs/research/archive/PR334/Forge_Warlock_Child_Completion_2026-11-06.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/pr-integration/README.md`
 - `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
-- … 385 more
+- … 386 more
 
 ## Trust and update procedure
 
