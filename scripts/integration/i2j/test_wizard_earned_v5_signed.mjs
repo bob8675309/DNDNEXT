@@ -55,7 +55,7 @@ for(const n of ['private.level_up_wizard_savant_group_v1','private.apply_level_u
 for(const n of ['private.level_up_wizard_signature_group_v1','private.apply_level_up_wizard_signature_spells_v1'])install(signature,n);
 install(overlay,'private.guard_signature_spell_resource_overlay_v1');
 install(access,'private.level_up_spell_access_v1');
-function ddl(src,start){const i=src.indexOf(start);assert.ok(i>=0,start);const j=src.indexOf(';',i);assert.ok(j>i);sql(src.slice(i,j+1))}
+function ddl(src,start){const needle='\n'+start;assert.equal(src.split(needle).length,2,'expected exactly one executable line: '+start);const i=src.indexOf(needle)+1;const j=src.indexOf(';',i);assert.ok(j>i);sql(src.slice(i,j+1))}
 ddl(uniqueness,'create constraint trigger character_spells_validate_wizard_spellbook_uniqueness_v1');
 ddl(overlay,'create trigger character_spells_guard_signature_spell_resource_overlay_v1');
 ddl(setup,'CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_wizard_final_v1');
