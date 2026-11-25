@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `9f3ac19351066d8f7b4c60b6f6c03f831ae4f907` |
+| Exact source commit represented by this archive snapshot | `9460b6a046907744146a5f9d22684fd6103b0aa3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): characterize genuine signed earned Warlock invocation and isolated account writers |
+| Last source commit title | test(i2j): restore captured original Warlock choice normalizer dependency |
 | Files changed relative to main | 269 (192 non-docs; 77 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-warlock-earned-v5.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_WARLOCK_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
