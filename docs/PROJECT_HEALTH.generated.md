@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-25T16:29:53Z | research/c34-ci-efficiency-independent-20261121 (b61e7f3ab754088bded92fd2d66a2c861bbd1735) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
+| 2026-11-25T16:44:45Z | research/spell-tactical-preservation-independent-20261123 (78e93e8d97d9e927e3870d65a977c5e7f6579f0c) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
