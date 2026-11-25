@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `78e93e8d97d9e927e3870d65a977c5e7f6579f0c` |
+| Exact source commit represented by this archive snapshot | `2758a870b6fee8f7c49c40a5c6afb7206a349812` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): preserve confirmed Start lock reachability and historical receipt |
+| Last source commit title | docs(spell): preserve Resume serialization and replay observation gap |
 | Files changed relative to main | 1 (0 non-docs; 1 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
