@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `5611551c803cfe4a25fca5a4dee2f7b545837c23` |
+| Exact source commit represented by this archive snapshot | `861ffd47eb88b57b6247bcd086defce03cbae2ec` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): checkpoint bounded Warlock earned original source search and offline hold |
-| Files changed relative to main | 272 (194 non-docs; 78 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(i2j): record owner backup archive source recovery and exact census matches |
+| Files changed relative to main | 273 (194 non-docs; 79 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,6 +19,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_OWNER_BACKUP_ARCHIVE_SOURCE_RECOVERY_2026-11-24.md`
 - `docs/research/I2J_WARLOCK_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
 
 ## Research-branch change inventory versus main
@@ -73,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md`
 - `docs/C3_3_ATOMIC_DISPOSABLE_COMMIT_2026-11-08.md`
 - `docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md`
-- … 222 more
+- … 223 more
 
 ## Trust and update procedure
 
