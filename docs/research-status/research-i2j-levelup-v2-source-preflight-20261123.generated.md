@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `d3d669934d3632e19f125e4f76ac3cd4508c596c` |
+| Exact source commit represented by this archive snapshot | `9f3ac19351066d8f7b4c60b6f6c03f831ae4f907` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): record exact signed earned Wizard Savant and Signature acceptance and next Warlock scope |
-| Files changed relative to main | 266 (190 non-docs; 76 docs) |
-| Last source commit | 5 files (0 non-docs; 5 authored docs) |
+| Last source commit title | test(i2j): characterize genuine signed earned Warlock invocation and isolated account writers |
+| Files changed relative to main | 269 (192 non-docs; 77 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-warlock-earned-v5.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_OPTION_A_CROSS_BRANCH_RECEIPT_RECONCILIATION_2026-11-24.md`
-- `docs/research/I2J_SHARED_CLASS_GRANT_INTEGRITY_AND_DELETE_PREFLIGHT_2026-11-24.md`
-- `docs/research/I2J_WIZARD_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
+- `docs/research/I2J_WARLOCK_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
+- `scripts/integration/i2j/test_warlock_earned_v5_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -57,6 +57,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml`
 - `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
+- `.github/workflows/validate-i2j-warlock-earned-v5.yml`
 - `.github/workflows/validate-i2j-wizard-earned-v5.yml`
 - `.github/workflows/validate-npc-private-profile-cutover.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
@@ -74,8 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/C3_3_ATOMIC_DISPOSABLE_COMMIT_2026-11-08.md`
 - `docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md`
 - `docs/C3_3_MIGRATION_HISTORY_RECONCILIATION_2026-11-08.md`
-- `docs/C3_3_NPC_PRINT_VISUAL_QA_2026-11-08.md`
-- … 216 more
+- … 219 more
 
 ## Trust and update procedure
 
