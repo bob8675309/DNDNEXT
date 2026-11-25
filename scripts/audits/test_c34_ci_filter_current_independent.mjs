@@ -371,3 +371,31 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(connectedWalk.closureProven,false);
  assert.equal(connectedWalk.bypassAuthorized,false);
  console.log('Connected historical graph assertions; missing evidence:',connectedWalk.missing.length);
+
+
+ // Historical tree metadata only; asset bytes and transitive imports remain unverified.
+ const thirdLevelTreeReceipt = {"ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","entries":[{"path":"components/CharacterClassWorkspace.js","mode":"100644","type":"blob","sha":"4a5730b252fcad39f09bedc65985105101bd355e","size":30933},{"path":"components/CharacterFeaturesPanel.js","mode":"100644","type":"blob","sha":"eb761f7497b6ae409edf7ef4c67e702d5e9142d5","size":20805},{"path":"components/CharacterSpellbookPanel.js","mode":"100644","type":"blob","sha":"afa86aeb0644ef893a9bd28a8e151847a5ebca2d","size":21143},{"path":"components/CraftingWorkspace.js","mode":"100644","type":"blob","sha":"e584b7eb1a394e9d9f6525cbeb3e8e1a477f34ba","size":822211},{"path":"public/forms/5E_CharacterSheet_Fillable.pdf","mode":"100644","type":"blob","sha":"0c5646e4af9d544ca8bdf906af611f708ed583ce","size":355826},{"path":"utils/characterSheetRules.js","mode":"100644","type":"blob","sha":"2eda6512e44bf54a1bc6fc282469fc52b998b339","size":3318}]};
+ export function verifyThirdLevelTreeReceipt(expected, observed) {
+   const valid = observed?.ref === expected.ref && Array.isArray(observed.entries)
+     && observed.entries.length === expected.entries.length
+     && new Set(observed.entries.map(e=>e.path)).size === expected.entries.length
+     && expected.entries.every(e=>observed.entries.some(o=>o.path===e.path &&
+       o.sha===e.sha && o.mode===e.mode && o.type===e.type && o.size===e.size &&
+       o.type==='blob' && o.mode==='100644' && /^[a-f0-9]{40}$/.test(o.sha)));
+   return {metadataMatches:!!valid,closureProven:false,bypassAuthorized:false};
+ }
+ const thirdLevelExpected = thirdLevelTreeReceipt;
+ assert.equal(verifyThirdLevelTreeReceipt(thirdLevelExpected,thirdLevelTreeReceipt).metadataMatches,true);
+ assert.equal(verifyThirdLevelTreeReceipt(thirdLevelExpected,{...thirdLevelTreeReceipt,ref:'main'}).metadataMatches,false);
+ assert.equal(verifyThirdLevelTreeReceipt(thirdLevelExpected,{...thirdLevelTreeReceipt,entries:thirdLevelTreeReceipt.entries.slice(1)}).metadataMatches,false);
+ assert.equal(verifyThirdLevelTreeReceipt(thirdLevelExpected,{...thirdLevelTreeReceipt,entries:thirdLevelTreeReceipt.entries.map((e,i)=>i===0?{...e,sha:'0'.repeat(40)}:e)}).metadataMatches,false);
+ assert.equal(verifyThirdLevelTreeReceipt(thirdLevelExpected,{...thirdLevelTreeReceipt,entries:thirdLevelTreeReceipt.entries.map((e,i)=>i===0?{...e,mode:'120000'}:e)}).metadataMatches,false);
+ assert.equal(verifyThirdLevelTreeReceipt(thirdLevelExpected,{...thirdLevelTreeReceipt,entries:thirdLevelTreeReceipt.entries.map((e,i)=>i===0?thirdLevelTreeReceipt.entries[1]:e)}).metadataMatches,false);
+ const thirdLevelExpandedTree={...localTreeReceipt,entries:[...localTreeReceipt.entries,...thirdLevelTreeReceipt.entries]};
+ const thirdLevelWalk=extendedHistoricalGraph(connectedRows,thirdLevelExpandedTree);
+ assert.ok(thirdLevelWalk.missing.includes('utils/characterSheetRules.js'));
+ assert.ok(thirdLevelWalk.missing.includes('components/CraftingWorkspace.js'));
+ assert.ok(thirdLevelWalk.missing.includes('asset:public/forms/5E_CharacterSheet_Fillable.pdf'));
+ assert.equal(thirdLevelWalk.closureProven,false);
+ assert.equal(thirdLevelWalk.bypassAuthorized,false);
+ console.log('Third-level tree metadata receipts validated; source and asset bytes remain pending');
