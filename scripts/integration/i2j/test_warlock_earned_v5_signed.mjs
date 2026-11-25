@@ -29,7 +29,7 @@ pinned(guards,'7a1cb66a17552b11e52c391563d0cf5aba52829a');pinned(acquisition,'7e
 const hSetup=pinned('scripts/fixtures/i1h_warlock_acquisition_with_guards_pg17.sql','c8c22cafa567f986d8049060d02e687fd040601e');
 const earned=pinned('sql/20260808_26_earned_warlock_invocation_progression.sql','e32062499f2e3b40ce2be38c22fa4f1cafa90f3c');
 const projection=pinned('sql/20260808_37_sync_eldritch_invocation_sheet_projection.sql','84f1bc63a0761023dc2c48d71705faba99a23df7');
-const normal=pinned('sql/20260806_00_player_forge_source_choice_foundation.sql','3df1c688ad4a23085c0cdde1a14da10bd77f4fec');
+const normal=pinned('scripts/fixtures/forge_progression_authority_original_pg17.sql','3a0b6caeb6712f67af7895433df15f1439b19581');
 const access=pinned('sql/20260808_19_source_aware_level_up_spell_access.sql','ba4443302d37bb99532695e438bd1c0d0f1e4e5c');
 const wizOriginal=pinned('scripts/fixtures/i1e_wizard_original_functions_pg17.sql','c0322578db9e848b20a476b32681c07e316f0870');
 const authority=pinned('sql/20260808_21_player_forge_class_option_instance_authority.sql','81db89dad30e5bbc2c9f07a8f4fbd72782a09294');
@@ -60,7 +60,8 @@ sql(stmt(gSetup,'INSERT INTO public.spells_catalog'));
 sql("ALTER TABLE public.character_option_catalog ADD COLUMN category text, ADD COLUMN description text, ADD COLUMN option_key text, ADD COLUMN raw_payload jsonb; CREATE VIEW public.character_option_catalog_preferred AS SELECT * FROM public.character_option_catalog WHERE source='XPHB'; CREATE TABLE public.character_option_grant_instances(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),character_id uuid REFERENCES public.characters(id) ON DELETE CASCADE,acquisition_owner_type text,acquisition_owner_key text,option_id uuid REFERENCES public.character_option_catalog(id));");
 sql(stmt(gSetup,'INSERT INTO public.character_option_catalog'));
 sql("CREATE VIEW public.spells_catalog_preferred AS SELECT * FROM public.spells_catalog WHERE source='XPHB'; REVOKE ALL ON public.character_option_catalog_preferred,public.character_option_grant_instances,public.spells_catalog,public.spells_catalog_preferred,public.character_spells FROM PUBLIC,anon,authenticated; REVOKE ALL ON private.player_forge_source_choice_legacy_v1 FROM PUBLIC,anon,authenticated");
-sql(fn(normal,'private.normalize_player_choice_name_v1'));
+sql(captured(normal,'private.normalize_player_choice_name_v1'));
+assert.equal(md5('private.normalize_player_choice_name_v1(text)'),'dd8cdd5b47efe99b1cfff9c2bf7635dd');
 psql(['-f',guards]);psql(['-f',acquisition]);psql(['-f',guardDDL]);sql(stmt(hSetup,'CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_class_options_v1'));
 sql(fn(authority,'private.guard_direct_class_option_authority_mutation_v1'));sql(stmt(authority,'create trigger character_class_option_instances_direct_authority_guard_v1'));
 for(const n of ['private.level_up_warlock_invocation_groups_v1','private.apply_level_up_warlock_invocations_v1'])sql(fn(earned,n));
