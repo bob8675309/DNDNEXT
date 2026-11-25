@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `11b6cf8776f0a5c6942eacd1e3689f77ba6e37b1` |
+| Exact source commit represented by this archive snapshot | `448868086457e1b15990a1f170f55f95f6fe9d58` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): exercise signed earned Artificer plan acquisition and replacement with original projection |
+| Last source commit title | docs(i2j): record Warlock signed RED/GREEN and explicit earned source identity hold |
 | Files changed relative to main | 272 (194 non-docs; 78 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 5 files (0 non-docs; 5 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-artificer-earned-v5.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_ARTIFICER_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
-- `scripts/integration/i2j/test_artificer_earned_v5_signed.mjs`
+- `docs/research/I2J_OPTION_A_CROSS_BRANCH_RECEIPT_RECONCILIATION_2026-11-24.md`
+- `docs/research/I2J_SHARED_CLASS_GRANT_INTEGRITY_AND_DELETE_PREFLIGHT_2026-11-24.md`
+- `docs/research/I2J_WARLOCK_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
