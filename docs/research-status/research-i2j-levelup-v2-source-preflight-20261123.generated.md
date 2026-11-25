@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `6c97950769905d6090604a6573bc65c94df77137` |
+| Exact source commit represented by this archive snapshot | `1ce9fc0308b69f7796243f4e385115a4ce13899f` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): record complete backup manifest and Storage byte-copy verification |
+| Last source commit title | docs(i2j): record verified USB archive recovery and encryption hold |
 | Files changed relative to main | 273 (194 non-docs; 79 docs) |
 | Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
