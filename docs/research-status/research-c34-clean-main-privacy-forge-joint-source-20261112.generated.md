@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6ae5e19e9cb53d7628c2c291616fd940eb7f3938` |
+| Exact source commit represented by this archive snapshot | `a8917220fbae5bd5eab5758aa4f20a81d307036f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): checkpoint client wire custody HANDOFF_LOG.md |
+| Last source commit title | docs(c34): map original J168 replay test custody |
 | Files changed relative to main | 435 (324 non-docs; 111 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
