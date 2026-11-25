@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `c1eabafba301f5c1d037a80fe044f119aab6ab1d` |
+| Exact source commit represented by this archive snapshot | `a2c726426f6e1af267c0c9b3707a831f77d4d3ca` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(research): validate fixture-only source lock changes |
+| Last source commit title | test(ci): inventory literal signed workflow dependencies without authorizing bypass |
 | Files changed relative to main | 340 (264 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
+- `scripts/audits/test_c34_ci_filter_current_independent.mjs`
 
 ## Research-branch change inventory versus main
 
