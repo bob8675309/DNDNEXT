@@ -114,3 +114,26 @@ assert.equal(checkoutInventory('node held345/scripts/a.mjs').historical.length,0
 assert.equal(checkoutInventory(synthetic).bypassAuthorized,false);
 assert.equal(provenance.closureProven,false);
 console.log('8 checkout provenance assertions passed; closure NOT PROVEN');
+
+// Record cwd and variable evidence without pretending to resolve shell execution.
+export function checkoutContextEvidence(source) {
+  const historicalCwd = [], unresolved = [];
+  for (const [i,line] of source.split('\n').entries()) {
+    if (/\bcd\s+held345\s*&&/.test(line))
+      historicalCwd.push({line:i+1,paths:inventory(line).paths});
+    if (/\b(?:cd|source|eval)\b|\bworking-directory:|\$[A-Za-z_{(]/.test(line))
+      unresolved.push(i+1);
+  }
+  return {historicalCwd,unresolved,closureProven:false,bypassAuthorized:false};
+}
+const cwdEvidence=checkoutContextEvidence(bytes.toString('utf8'));
+assert.ok(cwdEvidence.historicalCwd.some(x=>x.paths.includes('scripts/browser/verify_c33_creator_backstory_dom.mjs')));
+assert.ok(cwdEvidence.historicalCwd.some(x=>x.paths.includes('scripts/browser/verify_c33_next_town_route.mjs')));
+assert.ok(cwdEvidence.unresolved.length>0);
+const cwdSynthetic=checkoutContextEvidence('(cd held345 && node scripts/a.mjs)\nnode "$SCRIPT"\nworking-directory: held345\nnode scripts/b.mjs');
+assert.deepEqual(cwdSynthetic.historicalCwd,[{line:1,paths:['scripts/a.mjs']}]);
+assert.deepEqual(cwdSynthetic.unresolved,[1,2,3]);
+assert.equal(cwdSynthetic.closureProven,false);
+assert.equal(cwdSynthetic.bypassAuthorized,false);
+assert.equal(checkoutContextEvidence('').bypassAuthorized,false);
+console.log('8 checkout context evidence assertions passed; closure NOT PROVEN');
