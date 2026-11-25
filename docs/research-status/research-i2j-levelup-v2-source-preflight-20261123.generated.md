@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `9460b6a046907744146a5f9d22684fd6103b0aa3` |
+| Exact source commit represented by this archive snapshot | `11b6cf8776f0a5c6942eacd1e3689f77ba6e37b1` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): restore captured original Warlock choice normalizer dependency |
-| Files changed relative to main | 269 (192 non-docs; 77 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | test(i2j): exercise signed earned Artificer plan acquisition and replacement with original projection |
+| Files changed relative to main | 272 (194 non-docs; 78 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-artificer-earned-v5.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_WARLOCK_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
-- `scripts/integration/i2j/test_warlock_earned_v5_signed.mjs`
+- `docs/research/I2J_ARTIFICER_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
+- `scripts/integration/i2j/test_artificer_earned_v5_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -52,6 +53,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2g-levelup-v1-option-a-local-auth.yml`
 - `.github/workflows/validate-i2h-tough-option-a-local-auth.yml`
 - `.github/workflows/validate-i2i-admin-feature-option-a-local-auth.yml`
+- `.github/workflows/validate-i2j-artificer-earned-v5.yml`
 - `.github/workflows/validate-i2j-bm-earned-v5.yml`
 - `.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml`
 - `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
@@ -73,8 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md`
 - `docs/C3_3_ATOMIC_DISPOSABLE_COMMIT_2026-11-08.md`
 - `docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md`
-- `docs/C3_3_MIGRATION_HISTORY_RECONCILIATION_2026-11-08.md`
-- … 219 more
+- … 222 more
 
 ## Trust and update procedure
 
