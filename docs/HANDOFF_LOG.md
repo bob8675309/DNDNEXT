@@ -2291,3 +2291,8 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 - Baseline `8970a8257b5e7c4b5f681f4bd446563c6a8024a0`; ledger commit `a763e6015ce8bae1c0a09f3f8b46f5fe22baa3c8` read back and verified; ACTIVE_WORK checkpoint `559a3af886e692ee2108d3830e75985b34f7ee26`.
 - Original #334 head `0527f945269b6df32ad1f5c32fbe0434082d52f8`; retained #345 head `4f5f8ff7587aff1a68f21581ad68a4752789f54a`. `scripts/validate_forge_seeded_warlock_child_completion.mjs` original blob `86e6be9502fdc37ad1fc073ee2461198a414c463` exact in #379; #345 blob `d469363de4f20983386f733ca05d43356cbfaf74` changes RPC source assertion to private backstory wrapper. Original static assertions and negative mutations recorded; #345 semantic equivalence and signed runtime evidence OPEN. No tests executed in this invocation.
 - Seven original #334 paths still unmapped; next bounded task is original seeded manifest JSON and case definitions. Existing two #332 T0 fixture rows retained; inherited #333/#332 review, P20C, restore, release and PR retirement holds unchanged. No hosted SQL, gameplay, deployment or other branch writes. Final exact-head CI to be checked after handoff commit.
+
+
+### Agent A — J168 #334 manifest custody row 2/8
+
+- Ledger commit `eb80e5b8913d93d060a405a409e0b6726842dfc4` verified; ACTIVE_WORK `22cf4c5ef9cefe336d78b80a72a84d946969a0c4`. Original #334, #345 and #379 seeded manifest exact blob `f30c9d25f39acfaab214a3135c6b7be34d21aea6`; all four ordered cases/seeds retained. No runtime execution or acceptance. Six paths unmapped; next map `scripts/agents/forge_warlock_client_wire.mjs`. All prior holds and scope unchanged. Exact final HEAD CI to be inspected.
