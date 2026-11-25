@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `1d9e1d178fc0d8d4caf80858601833260d6250dc` |
+| Exact source commit represented by this archive snapshot | `efa132035158f583e9f6e5b19591ccebb624bbcf` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): trace hidden-target cached replay authorization |
+| Last source commit title | docs(spell): preserve delegated visibility and guarded replay boundaries |
 | Files changed relative to main | 1 (0 non-docs; 1 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
