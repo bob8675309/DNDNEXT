@@ -1,0 +1,60 @@
+name: I2J nested Origin feat schema contract (disposable PG17 only)
+on:
+  push:
+    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    paths:
+      - 'scripts/audits/i2j_origin_feat_schema_fixture_source.mjs'
+      - 'scripts/fixtures/i2j_origin_feat_schema_contract_pg17.sql'
+      - '.github/workflows/validate-i2j-origin-feat-schema-contract.yml'
+      - 'sql/20260711_01_canonical_spell_class_and_character_option_catalogs.sql'
+      - 'sql/20260706_01_spell_catalog_foundation.sql'
+      - 'sql/20260808_01_character_option_grant_instances.sql'
+      - 'sql/20260808_08_character_spell_source_identity.sql'
+permissions:
+  contents: read
+jobs:
+  schema-contract:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: i2j_disposable_only
+          POSTGRES_DB: i2j_origin_feat_fixture
+        ports:
+          - 54324:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d i2j_origin_feat_fixture"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '54324'
+      PGUSER: postgres
+      PGDATABASE: i2j_origin_feat_fixture
+      PGPASSWORD: i2j_disposable_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify pinned repository DDL and build fixture
+        run: |
+          node --check scripts/audits/i2j_origin_feat_schema_fixture_source.mjs
+          node scripts/audits/i2j_origin_feat_schema_fixture_source.mjs > "$RUNNER_TEMP/i2j-origin-schema.sql"
+      - name: Execute isolated schema contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54324
+          test "$PGDATABASE" = i2j_origin_feat_fixture
+          psql -X -v ON_ERROR_STOP=1 -c 'SHOW server_version'
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/i2j-origin-schema.sql"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/i2j_origin_feat_schema_contract_pg17.sql
