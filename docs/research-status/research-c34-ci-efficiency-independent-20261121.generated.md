@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `c3bc18d9625e316a7e53cccb6e6cb527a7fb897f` |
+| Exact source commit represented by this archive snapshot | `2e80a822be80045e9bbfd48e3bf9f6815d1ac78f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | ci(research): run synthetic dependency manifest assertions |
+| Last source commit title | test(ci): bind synthetic manifest to independent inventory and required roots |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
+- `scripts/audits/test_c34_dependency_manifest.mjs`
 
 ## Research-branch change inventory versus main
 
