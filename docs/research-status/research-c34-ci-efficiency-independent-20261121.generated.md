@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `e40835bfdabed1a8144f4521bcc8dac223b380a6` |
+| Exact source commit represented by this archive snapshot | `468e37547e32fa658fb0a69c66677c81af954b3c` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): record unresolved signed source entry point boundaries |
+| Last source commit title | test(ci): pin explicit joint fixture dependency inventory |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
