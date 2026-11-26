@@ -91,7 +91,7 @@ function nativeTreeOid(entries) {
   if(!Array.isArray(entries)||!entries.length) return null;
   const top=new Map();
   for(const e of entries) {
-    if(!e||!safe(e.path)||!oid(e.blob)||e.mode!=='100644') return null;
+    if(!e||typeof e.path!=='string'||/[\x00-\x1f\x7f]/.test(e.path)||!e.path.split('/').every(x=>x&&x!=='.'&&x!=='..')||!oid(e.blob)||e.mode!=='100644') return null;
     const parts=e.path.split('/');
     let dir=top;
     for(const name of parts.slice(0,-1)) {
