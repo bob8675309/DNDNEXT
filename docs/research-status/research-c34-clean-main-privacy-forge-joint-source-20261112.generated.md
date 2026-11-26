@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `165943f422230e0a653f724d602ca5beff1fa31d` |
+| Exact source commit represented by this archive snapshot | `a4fb32ac1ca28858d9e6d855eef710a38c31fe82` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): verify ordered original replay test retention |
+| Last source commit title | docs(c34): corroborate original J168 workflow receipt |
 | Files changed relative to main | 438 (324 non-docs; 114 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 

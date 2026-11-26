@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-26T10:41:39Z | research/spell-tactical-preservation-independent-20261123 (241fa35fed38674978c85ee2d516d10194535884) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
+| 2026-11-26T11:05:17Z | research/c34-clean-main-privacy-forge-joint-source-20261112 (a4fb32ac1ca28858d9e6d855eef710a38c31fe82) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
