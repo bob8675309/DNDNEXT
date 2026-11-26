@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-26T03:26:50Z | research/c34-ci-efficiency-independent-20261121 (99400a2c09dd363b7d52285d8dc982aa09a00c70) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
+| 2026-11-26T03:27:11Z | research/c34-ci-efficiency-independent-20261121 (c3bc18d9625e316a7e53cccb6e6cb527a7fb897f) | bb3939eeb9a38cf416996a1dca3b196b156b2915 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

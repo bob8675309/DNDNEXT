@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `99400a2c09dd363b7d52285d8dc982aa09a00c70` |
+| Exact source commit represented by this archive snapshot | `c3bc18d9625e316a7e53cccb6e6cb527a7fb897f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): prototype conservative synthetic dependency manifest |
+| Last source commit title | ci(research): run synthetic dependency manifest assertions |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/audits/test_c34_dependency_manifest.mjs`
+- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
 
 ## Research-branch change inventory versus main
 
