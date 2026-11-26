@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `e1e1267dd0ac9457a2d8622c7d391ad1970f80b5` |
+| Exact source commit represented by this archive snapshot | `6e3195708340505aaa85a6b09b6e08e3c88249f0` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): synchronize eight-path custody handoff |
+| Last source commit title | docs(c34): crosswalk inherited J167 manifest custody |
 | Files changed relative to main | 438 (324 non-docs; 114 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
