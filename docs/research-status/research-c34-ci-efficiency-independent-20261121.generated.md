@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `c19f7bd63dd8b05abbca2d0cedb156c6210bb719` |
+| Exact source commit represented by this archive snapshot | `a3216a733e5545749385c7cc1f2abc020b9068cf` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): require pinned repository tree custody in independent CI |
+| Last source commit title | test(ci): cross-check pinned historical tree delta against native Git |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-c34-ci-efficiency-independent.yml`
+- `scripts/audits/test_c34_dependency_manifest.mjs`
 
 ## Research-branch change inventory versus main
 
