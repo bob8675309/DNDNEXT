@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2607a68d1c09515b14b3f9a8416480fdf0beecd3` |
+| Exact source commit represented by this archive snapshot | `74e5c7f3df5694ecd5f3a27e4bae0c737cee49a2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): archive original PR334 handoff history |
+| Last source commit title | docs(c34): verify original J168 handoff archive custody |
 | Files changed relative to main | 438 (324 non-docs; 114 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/archive/PR334/HANDOFF_LOG.md`
+- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
