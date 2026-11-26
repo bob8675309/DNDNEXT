@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `43cfd8b20c9c6ccbad058adba26e4bd36c61f008` |
+| Exact source commit represented by this archive snapshot | `b48023d5e3893731e678d1e0b4aacc37efa01021` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): pin restored Origin feat source custody and final retirement gate |
-| Files changed relative to main | 277 (196 non-docs; 81 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit title | test(i2j): stage disposable nested Origin feat schema contract |
+| Files changed relative to main | 281 (199 non-docs; 82 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-source-custody.yml`
+- `.github/workflows/validate-i2j-origin-feat-schema-contract.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_ORIGIN_FEAT_RESTORED_SOURCE_CUSTODY_2026-11-25.md`
-- `scripts/audits/test_i2j_origin_feat_restored_source_custody.mjs`
+- `docs/research/I2J_ORIGIN_FEAT_SCHEMA_CONTRACT_2026-11-25.md`
+- `scripts/audits/i2j_origin_feat_schema_fixture_source.mjs`
+- `scripts/fixtures/i2j_origin_feat_schema_contract_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -58,6 +59,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-i1c-mixed-api-nonce-local-auth.yml`
 - `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
+- `.github/workflows/validate-i2j-origin-feat-schema-contract.yml`
 - `.github/workflows/validate-i2j-origin-feat-source-custody.yml`
 - `.github/workflows/validate-i2j-warlock-earned-v5.yml`
 - `.github/workflows/validate-i2j-wizard-earned-v5.yml`
@@ -74,8 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/town/TownCrafterInteractionPanel.js`
 - `docs/ACTIVE_WORK.md`
 - `docs/BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md`
-- `docs/C3_3_ATOMIC_DISPOSABLE_COMMIT_2026-11-08.md`
-- … 227 more
+- … 231 more
 
 ## Trust and update procedure
 
