@@ -464,3 +464,16 @@ console.log('11 historical source manifest assertions passed; actual historical 
  assert.equal(seventhLevelWalk.closureProven,false);
  assert.equal(seventhLevelWalk.bypassAuthorized,false);
  console.log('Fifth-level historical metadata receipts; closure NOT PROVEN');
+
+// Fifth-level selected import excerpts; not complete source bytes.
+const fifthLevelPartialRows=[{"path":"components/CharacterLevelUpChoices.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"3fa76acd1811a77b0c3e93711906bfb5afb17584","source":"import { useEffect, useMemo, useState } from \"react\"\nimport useSubclassCatalog from \"../hooks/useSubclassCatalog\"\nimport { supabase } from \"../utils/supabaseClient\"\nimport { spellLevelLabel, spellMatchesClass } from \"../utils/spells/classSpellbookRules\"\nimport { spellMatchesExpandedList } from \"../utils/backgroundMechanics\"\nimport { buildRuntimeAdvancementChoiceModel } from \"../utils/characterLevelUpPlan\"\nimport { buildFeatSourceChoiceGroups, featInstanceSummaries } from \"../utils/playerForgeFeatChoices\"\nimport { normalizeFeatSourceChoiceGroups } from \"../utils/featSourceChoiceNormalization\"\nimport {\n  normalizeSourceChoiceSelections,\n  setSourceChoiceSelection,\n  sourceChoiceGroupsComplete,\n  toggleSourceChoiceSelection,\n} from \"../utils/playerForgeSourceChoices\"\nimport CharacterInvocationRecovery from \"./CharacterInvocationRecovery\"\nimport SourceChoiceFields from \"./SourceChoiceFields\""},{"path":"components/SourceRuleContent.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"a7f1c1b7688ab211763a95d0ef962cc09622d130","source":"import { formatPlayerFacingInline, formatPlayerFacingText } from \"../utils/playerFacingText\"\nimport { referenceTagBoundarySpacing } from \"../utils/sourceRuleTextSpacing\""},{"path":"hooks/useSubclassCatalog.js","ref":"4f5f8ff7587aff1a68f21581ad68a4752789f54a","sha":"3cf68a31851c81cea311cb40e7113cdd9ae82997","source":"import { useEffect, useState } from \"react\"\nimport { resolveSubclassCatalog } from \"../utils/classes/subclassCompatibility\"\nimport { supabase } from \"../utils/supabaseClient\""}];
+for(const row of fifthLevelPartialRows){
+ assert.equal(row.ref,fifthLevelTreeReceipt.ref);
+ assert.equal(row.sha,fifthLevelTreeReceipt.entries.find(e=>e.path===row.path)?.sha);
+}
+const eighthLevelPartialWalk=extendedHistoricalGraph([...connectedRows,...thirdLevelSourceRows,...fourthLevelSourceRows,...fifthLevelPartialRows],fifthLevelExpandedTree);
+for(const row of fifthLevelPartialRows) assert.ok(!eighthLevelPartialWalk.missing.includes(row.path));
+for(const entry of fifthLevelTreeReceipt.entries.filter(e=>!fifthLevelPartialRows.some(r=>r.path===e.path))) assert.ok(eighthLevelPartialWalk.missing.includes(entry.path));
+assert.equal(eighthLevelPartialWalk.closureProven,false);
+assert.equal(eighthLevelPartialWalk.bypassAuthorized,false);
+console.log('Fifth-level partial source excerpts connected; closure NOT PROVEN');
