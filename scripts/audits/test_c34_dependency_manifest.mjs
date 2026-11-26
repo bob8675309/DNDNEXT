@@ -295,3 +295,27 @@ function verifyPinnedRepositoryTree() {
   return true;
 }
 verifyPinnedRepositoryTree();
+
+ // Real historical delta oracle: pinned own-branch commits, no event authorization.
+{
+ const baseId='05580aa8e6efcb075e56489000d6375a0d9932e9';
+ const headId='c19f7bd63dd8b05abbca2d0cedb156c6210bb719';
+ const expected={baseTreeOid:'749d079dc7bd1a5ec87e960b0da3f901c8b8a859',headTreeOid:'2dab87d376f2536cfb79fdeb666d42cc9e2f642c',baseTruncated:false,headTruncated:false};
+ const readInventory=id=>custodyGit(['ls-tree','-r','-z',id]).split('\0').filter(Boolean).map(row=>{
+   const tab=row.indexOf('\t');
+   assert.ok(tab>0);
+   const [mode,type,blob]=row.slice(0,tab).split(' ');
+   assert.equal(type,'blob');
+   return {mode,blob,path:row.slice(tab+1)};
+ });
+ const a=readInventory(baseId), b=readInventory(headId);
+ assert.equal(boundCommitTree(custodyGit(['cat-file','commit',baseId]),baseId),expected.baseTreeOid);
+ assert.equal(boundCommitTree(custodyGit(['cat-file','commit',headId]),headId),expected.headTreeOid);
+ const delta=deriveTreeDelta(a,b,expected);
+ const expectedDelta=[{path:'.github/workflows/validate-c34-ci-efficiency-independent.yml',status:'modified'}];
+ assert.deepEqual(delta,expectedDelta);
+ assert.equal(custodyGit(['diff','--no-renames','--name-status',baseId,headId]).trim(),'M\t'+expectedDelta[0].path);
+ assert.equal(deriveTreeDelta(a.slice(1),b,expected),null);
+ assert.equal(deriveTreeDelta(a,b.slice(1),expected),null);
+ console.log('Pinned historical delta oracle passed: one independent workflow modification');
+}
