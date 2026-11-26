@@ -145,3 +145,42 @@ for(const [i,mutate] of nativeCases.entries()){
 for(const e of [{...nativeExpected,truncated:true},{...nativeExpected,truncated:undefined},{...nativeExpected,treeOid:'0'.repeat(40)},null])
   assert.equal(verifyNativeTreeEnvelope(fixture,e).candidate,false);
 console.log('Synthetic native tree cases passed:',2+nativeCases.length+4);
+
+// Derive a complete path delta from two independently pinned restricted trees.
+// Add/delete pairs are deliberately not inferred to be renames; both fail closed.
+export function deriveTreeDelta(base, head, expected) {
+  if (!expected || expected.baseTruncated!==false || expected.headTruncated!==false ||
+      !oid(expected.baseTreeOid) || !oid(expected.headTreeOid) ||
+      nativeTreeOid(base)!==expected.baseTreeOid || nativeTreeOid(head)!==expected.headTreeOid) return null;
+  const a=new Map(base.map(e=>[e.path,e.blob])), b=new Map(head.map(e=>[e.path,e.blob]));
+  return [...new Set([...a.keys(),...b.keys()])].sort().flatMap(path=>
+    a.get(path)===b.get(path)?[]:[{path,status:!a.has(path)?'added':!b.has(path)?'removed':'modified'}]);
+}
+export function verifyDerivedDelta(m, base, expected) {
+  const fail={candidate:false,reason:'unverified or inconsistent tree delta',closureProven:false,bypassAuthorized:false,recommendation:'full'};
+  if(!m || !expected || expected.headTreeOid!==expected.treeOid) return fail;
+  const diff=deriveTreeDelta(base,m.tree,expected);
+  if(!diff || !Array.isArray(m.diff) || m.diff.length!==diff.length ||
+     diff.some(d=>!m.diff.some(x=>x && x.path===d.path && x.status===d.status))) return fail;
+  return verifyNativeTreeEnvelope({...m,diff},expected);
+}
+const deltaBase=fixture.tree.map(e=>e.path===census?{...e,blob:sha('old census')}:e);
+const deltaExpected={...nativeExpected,baseTreeOid:nativeTreeOid(deltaBase),headTreeOid:nativeExpected.treeOid,baseTruncated:false,headTruncated:false};
+assert.deepEqual(deriveTreeDelta(deltaBase,fixture.tree,deltaExpected),fixture.diff);
+assert.equal(verifyDerivedDelta(fixture,deltaBase,deltaExpected).candidate,true);
+assert.equal(verifyDerivedDelta({...fixture,diff:[]},deltaBase,deltaExpected).candidate,false);
+assert.equal(verifyDerivedDelta(fixture,deltaBase.slice(1),deltaExpected).candidate,false);
+assert.equal(verifyDerivedDelta(fixture,deltaBase,{...deltaExpected,baseTruncated:true}).candidate,false);
+assert.equal(verifyDerivedDelta(fixture,deltaBase,{...deltaExpected,headTruncated:true}).candidate,false);
+const mixedBase=deltaBase.map(e=>e.path===dep?{...e,blob:sha('old dependency')}:e);
+const mixedExpected={...deltaExpected,baseTreeOid:nativeTreeOid(mixedBase)};
+const mixedDiff=deriveTreeDelta(mixedBase,fixture.tree,mixedExpected);
+assert.equal(mixedDiff.length,2);
+assert.equal(verifyDerivedDelta(fixture,mixedBase,mixedExpected).candidate,false);
+assert.equal(verifyDerivedDelta({...fixture,diff:mixedDiff},mixedBase,mixedExpected).candidate,false);
+const removedBase=[...deltaBase,{path:'removed.js',mode:'100644',blob:sha('removed')}];
+const removedExpected={...deltaExpected,baseTreeOid:nativeTreeOid(removedBase)};
+const removedDiff=deriveTreeDelta(removedBase,fixture.tree,removedExpected);
+assert.ok(removedDiff.some(d=>d.status==='removed'));
+assert.equal(verifyDerivedDelta({...fixture,diff:removedDiff},removedBase,removedExpected).candidate,false);
+console.log('Synthetic derived delta assertions passed');
