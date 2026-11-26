@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `069e175208575fb05eb420bee70f338d255a9c82` |
+| Exact source commit represented by this archive snapshot | `4f91ce1a0bfb785852739cff49fbee7d603dc8e2` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): verify exact archived PR334 dossier custody |
-| Files changed relative to main | 436 (324 non-docs; 112 docs) |
+| Last source commit title | docs(c34): archive original PR334 active work verbatim |
+| Files changed relative to main | 437 (324 non-docs; 113 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
+- `docs/research/archive/PR334/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/pr-integration/README.md`
 - `docs/research/C34_B14_P10_NONMAP_NPC_INVENTORY_SIGNED_BROWSER_RESEARCH_2026-11-21.md`
 - `docs/research/C34_B14_P11_ORIGINAL_LEGACY_READER_GRAPH_AND_CUTOVER_RESEARCH_2026-11-21.md`
-- … 386 more
+- … 387 more
 
 ## Trust and update procedure
 
