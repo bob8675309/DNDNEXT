@@ -1,0 +1,32 @@
+name: I2J nested Origin feat level-up payload (source-only)
+on:
+  push:
+    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    paths:
+      - 'scripts/audits/test_i2j_nested_origin_feat_levelup_payload.mjs'
+      - '.github/workflows/validate-i2j-nested-origin-feat-payload.yml'
+      - 'components/CharacterLevelUpChoices.js'
+      - 'utils/playerForgeFeatChoices.js'
+      - 'utils/featSourceChoiceNormalization.js'
+      - 'utils/playerForgeSourceChoices.js'
+      - 'utils/characterCreation.js'
+      - 'utils/craftingProfessions.js'
+      - 'utils/classFeatureChoiceConstants.js'
+      - 'utils/playerFacingText.js'
+      - 'sql/20260808_26_earned_warlock_invocation_progression.sql'
+      - 'scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql'
+permissions:
+  contents: read
+jobs:
+  payload:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/audits/test_i2j_nested_origin_feat_levelup_payload.mjs

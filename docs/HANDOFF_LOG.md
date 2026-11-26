@@ -1189,3 +1189,22 @@ The generator extracts five existing table DDL statements, historical spell-labe
 Original spell-label unique index may constrain distinct repeatable Magic Initiate instances granting the same spell under the same label, despite different source keys. Do not remove either index or claim an application bug based on a schema-only characterization; actual restored source and full transaction must be reviewed first. Alert first, Magic Initiate separate.
 
 **ONE NEXT:** verify exact-head CI execution and any errors; integrate the reviewed schema prerequisites into a separate signed nested acquisition fixture after exact validator custody is resolved. Existing Git bodies usable only within proven bounds; differing restored validator bodies remain private pending explicit source transfer review. No signed result, no legacy writer count upgrade, no release/retirement approval. Preserve original PRs and final independent audit gate.
+
+
+## 2026-11-26 CST — I2J nested Origin feat level-up payload
+
+# I2J nested Origin feat level-up payload — 2026-11-26 CST
+
+Prior exact HEAD `b48023d5e3893731e678d1e0b4aacc37efa01021` verified all three workflows success: [schema job 139705925264](https://github.com/bob8675309/DNDNEXT/actions/runs/45759507241/job/139705925264), actual PostgreSQL 17.12 logs OF-SCHEMA-01..07 PASS; tactical 45759507211 and docs 45759507167 SUCCESS. Both original spell uniqueness indexes are preserved, and same-label distinct feat-instance keys rejected in the disposable schema case. This is schema-only, not a demonstrated full gameplay defect. Previous source-custody 18/18 remains separate.
+
+## Distinct source-shaped level-up request
+
+Prior J168 proof was initial character creation, not this level-up component. Current CharacterLevelUpChoices uses classOptionFeatInstances, normalizeFeatSourceChoiceGroups/buildFeatSourceChoiceGroups, featInstanceSummaries and a v5 payload with class_option_feat_instances. The historical group-generator body matches restored source; its nested child selection uses original UUID identity. Current I1G seed contains Lessons of the First Ones, Alert and Lucky UUIDs. The new pure Node test executes the actual pinned component helper and request-object assembly and imports the actual pure utilities (temporary extension-only ESM import adaptation). It constructs only a reduced synthetic response group using the pinned SQL shape and known seed IDs; does not claim original full catalogue metadata or live RPC result. No actual React rendering or signed transaction. No production code changed.
+
+Seven authored assertions: pinned source/canonical IDs; valid no-choice Alert nested parent and acquisition metadata; missing child readiness; unknown child normalization; stale inactive child removal; distinct two-slot ownership/determinism; explicit source-only boundary. New CI pending at authoring. The source-shaped Alert request can be reused in the next isolated v5 fixture instead of manually inventing nested JSON. Do not equate source readiness with database authorization.
+
+## Next gate
+
+Original materializer body exists in Git, but exact restored validator, skill/tool validators, earned helper delta and skill-key helper custody still need an approved narrowly scoped source handoff. Do not put private full definitions/schema/backup in the repository or Codex without explicit owner review. Reuse prior WL original/candidate guard and projection evidence; build the distinct signed Alert acquisition scope against the verified schema and source identities. Preserve legacy presence and instance grants, exact canonical projection and rollback. No new writer count or signed acceptance. Original 19 deployed adapters, all PR contributions and final independent retirement audit stay protected. No hosted SQL, production, maps, release or PR closure.
+
+**ONE NEXT:** verify actual payload CI, then secure explicit source-only custody for the missing exact functions and run a bounded signed nested feat acquisition in disposable services. If private transfer not approved, continue only source-safe work or owner-local isolated test; no repeated broad source searches.
