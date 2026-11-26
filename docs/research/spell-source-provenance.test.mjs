@@ -168,3 +168,22 @@ test('historical adapter source edition drift rejected', () => {
   const rows=manifest.spells.map(r=>({...r})); rows[0].source='PHB';
   assert.throws(()=>checkAdapters(rows),/fingerprint mismatch/);
 });
+
+ // Shared RPC custody: recovered inventory contains one exact-name signature.
+ // Private function fingerprints remain offline; these fixtures are synthetic.
+ const sharedRpc = 'public.encounter_cast_spell_v1';
+ const sharedSignature = sharedRpc + '(uuid,uuid,uuid,integer,uuid)';
+ const sharedFixture = [{id:sharedSignature,origin:'recovered',sha256:digest('synthetic shared function body')}];
+ test('two historical adapters map to one recovered function identity', () => {
+   assert.deepEqual(manifest.spells.filter(r=>r.rpc===sharedRpc).map(r=>r.key).sort(),
+     ['cure-wounds|xphb','fire-bolt|xphb']);
+   assert.deepEqual(verify(sharedFixture,sharedFixture.map(r=>({...r}))),
+     {matched:1,evidence:'source-only',runtimeAccepted:false});
+ });
+ test('shared RPC predecessor cannot substitute for exact function identity', () => {
+   const rows=sharedFixture.map(r=>({...r,id:r.id.replace('spell_v1(', 'spell_v1_pre_1v(')}));
+   assert.throws(()=>verify(sharedFixture,rows),/unknown source/);
+ });
+ test('shared RPC cannot be counted twice for its two adapters', () => {
+   assert.throws(()=>verify(sharedFixture,[...sharedFixture,...sharedFixture]),/duplicate identity/);
+ });
