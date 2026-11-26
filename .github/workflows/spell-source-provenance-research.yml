@@ -1,0 +1,23 @@
+name: Spell source provenance (research only)
+on:
+  push:
+    branches:
+      - 'research/spell-tactical-preservation-independent-20261123'
+    paths:
+      - 'docs/research/spell-source-provenance.test.mjs'
+      - '.github/workflows/spell-source-provenance-research.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute synthetic source-only contract
+        run: node --test docs/research/spell-source-provenance.test.mjs
