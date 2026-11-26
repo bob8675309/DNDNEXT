@@ -1,0 +1,24 @@
+name: I2J nested Origin feat source custody (no database)
+on:
+  push:
+    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    paths:
+      - 'scripts/audits/test_i2j_origin_feat_restored_source_custody.mjs'
+      - '.github/workflows/validate-i2j-origin-feat-source-custody.yml'
+      - 'sql/20260808_24_source_owned_origin_feat_authority.sql'
+      - 'sql/20260808_34_reversible_source_owned_origin_feats.sql'
+      - 'sql/20260808_26_earned_warlock_invocation_progression.sql'
+      - 'scripts/fixtures/forge_progression_authority_original_pg17.sql'
+      - 'scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql'
+permissions:
+  contents: read
+jobs:
+  source-custody:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/audits/test_i2j_origin_feat_restored_source_custody.mjs
