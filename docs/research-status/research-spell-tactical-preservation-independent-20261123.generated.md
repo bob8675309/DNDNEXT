@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `2b0c340f1f9cf5b2de36098d87692e163e2b7b87` |
+| Exact source commit represented by this archive snapshot | `241fa35fed38674978c85ee2d516d10194535884` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | ci(research): execute synthetic spell source provenance contract |
+| Last source commit title | test(spell): pin historical adapter identities and RPC metadata in provenance CI |
 | Files changed relative to main | 3 (1 non-docs; 2 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/spell-source-provenance-research.yml`
+- `docs/research/spell-source-provenance.test.mjs`
 
 ## Research-branch change inventory versus main
 
