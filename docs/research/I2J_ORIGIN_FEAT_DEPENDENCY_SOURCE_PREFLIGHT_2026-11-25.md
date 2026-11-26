@@ -1,0 +1,23 @@
+# I2J original nested Origin feat dependency preflight — 2026-11-25 CST
+
+Actual local static inspection of owner archive SHA256 5da4d8785b0183b5ec5f531de10239844759026d447d52858be8cbccfd45106f and original census at 1ce9fc0308b69f7796243f4e385115a4ce13899f, blob 772af5e05ec494f9526445a5ad9eb05bad0f5d78. Length-prefixed raw DDL extracted by qualified CREATE FUNCTION identity, no data restore or SQL executed. Reconstructed pg_get_functiondef-style text changes only CREATE header, return/attribute indentation and outer dollar delimiter. Control reconstruction for already restored earned helper matches ed0655adf02e9413157efe8a8bd414f9. Previous exact local source delta and signed WL01–07 historical receipts retained. This is not a new signed test or deployed-source certification.
+
+| Function (private unless indicated) | Reconstructed MD5 | Scope |
+|---|---|---|
+| apply_source_owned_origin_feat_v1 | b7d69d8643a6b2ba2be8efbb4ee41243 | exact historical census match; untested writer |
+| validate_source_owned_origin_feat_v1 | eee232817f6bd71eba8b92a1439a8ebf | archive candidate |
+| origin_feat_spell_choice_v1 | 523024db8a263602a580a95265f7dd2b | archive candidate |
+| origin_feat_skill_choice_valid_v1 | 834656a216b9ed35dec299ea694b58a2 | archive candidate |
+| origin_feat_tool_choice_valid_v1 | 8f8c4f640dea212ab2bd9dc04c46b823 | archive candidate |
+| player_sheet_skill_key_v1 | 3b44b44ce828c6ac46ff9eaa935fa150 | archive candidate |
+| normalize_player_choice_name_v1 | dd8cdd5b47efe99b1cfff9c2bf7635dd | matches previously signed normalizer |
+| public.is_preferred_spell_version_v1 | 68993ebe31db168b77329aea0f466c5d | archive candidate |
+| level_up_warlock_invocation_groups_v1 | 8b91253ca4ee176c0261ee9293ae9fae | archive candidate |
+| apply_level_up_warlock_invocations_v1 | ed0655adf02e9413157efe8a8bd414f9 | already restored/census control |
+| apply_level_up_warlock_invocation_replacement_v1 | 434994105f465b6ed92fdb80942f9942 | exact historical census match; untested writer; separate scope |
+| apply_level_up_warlock_invocation_replacement_v2 | 7f3d2e2683dd4033b5862e591ac5bccc | archive candidate; separate scope |
+| remove_source_owned_origin_feat_v1 | ca278b2eb83d2a70aec369edf79a32a6 | exact historical census match; untested writer; separate scope |
+
+The real materializer validates nested selections, updates canonical sheet, legacy and normalized option grant records, and for Magic Initiate grants spell rows and limited-use resource metadata. It also writes linked account sheets independently of the earned helper and final Invocation projection. The 2026-11-12 census already classifies this exact signature as not_option_a_tested; no new distinct writer or runtime acceptance count. Validator handles no-choice feats, distinct source-valid tool/skill picks, Magic Initiate spell list, ability, two distinct cantrips and one level-1 spell. Actual source references public.character_option_catalog, character_option_catalog_preferred, character_option_grants, character_option_grant_instances, character_permissions, character_sheets, character_spells, players, spells_catalog, spells_catalog_preferred, items_catalog; auth.uid and existing progression/Warlock grant/class dependencies. Replacement v1/v2 and removal are separate later paths (ensure_character_source_choices_v1, replacement group and other effect-claim helper are additional dependencies). Do not claim full graph closure from text references.
+
+**ONE NEXT:** owner-local read-only function definition/MD5/owner/ACL receipt for these 13 names and selected schema-only export of affected canonical tables/views. Review source-only content before custody. Then stage a genuine source-authentic Lessons of the First Ones nested Origin feat acquisition graph on disposable synthetic services. Test valid nested acquisition and source-owned grant/spell/resource projection, invalid child rollback, and isolated materializer account mirror RED or counterexample before narrowly scoped Option A candidate; preserve old original negative evidence and reuse prior guard/projection research. Separate replacement/removal and recovery. No original functions installed in this turn, no private data or function bodies uploaded, no live SQL or map/main/PR/deploy/agent changes. Original role parity, full graph, crafting GP policy, exact object-path/Storage service and release gates remain held. Local environment has Node22.16.0 but no psql/pg_restore/Docker; use existing GitHub Actions for authoritative signed suites after fixture custody, or owner-submitted Codex task for implementation. Do not represent candidate as signed acceptance.
