@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `f3be2e3c71d2642ba054361c6a6461a90cbf156f` |
+| Exact source commit represented by this archive snapshot | `fcfeabe07ace39d8210ca0462425b5c21fc7ca06` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): cross-check synthetic object hashes against native Git |
+| Last source commit title | test(ci): compare pinned real repository tree without source copies |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
