@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `d03db21c056732320d1e27bd9ce4d17e2d36a2c7` |
+| Exact source commit represented by this archive snapshot | `4f563666deed4148db8d9a1ff8803b8c598a9e43` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): pin original nested feat dependency source and owner backup confirmation |
+| Last source commit title | docs(i2j): record restored Dropbox source library and verified definition intake |
 | Files changed relative to main | 274 (194 non-docs; 80 docs) |
-| Last source commit | 5 files (0 non-docs; 5 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,8 +20,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_ORIGIN_FEAT_DEPENDENCY_SOURCE_PREFLIGHT_2026-11-25.md`
-- `docs/research/I2J_OWNER_BACKUP_ARCHIVE_SOURCE_RECOVERY_2026-11-24.md`
-- `docs/research/I2J_WARLOCK_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
