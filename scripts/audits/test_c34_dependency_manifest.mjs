@@ -566,3 +566,36 @@ function verifyJointDeclaredInventory(rows) {
  assert.equal(result.recommendation,'full');
  console.log('Joint declared inventory model passed: '+jointDeclaredPins.length+' pins; runtime closure unresolved');
 }
+
+ // Source custody only: bind declared pins to a complete historical signed tree.
+function verifyJointTree(rows, expectedTree) {
+ if (!Array.isArray(rows) || rows.some(r=>!r || r.type!=='blob')) return false;
+ try {
+   if (nativeTreeOid(rows)!==expectedTree) return false;
+   const byPath=new Map(rows.map(r=>[r.path,r]));
+   return byPath.size===rows.length && jointDeclaredPins.every(p=>{
+     const r=byPath.get(p.path);
+     return r?.mode==='100644' && r.blob===p.blob;
+   });
+ } catch { return false; }
+}
+{
+ const commit='6e3195708340505aaa85a6b09b6e08e3c88249f0';
+ const tree='01e744bb948add770161babc1c3bd40ca52dfffb';
+ assert.equal(boundCommitTree(custodyGit(['cat-file','commit',commit]),commit),tree);
+ const rows=custodyGit(['ls-tree','-r','-z',commit]).split('\0').filter(Boolean).map(row=>{
+   const tab=row.indexOf('\t');
+   assert.ok(tab>0);
+   const [mode,type,blob]=row.slice(0,tab).split(' ');
+   return {mode,type,blob,path:row.slice(tab+1)};
+ });
+ assert.equal(verifyJointTree(rows,tree),true);
+ const target=jointDeclaredPins[0].path;
+ assert.equal(verifyJointTree(rows.filter(r=>r.path!==target),tree),false);
+ assert.equal(verifyJointTree(rows.slice(1),tree),false);
+ assert.equal(verifyJointTree(rows.map(r=>r.path===target?{...r,blob:sha('drift')}:r),tree),false);
+ assert.equal(verifyJointTree(rows.map(r=>r.path===target?{...r,type:'tree'}:r),tree),false);
+ assert.equal(verifyJointTree(rows.map(r=>r.path===target?{...r,mode:'120000'}:r),tree),false);
+ assert.equal(verifyJointTree([...rows,rows[0]],tree),false);
+ console.log('Pinned signed tree inventory verified; runtime closure and bypass remain unproven');
+}
