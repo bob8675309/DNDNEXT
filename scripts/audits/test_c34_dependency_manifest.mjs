@@ -267,3 +267,31 @@ try {
   }
   console.log('Native Git oracle assertions passed');
 } finally { rmSync(oracleDir,{recursive:true,force:true}); }
+
+ // Real repository custody oracle: use Git's local object database, not source copies.
+ // The pinned historical commit must be present; shallow CI may explicitly skip
+ // this optional comparison, which never establishes dependency closure.
+const custodyCommit='f3be2e3c71d2642ba054361c6a6461a90cbf156f';
+const custodyTree='c850a1b7b63bcdcfc7143a5a88829e9419a4647a';
+const custodyFileCount=2392;
+const custodyGit=(args)=>execFileSync('git',args,{encoding:'utf8',stdio:['ignore','pipe','pipe'],maxBuffer:8*1024*1024});
+function verifyPinnedRepositoryTree() {
+  let actual;
+  try { actual=custodyGit(['rev-parse','--verify',custodyCommit+'^{tree}']).trim(); }
+  catch { console.log('Pinned repository tree comparison unavailable: historical object not present'); return false; }
+  assert.equal(actual,custodyTree);
+  const rows=custodyGit(['ls-tree','-r','-z',custodyCommit]).split('\0').filter(Boolean);
+  const entries=rows.map(row=>{
+    const tab=row.indexOf('\t');
+    assert.ok(tab>0);
+    const [mode,type,blob]=row.slice(0,tab).split(' ');
+    assert.equal(type,'blob');
+    return {mode,blob,path:row.slice(tab+1)};
+  });
+  assert.equal(entries.length,custodyFileCount);
+  assert.equal(nativeTreeOid(entries),custodyTree);
+  assert.notEqual(nativeTreeOid(entries.slice(1)),custodyTree);
+  console.log('Pinned repository tree comparison passed:',entries.length,'files');
+  return true;
+}
+verifyPinnedRepositoryTree();
