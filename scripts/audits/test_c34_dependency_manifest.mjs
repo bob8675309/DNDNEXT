@@ -52,3 +52,35 @@ console.log('Synthetic manifest cases passed:',1+mutations.length);
 // Completion requires independently authenticated complete diff, complete candidate-scope
 // dependency evidence (including generated/runtime inputs), unchanged workflow/trust,
 // and authorized required-status semantics. Lexical scans and this prototype cannot prove these.
+
+// Synthetic evidence envelope: bind the complete flat inventory to an independently
+// supplied digest and required roots. This is NOT a Git tree hash or live attestation.
+function inventoryDigest(tree) {
+  return createHash('sha256').update(JSON.stringify(tree.map(t=>[t.path,t.mode,t.blob]).sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0))).digest('hex');
+}
+export function verifyManifestEnvelope(m, expected) {
+  const fail=reason=>({candidate:false,reason,closureProven:false,bypassAuthorized:false,recommendation:'full'});
+  if(!expected || !oid(expected.checkout) || !Array.isArray(expected.requiredRoots) || !expected.requiredRoots.length || !expected.requiredRoots.every(safe) || new Set(expected.requiredRoots).size!==expected.requiredRoots.length || !Number.isSafeInteger(expected.entryCount) || expected.entryCount<1 || typeof expected.inventoryDigest!=='string' || !/^[0-9a-f]{64}$/.test(expected.inventoryDigest)) return fail('invalid external expectation');
+  const result=verifyManifest(m);
+  if(!result.candidate) return result;
+  if(m.checkout!==expected.checkout || m.tree.length!==expected.entryCount || inventoryDigest(m.tree)!==expected.inventoryDigest) return fail('inventory identity mismatch');
+  if(new Set(m.roots).size!==m.roots.length || expected.requiredRoots.some(p=>!m.roots.includes(p))) return fail('required root omitted');
+  const paths=new Set(m.tree.map(t=>t.path));
+  for(const p of paths) {const parts=p.split('/'); for(let i=1;i<parts.length;i++) if(paths.has(parts.slice(0,i).join('/'))) return fail('file directory collision');}
+  return result;
+}
+const envelope={checkout:fixture.checkout,requiredRoots:[root],entryCount:fixture.tree.length,inventoryDigest:inventoryDigest(fixture.tree)};
+assert.equal(verifyManifestEnvelope(fixture,envelope).candidate,true);
+const envelopeCases=[
+ m=>m.tree.reverse(), // ordering is immaterial
+ m=>m.tree.push({path:'extra.txt',mode:'100644',blob:sha('extra')}),
+ m=>m.tree.find(t=>t.path===census).blob=sha('different'),
+ m=>m.roots=[dep],
+ m=>m.roots.push(root),
+ m=>m.checkout=m.diffCheckout='b'.repeat(40),
+ m=>m.tree.pop(),
+ m=>m.tree[0]=null
+];
+for(const [i,mutate] of envelopeCases.entries()){const m=structuredClone(fixture);mutate(m);const r=verifyManifestEnvelope(m,envelope);assert.equal(r.candidate,i===0);assert.equal(r.bypassAuthorized,false);assert.equal(r.closureProven,false);assert.equal(r.recommendation,'full');}
+for(const e of [null,{...envelope,requiredRoots:[]},{...envelope,entryCount:NaN},{...envelope,inventoryDigest:'bad'}]) assert.equal(verifyManifestEnvelope(fixture,e).candidate,false);
+console.log('Synthetic envelope cases passed:',1+envelopeCases.length+4);
