@@ -84,3 +84,64 @@ const envelopeCases=[
 for(const [i,mutate] of envelopeCases.entries()){const m=structuredClone(fixture);mutate(m);const r=verifyManifestEnvelope(m,envelope);assert.equal(r.candidate,i===0);assert.equal(r.bypassAuthorized,false);assert.equal(r.closureProven,false);assert.equal(r.recommendation,'full');}
 for(const e of [null,{...envelope,requiredRoots:[]},{...envelope,entryCount:NaN},{...envelope,inventoryDigest:'bad'}]) assert.equal(verifyManifestEnvelope(fixture,e).candidate,false);
 console.log('Synthetic envelope cases passed:',1+envelopeCases.length+4);
+
+// Native SHA-1 Git tree reconstruction for the restricted synthetic regular-file
+// inventory. Unsupported modes/names fail closed; no claim of real checkout custody.
+function nativeTreeOid(entries) {
+  if(!Array.isArray(entries)||!entries.length) return null;
+  const top=new Map();
+  for(const e of entries) {
+    if(!e||!safe(e.path)||!oid(e.blob)||e.mode!=='100644') return null;
+    const parts=e.path.split('/');
+    let dir=top;
+    for(const name of parts.slice(0,-1)) {
+      if(!dir.has(name)) dir.set(name,new Map());
+      dir=dir.get(name);
+      if(!(dir instanceof Map)) return null;
+    }
+    const name=parts.at(-1);
+    if(dir.has(name)) return null;
+    dir.set(name,e.blob);
+  }
+  function hash(dir) {
+    const rows=[...dir].map(([name,value])=>({name,value,key:name+(value instanceof Map?'/':'')}));
+    rows.sort((a,b)=>Buffer.compare(Buffer.from(a.key),Buffer.from(b.key)));
+    const bytes=Buffer.concat(rows.map(({name,value})=>Buffer.concat([
+      Buffer.from((value instanceof Map?'40000':'100644')+' '+name+'\0'),
+      Buffer.from(value instanceof Map?hash(value):value,'hex')
+    ])));
+    return createHash('sha1').update('tree '+bytes.length+'\0').update(bytes).digest('hex');
+  }
+  return hash(top);
+}
+export function verifyNativeTreeEnvelope(m, expected) {
+  const fail={candidate:false,reason:'native tree identity unavailable or mismatched',closureProven:false,bypassAuthorized:false,recommendation:'full'};
+  if(!expected||!oid(expected.treeOid)||expected.truncated!==false||!m||nativeTreeOid(m.tree)!==expected.treeOid) return fail;
+  return verifyManifestEnvelope(m,expected);
+}
+// Independently assembled one-file tree object, plus nested inventory cases.
+const singleBytes=Buffer.concat([Buffer.from('100644 a\0'),Buffer.from(sha('a'),'hex')]);
+const singleOid=createHash('sha1').update('tree '+singleBytes.length+'\0').update(singleBytes).digest('hex');
+assert.equal(nativeTreeOid([{path:'a',mode:'100644',blob:sha('a')}]),singleOid);
+const nativeExpected={...envelope,treeOid:nativeTreeOid(fixture.tree),truncated:false};
+assert.equal(verifyNativeTreeEnvelope(fixture,nativeExpected).candidate,true);
+const nativeCases=[
+ m=>m.tree.reverse(),
+ m=>m.tree.pop(),
+ m=>m.tree[0].blob=sha('changed'),
+ m=>m.tree.push({...m.tree[0]}),
+ m=>m.tree.push({path:'scripts',mode:'100644',blob:sha('collision')}),
+ m=>m.tree[0].mode='160000',
+ m=>m.roots=[dep]
+];
+for(const [i,mutate] of nativeCases.entries()){
+  const m=structuredClone(fixture);mutate(m);
+  const r=verifyNativeTreeEnvelope(m,nativeExpected);
+  assert.equal(r.candidate,i===0);
+  assert.equal(r.bypassAuthorized,false);
+  assert.equal(r.closureProven,false);
+  assert.equal(r.recommendation,'full');
+}
+for(const e of [{...nativeExpected,truncated:true},{...nativeExpected,truncated:undefined},{...nativeExpected,treeOid:'0'.repeat(40)},null])
+  assert.equal(verifyNativeTreeEnvelope(fixture,e).candidate,false);
+console.log('Synthetic native tree cases passed:',2+nativeCases.length+4);
