@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `2a3553df58fd313a93bfbd6fa4feb625cfc82137` |
+| Exact source commit represented by this archive snapshot | `99400a2c09dd363b7d52285d8dc982aa09a00c70` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): verify remaining fifth-level source bytes and graph |
-| Files changed relative to main | 340 (264 non-docs; 76 docs) |
+| Last source commit title | test(ci): prototype conservative synthetic dependency manifest |
+| Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/audits/test_c34_ci_filter_current_independent.mjs`
+- `scripts/audits/test_c34_dependency_manifest.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +71,7 @@
 - `docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md`
 - `docs/research/C34_OWNER_ROLE_UNIFICATION_ALL_APP_PERMISSIONS_2026-11-16.md`
 - `docs/research/C34_P345_SECURE_PROFILE_RECOVERY_PLAN_2026-11-14.md`
-- … 290 more
+- … 291 more
 
 ## Trust and update procedure
 
