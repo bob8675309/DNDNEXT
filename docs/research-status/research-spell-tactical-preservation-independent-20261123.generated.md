@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `4e4995ecd9197c512bd5fa9e4f46e75da7f32cd4` |
+| Exact source commit represented by this archive snapshot | `fedb19bbf2daa1079ac981bcd655f1824140a2f1` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): preserve activation caller and privilege boundary |
+| Last source commit title | docs(spell): preserve active resource guard composition negative |
 | Files changed relative to main | 1 (0 non-docs; 1 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
