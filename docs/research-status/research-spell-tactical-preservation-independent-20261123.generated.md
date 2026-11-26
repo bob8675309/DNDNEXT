@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `241fa35fed38674978c85ee2d516d10194535884` |
+| Exact source commit represented by this archive snapshot | `56266538631a682a4f3b80c322fe30b2220907eb` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | test(spell): pin historical adapter identities and RPC metadata in provenance CI |
+| Last source commit title | test(spell): preserve shared RPC signature and reject predecessor substitution |
 | Files changed relative to main | 3 (1 non-docs; 2 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
