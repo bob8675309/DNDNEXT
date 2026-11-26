@@ -184,3 +184,53 @@ const removedDiff=deriveTreeDelta(removedBase,fixture.tree,removedExpected);
 assert.ok(removedDiff.some(d=>d.status==='removed'));
 assert.equal(verifyDerivedDelta({...fixture,diff:removedDiff},removedBase,removedExpected).candidate,false);
 console.log('Synthetic derived delta assertions passed');
+
+ // Synthetic commit object binding. External event identities still require trusted custody.
+function commitOid(raw) {
+  return createHash('sha1').update('commit '+Buffer.byteLength(raw)+'\0').update(raw).digest('hex');
+}
+function boundCommitTree(raw, expectedOid) {
+  if(typeof raw!=='string'||!oid(expectedOid)||commitOid(raw)!==expectedOid) return null;
+  const split=raw.indexOf('\n\n');
+  if(split<0) return null;
+  const headers=raw.slice(0,split).split('\n');
+  const trees=headers.filter(x=>x.startsWith('tree '));
+  if(trees.length!==1||headers[0]!==trees[0]||!oid(trees[0].slice(5))) return null;
+  return trees[0].slice(5);
+}
+export function verifyCommitBoundDelta(m,base,expected,event,objects) {
+  const fail={candidate:false,reason:'unverified synthetic event commit binding',closureProven:false,bypassAuthorized:false,recommendation:'full'};
+  if(!m||!expected||!event||!objects||event.kind!=='push'||event.forced!==false||
+     !oid(event.before)||!oid(event.after)||event.before===event.after||
+     event.after!==m.checkout||event.after!==expected.checkout||
+     boundCommitTree(objects.base,event.before)!==expected.baseTreeOid||
+     boundCommitTree(objects.head,event.after)!==expected.headTreeOid) return fail;
+  // Restricted direct-parent push only; other event shapes remain unresolved.
+  const parents=objects.head.slice(0,objects.head.indexOf('\n\n')).split('\n').filter(x=>x.startsWith('parent '));
+  if(parents.length!==1||parents[0]!=='parent '+event.before) return fail;
+  return verifyDerivedDelta(m,base,expected);
+}
+const syntheticCommit=(tree,parent)=>'tree '+tree+'\n'+(parent?'parent '+parent+'\n':'')+'author Test <test@example.invalid> 0 +0000\ncommitter Test <test@example.invalid> 0 +0000\n\nfixture\n';
+const commitBase=syntheticCommit(deltaExpected.baseTreeOid);
+const commitHead=syntheticCommit(deltaExpected.headTreeOid,commitOid(commitBase));
+const commitEvent={kind:'push',forced:false,before:commitOid(commitBase),after:commitOid(commitHead)};
+const commitObjects={base:commitBase,head:commitHead};
+const commitManifest={...fixture,checkout:commitEvent.after,diffCheckout:commitEvent.after};
+const commitExpected={...deltaExpected,checkout:commitEvent.after};
+assert.equal(verifyCommitBoundDelta(commitManifest,deltaBase,commitExpected,commitEvent,commitObjects).candidate,true);
+for(const [event,objects,expected] of [
+ [{...commitEvent,before:'0'.repeat(40)},commitObjects,commitExpected],
+ [{...commitEvent,after:'0'.repeat(40)},commitObjects,commitExpected],
+ [{...commitEvent,forced:true},commitObjects,commitExpected],
+ [{...commitEvent,kind:'pull_request'},commitObjects,commitExpected],
+ [commitEvent,{...commitObjects,head:commitHead+'tampered'},commitExpected],
+ [commitEvent,commitObjects,{...commitExpected,baseTreeOid:deltaExpected.headTreeOid}],
+ [commitEvent,commitObjects,{...commitExpected,checkout:'0'.repeat(40)}],
+ [commitEvent,{...commitObjects,base:null},commitExpected]
+]) {
+ const result=verifyCommitBoundDelta(commitManifest,deltaBase,expected,event,objects);
+ assert.equal(result.candidate,false);
+ assert.equal(result.bypassAuthorized,false);
+ assert.equal(result.recommendation,'full');
+}
+console.log('Synthetic commit binding assertions passed');
