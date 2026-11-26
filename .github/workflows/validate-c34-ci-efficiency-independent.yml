@@ -6,12 +6,14 @@ on:
     paths:
       - 'scripts/audits/test_c34_ci_filter_independent.mjs'
       - 'scripts/audits/test_c34_ci_filter_current_independent.mjs'
+      - 'scripts/audits/test_c34_dependency_manifest.mjs'
       - 'scripts/audits/fixtures/c34-current-signed-workflow.yml.txt'
       - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
   pull_request:
     paths:
       - 'scripts/audits/test_c34_ci_filter_independent.mjs'
       - 'scripts/audits/test_c34_ci_filter_current_independent.mjs'
+      - 'scripts/audits/test_c34_dependency_manifest.mjs'
       - 'scripts/audits/fixtures/c34-current-signed-workflow.yml.txt'
       - '.github/workflows/validate-c34-ci-efficiency-independent.yml'
   workflow_dispatch:
@@ -38,5 +40,7 @@ jobs:
         run: node --check scripts/audits/test_c34_ci_filter_current_independent.mjs
       - name: Current workflow fail-closed decision matrix (not signed acceptance)
         run: node scripts/audits/test_c34_ci_filter_current_independent.mjs
+      - name: Synthetic dependency manifest (not closure proof)
+        run: node scripts/audits/test_c34_dependency_manifest.mjs
       - name: Do not alter protected maps, live CI or gameplay
         run: git diff --exit-code -- .github/workflows/validate-c34-joint-local-auth.yml components/MapPageClient.js pages/town/'[id].js'
