@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Node 22
         uses: actions/setup-node@v4
         with:
@@ -40,7 +41,11 @@ jobs:
         run: node --check scripts/audits/test_c34_ci_filter_current_independent.mjs
       - name: Current workflow fail-closed decision matrix (not signed acceptance)
         run: node scripts/audits/test_c34_ci_filter_current_independent.mjs
-      - name: Synthetic dependency manifest (not closure proof)
-        run: node scripts/audits/test_c34_dependency_manifest.mjs
+      - name: Dependency manifest and mandatory pinned tree custody (not closure proof)
+        run: |
+          set -euo pipefail
+          git cat-file -e 'f3be2e3c71d2642ba054361c6a6461a90cbf156f^{tree}'
+          node scripts/audits/test_c34_dependency_manifest.mjs | tee "$RUNNER_TEMP/c34-manifest.log"
+          grep -Fx 'Pinned repository tree comparison passed: 2392 files' "$RUNNER_TEMP/c34-manifest.log"
       - name: Do not alter protected maps, live CI or gameplay
         run: git diff --exit-code -- .github/workflows/validate-c34-joint-local-auth.yml components/MapPageClient.js pages/town/'[id].js'
