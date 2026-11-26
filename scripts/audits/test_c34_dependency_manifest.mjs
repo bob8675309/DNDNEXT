@@ -319,3 +319,35 @@ verifyPinnedRepositoryTree();
  assert.equal(deriveTreeDelta(a,b.slice(1),expected),null);
  console.log('Pinned historical delta oracle passed: one independent workflow modification');
 }
+
+ // Historical census delta: pinned metadata, not proof of dependency closure.
+{
+ const baseId='dbb453a9d1eb3e04c113caa9d95414e2f7035428', headId='881b9fb08e7cad2ef49dde32014346882dcdaa86';
+ const expected={baseTreeOid:'bb3de7df4e7f46e210751690b5bbb807c86247a2',headTreeOid:'45f62013cb9cd49dbba9381f29c7320b446baa34',baseTruncated:false,headTruncated:false};
+ const read=id=>custodyGit(['ls-tree','-r','-z',id]).split('\0').filter(Boolean).map(row=>{
+   const tab=row.indexOf('\t');
+   assert.ok(tab>0);
+   const [mode,type,blob]=row.slice(0,tab).split(' ');
+   assert.equal(type,'blob');
+   return {mode,blob,path:row.slice(tab+1)};
+ });
+ const a=read(baseId), b=read(headId);
+ assert.equal(boundCommitTree(custodyGit(['cat-file','commit',baseId]),baseId),expected.baseTreeOid);
+ assert.equal(boundCommitTree(custodyGit(['cat-file','commit',headId]),headId),expected.headTreeOid);
+ const diff=deriveTreeDelta(a,b,expected);
+ assert.deepEqual(diff,[{path:census,status:'modified'}]);
+ assert.equal(custodyGit(['diff','--no-renames','--name-status',baseId,headId]).trim(),'M\t'+census);
+ assert.equal(deriveTreeDelta(a.slice(1),b,expected),null);
+ assert.equal(deriveTreeDelta(a,b.slice(1),expected),null);
+ const changed=b.map(e=>e.path==='package.json'?{...e,blob:sha('synthetic changed dependency')}:e);
+ assert.notEqual(nativeTreeOid(changed),expected.headTreeOid);
+ assert.equal(deriveTreeDelta(a,changed,expected),null);
+ // A verified delta is insufficient: no reviewed runtime graph is available.
+ const unresolved={...fixture,checkout:headId,diffCheckout:headId,diff,tree:b,nodes:[],roots:['.github/workflows/validate-c34-joint-local-auth.yml']};
+ const result=verifyManifest(unresolved);
+ assert.equal(result.candidate,false);
+ assert.equal(result.closureProven,false);
+ assert.equal(result.bypassAuthorized,false);
+ assert.equal(result.recommendation,'full');
+ console.log('Pinned historical census delta verified; dependency closure unresolved');
+}
