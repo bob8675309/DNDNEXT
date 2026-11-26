@@ -351,3 +351,25 @@ verifyPinnedRepositoryTree();
  assert.equal(result.recommendation,'full');
  console.log('Pinned historical census delta verified; dependency closure unresolved');
 }
+
+ // Signed trigger scope is not runtime dependency closure. Pin the observed
+ // broad trigger pattern without copying workflow source or claiming disjointness.
+function assessCensusTriggerEvidence(e) {
+  const full = reason => ({reason,closureProven:false,bypassAuthorized:false,recommendation:'full'});
+  if (!e || e.workflowBlob !== signedBlob || e.path !== census ||
+      e.pushPattern !== 'scripts/integration/c34/**' ||
+      e.prPattern !== 'scripts/integration/c34/**') return full('trigger evidence missing or drifted');
+  return full('census covered by signed trigger; runtime dependency closure unresolved');
+}
+{
+ const evidence={workflowBlob:signedBlob,path:census,pushPattern:'scripts/integration/c34/**',prPattern:'scripts/integration/c34/**'};
+ assert.equal(assessCensusTriggerEvidence(evidence).reason,'census covered by signed trigger; runtime dependency closure unresolved');
+ for(const e of [evidence,null,{...evidence,workflowBlob:'0'.repeat(40)},{...evidence,pushPattern:null},{...evidence,prPattern:null},{...evidence,path:'docs/example.md'}]){
+   const result=assessCensusTriggerEvidence(e);
+   assert.equal(result.closureProven,false);
+   assert.equal(result.bypassAuthorized,false);
+   assert.equal(result.recommendation,'full');
+   if(e!==evidence) assert.equal(result.reason,'trigger evidence missing or drifted');
+ }
+ console.log('Pinned census trigger scope model passed; runtime closure unresolved');
+}
