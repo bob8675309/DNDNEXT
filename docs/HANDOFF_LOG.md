@@ -2301,3 +2301,10 @@ After exact original source HEAD `b1b6a5179aee3bb27a0bf534c3e001b4222ba642` succ
 ### Agent A — client wire custody
 
 J168 #334 row 3/8: client wire executor blob `a90013d3dbb590af4dfae76e87863453daa04d9b` exact in original #334 and both #345/#379; original selection, serialization, deterministic and two negative assertions recorded in ledger commit `4411493902d351557331fe7136544a7aac1fdb38`. No runtime tests; imported dependency equivalence, signed results and #345 wrapper semantics OPEN. Five paths unmapped. Next: map `scripts/test_forge_immutable_creation_replay_local_auth.mjs` original scenario assertions. All inherited review and release/retirement holds unchanged.
+
+
+## 2026-11-26 — J168 custody checkpoint synchronization
+
+- Ledger checkpoint `74e5c7f3df5694ecd5f3a27e4bae0c737cee49a2`; ACTIVE_WORK checkpoint `6ac21f15ab682079417579fa070ddcf572116ffa`. Seven of eight original #334 paths have recorded exact-copy/T0 custody; original HANDOFF_LOG archive blob `8bf97b01892f11d1754ffa616bcdd82d93121b44`. This is source custody, not behavioral acceptance.
+- Owner-reported archive-head workflows 45740055142, 45740055131, 45740049767 apply to `2607a68d1c09515b14b3f9a8416480fdf0beecd3` only. No new runtime test or signed acceptance claimed.
+- Next: compare original #334 replay test against successor, including helper semantics, negative assertions and rollback; inherited #333/#332 and signed receipts remain open. Recovered crafting source available per owner metadata; verification, pricing, restore and release remain HOLD. No PR retirement.
