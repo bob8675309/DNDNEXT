@@ -234,3 +234,36 @@ for(const [event,objects,expected] of [
  assert.equal(result.recommendation,'full');
 }
 console.log('Synthetic commit binding assertions passed');
+
+ // Independent native Git oracle: ephemeral synthetic object database, no network.
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const oracleDir=mkdtempSync(join(tmpdir(),'c34-git-oracle-'));
+try {
+  const env={...process.env};
+  for(const key of Object.keys(env)) if(key.startsWith('GIT_')) delete env[key];
+  Object.assign(env,{GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_AUTHOR_NAME:'Fixture',GIT_AUTHOR_EMAIL:'fixture@example.invalid',GIT_COMMITTER_NAME:'Fixture',GIT_COMMITTER_EMAIL:'fixture@example.invalid',GIT_AUTHOR_DATE:'2001-01-01T00:00:00Z',GIT_COMMITTER_DATE:'2001-01-01T00:00:00Z'});
+  const git=(args,input)=>execFileSync('git',args,{cwd:oracleDir,env,input,encoding:'utf8',stdio:['pipe','pipe','pipe']});
+  git(['init','--quiet','--object-format=sha1']);
+  const entries=['a.txt','a/x','a/z','a0','z'].map(path=>{
+    const blob=git(['hash-object','-w','--stdin'],path).trim();
+    assert.equal(blob,sha(path));
+    return {path,blob,mode:'100644'};
+  });
+  git(['update-index','--index-info'],entries.map(e=>e.mode+' '+e.blob+'\t'+e.path+'\n').join(''));
+  const tree=git(['write-tree']).trim();
+  assert.equal(nativeTreeOid(entries),tree);
+  assert.equal(nativeTreeOid([...entries].reverse()),tree);
+  assert.notEqual(nativeTreeOid(entries.slice(1)),tree);
+  const base=git(['commit-tree',tree], 'base fixture\n').trim();
+  const head=git(['commit-tree',tree,'-p',base], 'head fixture\n').trim();
+  for(const id of [base,head]){
+    const raw=git(['cat-file','commit',id]);
+    assert.equal(commitOid(raw),id);
+    assert.equal(boundCommitTree(raw,id),tree);
+    assert.equal(boundCommitTree(raw+'tampered',id),null);
+  }
+  console.log('Native Git oracle assertions passed');
+} finally { rmSync(oracleDir,{recursive:true,force:true}); }
