@@ -1,0 +1,22 @@
+name: I2J private Origin feat intake (synthetic only)
+on:
+  push:
+    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    paths:
+      - 'scripts/audits/i2j_origin_feat_private_intake.mjs'
+      - 'scripts/audits/test_i2j_origin_feat_private_intake.mjs'
+      - '.github/workflows/validate-i2j-origin-feat-private-intake.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/audits/test_i2j_origin_feat_private_intake.mjs
