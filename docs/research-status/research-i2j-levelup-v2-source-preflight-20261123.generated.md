@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `1ce9fc0308b69f7796243f4e385115a4ce13899f` |
+| Exact source commit represented by this archive snapshot | `d03db21c056732320d1e27bd9ce4d17e2d36a2c7` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs(i2j): record verified USB archive recovery and encryption hold |
-| Files changed relative to main | 273 (194 non-docs; 79 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(i2j): pin original nested feat dependency source and owner backup confirmation |
+| Files changed relative to main | 274 (194 non-docs; 80 docs) |
+| Last source commit | 5 files (0 non-docs; 5 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_ORIGIN_FEAT_DEPENDENCY_SOURCE_PREFLIGHT_2026-11-25.md`
 - `docs/research/I2J_OWNER_BACKUP_ARCHIVE_SOURCE_RECOVERY_2026-11-24.md`
+- `docs/research/I2J_WARLOCK_EARNED_V5_SOURCE_RESEARCH_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md`
 - `docs/C3_3_ATOMIC_DISPOSABLE_COMMIT_2026-11-08.md`
 - `docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md`
-- … 223 more
+- … 224 more
 
 ## Trust and update procedure
 
