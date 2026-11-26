@@ -373,3 +373,38 @@ function assessCensusTriggerEvidence(e) {
  }
  console.log('Pinned census trigger scope model passed; runtime closure unresolved');
 }
+
+ // Bounded observed source entry-point inventory. Not a complete signed graph.
+const observedSourceRoots = Object.freeze([
+ ['validate_source_contract.mjs','18702c6948ad90772fd680585331fdaff9d2a7a9','sources directory: parameterized readSource'],
+ ['validate_joint_fixture_blobs.mjs','4371229b5e3f01410dc903ec6fc9d35b1395a832','repository-relative parameterized read'],
+ ['verify_original_trigger_coverage.mjs','f1958be9701c7d261b016232a73976ba84369b0c','repository-relative parameterized read']
+].map(([name,blob,input])=>Object.freeze({path:'scripts/integration/c34/'+name,blob,input})));
+function observedBoundaryNodes(rows) {
+ return observedSourceRoots.map(expected=>{
+   const matches=rows.filter(row=>row.path===expected.path);
+   const match=matches.length===1 && matches[0].blob===expected.blob;
+   return {path:expected.path,blob:expected.blob,reviewed:false,edges:[],
+     unresolved:[match?expected.input:'missing or drifted source identity',
+       'complete runtime input inventory not established'],
+     dynamicUnknown:true,generatedUnknown:true};
+ });
+}
+{
+ const rows=observedSourceRoots.map(({path,blob})=>({path,blob,mode:'100644'}));
+ const nodes=observedBoundaryNodes(rows);
+ assert.equal(nodes.length,3);
+ for(const n of nodes) assert.ok(n.unresolved.includes('complete runtime input inventory not established'));
+ for(const inventory of [rows,rows.slice(1),rows.map((r,i)=>i===0?{...r,blob:sha('drift')}:r),[...rows,rows[0]]]){
+   const m={...fixture,tree:[...inventory,fixture.tree.find(t=>t.path===census)],
+     roots:observedSourceRoots.map(r=>r.path),nodes:observedBoundaryNodes(inventory)};
+   const result=verifyManifest(m);
+   assert.equal(result.candidate,false);
+   assert.equal(result.closureProven,false);
+   assert.equal(result.bypassAuthorized,false);
+   assert.equal(result.recommendation,'full');
+ }
+ assert.equal(observedBoundaryNodes(rows.slice(1))[0].unresolved[0],'missing or drifted source identity');
+ assert.equal(observedBoundaryNodes([...rows,rows[0]])[0].unresolved[0],'missing or drifted source identity');
+ console.log('Bounded signed source-root inventory: three unresolved entry points; full validation retained');
+}
