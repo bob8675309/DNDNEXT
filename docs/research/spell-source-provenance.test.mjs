@@ -187,3 +187,33 @@ test('historical adapter source edition drift rejected', () => {
  test('shared RPC cannot be counted twice for its two adapters', () => {
    assert.throws(()=>verify(sharedFixture,[...sharedFixture,...sharedFixture]),/duplicate identity/);
  });
+
+// Comparison of historical and recovered evidence requires an explicit common
+// fingerprint contract. These identifiers are synthetic, not recovered formats.
+function compareBodyEvidence(historical, recovered) {
+  if (!valid(historical) || !valid(recovered) ||
+      historical.origin !== 'historical' || recovered.origin !== 'recovered')
+    throw new Error('invalid comparison evidence');
+  if (historical.id !== recovered.id) throw new Error('identity mismatch');
+  const contract = 'synthetic-body-utf8-exact-v1';
+  if (historical.normalization !== contract || recovered.normalization !== contract)
+    throw new Error('noncomparable normalization');
+  if (historical.sha256 !== recovered.sha256) throw new Error('fingerprint mismatch');
+  return { evidence: 'source-only', runtimeAccepted: false };
+}
+const historicalBody = {...sharedFixture[0], origin:'historical', normalization:'synthetic-body-utf8-exact-v1'};
+const recoveredBody = {...historicalBody, origin:'recovered'};
+test('explicit common synthetic normalization permits source-only comparison', () => {
+  assert.deepEqual(compareBodyEvidence(historicalBody,recoveredBody),
+    {evidence:'source-only',runtimeAccepted:false});
+});
+test('equal digests with incompatible normalization are noncomparable', () => {
+  assert.throws(()=>compareBodyEvidence(historicalBody,{...recoveredBody,normalization:'synthetic-full-definition-v1'}),/noncomparable normalization/);
+});
+test('missing or mutually unknown normalization is noncomparable', () => {
+  assert.throws(()=>compareBodyEvidence(historicalBody,{...recoveredBody,normalization:undefined}),/noncomparable normalization/);
+  assert.throws(()=>compareBodyEvidence({...historicalBody,normalization:'unknown'},{...recoveredBody,normalization:'unknown'}),/noncomparable normalization/);
+});
+test('common normalization does not excuse differing body fingerprints', () => {
+  assert.throws(()=>compareBodyEvidence(historicalBody,{...recoveredBody,sha256:digest('different synthetic body')}),/fingerprint mismatch/);
+});
