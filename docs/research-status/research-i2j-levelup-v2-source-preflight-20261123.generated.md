@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `ad346951ad1006010122ae53d39ef4b232656d50` |
+| Exact source commit represented by this archive snapshot | `306c9cfd044249a0c03c21bbdb3a43addfa41173` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | I2J: add offline private Origin feat source intake and payload receipt |
+| Last source commit title | I2J: record verified private intake synthetic CI receipt |
 | Files changed relative to main | 288 (204 non-docs; 84 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-private-intake.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_ORIGIN_FEAT_PRIVATE_INTAKE_2026-11-26.md`
-- `scripts/audits/i2j_origin_feat_private_intake.mjs`
-- `scripts/audits/test_i2j_origin_feat_private_intake.mjs`
 
 ## Research-branch change inventory versus main
 
