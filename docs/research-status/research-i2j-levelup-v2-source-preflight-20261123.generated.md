@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `306c9cfd044249a0c03c21bbdb3a43addfa41173` |
+| Exact source commit represented by this archive snapshot | `269b2a04deda3c0eea9203554add3dded2dfc06a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | I2J: record verified private intake synthetic CI receipt |
+| Last source commit title | I2J: correct connector workflow and record 13 exact private definition fingerprints |
 | Files changed relative to main | 288 (204 non-docs; 84 docs) |
 | Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
