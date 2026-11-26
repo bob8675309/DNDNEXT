@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `8779db0272f41ca8f144b6020cf53a110a6c565d` |
+| Exact source commit represented by this archive snapshot | `f3be2e3c71d2642ba054361c6a6461a90cbf156f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): bind synthetic tree delta to event commit objects |
+| Last source commit title | test(ci): cross-check synthetic object hashes against native Git |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
