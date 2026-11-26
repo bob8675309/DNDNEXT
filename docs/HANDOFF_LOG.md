@@ -2308,3 +2308,10 @@ J168 #334 row 3/8: client wire executor blob `a90013d3dbb590af4dfae76e87863453da
 - Ledger checkpoint `74e5c7f3df5694ecd5f3a27e4bae0c737cee49a2`; ACTIVE_WORK checkpoint `6ac21f15ab682079417579fa070ddcf572116ffa`. Seven of eight original #334 paths have recorded exact-copy/T0 custody; original HANDOFF_LOG archive blob `8bf97b01892f11d1754ffa616bcdd82d93121b44`. This is source custody, not behavioral acceptance.
 - Owner-reported archive-head workflows 45740055142, 45740055131, 45740049767 apply to `2607a68d1c09515b14b3f9a8416480fdf0beecd3` only. No new runtime test or signed acceptance claimed.
 - Next: compare original #334 replay test against successor, including helper semantics, negative assertions and rollback; inherited #333/#332 and signed receipts remain open. Recovered crafting source available per owner metadata; verification, pricing, restore and release remain HOLD. No PR retirement.
+
+
+## 2026-11-26 — J168 eight-path retention and historical receipt synchronization
+
+- Independently read back ACTIVE_WORK at `8c744f6a94704893773d1d3307bf8667b2225fab` (blob `d001008a666d85ac72727346ccb52d736b5b77f3`) and custody ledger blob `5209dbe1b323b5d856d6a389dcb5bfccb24ae6cc` (ledger commit `d101fa82d4eb73edd50f14275f4d65a1369b3348`). Seven original #334 paths exact-copy/T0; eighth retains complete ordered original source with one 1445-character insertion, not exact-copy or behavioral equivalence.
+- Ledger records historical J168 run 42342793461 and J167 run 42340280560, two successful original jobs each. Raw artifacts, individual PASS markers and successor dependency/runtime equivalence remain unverified. No new runtime execution.
+- Next bounded task: inherited #333/#332 receipt and dependency crosswalk; do not repeat completed #334 source comparisons. Crafting source available per owner metadata; verification/price/restore, release and retirement HOLD. All prior safety gates remain.
