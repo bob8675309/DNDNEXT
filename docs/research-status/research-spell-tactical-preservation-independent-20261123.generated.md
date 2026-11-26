@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/spell-tactical-preservation-independent-20261123` |
-| Exact source commit represented by this archive snapshot | `fedb19bbf2daa1079ac981bcd655f1824140a2f1` |
+| Exact source commit represented by this archive snapshot | `573db264fb296584bba1f53b152e7984ebb06566` |
 | Compared with | `bb3939eeb9a38cf416996a1dca3b196b156b2915` (main comparison base) |
-| Last source commit title | docs(spell): preserve active resource guard composition negative |
-| Files changed relative to main | 1 (0 non-docs; 1 docs) |
+| Last source commit title | test(spell): add synthetic fail-closed source custody contract |
+| Files changed relative to main | 2 (0 non-docs; 2 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,11 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/SPELL_TACTICAL_ORIGINAL_PRS_INTEGRATION_LEDGER_2026-11-23.md`
+- `docs/research/spell-source-provenance.test.mjs`
 
 ## Research-branch change inventory versus main
 
 - `docs/research/SPELL_TACTICAL_ORIGINAL_PRS_INTEGRATION_LEDGER_2026-11-23.md`
+- `docs/research/spell-source-provenance.test.mjs`
 
 ## Forge source and authenticated evidence (branch-local only)
 
