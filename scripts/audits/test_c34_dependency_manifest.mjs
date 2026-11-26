@@ -408,3 +408,161 @@ function observedBoundaryNodes(rows) {
  assert.equal(observedBoundaryNodes([...rows,rows[0]])[0].unresolved[0],'missing or drifted source identity');
  console.log('Bounded signed source-root inventory: three unresolved entry points; full validation retained');
 }
+
+
+ // Explicit joint-fixture declarations, extracted from pinned validator metadata.
+ // This checks inventory identity only, not runtime closure or signed acceptance.
+const jointDeclaredPins = [
+  {
+    "path": "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
+    "blob": "9dfe44eee49df6ead8c8ccfc7a0454a996b8bee3"
+  },
+  {
+    "path": "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql",
+    "blob": "afdd2849c3ae2be5929fd8c11c9b4e19f4f6a7ac"
+  },
+  {
+    "path": "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+    "blob": "01e48823ac3a46aa5880e98200e97c2595501ce7"
+  },
+  {
+    "path": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+    "blob": "99bceee24c1718570237e70a65fe3172f4c9fbc9"
+  },
+  {
+    "path": "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+    "blob": "4532ddb8db642d0d0ab14646a3e87c034d4134c6"
+  },
+  {
+    "path": "sql/candidates/20261109_player_story_complete_intent_i1c_research.sql",
+    "blob": "91f5fb918bf205f2d4462e2ff0089f656601328e"
+  },
+  {
+    "path": "scripts/fixtures/forge_creation_original_functions_pg17.sql",
+    "blob": "6c64683e14ee148daf5c874a7e6e3c7ff606138c"
+  },
+  {
+    "path": "scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql",
+    "blob": "12612c4acbe861817037e1ab5a79ddb7c40a55e9"
+  },
+  {
+    "path": "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql",
+    "blob": "9c479d3f044268f73da3a5515d229096ce03f94a"
+  },
+  {
+    "path": "scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql",
+    "blob": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e"
+  },
+  {
+    "path": "scripts/fixtures/forge_materializer_original_functions_pg17.sql",
+    "blob": "d6f5ac4f0cfd571edaa926b4168847eb85e18640"
+  },
+  {
+    "path": "scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql",
+    "blob": "aafbfea03d565dfaa1599875ab49c3c485611c51"
+  },
+  {
+    "path": "scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql",
+    "blob": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990"
+  },
+  {
+    "path": "scripts/fixtures/forge_inventory_access_original_pg17.sql",
+    "blob": "930036668d4e889b85f1c5ad0abeed79793a5c09"
+  },
+  {
+    "path": "scripts/integration/c34/fixtures/forge_creation_replay_local_auth_pr351_pg17.sql",
+    "blob": "aa701c679712475cd4f04d4e0a01fedc4616bafa"
+  },
+  {
+    "path": "scripts/integration/c34/fixtures/original_i1c_forge_private_story_nonce_local_auth.mjs",
+    "blob": "90fb3058bc1c93ef72a331bad0747920c3c1202e"
+  },
+  {
+    "path": "scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql",
+    "blob": "d2f925129d198a443f1cea29d73ea56bff8b7a76"
+  },
+  {
+    "path": "scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql",
+    "blob": "53bd80d36e94d3ac0f97d02d16a85881bdcf6b15"
+  },
+  {
+    "path": "scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql",
+    "blob": "354ad33e1d86881244c48d090317e1906e3ed671"
+  },
+  {
+    "path": "scripts/fixtures/forge_subclass_choice_original_pg17.sql",
+    "blob": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6"
+  },
+  {
+    "path": "scripts/fixtures/forge_progression_authority_original_pg17.sql",
+    "blob": "3a0b6caeb6712f67af7895433df15f1439b19581"
+  },
+  {
+    "path": "scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql",
+    "blob": "413a82dc3c1913cb5f71c28531d31e19da89e02d"
+  },
+  {
+    "path": "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
+    "blob": "e6d574baa68dea6ad93f997941b3f062a234ff98"
+  },
+  {
+    "path": "scripts/fixtures/forge_feat_materializer_original_pg17.sql",
+    "blob": "aa60a2699796fea20213dca55c5191e2beaa24ac"
+  },
+  {
+    "path": "scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql",
+    "blob": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8"
+  },
+  {
+    "path": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+    "blob": "ecddcd514917a4d379d14b02477dfb41dbf44f29"
+  },
+  {
+    "path": "scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql",
+    "blob": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002"
+  },
+  {
+    "path": "scripts/fixtures/forge_nested_choices_original_pg17.sql",
+    "blob": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a"
+  },
+  {
+    "path": "sql/20260809_67_species_replaceable_cantrip_runtime.sql",
+    "blob": "3116cb96d9d812d4540ff8210c24e0a0af0cbd30"
+  },
+  {
+    "path": "sql/20260808_44_runtime_feature_choices_spell_mastery.sql",
+    "blob": "0d9ec7d003eca7589cce2f77f09f71432f7d8961"
+  },
+  {
+    "path": "scripts/fixtures/forge_starting_spells_original_pg17.sql",
+    "blob": "d56ed5ea44289bbb20720c1323f9b22f362b31c5"
+  },
+  {
+    "path": "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
+    "blob": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897"
+  },
+  {
+    "path": "scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql",
+    "blob": "bbf8cece98f46b1008d8e2ff79650647f89a5e20"
+  }
+];
+function verifyJointDeclaredInventory(rows) {
+ if (!Array.isArray(rows) || rows.length !== jointDeclaredPins.length) return false;
+ const actual = new Map(rows.map(row => [row?.path,row?.blob]));
+ return actual.size === jointDeclaredPins.length &&
+   jointDeclaredPins.every(pin => actual.get(pin.path) === pin.blob);
+}
+{
+ assert.equal(verifyJointDeclaredInventory(jointDeclaredPins),true);
+ assert.equal(verifyJointDeclaredInventory([...jointDeclaredPins].reverse()),true);
+ assert.equal(verifyJointDeclaredInventory(jointDeclaredPins.slice(1)),false);
+ assert.equal(verifyJointDeclaredInventory([...jointDeclaredPins,jointDeclaredPins[0]]),false);
+ assert.equal(verifyJointDeclaredInventory(jointDeclaredPins.map((p,i)=>i===0?{...p,blob:sha('drift')}:p)),false);
+ assert.equal(verifyJointDeclaredInventory(jointDeclaredPins.map((p,i)=>i===0?{...p,path:census}:p)),false);
+ const nodes=observedBoundaryNodes(observedSourceRoots);
+ const result=verifyManifest({...fixture,nodes,roots:observedSourceRoots.map(r=>r.path)});
+ assert.equal(result.closureProven,false);
+ assert.equal(result.bypassAuthorized,false);
+ assert.equal(result.recommendation,'full');
+ console.log('Joint declared inventory model passed: '+jointDeclaredPins.length+' pins; runtime closure unresolved');
+}
