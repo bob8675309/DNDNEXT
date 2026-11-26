@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `554d417ec038c6413cc8dabd8c26f554e3a16543` |
+| Exact source commit represented by this archive snapshot | `3d25dff8b587416f27f8b8e2a128dc94dd0b844a` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): verify restricted native Git tree identity in synthetic manifest |
+| Last source commit title | test(ci): derive synthetic diff from pinned base and head trees |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
