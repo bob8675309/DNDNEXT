@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `7bf1efa4d5a31385261728c2454abffaae6c1a83` |
+| Exact source commit represented by this archive snapshot | `540418aded4e3b8616221d58e0edbaa991c1e922` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): verify pinned historical census delta without closure claim |
+| Last source commit title | test(ci): preserve full validation for census trigger scope |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
