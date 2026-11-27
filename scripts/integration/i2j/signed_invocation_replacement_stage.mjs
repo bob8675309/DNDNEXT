@@ -6,6 +6,7 @@ const replacement35=pinned('sql/20260808_35_eldritch_invocation_level_replacemen
 const replacement36=pinned('sql/20260808_36_fix_invocation_replacement_source_choices_parent.sql','e46894e68849347277980ffa41c710603c06e471');
 const featureTableSource=pinned('sql/20260712_01_profile_sheet_class_refinements.sql','950fbc50289b603dcaaf0d6fbdfd1f7ca46a64fb');
 const subclassSource=pinned('sql/20260720_01_subclass_compatibility_and_selection.sql','4e938bc3217f11b8a4ef589da83af00aaca51782');
+const battleMasterSource=pinned('sql/20260808_39_battle_master_maneuver_progression.sql','8782874160f4fa098241292920aa826ed17ee2d1');
 const optionSource=pinned('sql/20260808_18_metamagic_mystic_arcanum_progression.sql','ce7d4ec3f37eeb0a29b8a07cd64609ee9627642f');
 const signedV5Name='public.complete_character_level_up_v5(uuid,jsonb)';
 const replacementGroup='warlock-invocation-replacement';
@@ -61,6 +62,14 @@ const scopeBefore=def(scopeName),gapBefore=def(gapName);
 // specimen. Their empty-payload checks and the real authored gates remain.
 sql(once(once(scopeBefore,'p_to_level<>2','p_to_level NOT IN (2,3)'),'cp.class_level IN (1,2)','cp.class_level IN (1,2,3)'));
 sql(once(gapBefore,'$3<>1 OR $4<>2','NOT (($3=1 AND $4=2) OR ($3=2 AND $4=3))'));
+
+// The inherited level-two Fighter stub rejects any subclass argument.
+// Use migration 39's actual non-Fighter exit for this Warlock specimen.
+const battleMasterName='private.apply_level_up_battle_master_maneuvers_v1';
+const battleMasterSignature=battleMasterName+'(uuid,integer,jsonb,text)';
+const battleMasterBefore=def(battleMasterSignature);
+sql(fn(battleMasterSource,battleMasterName));
+assert.equal(sql("SELECT has_function_privilege('authenticated',"+q(battleMasterSignature)+",'EXECUTE')"),'f');
 
 const replacementV1='private.apply_level_up_warlock_invocation_replacement_v1';
 const replacementV2='private.apply_level_up_warlock_invocation_replacement_v2';
@@ -230,6 +239,7 @@ try{
  sql(originalTail);
  sql(scopeBefore);
  sql(gapBefore);
+ sql(battleMasterBefore);
 }
 assert.equal(md5(replacementV1+replacementArgs),actualV1Hash);
 assert.equal(def(tailName),originalTail);
