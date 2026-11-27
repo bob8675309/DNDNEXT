@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `91d0355a8307dec8ce676225c4c936124e3d53ba` |
+| Exact source commit represented by this archive snapshot | `8ef9388dc935dcb20b397a9034f72450864189c8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Consolidate verified Codex Magic Initiate research into owner I2J |
-| Files changed relative to main | 301 (211 non-docs; 90 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | Consolidate verified repeatability and resource stages into disposable owner I2J suite |
+| Files changed relative to main | 306 (213 non-docs; 93 docs) |
+| Last source commit | 8 files (3 non-docs; 5 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,14 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_REPEATABLE_ORIGIN_FEAT_ACQUISITION_2026-11-27.md`
-- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
+- `docs/research/I2J_MAGIC_INITIATE_OWNER_INTEGRATION_2026-11-27.md`
+- `docs/research/I2J_REPEATABILITY_SPELL_IDENTITY_CANDIDATE_2026-11-27.md`
+- `docs/research/I2J_SHARED_SPELL_RESOURCE_CONSUMPTION_2026-11-27.md`
+- `scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs`
+- `scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -74,7 +78,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 251 more
+- … 256 more
 
 ## Trust and update procedure
 
