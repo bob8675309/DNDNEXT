@@ -276,3 +276,62 @@ for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
 assert.equal(triggerSnapshot(),triggers);
 console.log('PASS OF-PAIR-06 corrected distinct-child retry completes the same pending level-up once after rollback; other characters and accounts preserved');
 console.log('OF-PAIR EXTENSION RESULT: nonrepeatable Alert/Lucky historical graph only; no repeatable feat, restored-source or production acceptance');
+
+
+// Bounded Skilled (three tools only) experiment. Synthetic catalog identities;
+// no missing restored skill-key helper substitution, repeatability or removal claim.
+const skilledId=randomUUID();
+const toolChoices=[
+ {kind:'tool',key:'i2j-smith-tools',value:'i2j-smith-tools',label:"Smith's Tools"},
+ {kind:'tool',key:'i2j-carpenter-tools',value:'i2j-carpenter-tools',label:"Carpenter's Tools"},
+ {kind:'tool',key:'i2j-mason-tools',value:'i2j-mason-tools',label:"Mason's Tools"}
+];
+assert.equal(sql("SELECT to_regclass('public.items_catalog') IS NULL"),'t');
+sql("CREATE TABLE public.items_catalog(item_key text PRIMARY KEY,item_name text NOT NULL,item_rarity text NOT NULL,item_type text NOT NULL,payload jsonb NOT NULL); REVOKE ALL ON public.items_catalog FROM PUBLIC,anon,authenticated");
+for(const c of toolChoices)sql("INSERT INTO public.items_catalog VALUES("+q(c.key)+","+q(c.label)+",'mundane','tool','{\"type\":\"AT\"}')");
+sql("INSERT INTO public.character_option_catalog(id,option_key,name,source,option_type,category,metadata) VALUES("+q(skilledId)+",'i2j-skilled|XPHB','Skilled','XPHB','feat','O','{\"repeatable\":true}')");
+sql(fn(historicalFeat,'private.origin_feat_tool_choice_valid_v1'));
+const skilledToolName='private.origin_feat_tool_choice_valid_v1(jsonb,text)';
+const toolHash=md5(skilledToolName);
+const tailName='private.apply_level_up_warlock_invocation_replacement_v2(uuid,integer,jsonb,jsonb,jsonb)';
+const originalTail=def(tailName);
+const skilledTail=once(originalTail,"'735de8f5-94b0-4052-a7b2-8ae15ac9a55c','5003a12b-94e2-45db-bcc2-3eeff78c0587'","'735de8f5-94b0-4052-a7b2-8ae15ac9a55c','5003a12b-94e2-45db-bcc2-3eeff78c0587',"+q(skilledId));
+sql(skilledTail);
+function skilledInput(choices){
+ const request=alertInput();
+ request.class_choice_selections[slot][child]=[skilledId];
+ request.class_option_feat_instances[0]={...request.class_option_feat_instances[0],optionId:skilledId,name:'Skilled',choices:{'skills-or-tools':choices}};
+ return request;
+}
+const skilled=seed();
+sql("UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{tools}',"+json([toolChoices[0].label])+",true)"+skilled.w);
+mark('origin-skilled');
+const skilledBefore=extendedSnapshot(skilled),skilledOtherBefore=duplicateControls.map(extendedSnapshot);
+try{
+ await deny(editor,skilled,skilledInput(toolChoices.slice(0,2)),/^Skilled requires exactly three skill or tool choices\.$/,'P0001');
+ await deny(editor,skilled,skilledInput([toolChoices[0],toolChoices[0],toolChoices[2]]),/^Skilled choices must be distinct\.$/,'P0001');
+ await deny(editor,skilled,skilledInput([toolChoices[0],toolChoices[1],{kind:'tool',key:'i2j-invalid-tool',value:'i2j-invalid-tool',label:'I2J invalid tool'}]),/^Skilled contains an invalid tool choice\.$/,'P0001');
+ assert.deepEqual(extendedSnapshot(skilled),skilledBefore);
+ assert.deepEqual(duplicateControls.map(extendedSnapshot),skilledOtherBefore);
+ console.log('PASS OF-SKILLED-01 missing, duplicate and invalid tool choices rejected by historical validator with scoped rollback');
+ const accepted=await apply(editor,skilled,skilledInput(toolChoices));
+ assert.ifError(accepted.error);
+ final(skilled,[lessons,mind],{1:skilledId});
+ const grant=JSON.parse(sql("SELECT to_jsonb(g) FROM public.character_option_grant_instances g"+skilled.w));
+ const effects=toolChoices.map((c,i)=>({type:'tool-proficiency',tool:c.label,introduced:i!==0}));
+ assert.equal(grant.option_id,skilledId);assert.equal(grant.instance_key,instanceKey);assert.equal(grant.acquisition_owner_key,slot);assert.equal(grant.acquisition_level,2);assert.equal(grant.granted_by,editor.id);assert.equal(grant.repeatable,true);
+ assert.deepEqual(grant.choices,{'skills-or-tools':toolChoices});assert.deepEqual(grant.effects,effects);
+ const sheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+skilled.w));
+ assert.deepEqual(sheet.tools,toolChoices.map(c=>c.label));
+ assert.equal(sheet.feats.filter(f=>f==='Skilled').length,1);
+ const projected=sheet.featGrantInstances.find(g=>g.instanceId===instanceKey);
+ assert.equal(projected.optionId,skilledId);assert.deepEqual(projected.fixedEffects,effects);assert.deepEqual(projected.choices,grant.choices);
+ assert.equal(sql("SELECT count(*) FROM public.character_option_grants"+skilled.w+" AND option_id="+q(skilledId)),'1');
+ assert.deepEqual(account(),skilledBefore.accounts);assert.deepEqual(duplicateControls.map(extendedSnapshot),skilledOtherBefore);
+ console.log('PASS OF-SKILLED-02 three valid tool selections; preexisting proficiency retained and two new effects attributed to source instance');
+}finally{sql(originalTail)}
+assert.equal(def(tailName),originalTail);assert.equal(md5(skilledToolName),toolHash);
+for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
+assert.equal(triggerSnapshot(),triggers);
+console.log('PASS OF-SKILLED-03 original tail restored; historical helper and existing candidate fingerprints unchanged');
+console.log('OF-SKILLED RESULT: synthetic tool-only catalog, historical validator/tool helper and scratch materializer; no restored-source, mixed skill, repeatability or removal acceptance');
