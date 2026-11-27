@@ -406,3 +406,118 @@ assert.equal(md5(skilledToolName),toolHash);
 for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
 assert.equal(triggerSnapshot(),triggers);
 console.log('OF-MIXED RESULT: historical public helper/validator, scratch materializer, synthetic catalog; no restored-source or repeatable/removal acceptance');
+
+
+// Crafter/Musician proficiency-only historical experiment. No discount,
+// crafting, rest/Inspiration mechanics, repeatable feats or removal claim.
+const instrumentChoices=[
+ {kind:'tool',key:'i2j-lute',value:'i2j-lute',label:'Lute'},
+ {kind:'tool',key:'i2j-flute',value:'i2j-flute',label:'Flute'},
+ {kind:'tool',key:'i2j-drum',value:'i2j-drum',label:'Drum'}
+];
+for(const c of instrumentChoices)sql("INSERT INTO public.items_catalog VALUES("+q(c.key)+","+q(c.label)+",'mundane','instrument','{\"type\":\"INS|XPHB\"}')");
+const crafterId=randomUUID(),musicianId=randomUUID();
+for(const [id,name,field] of [[crafterId,'Crafter','anyArtisansTool'],[musicianId,'Musician','anyMusicalInstrument']]){
+ sql("INSERT INTO public.character_option_catalog(id,option_key,name,source,option_type,category,metadata) VALUES("+q(id)+","+q('i2j-'+name.toLowerCase()+'|XPHB')+","+q(name)+",'XPHB','feat','O',"+json({repeatable:false,toolProficiencies:[{[field]:3}]})+")");
+}
+// Preserve the same earned-slot binding and no-replacement restrictions.
+// Only the two synthetic feat identities are added to the scratch allowlist.
+const craftMusicTail=once(originalTail,"'735de8f5-94b0-4052-a7b2-8ae15ac9a55c','5003a12b-94e2-45db-bcc2-3eeff78c0587'","'735de8f5-94b0-4052-a7b2-8ae15ac9a55c','5003a12b-94e2-45db-bcc2-3eeff78c0587',"+q(crafterId)+","+q(musicianId));
+function toolFeatInput(id,name,choices){
+ const request=alertInput();
+ request.class_choice_selections[slot][child]=[id];
+ request.class_option_feat_instances[0]={...request.class_option_feat_instances[0],optionId:id,name,choices:{'tool-1':choices}};
+ return request;
+}
+const crafter=seed(),musician=seed(),jointToolFeats=seed();
+const craftPrior=[toolChoices[0].label,instrumentChoices[2].label];
+const musicPrior=[instrumentChoices[0].label,toolChoices[2].label];
+const jointPrior=[toolChoices[0].label,instrumentChoices[0].label];
+for(const [target,prior] of [[crafter,craftPrior],[musician,musicPrior],[jointToolFeats,jointPrior]]){
+ sql("UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{tools}',"+json(prior)+",true)"+target.w);
+}
+mark('origin-crafter-musician');
+const toolFeatControls=[...mixedControls,mixed,crafter,musician,jointToolFeats];
+const unchangedToolControls=toolFeatControls.slice(0,-3);
+const unchangedToolBefore=unchangedToolControls.map(extendedSnapshot);
+const toolFeatBefore=toolFeatControls.map(extendedSnapshot);
+const toolFeatAccounts=account();
+function assertToolFeat(target,id,name,choices,prior,ownerSlot=slot){
+ const key='invocation-'+ownerSlot+'-origin-feat';
+ const grant=JSON.parse(sql("SELECT to_jsonb(g) FROM public.character_option_grant_instances g"+target.w+" AND instance_key="+q(key)));
+ const effects=choices.map(c=>({type:'tool-proficiency',tool:c.label,introduced:!prior.includes(c.label)}));
+ assert.equal(grant.option_id,id);assert.equal(grant.option_name,name);
+ assert.equal(grant.instance_key,key);assert.equal(grant.acquisition_owner_type,'class-option');assert.equal(grant.acquisition_owner_key,ownerSlot);
+ assert.equal(grant.acquisition_level,2);assert.equal(grant.granted_by,editor.id);assert.equal(grant.repeatable,false);
+ assert.deepEqual(grant.choices,{'tool-1':choices});assert.deepEqual(grant.effects,effects);
+ const sh=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+target.w));
+ assert.equal(sh.feats.filter(f=>f===name).length,1);
+ const projection=sh.featGrantInstances.find(g=>g.instanceId===key);
+ assert.equal(projection.optionId,id);assert.deepEqual(projection.fixedEffects,effects);assert.deepEqual(projection.choices,grant.choices);
+ assert.equal(sql("SELECT count(*) FROM public.character_option_grants"+target.w+" AND option_id="+q(id)),'1');
+}
+sql(craftMusicTail);
+try{
+ // Exercise both categories and both exact error branches before any success.
+ for(const [target,id,name,choices,wrong,category] of [[crafter,crafterId,'Crafter',toolChoices,instrumentChoices[0],'Artisan tool'],[musician,musicianId,'Musician',instrumentChoices,toolChoices[0],'instrument']]){
+  const missingPattern=new RegExp('^'+name+' requires exactly three source-valid '+category+' choices\\.$');
+  const duplicatePattern=new RegExp('^'+name+' tool choices must be distinct\\.$');
+  const wrongPattern=new RegExp('^'+name+' contains an invalid tool choice\\.$');
+  await deny(editor,target,toolFeatInput(id,name,choices.slice(0,2)),missingPattern,'P0001');
+  await deny(editor,target,toolFeatInput(id,name,[choices[0],choices[0],choices[2]]),duplicatePattern,'P0001');
+  await deny(editor,target,toolFeatInput(id,name,[choices[0],choices[1],wrong]),wrongPattern,'P0001');
+ }
+ assert.deepEqual(toolFeatControls.map(extendedSnapshot),toolFeatBefore);
+ console.log('PASS OF-TOOLS-01 Crafter and Musician count, duplicate and cross-category rejection with complete scoped rollback');
+ const craft=await apply(editor,crafter,toolFeatInput(crafterId,'Crafter',toolChoices));assert.ifError(craft.error);
+ final(crafter,[lessons,mind],{1:crafterId});
+ assertToolFeat(crafter,crafterId,'Crafter',toolChoices,craftPrior);
+ const craftSheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+crafter.w));
+ assert.deepEqual(craftSheet.tools,[...craftPrior,...toolChoices.slice(1).map(c=>c.label)]);
+ assert.deepEqual(extendedSnapshot(musician),toolFeatBefore.at(-2));
+ assert.deepEqual(extendedSnapshot(jointToolFeats),toolFeatBefore.at(-1));
+ assert.deepEqual(unchangedToolControls.map(extendedSnapshot),unchangedToolBefore);
+ assert.deepEqual(account(),toolFeatAccounts);
+ const craftAfter=extendedSnapshot(crafter);
+ console.log('PASS OF-TOOLS-02 Crafter artisan proficiency materialization preserves prior tools and attributes only introduced effects');
+ const music=await apply(editor,musician,toolFeatInput(musicianId,'Musician',instrumentChoices));assert.ifError(music.error);
+ final(musician,[lessons,mind],{1:musicianId});
+ assertToolFeat(musician,musicianId,'Musician',instrumentChoices,musicPrior);
+ const musicSheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+musician.w));
+ assert.deepEqual(musicSheet.tools,[...musicPrior,...instrumentChoices.slice(1).map(c=>c.label)]);
+ assert.deepEqual(extendedSnapshot(crafter),craftAfter);
+ assert.deepEqual(extendedSnapshot(jointToolFeats),toolFeatBefore.at(-1));
+ assert.deepEqual(unchangedToolControls.map(extendedSnapshot),unchangedToolBefore);
+ assert.deepEqual(account(),toolFeatAccounts);
+ const musicAfter=extendedSnapshot(musician);
+ console.log('PASS OF-TOOLS-03 Musician instrument proficiency materialization preserves prior tools and attributes only introduced effects');
+ // Distinct nested feat instances must retain independent effect ownership.
+ const jointRequest=toolFeatInput(crafterId,'Crafter',toolChoices);
+ jointRequest.class_choice_selections[slot3]={invocation:[lessons],[child]:[musicianId]};
+ jointRequest.class_option_feat_instances.push({...jointRequest.class_option_feat_instances[0],instanceId:'level-2-'+slot3+'-'+child,optionId:musicianId,name:'Musician',acquisitionOwnerKey:slot3,choices:{'tool-1':instrumentChoices}});
+ const invalidJoint=JSON.parse(JSON.stringify(jointRequest));
+ invalidJoint.class_option_feat_instances[1].choices['tool-1'][2]=toolChoices[0];
+ await deny(editor,jointToolFeats,invalidJoint,/^Musician contains an invalid tool choice\.$/,'P0001');
+ assert.deepEqual(extendedSnapshot(jointToolFeats),toolFeatBefore.at(-1));
+ const joint=await apply(editor,jointToolFeats,jointRequest);assert.ifError(joint.error);
+ final(jointToolFeats,[lessons,lessons],{1:crafterId,2:musicianId});
+ assertToolFeat(jointToolFeats,crafterId,'Crafter',toolChoices,jointPrior,slot);
+ assertToolFeat(jointToolFeats,musicianId,'Musician',instrumentChoices,jointPrior,slot3);
+ const jointSheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+jointToolFeats.w));
+ assert.deepEqual(jointSheet.tools,[...jointPrior,...toolChoices.slice(1).map(c=>c.label),...instrumentChoices.slice(1).map(c=>c.label)]);
+ assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances"+jointToolFeats.w),'2');
+ assert.equal(sql("SELECT count(*) FROM public.character_option_grants"+jointToolFeats.w),'2');
+ await deny(editor,jointToolFeats,jointRequest,null);
+ assert.deepEqual(extendedSnapshot(crafter),craftAfter);
+ assert.deepEqual(extendedSnapshot(musician),musicAfter);
+ assert.deepEqual(unchangedToolControls.map(extendedSnapshot),unchangedToolBefore);
+ assert.deepEqual(account(),toolFeatAccounts);
+ console.log('PASS OF-TOOLS-04 distinct combined tool feats preserve independent source effects; second-child failure rolls back first and corrected retry succeeds once');
+}finally{sql(originalTail)}
+assert.equal(def(tailName),originalTail);
+assert.equal(md5(skillKeyName),skillKeyHash);
+assert.equal(md5(skilledToolName),toolHash);
+for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
+assert.equal(triggerSnapshot(),triggers);
+console.log('PASS OF-TOOLS-05 original tail and prior fingerprints preserved');
+console.log('OF-TOOLS RESULT: historical proficiency effects only; synthetic catalog; no full feat gameplay, repeatability, removal or restored-source acceptance');

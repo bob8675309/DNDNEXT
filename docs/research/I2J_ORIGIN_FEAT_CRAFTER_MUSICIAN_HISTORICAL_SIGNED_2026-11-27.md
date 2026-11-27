@@ -1,0 +1,13 @@
+# I2J historical Crafter and Musician proficiency-only signed research — 2026-11-27 Central
+
+
+## 2026-11-27 Central — mixed Skilled 3/3 verified; cumulative signed 12/12
+
+Exact executable 073b311dd3a87206b1442a153a865765a7bcae4d, [run 45954232032/job 140356876492](https://github.com/bob8675309/DNDNEXT/actions/runs/45954232032/job/140356876492), actual logs OF-PAIR-01..06, OF-SKILLED-01..03, OF-MIXED-01..03 PASS; all steps including service teardown success. Tactical 45954231946 and docs 45954232020 success. Actual installed public skill-key MD5 ec6a3af96ba08291e94bf59afdfdc608 differs restored 3b44b44ce828c6ac46ff9eaa935fa150. Mixed skill/tool invalid/duplicate rollback, existing Arcana expertise and unrelated Athletics preserved, new Perception/tool proficiency and effects, replay and unrelated records verified. Historical source/synthetic catalog only. No restored graph, repeatability/removal or writer-count increment. Main e21abf39be6cb9661eeff2bbaf25d62479625438 unchanged.
+
+
+## 2026-11-27 Central — Crafter/Musician proficiency scope authored
+
+[New dossier](research/I2J_ORIGIN_FEAT_CRAFTER_MUSICIAN_HISTORICAL_SIGNED_2026-11-27.md). Original 12 cases unchanged; append to runner blob a2e95a75b19d4ba5d303b0c5b9e28a01006e252c. Read actual public 24 validator/tool helper, 34 materializer and current playerForgeFeatChoices/ChoiceRouting contracts (tool-1 metadata for artisan vs instrument; Training placement). Synthetic instrument rows, previously accepted synthetic artisan tools, nonrepeatable feat metadata consistent with earlier hosted read. Five intended markers: OF-TOOLS-01 both count/duplicate/cross-category rejection with complete rollback; 02 Crafter standalone; 03 Musician standalone; 04 combined distinct nested pair, failed second child rollback of first, corrected retry and replay; 05 original tail restoration/fingerprints. Existing historical validators and prior scratch Option A/final-state candidates unchanged. Only scratch allowlist extends for two synthetic identities, exact slot binding and no-replacement preserved; restored afterwards. Proficiency ownership only, not Crafter discounts/crafting, Musician rest/Inspiration, full catalog, repeatability/removal, exact restored execution or production acceptance. Fresh CI pending. **ONE NEXT:** inspect exact-head OF-TOOLS-01..05 actual job, correct only demonstrated fixture errors. No hosted SQL, main/map/deploy, other-agent, paid service, private transfer or retirement actions.
+
+Source identities and selected tool/instrument labels are synthetic test catalog keys, not restored IDs. This is one bounded joint tool-feat proficiency regression, not the complete mechanical implementation of either feat. Preserve all prior successful and failed evidence.
