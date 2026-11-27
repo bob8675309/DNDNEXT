@@ -1,3 +1,5 @@
+> **2026-11-27 owner directive — selective Codex delegation:** [CODEX_DELEGATION_WORKFLOW.md](CODEX_DELEGATION_WORKFLOW.md) records the published private DNDNEXT environment and optional, bounded Codex assistance for the interactive assistant and existing agents A–D. Existing branches, schedules, manual coordination limits and protected-system approvals remain unchanged. Publication does not prove automatic attachment, direct task launch or GitHub Code Review activation. GitHub Actions remains authoritative for signed integration; do not expose private recovered source or bypass environment failures.
+
 > **2026-11-26 later owner standing merge authorization:** [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) defines the narrow low-risk merge exception for the interactive assistant. Minor verified non-disruptive changes may merge without repeated individual approval; important systems, held feature PRs, hosted SQL, paid services, manual deploys, agent-specific no-merge rules and other protected scope remain approval-gated. This supersedes older blanket merge wording only within that exception.
 
 # DNDNext connected development and recovery runbook
