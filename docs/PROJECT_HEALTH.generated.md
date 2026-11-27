@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-27T20:53:22Z | agent/i2j-magic-initiate-historical-20261127 (3f535489314bd6dff8665783e1bda5a21d3ffa10) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
+| 2026-11-27T20:55:02Z | agent/i2j-magic-initiate-historical-20261127 (d54e0798ba4c6930445fee4464d5a3778015fa69) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
