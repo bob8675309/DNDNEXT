@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `ccd6344b0a97999410f3099ff0a8bbea55667cfc` |
+| Exact source commit represented by this archive snapshot | `82d246e3dd34b8c72ab344055fead97a878fb054` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): certify inherited PR332 workflow textual retention |
+| Last source commit title | docs(c34): certify PR332 manifest structured retention |
 | Files changed relative to main | 441 (324 non-docs; 117 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
