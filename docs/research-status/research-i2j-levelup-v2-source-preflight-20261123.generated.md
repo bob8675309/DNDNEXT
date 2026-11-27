@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `b6d2ff2bc11a49b66e980f1d1dcdf9142ba614e5` |
+| Exact source commit represented by this archive snapshot | `d94fe513d90ea7bfe2d536ea65dcf7813222d6c8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | I2J: align no-replacement scratch fixture with earned Alert forwarding |
-| Files changed relative to main | 295 (209 non-docs; 86 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | I2J: verify historical Alert receipt and add distinct nested feat pair test |
+| Files changed relative to main | 298 (211 non-docs; 87 docs) |
+| Last source commit | 6 files (2 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_ORIGIN_FEAT_ALERT_HISTORICAL_SIGNED_2026-11-26.md`
-- `scripts/integration/i2j/test_origin_feat_alert_historical_signed.mjs`
+- `docs/research/I2J_ORIGIN_FEAT_PAIR_HISTORICAL_SIGNED_2026-11-26.md`
+- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -60,6 +62,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-nested-origin-feat-payload.yml`
 - `.github/workflows/validate-i2j-origin-feat-alert-historical.yml`
 - `.github/workflows/validate-i2j-origin-feat-p13-bridge.yml`
+- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `.github/workflows/validate-i2j-origin-feat-private-intake.yml`
 - `.github/workflows/validate-i2j-origin-feat-schema-contract.yml`
 - `.github/workflows/validate-i2j-origin-feat-source-custody.yml`
@@ -73,8 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- `components/NpcPanel.js`
-- … 245 more
+- … 248 more
 
 ## Trust and update procedure
 
