@@ -1,7 +1,7 @@
 // I2J historical public-source two distinct nested Origin feats only. Derived from immutable WL setup; not restored-source acceptance.
 // Original captured Warlock guards, acquisition and historical earned/projection source pinned separately.
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {appendFileSync,readFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createHash,randomUUID} from 'node:crypto';
 import {createClient} from '@supabase/supabase-js';
@@ -653,3 +653,173 @@ for(const [name,hash] of pinnedCandidates)assert.equal(md5(name),hash);
 assert.equal(triggerSnapshot(),triggers);
 assert.deepEqual(spellIndexSnapshot(),spellIndexes);
 console.log('PASS OF-MI-03 replay isolation, original uniqueness indexes, tail and source fingerprints preserved');
+
+// The original Lessons discriminator compares child option IDs, not the spell
+// list inside a feat instance. Keep that check intact. A second synthetic
+// catalog identity lets us separately characterize downstream constraints.
+const variantId=randomUUID();
+sql("INSERT INTO public.character_option_catalog(id,option_key,name,source,option_type,category,metadata) VALUES("+q(variantId)+",'i2j-magic-initiate-variant|XPHB',"+q(magicName)+",'XPHB','feat','O',"+json({repeatable:true})+")");
+const lessonsSchema=()=>sql("SELECT choice_schema::text FROM public.class_feature_option_catalog WHERE option_key="+q(lessons));
+const originalLessonsSchema=lessonsSchema();
+assert.equal(JSON.parse(originalLessonsSchema).distinctPerRepeat,true);
+
+function catalogSpell(label,level,lists){
+ const key='i2j-repeat-'+label.toLowerCase().replaceAll(' ','-');
+ const id=randomUUID();
+ sql("INSERT INTO public.spells_catalog(id,name,level,classes,source,school,spell_key) VALUES("+q(id)+","+q(label)+","+level+",ARRAY["+lists.map(q).join(',')+"],'XPHB','Evocation',"+q(key)+")");
+ return {kind:'spell',key,value:id,label,source:'XPHB',metadata:{spellId:id,level}};
+}
+
+function acquisitionPair(optionId,firstChoices,secondId,secondChoices){
+ const request=alertInput();
+ request.class_choice_selections[slot][child]=[optionId];
+ request.class_choice_selections[slot3]={invocation:[lessons],[child]:[secondId]};
+ const template=request.class_option_feat_instances[0];
+ request.class_option_feat_instances=[
+  {...template,optionId,name:magicName,choices:firstChoices},
+  {...template,instanceId:'level-2-'+slot3+'-'+child,optionId:secondId,name:magicName,acquisitionOwnerKey:slot3,choices:secondChoices}
+ ];
+ return request;
+}
+
+function assertAcquisition(target,request,expected){
+ const ownerKey=request.acquisitionOwnerKey;
+ const sourceKey='invocation-'+ownerKey+'-origin-feat';
+ const row=JSON.parse(sql("SELECT to_jsonb(g) FROM public.character_option_grant_instances g"+target.w+" AND instance_key="+q(sourceKey)));
+ assert.equal(row.option_id,request.optionId);
+ assert.equal(row.option_name,request.name);
+ assert.equal(row.instance_key,sourceKey);
+ assert.equal(row.acquisition_owner_type,request.acquisitionOwnerType);
+ assert.equal(row.acquisition_owner_key,ownerKey);
+ assert.equal(row.acquisition_level,request.acquisitionLevel);
+ assert.equal(row.granted_by,editor.id);
+ assert.equal(row.repeatable,expected.repeatable);
+ assert.deepEqual(row.choices,request.choices);
+ assert.deepEqual(row.effects,expected.effects);
+ const sheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+target.w));
+ const projection=sheet.featGrantInstances.find(grant=>grant.instanceId===sourceKey);
+ assert.equal(projection.optionId,request.optionId);
+ assert.deepEqual(projection.choices,row.choices);
+ assert.deepEqual(projection.fixedEffects,row.effects);
+ return sourceKey;
+}
+
+function assertSpellSource(target,{sourceKey,label,castingStat,payload,spells}){
+ const rows=JSON.parse(sql("SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY s.spell_id),'[]') FROM public.character_spells s"+target.w+" AND source_type='feat' AND source_key="+q(sourceKey)));
+ assert.deepEqual(rows.map(row=>row.spell_id),spells.map(spell=>spell.id).sort());
+ for(const row of rows){
+  const expected=spells.find(spell=>spell.id===row.spell_id);
+  assert.equal(row.source_label,label);
+  assert.equal(row.casting_stat,castingStat);
+  assert.equal(row.known,true);
+  assert.equal(row.prepared,true);
+  assert.equal(row.always_available,true);
+  assert.equal(row.uses_max,expected.uses);
+  assert.equal(row.uses_remaining,expected.uses);
+  assert.equal(row.recharge,expected.recharge);
+  assert.deepEqual(row.raw_payload,{...payload,...expected.payload});
+ }
+}
+
+async function rejectAcquisition(target,request,code,message){
+ const before=extendedSnapshot(target);
+ const result=await apply(editor,target,request);
+ assert.ok(result.error,'invalid acquisition committed');
+ assert.deepEqual(extendedSnapshot(target),before,'signed rejection must roll back the complete target snapshot');
+ assert.equal(result.error.code,code,JSON.stringify(result.error));
+ assert.match(result.error.message,message);
+ return result.error;
+}
+
+const wizard=magicInput().class_option_feat_instances[0].choices;
+const druidA=catalogSpell('Synthetic Druid Gust',0,['Druid']);
+const druidB=catalogSpell('Synthetic Druid Bloom',0,['Druid']);
+const druidOne=catalogSpell('Synthetic Druid Seed',1,['Druid']);
+const sharedOne=catalogSpell('Synthetic Shared Ward',1,['Wizard','Druid']);
+const wizardAltA=catalogSpell('Synthetic Wizard Flicker',0,['Wizard']);
+const wizardAltB=catalogSpell('Synthetic Wizard Twinkle',0,['Wizard']);
+const wizardAltOne=catalogSpell('Synthetic Wizard Shield',1,['Wizard']);
+
+function spellListChoices(list,ability,cantrips,firstLevel){
+ const discriminator=list.toLowerCase();
+ return {
+  'spell-list':[{kind:'spell-list',key:discriminator,value:list,label:list,source:'XPHB'}],
+  'spellcasting-ability':[{kind:'ability',key:ability,value:ability,label:{wis:'Wisdom',cha:'Charisma'}[ability]}],
+  ['cantrips-'+discriminator]:cantrips,
+  ['level-1-'+discriminator]:[firstLevel]
+ };
+}
+const druid=spellListChoices('Druid','wis',[druidA,druidB],druidOne);
+const wizardAlt=spellListChoices('Wizard','cha',[wizardAltA,wizardAltB],wizardAltOne);
+const duplicateChild=/^Repeated Lessons of the First Ones instances must use different dependent choices\.$/;
+const repeatTargets={canonical:seed(),sameList:seed(),distinctLists:seed(),overlap:seed()};
+mark('origin-magic-repeatability');
+const repeatAccounts=account();
+const unrelatedRepeatBefore=magicControls.map(extendedSnapshot);
+const variantTail=once(magicTail,q(magicId),q(magicId)+','+q(variantId));
+
+function repeatEvidence(message){
+ console.log(message);
+ if(env.GITHUB_STEP_SUMMARY)appendFileSync(env.GITHUB_STEP_SUMMARY,message+'\n\n');
+}
+
+async function assertCommittedPair(target,request){
+ const result=await apply(editor,target,request);
+ assert.ifError(result.error);
+ const instances=request.class_option_feat_instances;
+ final(target,[lessons,lessons],{1:instances[0].optionId,2:instances[1].optionId},6);
+ assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances"+target.w),'2');
+ assert.equal(sql("SELECT count(*) FROM public.character_option_grants"+target.w),'2');
+ assert.equal(sql("SELECT count(*) FROM public.character_spells"+target.w+" AND source_type='class'"),'5');
+ const sheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+target.w));
+ assert.equal(sheet.feats.filter(feat=>feat===magicName).length,1);
+ for(const instance of instances){
+  const choices=instance.choices;
+  const list=choices['spell-list'][0].value;
+  const discriminator=list.toLowerCase();
+  const key='invocation-'+instance.acquisitionOwnerKey+'-origin-feat';
+  const sourceKey=assertAcquisition(target,instance,{repeatable:true,effects:[{type:'feat-spell-source',sourceKey:key,spellList:list,introduced:true}]});
+  const cantrips=choices['cantrips-'+discriminator].map(spell=>({id:spell.value,uses:null,recharge:null}));
+  const freeSpell={id:choices['level-1-'+discriminator][0].value,uses:1,recharge:'long-rest',payload:{freeCast:true}};
+  assertSpellSource(target,{sourceKey,label:magicName,castingStat:choices['spellcasting-ability'][0].value,payload:{grantedByFeat:magicName,grantedAtLevel:2,spellList:list},spells:[...cantrips,freeSpell]});
+ }
+}
+
+sql(variantTail);
+try{
+ for(const secondChoices of [wizardAlt,druid]){
+  const error=await rejectAcquisition(repeatTargets.canonical,acquisitionPair(magicId,wizard,magicId,secondChoices),'P0001',duplicateChild);
+  repeatEvidence('OF-MI-REPEAT-01 canonical Wizard/'+secondChoices['spell-list'][0].value+': '+error.code+' '+error.message+' Complete rollback.');
+ }
+
+ await assertCommittedPair(repeatTargets.sameList,acquisitionPair(magicId,wizard,variantId,wizardAlt));
+ repeatEvidence('OF-MI-REPEAT-02 two synthetic IDs, Wizard/Wizard: committed with distinct spells and INT/CHA resources. Historical feat materializer did not enforce distinct spell lists across these IDs.');
+ const sameListAfter=extendedSnapshot(repeatTargets.sameList);
+
+ const invalid=acquisitionPair(magicId,wizard,variantId,{...druid,'cantrips-druid':[druidA,cantripA]});
+ const invalidError=await rejectAcquisition(repeatTargets.distinctLists,invalid,'P0001',/^Magic Initiate contains an invalid Druid cantrip\.$/);
+ repeatEvidence('OF-MI-REPEAT-03 invalid second acquisition: '+invalidError.code+' '+invalidError.message+' Complete rollback.');
+ await assertCommittedPair(repeatTargets.distinctLists,acquisitionPair(magicId,wizard,variantId,druid));
+ repeatEvidence('OF-MI-REPEAT-04 corrected retry, two synthetic IDs, Wizard/Druid: committed six source-owned spells and independent INT/WIS free-cast records.');
+ const distinctAfter=extendedSnapshot(repeatTargets.distinctLists);
+
+ const overlap=acquisitionPair(magicId,{...wizard,'level-1-wizard':[sharedOne]},variantId,{...druid,'level-1-druid':[sharedOne]});
+ const overlapError=await rejectAcquisition(repeatTargets.overlap,overlap,'23505',/^duplicate key value violates unique constraint "character_spells_unique_source_idx"$/);
+ assert.match(overlapError.details,/Key \(character_id, spell_id, source_type, COALESCE\(source_label, ''::text\)\)/i);
+ assert.ok(overlapError.details.includes(sharedOne.value),'collision must be on the shared spell');
+ repeatEvidence('OF-MI-REPEAT-05 Wizard/Druid shared first-level spell: '+overlapError.code+' '+overlapError.message+' Complete rollback, including the first acquisition and second cantrips.');
+ assert.deepEqual(extendedSnapshot(repeatTargets.sameList),sameListAfter);
+ assert.deepEqual(extendedSnapshot(repeatTargets.distinctLists),distinctAfter);
+ assert.deepEqual(magicControls.map(extendedSnapshot),unrelatedRepeatBefore);
+ assert.deepEqual(account(),repeatAccounts);
+}finally{sql(originalTail)}
+assert.equal(def(tailName),originalTail);
+assert.equal(lessonsSchema(),originalLessonsSchema);
+assert.equal(md5(spellHelper),spellHelperHash);
+for(const [name,hash] of pinnedCandidates)assert.equal(md5(name),hash);
+assert.equal(triggerSnapshot(),triggers);
+assert.deepEqual(spellIndexSnapshot(),spellIndexes);
+repeatEvidence('OF-MI-REPEAT-06 original indexes and Lessons discriminator, prior characters, account snapshots, trigger DDL and function fingerprints preserved.');
+repeatEvidence('Installed function MD5: public v5 '+md5('public.complete_character_level_up_v5(uuid,jsonb)')+
+ ', original migration 34 materializer '+materializerHash+', scratch mirror-omission materializer '+md5(featName)+
+ ', public-history validator '+md5(featValidator)+', spell resolver '+spellHelperHash+', historical earned helper '+md5(earnedName)+'.');

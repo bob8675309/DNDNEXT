@@ -1356,3 +1356,9 @@ Local runner syntax, bridge generation, and diff checks passed. The earlier 17-c
 Exact executable `b79f0a009085ddf4e6121bd25bc517fdfa031ab8` on the isolated branch. [Signed run 46019465819, job 140575032318](https://github.com/bob8675309/DNDNEXT/actions/runs/46019465819/job/140575032318) reported success for disposable startup, the full signed runner and teardown. The full runner executes the 17 prior cases and OF-MI-01..03. Job step conclusions were verified on GitHub. Individual step logs were unavailable through the current access. Tactical run 46019465837 and research-docs run 46019465844 reported success at the same SHA. Repository Vercel skip check passed for the isolated agent branch. No hosted SQL, merges, authorized deployment action, private source transfer or paid services. Acquisition metadata does not establish actual casting or rest behavior. Restored-source parity and replacement remain separate.
 
 **ONE NEXT:** characterize repeatable same-spell overlap in a separate disposable fixture with both original indexes enabled.
+
+## 2026-11-27 Central — repeatable Magic Initiate signed characterization authored
+
+Continued the isolated branch at verified base `b3918eef87990265ace3e9bc40389b41545f391f`. The existing signed runner now adds canonical child-ID repeat rejection, same-list distinct-spell and different-list acquisition probes using two synthetic catalog identities, invalid second-selection rollback, and the shared first-level spell overlap probe. No gate or index changes. Added the [mechanical reuse and consolidation matrix](research/I2J_REPEATABLE_ORIGIN_FEAT_ACQUISITION_2026-11-27.md). Local syntax, bridge generation and diff checks passed. Exact-head signed workflow pending. No hosted SQL, merged PRs, production access, deploy, paid services or private source transfer.
+
+**ONE NEXT:** verify exact-head signed CI and teardown before characterizing the outcomes.
