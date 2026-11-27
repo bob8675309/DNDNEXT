@@ -818,6 +818,31 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
    assert.throws(()=>consolidate([[{path:'../outside',blob:pins[0].blob}]]),/invalid/);
    const inventory=new Map(merged);
    for(const file of seen) assert.equal(inventory.get(file),pins.find(p=>p.path===file).blob);
+   // Research-only candidate gate: observed reads are not exhaustive closure.
+   function candidateRecommendation({expected, actual, unresolved, complete, trustedDiff, statusPreserved, changed}) {
+     if (complete !== true || trustedDiff !== true || statusPreserved !== true ||
+         !Array.isArray(unresolved) || unresolved.length !== 0 ||
+         !(actual instanceof Map) || actual.size !== expected.size ||
+         !Array.isArray(changed) || changed.length === 0) return 'full';
+     for (const [path, blob] of expected) if (actual.get(path) !== blob) return 'full';
+     // Only an explicitly reviewed synthetic documentation candidate is modeled here.
+     if (changed.some(path => path !== 'docs/synthetic-candidate.md' || expected.has(path))) return 'full';
+     return 'lightweight-candidate';
+   }
+   const syntheticEvidence={expected:inventory,actual:new Map(inventory),unresolved:[],
+     complete:true,trustedDiff:true,statusPreserved:true,changed:['docs/synthetic-candidate.md']};
+   assert.equal(candidateRecommendation(syntheticEvidence),'lightweight-candidate');
+   for (const override of [
+     {complete:false},{trustedDiff:false},{statusPreserved:false},
+     {unresolved:['dynamic-reader']},{unresolved:undefined},
+     {actual:new Map(merged.slice(1))},
+     {actual:new Map([...merged,[merged[0][0],'1'.repeat(40)]])},
+     {changed:[pins[0].path]},{changed:[]},{changed:['docs/unknown.md']}
+   ]) assert.equal(candidateRecommendation({...syntheticEvidence,...override}),'full');
+   // Actual evidence still has unresolved runtime inputs and unknown required status.
+   assert.equal(candidateRecommendation({...syntheticEvidence,complete:false,
+     unresolved:['injected-reader','runtime-inputs'],statusPreserved:false}),'full');
+   console.log('Candidate evidence gate: synthetic positive and fail-closed negatives; no bypass authorization');
    console.log('Consolidated candidate inventory: '+merged.length+' unique paths; observed trigger reads: '+seen.size+'; closure unresolved');
 
    for(const missing of seen){
