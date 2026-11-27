@@ -1350,3 +1350,9 @@ Isolated branch `agent/i2j-magic-initiate-historical-20261127` based on `8a6f99d
 Local runner syntax, bridge generation, and diff checks passed. The earlier 17-case result belongs to executable `fa48a27f738eaff8b1f56283370165beedc811ae`, job 140359434930. Fresh signed results are pending. No Cloud GoTrue workaround, hosted SQL, private source transfer, deployment, merge or paid service. Repeatable overlap, actual cast/rest execution, replacement and restored-source parity remain separate.
 
 **ONE NEXT:** verify the isolated exact-head disposable GitHub Actions run before accepting the three new cases.
+
+## 2026-11-27 Central — historical Magic Initiate signed CI passed
+
+Exact executable `b79f0a009085ddf4e6121bd25bc517fdfa031ab8` on the isolated branch. [Signed run 46019465819, job 140575032318](https://github.com/bob8675309/DNDNEXT/actions/runs/46019465819/job/140575032318) reported success for disposable startup, the full signed runner and teardown. The full runner executes the 17 prior cases and OF-MI-01..03. Job step conclusions were verified on GitHub. Individual step logs were unavailable through the current access. Tactical run 46019465837 and research-docs run 46019465844 reported success at the same SHA. Repository Vercel skip check passed for the isolated agent branch. No hosted SQL, merges, authorized deployment action, private source transfer or paid services. Acquisition metadata does not establish actual casting or rest behavior. Restored-source parity and replacement remain separate.
+
+**ONE NEXT:** characterize repeatable same-spell overlap in a separate disposable fixture with both original indexes enabled.
