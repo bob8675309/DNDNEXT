@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `6e3195708340505aaa85a6b09b6e08e3c88249f0` |
+| Exact source commit represented by this archive snapshot | `c76677c319cd8ccd67e275daf0964daf976cfb99` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): crosswalk inherited J167 manifest custody |
+| Last source commit title | docs(c34): record inherited J167 validator source comparison |
 | Files changed relative to main | 438 (324 non-docs; 114 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
