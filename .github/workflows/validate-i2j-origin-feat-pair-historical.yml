@@ -7,6 +7,7 @@ on:
       - 'scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs'
       - 'scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs'
       - 'scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs'
+      - 'scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs'
       - '.github/workflows/validate-i2j-origin-feat-pair-historical.yml'
   workflow_dispatch:
 permissions:
@@ -70,7 +71,8 @@ jobs:
           candidate=scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs
           resource=scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs
           bundle="$RUNNER_TEMP/i2j-repeatability-stages.mjs"
-          cat "$historical" "$candidate" "$resource" > "$bundle"
+          rest=scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs
+          cat "$historical" "$candidate" "$resource" "$rest" > "$bundle"
           node --input-type=module --check < "$bundle"
           node --input-type=module < "$bundle"
       - name: Destroy disposable services
