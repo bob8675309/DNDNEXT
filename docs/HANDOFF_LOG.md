@@ -1386,3 +1386,11 @@ Live main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`, owner I2J `91d0355a8307dec
 Exact executable `b695d9c26d710b1d54bbc1010d3ea9dfaedc09d1`, [run 46030531886 / job 140612879572](https://github.com/bob8675309/DNDNEXT/actions/runs/46030531886/job/140612879572#step:7:1), succeeded at startup, all 26 historical and CAND-01..07 assertions, and disposable teardown. Docs run 46030531834 and tactical run 46030531866 succeeded. Direct step logs returned HTTP 404 through this access. The [dossier](research/I2J_REPEATABILITY_SPELL_IDENTITY_CANDIDATE_2026-11-27.md) records signed SQLSTATEs, index diagnostics, independent pools, rollback snapshots and consumer limits. Existing Lessons and nonrepeatable denial remained intact. The owner branch was not written. No production data, deployments, merges, casting/rest/removal acceptance, private transfers or paid work.
 
 **ONE NEXT:** add a separate signed resource-consumer test that takes one use by assignment ID and verifies the sibling assignment is unchanged.
+
+## 2026-11-27 Central — shared-spell resource consumption authored and #334 status corrected
+
+Reverified isolated base `912400e1676ecda5413c41beeb6b74b1dabafe25`, owner I2J `91d0355a8307dec8ce676225c4c936124e3d53ba`, main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`. The interactive assistant independently verified all 33 cases and teardown in 140612879572 and all 26 owner cases in 140607517615. Added a [separate resource stage and integration disposition](research/I2J_SHARED_SPELL_RESOURCE_CONSUMPTION_2026-11-27.md) preserving both accepted stages and Lessons. Local syntax and diff checks passed. Exact-head signed CI pending. No owner writes, protected paths, hosted SQL, transfers, merges, deployments, or paid services.
+
+Dated correction to the preceding integration dossier: the interactive assistant confirmed #334 remains open and unmerged at `0527f945269b6df32ad1f5c32fbe0434082d52f8`. The live head ref matches. The prior incorrect state report remains in the historical receipt. No PR state changes were made.
+
+**ONE NEXT:** verify signed exact-head resource isolation, denials and teardown.
