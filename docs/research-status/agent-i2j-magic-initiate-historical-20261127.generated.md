@@ -5,21 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `4ceb06cecfd0b395df7b0421974ddfdba35f4b7c` |
+| Exact source commit represented by this archive snapshot | `28aab0e3eb58f94e73a56c85a60f67ee9523b4a3` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Exercise invalid child through the original source-only Forge validator |
-| Files changed relative to main | 319 (222 non-docs; 97 docs) |
-| Last source commit | 3 files (3 non-docs; 0 authored docs) |
+| Last source commit title | Record signed Forge equivalence and original PR preservation evidence |
+| Files changed relative to main | 320 (222 non-docs; 98 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
-- `scripts/integration/i2j/forge_advancement_equivalence_stage.mjs`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_FORGE_ADVANCEMENT_EQUIVALENCE_2026-11-27.md`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +73,7 @@
 - `components/MapPageClient.js`
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
-- … 269 more
+- … 270 more
 
 ## Trust and update procedure
 
