@@ -855,3 +855,39 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
    console.log('Pinned trigger audit observed '+seen.size+' unique callback reads; runtime closure unresolved');
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
+
+ // Synthetic event-diff envelope validation; not an authentication mechanism.
+ // Only a separately authenticated collector may supply the expected endpoints.
+ {
+   const {strict: a}=await import('node:assert');
+   function validateDiffEnvelope(event, receipt) {
+     const sha=x=>typeof x==='string' && /^[0-9a-f]{40}$/.test(x) && !/^0+$/.test(x);
+     if (!event || !receipt || event.kind!=='push' || event.forced!==false ||
+         !sha(event.before) || !sha(event.after) || event.before===event.after ||
+         receipt.base!==event.before || receipt.head!==event.after ||
+         receipt.truncated!==false || receipt.complete!==true ||
+         !Array.isArray(receipt.files) || receipt.files.length===0 ||
+         receipt.files.length>=300 || receipt.total!==receipt.files.length) return false;
+     const seen=new Set();
+     for(const row of receipt.files) {
+       if (!row || row.status!=='modified' || typeof row.path!=='string' ||
+           row.path.includes(String.fromCharCode(92)) || /[\x00-\x1f\x7f]/.test(row.path) ||
+           row.path.split('/').some(p=>!p||p==='.'||p==='..') ||
+           seen.has(row.path) || Object.hasOwn(row,'previousPath')) return false;
+       seen.add(row.path);
+     }
+     return true;
+   }
+   const event={kind:'push',forced:false,before:'1'.repeat(40),after:'2'.repeat(40)};
+   const row={path:'docs/synthetic-candidate.md',status:'modified'};
+   const receipt={base:event.before,head:event.after,truncated:false,complete:true,total:1,files:[row]};
+   a.equal(validateDiffEnvelope(event,receipt),true);
+   for(const bad of [{kind:'pull_request'},{forced:true},{forced:undefined},{before:'0'.repeat(40)},{after:event.before}])
+     a.equal(validateDiffEnvelope({...event,...bad},receipt),false);
+   for(const bad of [{base:'3'.repeat(40)},{head:'3'.repeat(40)},{truncated:true},{complete:false},
+     {total:2},{files:[]},{files:[{...row,status:'renamed'}]},{files:[{...row,status:'removed'}]},
+     {files:[{...row,previousPath:'old.md'}]},{files:[{...row,path:'../outside'}]},
+     {files:[row,row],total:2},{files:Array.from({length:300},(_,i)=>({...row,path:'docs/'+i})),total:300}])
+     a.equal(validateDiffEnvelope(event,{...receipt,...bad}),false);
+   console.log('Synthetic push diff envelope: endpoint, completeness, cap and ambiguity checks; authentication and PR merge-base unresolved');
+ }
