@@ -1,3 +1,7 @@
+> **2026-11-26 later owner standing merge authorization:** [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) defines the narrow low-risk merge exception for the interactive assistant. Minor verified non-disruptive changes may merge without repeated individual approval; important systems, held feature PRs, hosted SQL, paid services, manual deploys, agent-specific no-merge rules and other protected scope remain approval-gated. This supersedes older blanket merge wording only within that exception.
+
+> **2026-11-26 owner-directed workflow clarification:** [CONNECTED_DEVELOPMENT_WORKFLOW.md](CONNECTED_DEVELOPMENT_WORKFLOW.md) is the durable connected-services, private source, disposable CI and parallel-work runbook. Begin at [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), select the actual owner-authorized work branch (may have no PR), and read its branch-local handoff. All older task/PR/SHA headlines below are historical, not marching orders. No hosted SQL, even SELECT, main/feature merge, deployment, paid services, protected map or agent changes without separate owner authorization. Missing chat-container executables do not establish connector failure; use existing GitHub Actions for execution. Private recovered source stays outside public Git.
+
 # DNDNext — End-of-chat handoff receipt (copy once per session)
 
 > **Current November 9 integration pointer — I1-G:** [ACTIVE_WORK](ACTIVE_WORK.md) and [I0–I6](PR_INTEGRATION_PRIORITIZED_PHASED_PLAN_2026-11-09.md) preserve ALL original outstanding PR value, #325 last/paid OFF. [#354 signed original Battle Master materializer+validator](https://github.com/bob8675309/DNDNEXT/pull/354) PASS 10/10 I1-F and all I1C–E source-subset regressions ([CI 42762833077](https://github.com/bob8675309/DNDNEXT/actions/runs/42762833077)). Next I1-G paired original XPHB Warlock legacy invocation guard and normalized validator with canonical option/child/grant sources, signed COMMIT/rollback/nonce. Keep full 31-trigger, production-shape RLS/catalog/browser/recovery gates OPEN; no main merge or hosted SQL.
@@ -42,3 +46,13 @@
 - Exact next single task (one sentence; include `P#.#` ID):
 - Clear stop condition / acceptance criteria:
 - Reviewer notes:
+
+## Connected execution and custody (2026-11-26 addition)
+- Connector operations actually verified / errors / alternatives attempted:
+- Exact branch ownership and live agent status if relevant (no private IDs):
+- Execution environment: connector-only / disposable CI / authorized deployed smoke; test tiers, actual job/case counts and skipped cases:
+- Private source location and scoped hash-only receipt; distinguish restored text, installed body, effective ACL and closure:
+- Evidence-only head vs tested executable head; exact-head checks pending or verified:
+- Main/hosted SQL/deploy/paid/agent/map/PR retirement effects (none unless authorized):
+
+- Merge authorization class (standing low-risk / explicit PR approval / HOLD), effect classification, exact reviewed head/base/checks, rollback and resulting target/deployment verification:

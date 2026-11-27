@@ -1,3 +1,5 @@
+> **2026-11-26 later owner standing merge authorization:** [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) defines the narrow low-risk merge exception for the interactive assistant. Minor verified non-disruptive changes may merge without repeated individual approval; important systems, held feature PRs, hosted SQL, paid services, manual deploys, agent-specific no-merge rules and other protected scope remain approval-gated. This supersedes older blanket merge wording only within that exception.
+
 # DNDNext — Mandatory full-PR source, ancestry, feature and evidence review
 
 **Owner directive, November 12, 2026:** Do not judge a pull request by title, the visible PR Files subset, or successful CI alone. Inspect the *entire changed-source and inherited branch tree*; preserve all owner-approved features, code, SQL, UI, fixtures, negative tests, source lineage and decisions before merging/retiring any PR. This protocol applies to **every future PR** and also remediates the **45 open drafts in the November 12 pre-#375-merge snapshot** recorded on 2026-11-12: **20 original source PRs and 25 additional research/audit PRs**.

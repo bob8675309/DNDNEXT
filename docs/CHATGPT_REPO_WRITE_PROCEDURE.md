@@ -1,3 +1,7 @@
+> **2026-11-26 later owner standing merge authorization:** [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) defines the narrow low-risk merge exception for the interactive assistant. Minor verified non-disruptive changes may merge without repeated individual approval; important systems, held feature PRs, hosted SQL, paid services, manual deploys, agent-specific no-merge rules and other protected scope remain approval-gated. This supersedes older blanket merge wording only within that exception.
+
+> **2026-11-26 owner-directed workflow clarification:** [CONNECTED_DEVELOPMENT_WORKFLOW.md](CONNECTED_DEVELOPMENT_WORKFLOW.md) is the durable connected-services, private source, disposable CI and parallel-work runbook. Begin at [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), select the actual owner-authorized work branch (may have no PR), and read its branch-local handoff. All older task/PR/SHA headlines below are historical, not marching orders. No hosted SQL, even SELECT, main/feature merge, deployment, paid services, protected map or agent changes without separate owner authorization. Missing chat-container executables do not establish connector failure; use existing GitHub Actions for execution. Private recovered source stays outside public Git.
+
 # ChatGPT Repository Write Procedure
 
 Updated: 2026-10-08
@@ -66,7 +70,7 @@ The planned Realistic Dice Phase 1 should not require any Supabase write.
 - Preserve working systems and existing validators rather than weakening contracts to make a patch pass.
 - Prefer additive database migrations; never rewrite already-deployed migration history.
 - Never expose Supabase service-role credentials to browser code.
-- Do not merge an open PR without explicit user approval.
+- Merge only under the standing low-risk policy or explicit PR-specific owner approval; preserve role-specific no-merge restrictions.
 
 ## Documentation discipline
 
