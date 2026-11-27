@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `cf1deb441eb4cd6cad8bc6f0748942d544bad0cb` |
+| Exact source commit represented by this archive snapshot | `0bb3960fe7f569be95509e0e3c8e13fdab1e9349` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): observe pinned trigger audit reader dependencies |
+| Last source commit title | test(ci): consolidate pinned reader dependency identities |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
