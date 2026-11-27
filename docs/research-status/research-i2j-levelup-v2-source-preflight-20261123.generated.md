@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `08406b02f05636856ab51d56f9cd2008074c63c1` |
+| Exact source commit represented by this archive snapshot | `b6d2ff2bc11a49b66e980f1d1dcdf9142ba614e5` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | I2J: test signed nested Alert using public historical caller and exact materializer |
+| Last source commit title | I2J: align no-replacement scratch fixture with earned Alert forwarding |
 | Files changed relative to main | 295 (209 non-docs; 86 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-alert-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_ORIGIN_FEAT_ALERT_HISTORICAL_SIGNED_2026-11-26.md`
