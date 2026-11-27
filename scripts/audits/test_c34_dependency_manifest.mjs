@@ -760,3 +760,51 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
    console.log('Pinned joint validator CLI: raw-byte positive, unexpected argument, drift and missing-file regressions; no runtime closure claim');
  } finally {rmSync(dir,{recursive:true,force:true});}
 }
+
+ // Pinned trigger audit: observe actual callback reads, not SQL execution.
+ // The literal candidate inventory is a bounded allowlist, not a closure proof.
+{
+ const {mkdtempSync,mkdirSync,writeFileSync,rmSync}=await import('node:fs');
+ const {tmpdir}=await import('node:os');
+ const {join,dirname}=await import('node:path');
+ const {pathToFileURL}=await import('node:url');
+ const {spawnSync}=await import('node:child_process');
+ const commit='6e3195708340505aaa85a6b09b6e08e3c88249f0';
+ const validator=observedSourceRoots[2];
+ const pins=[{"path":"docs/research/C34_ORIGINAL_31_TRIGGER_CENSUS_CAPTURE_2026-11-05.md","blob":"296e178fc951e261f48b6b9d63e48ee3012ee232"},{"path":"scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql","blob":"354ad33e1d86881244c48d090317e1906e3ed671"},{"path":"scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql","blob":"53bd80d36e94d3ac0f97d02d16a85881bdcf6b15"},{"path":"scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql","blob":"d2f925129d198a443f1cea29d73ea56bff8b7a76"},{"path":"scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql","blob":"e6d574baa68dea6ad93f997941b3f062a234ff98"},{"path":"scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql","blob":"9da41b637b077ce5ab3f80e6308e0ca9b91fd002"},{"path":"scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql","blob":"dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e"},{"path":"scripts/fixtures/forge_nested_choices_original_pg17.sql","blob":"6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a"},{"path":"scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql","blob":"413a82dc3c1913cb5f71c28531d31e19da89e02d"},{"path":"scripts/fixtures/forge_starting_spells_local_auth_pg17.sql","blob":"4b6eeecdbfba49cca5a74c26e2f88b6d83123897"},{"path":"scripts/fixtures/forge_starting_spells_original_pg17.sql","blob":"d56ed5ea44289bbb20720c1323f9b22f362b31c5"},{"path":"scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql","blob":"bbf8cece98f46b1008d8e2ff79650647f89a5e20"},{"path":"scripts/integration/c34/c34_artificer_option_a_character_scoped_projection_candidate_pg17.sql","blob":"43eb13a2fd7e1d08b9003926f54eec44e9b7c60d"},{"path":"scripts/integration/c34/c34_artificer_source_plan_catalog_specimen_pg17.sql","blob":"2698f9634db2e6a34cbb9837c3ae4cbf231c3340"},{"path":"scripts/integration/c34/c34_five_original_sheet_character_triggers_pg17.sql","blob":"e58e81c096757a20343233638c4482d9e07ec97c"},{"path":"scripts/integration/c34/c34_inventory_original_policy_baseline_pg17.sql","blob":"ce1d51134c2dfaf8c071759d3f2da3b8feecd3a0"},{"path":"scripts/integration/c34/c34_khoravar_option_a_character_scoped_projection_candidate_pg17.sql","blob":"d4a9873aff53af79f16aaa54e75e158575480301"},{"path":"scripts/integration/c34/c34_khoravar_source_skill_tool_specimen_pg17.sql","blob":"f995e0f142bd71572001b7b7c2ed5d85aa0c6134"},{"path":"scripts/integration/c34/c34_original_artificer_plans_with_legacy_mirror_pg17.sql","blob":"eb6ae204f6c115ced594e63dbae3d939e5d6cd1a"},{"path":"scripts/integration/c34/c34_original_battle_master_pair_pg17.sql","blob":"c89b318d1c385e74ef7f74b1c23f50a746af52fc"},{"path":"scripts/integration/c34/c34_original_deferred_progression_authority_pg17.sql","blob":"32101fe64c47730ccdad1cfa85ae2842c6cfd578"},{"path":"scripts/integration/c34/c34_original_eladrin_season_pg17.sql","blob":"9cfb0450eef3dade90b4df51be3cbd2eea051fb2"},{"path":"scripts/integration/c34/c34_original_fighter_subclass_choice_pg17.sql","blob":"a0d4aa8cf4b71cd6f70725bc1e579f6626d326f6"},{"path":"scripts/integration/c34/c34_original_khoravar_skill_with_legacy_mirror_pg17.sql","blob":"2d09610c87398d0324efbf18da491ca9b6283cd5"},{"path":"scripts/integration/c34/c34_original_nested_choice_dependency_pg17.sql","blob":"308c539c4fb90fdb52cb93d6a79c432bdad409b2"},{"path":"scripts/integration/c34/c34_original_source_magic_materializer_pg17.sql","blob":"320605bfabe634287603a1cb341859b884b1621b"},{"path":"scripts/integration/c34/c34_original_species_replaceable_cantrip_pg17.sql","blob":"97a5130812af079c79fec1505d6c3381f79062db"},{"path":"scripts/integration/c34/c34_original_starting_magic_exactness_pg17.sql","blob":"cf2e5c7189cca27f1e43f90d0f003dcc21e27e43"},{"path":"scripts/integration/c34/c34_original_starting_spells_joint_pg17.sql","blob":"559125f9eacc0c048f01c6b996df365a3c2af4fe"},{"path":"scripts/integration/c34/c34_original_warlock_acquisition_three_triggers_pg17.sql","blob":"40e7bb0e44912306bd30d34fd546d67936e75200"},{"path":"scripts/integration/c34/c34_original_wizard_finalizer_with_legacy_mirror_pg17.sql","blob":"4657223db4dab6b8c078944b20bebfec2a4b3d3e"},{"path":"scripts/integration/c34/c34_source_magic_astral_elf_specimen_pg17.sql","blob":"b62f68c93a2daf67fcd23faf7dd8ba5f143c8e9a"},{"path":"scripts/integration/c34/c34_species_replaceable_cantrip_source_specimen_pg17.sql","blob":"d95a0a34ea9ed827b02de31880defad82cdce1fb"},{"path":"scripts/integration/c34/c34_warlock_source_and_original_two_guards_pg17.sql","blob":"6cfcf70aa601cf1445ace65de0a54bb3ee0ccef0"},{"path":"scripts/integration/c34/c34_wizard_option_a_character_scoped_signature_candidate_pg17.sql","blob":"5dd9e87bf281bda31e1d0d38ef1d8f4b0cfa1c21"},{"path":"scripts/integration/c34/c34_wizard_source_savant_signature_specimen_pg17.sql","blob":"8750730e2cda5ab2b784844d13296a19d7a3d8ee"},{"path":"scripts/integration/c34/sources/07_i1i_original_eladrin_season_pg17.sql","blob":"323ef20258d8b3a7c7bc96e0b1d279ba755fcce5"},{"path":"scripts/integration/c34/sources/08_i1j_original_khoravar_skill_pg17.sql","blob":"d84d149b5bc4ef0e62f69a048ab77620f472a94a"},{"path":"scripts/integration/c34/sources/09_i1f_original_battle_master_functions_pg17.sql","blob":"fbda236e3c1b96ef9a93c44f0a2f99a6cd77adf9"},{"path":"scripts/integration/c34/sources/10_i1f_original_battle_master_setup_pg17.sql","blob":"c5ae0b31605d9374b295eee01eefdda0718afb80"},{"path":"scripts/integration/c34/sources/11_i1e_original_wizard_functions_pg17.sql","blob":"c0322578db9e848b20a476b32681c07e316f0870"},{"path":"scripts/integration/c34/sources/12_i1e_original_wizard_setup_pg17.sql","blob":"0b833150367ce01297acf82d750de3f01be66044"},{"path":"scripts/integration/c34/sources/13_i1l_original_artificer_plans_pg17.sql","blob":"975d92fa5fef8f77e4fb690921ebba84113dfa41"},{"path":"scripts/integration/c34/sources/14_i1g_original_warlock_functions_pg17.sql","blob":"7a1cb66a17552b11e52c391563d0cf5aba52829a"},{"path":"scripts/integration/c34/sources/15_i1g_original_warlock_acquisition_pg17.sql","blob":"7ec34da724bb22ed5d299ff27a5e07e0f0373180"},{"path":"scripts/integration/c34/sources/16_i1g_original_warlock_safeguard_triggers_pg17.sql","blob":"90fd7a3f7dc81fd146605de131747755312b4aa9"},{"path":"scripts/integration/c34/sources/17_i1h_original_warlock_joint_install_pg17.sql","blob":"c8c22cafa567f986d8049060d02e687fd040601e"},{"path":"sql/20260808_44_runtime_feature_choices_spell_mastery.sql","blob":"0d9ec7d003eca7589cce2f77f09f71432f7d8961"},{"path":"sql/20260809_67_species_replaceable_cantrip_runtime.sql","blob":"3116cb96d9d812d4540ff8210c24e0a0af0cbd30"},{"path":"sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql","blob":"01e48823ac3a46aa5880e98200e97c2595501ce7"},{"path":"sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql","blob":"ecddcd514917a4d379d14b02477dfb41dbf44f29"}];
+ const bytes=new Map();
+ for(const pin of [validator,...pins]){
+   const r=spawnSync('git',['show',commit+':'+pin.path],{maxBuffer:32*1024*1024});
+   assert.equal(r.status,0);
+   const h=spawnSync('git',['hash-object','--stdin'],{input:r.stdout});
+   assert.equal(h.status,0);
+   assert.equal(h.stdout.toString().trim(),pin.blob);
+   bytes.set(pin.path,r.stdout);
+ }
+ const dir=mkdtempSync(join(tmpdir(),'c34-trigger-reader-'));
+ try{
+   const target=join(dir,validator.path);
+   mkdirSync(dirname(target),{recursive:true});
+   writeFileSync(target,bytes.get(validator.path));
+   const {auditTriggerCoverage}=await import(pathToFileURL(target).href);
+   const seen=new Set();
+   const read=file=>{
+     assert.ok(pins.some(p=>p.path===file),'Unresolved trigger audit read: '+file);
+     seen.add(file);
+     return Buffer.from(bytes.get(file));
+   };
+   const result=auditTriggerCoverage(read);
+   assert.equal(result.stagedOriginalCount,29);
+   assert.equal(result.originalMissingCount,2);
+   assert.equal(result.assurance,'SOURCE_DDL_ONLY_NOT_ALL_BRANCHES_TESTED');
+   assert.ok(seen.size>23);
+   for(const missing of seen){
+     assert.throws(()=>auditTriggerCoverage(file=>{
+       if(file===missing)throw Error('missing synthetic dependency');
+       return read(file);
+     }),/missing synthetic dependency/);
+   }
+   assert.throws(()=>auditTriggerCoverage(file=>file.endsWith('.md')?Buffer.from('synthetic drift'):read(file)));
+   console.log('Pinned trigger audit observed '+seen.size+' unique callback reads; runtime closure unresolved');
+ }finally{rmSync(dir,{recursive:true,force:true});}
+}
