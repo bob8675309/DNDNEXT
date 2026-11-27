@@ -1,0 +1,73 @@
+name: I2J nested Alert historical signed v5 (disposable only)
+on:
+  push:
+    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    paths:
+      - 'scripts/audits/i2j_origin_feat_p13_bridge_source.mjs'
+      - 'scripts/integration/i2j/test_origin_feat_alert_historical_signed.mjs'
+      - '.github/workflows/validate-i2j-origin-feat-alert-historical.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bridge:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+      DNDNEXT_I2J_WARLOCK_CONFIRM: I2J_DISPOSABLE_WARLOCK_V5_ONLY
+      DNDNEXT_I2J_ORIGIN_HISTORICAL_CONFIRM: I2J_PUBLIC_HISTORY_ALERT_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate pinned public-source schema bridge
+        run: |
+          node --check scripts/audits/i2j_origin_feat_p13_bridge_source.mjs
+          node --check scripts/integration/i2j/test_origin_feat_alert_historical_signed.mjs
+          node scripts/audits/i2j_origin_feat_p13_bridge_source.mjs > "$RUNNER_TEMP/i2j-origin-bridge.sql"
+      - name: Configure disposable Supabase PG17 and Auth
+        run: |
+          mkdir -p "$RUNNER_TEMP/i2j-origin-bridge/supabase"
+          cat > "$RUNNER_TEMP/i2j-origin-bridge/supabase/config.toml" <<'TOML'
+          project_id = "i2j-origin-bridge-local"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+          cd "$RUNNER_TEMP/i2j-origin-bridge"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Compose existing P1.3 fixture and run historical signed Alert
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -c 'SHOW server_version'
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/i2j-origin-bridge.sql"
+          (cd "$RUNNER_TEMP/i2j-origin-bridge" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i2j-origin-env"
+          source "$RUNNER_TEMP/i2j-origin-env"
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          node scripts/integration/i2j/test_origin_feat_alert_historical_signed.mjs
+      - name: Destroy disposable services
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/i2j-origin-bridge" ]; then
+            cd "$RUNNER_TEMP/i2j-origin-bridge"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          fi
