@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `439d0963b210313c59b1957db074ce6963ccb533` |
+| Exact source commit represented by this archive snapshot | `073b311dd3a87206b1442a153a865765a7bcae4d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record verified Skilled tool tests and owner-authorized live source fingerprint checks |
+| Last source commit title | Locate public skill-key source and extend signed mixed Skilled regression |
 | Files changed relative to main | 299 (211 non-docs; 88 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_ORIGIN_FEAT_SKILLED_HISTORICAL_SIGNED_2026-11-27.md`
+- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 

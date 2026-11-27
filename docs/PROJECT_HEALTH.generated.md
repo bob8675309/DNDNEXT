@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-27T06:43:52Z | research/i2j-levelup-v2-source-preflight-20261123 (439d0963b210313c59b1957db074ce6963ccb533) | e21abf39be6cb9661eeff2bbaf25d62479625438 |
+| 2026-11-27T06:48:45Z | research/i2j-levelup-v2-source-preflight-20261123 (073b311dd3a87206b1442a153a865765a7bcae4d) | e21abf39be6cb9661eeff2bbaf25d62479625438 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
