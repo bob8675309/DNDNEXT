@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `d94fe513d90ea7bfe2d536ea65dcf7813222d6c8` |
+| Exact source commit represented by this archive snapshot | `4783244b95db4b4e0fb54b8ecd34931e66bd495a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | I2J: verify historical Alert receipt and add distinct nested feat pair test |
+| Last source commit title | Record verified I2J distinct nested Origin feat pair and next bounded checkpoint |
 | Files changed relative to main | 298 (211 non-docs; 87 docs) |
-| Last source commit | 6 files (2 non-docs; 4 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_ORIGIN_FEAT_ALERT_HISTORICAL_SIGNED_2026-11-26.md`
 - `docs/research/I2J_ORIGIN_FEAT_PAIR_HISTORICAL_SIGNED_2026-11-26.md`
-- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 
