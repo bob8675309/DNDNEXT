@@ -1424,3 +1424,9 @@ Verified isolated base `58798ceb900bb8d2cefc5825913a1709ff936504`, owner I2J `1c
 Reverified isolated `b715073fe02d8c26d4ea4c880feb299c1d098387`, owner `49065cd13e48f3c596f1d96749222fe19eab6e31`, main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`. The interactive assistant verified 54 cases and teardown in job 140684201954, including original order-dependent RED and private-helper boundaries. Prior failed runs remain in history. Owner already contains that exact stage. Added [a separate scratch candidate and source/compatibility dossier](research/I2J_PROFICIENCY_PROVENANCE_2026-11-27.md). Static syntax and diff validation passed. Exact-head signed CI pending. No owner write, production migration, private transfer, public helper exposure, deployment, merge, protected map edits or paid services.
 
 **ONE NEXT:** verify signed exact-head candidate and teardown.
+
+## 2026-11-27 Central — proficiency provenance signed CI passed
+
+Exact executable `6e437e8cf69b7f0925ef5e12fc60957ae84a406c`, [run 46061144915 / job 140715438140](https://github.com/bob8675309/DNDNEXT/actions/runs/46061144915/job/140715438140) reported success for startup, all 54 inherited and PROV-01..06, and teardown. Tactical 46061144812 and docs 46061145065 passed. Direct logs returned HTTP 404. Original REMOVE-03 RED and prior failed runs were preserved. Candidate proved both removal orders, three claims and partial overlap, reacquisition, Expertise rollback, conservative history, weapon support and account isolation in [the dossier](research/I2J_PROFICIENCY_PROVENANCE_2026-11-27.md). Owner I2J's prior reversal job 140708834269 separately reported signed success and teardown. No duplicate transfer, live migrations, owner writes, protected edits, public helper, deployment, merge or paid work.
+
+**ONE NEXT:** stage the original migration-35/36 signed replacement chain and prove sibling retention and final Expertise denial through the authorized transaction.
