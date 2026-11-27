@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `375e388a9d0b7aab6e3b083b5e4e275c78be8362` |
+| Exact source commit represented by this archive snapshot | `cf1deb441eb4cd6cad8bc6f0748942d544bad0cb` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): exercise pinned joint fixture reader in isolated checkout |
+| Last source commit title | test(ci): observe pinned trigger audit reader dependencies |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
