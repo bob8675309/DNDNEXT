@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `e12caa4b67cf4a3424a34c79207f877c00ae6963` |
+| Exact source commit represented by this archive snapshot | `54a0f22acf2bb66aa4671ecb9e92e02b888308a9` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): reject mismatched research receipt identities |
+| Last source commit title | test(ci): enumerate pinned default source reader dependencies |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
