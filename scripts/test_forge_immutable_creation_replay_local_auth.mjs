@@ -2899,3 +2899,37 @@ writeFileSync("research-agent-artifact/FORGE_WARLOCK_CHILD_COMPLETION.json",JSON
  "production source RLS/browser, 14 absent original triggers, global lock ordering NOT proven"]
 },null,2)+"\n","utf8");
 console.log("PASS J164-J168 original-source Warlock nested, source-only and actual pure client serialized RPC under signed GoTrue; 17/31 staged trigger DDL unchanged");
+
+if (e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT) {
+ const {verifyEquivalenceSources,readWarlockEquivalence,writeEquivalenceReceipt}
+  = await import("./integration/i2j/forge_advancement_equivalence.mjs");
+ const source=verifyEquivalenceSources();
+ const cases=Object.fromEntries(Object.entries({J165:wcPositiveId,J167:wcSourceId,J168:wcWireId})
+  .map(([label,characterId])=>[label,readWarlockEquivalence(sql,characterId,source)]));
+ const rejectCreation=async (label,mutate,pattern)=>{
+  const requestId=randomUUID();
+  const name="Forge equivalence "+label;
+  const request=wcChild({name,requestId},true);
+  mutate(request);
+  const snapshot=()=>[warlockCounts(),speciesAbortCounts(),getStock(wcStock),scenarioSnapshot(wcWireId)];
+  const before=snapshot();
+  const result=await call3(people.PLAYER.client,request.payload,request.selections);
+  assert.equal(result.error?.code,"P0001",JSON.stringify(result.error));
+  assert.match(result.error.message,pattern);
+  assert.deepEqual(snapshot(),before);
+  assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+requestId+"'"),"0");
+  assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+requestId+"'"),"0");
+ };
+ await rejectCreation("invalid child",({payload})=>{
+  const invalid=wc.spells.find(spell=>spell.level===1);
+  const choice={key:invalid.id,value:invalid.id,name:invalid.name,source:invalid.source,kind:"spell"};
+  payload.sheet.sourceChoices["warlock-invocation-slot-2"].fields["child-agonizing-blast"].selections=[choice];
+  payload.sheet.classFeatureChoices.agonizingChild.selections=[choice];
+ },/requires a preferred Warlock damage cantrip|does not meet.*constraint/i);
+ await rejectCreation("duplicate spell",({selections})=>{
+  selections[selections.length-1]=selections[0];
+ },/duplicate starting magic spell selections|duplicate spell choices/i);
+ writeEquivalenceReceipt(e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT,"creation",{
+  cases,rejections:["omitted-child","invalid-child","duplicate-spell"],replay:"same-nonce-inert"
+ });
+}
