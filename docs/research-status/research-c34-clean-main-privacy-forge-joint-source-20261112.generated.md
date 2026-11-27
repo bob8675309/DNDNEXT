@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `fc3f972f9d89a2f58f7434a0fc3cd998ff97bcc6` |
+| Exact source commit represented by this archive snapshot | `ccd6344b0a97999410f3099ff0a8bbea55667cfc` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): synchronize inherited custody handoff |
+| Last source commit title | docs(c34): certify inherited PR332 workflow textual retention |
 | Files changed relative to main | 441 (324 non-docs; 117 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
