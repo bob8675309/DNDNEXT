@@ -50,11 +50,12 @@ export function readWarlockEquivalence(sql, characterId, source) {
       type:"eldritch-invocation", acquiredLevel:option.acquisitionLevel, childId,
     });
     assert.equal(group.ownerType, "class-option");
+    assert.equal(group.ownerKey, "warlock-invocation-"+option.slot);
     assert.equal(group.placement, "class");
     assert.equal(invocation.key, row.optionKey);
     assert.equal(invocation.source, row.source);
     assert.equal(child?.value ?? child?.key ?? null, childId);
-    return {...row, ownerType:group.ownerType, placement:group.placement};
+    return {...row, ownerType:group.ownerType, ownerKey:group.ownerKey, placement:group.placement};
   });
   const spells = JSON.parse(sql("SELECT jsonb_agg(jsonb_build_object('spellId',spell_id,'type',source_type,"+
     "'key',source_key,'ability',casting_stat,'available',always_available) ORDER BY spell_id) FROM public.character_spells"+
@@ -86,8 +87,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     assert.deepEqual(receipt.common, advancement.earned.common, id);
   }
   assert.deepEqual(creation.rejections, ["omitted-child", "invalid-child", "duplicate-spell"]);
-  assert.deepEqual(advancement.rejections, ["omitted-child", "invalid-child", "duplicate-invocation", "repeated-submission"]);
+  assert.deepEqual(advancement.rejections, ["omitted-child", "invalid-child", "duplicate-invocation"]);
   assert.equal(creation.replay, "same-nonce-inert");
+  assert.equal(advancement.repeatSubmission, "REPLACE-04");
   assert.deepEqual(advancement.replacementStages, ["REPLACE-01", "REPLACE-02", "REPLACE-03", "REPLACE-04", "REPLACE-05", "REPLACE-06", "REPLACE-07"]);
   console.log("::notice title=Signed Forge and advancement equivalence::J165, J167 and J168 persisted the same source-qualified earned slots, child and class-owned Eldritch Blast as signed v5. Original rejections, nonce replay and replacement stages passed.");
 }
