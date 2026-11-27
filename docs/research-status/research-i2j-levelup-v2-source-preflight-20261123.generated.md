@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `f0b666c9e52207ad18287f4dca8da50233250554` |
+| Exact source commit represented by this archive snapshot | `08406b02f05636856ab51d56f9cd2008074c63c1` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record verified onboarding merge and pending I2J bridge execution |
-| Files changed relative to main | 292 (207 non-docs; 85 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | I2J: test signed nested Alert using public historical caller and exact materializer |
+| Files changed relative to main | 295 (209 non-docs; 86 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-origin-feat-alert-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_ORIGIN_FEAT_ALERT_HISTORICAL_SIGNED_2026-11-26.md`
+- `scripts/integration/i2j/test_origin_feat_alert_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -56,6 +59,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `.github/workflows/validate-i2j-nested-origin-feat-payload.yml`
+- `.github/workflows/validate-i2j-origin-feat-alert-historical.yml`
 - `.github/workflows/validate-i2j-origin-feat-p13-bridge.yml`
 - `.github/workflows/validate-i2j-origin-feat-private-intake.yml`
 - `.github/workflows/validate-i2j-origin-feat-schema-contract.yml`
@@ -71,8 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
 - `components/NpcPanel.js`
-- `components/PlayerCharacterProfilePanelUnified.js`
-- … 242 more
+- … 245 more
 
 ## Trust and update procedure
 
