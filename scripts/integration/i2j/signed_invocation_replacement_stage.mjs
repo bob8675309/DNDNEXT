@@ -7,6 +7,7 @@ const replacement36=pinned('sql/20260808_36_fix_invocation_replacement_source_ch
 const featureTableSource=pinned('sql/20260712_01_profile_sheet_class_refinements.sql','950fbc50289b603dcaaf0d6fbdfd1f7ca46a64fb');
 const subclassSource=pinned('sql/20260720_01_subclass_compatibility_and_selection.sql','4e938bc3217f11b8a4ef589da83af00aaca51782');
 const battleMasterSource=pinned('sql/20260808_39_battle_master_maneuver_progression.sql','8782874160f4fa098241292920aa826ed17ee2d1');
+const wizardSavantSource=pinned('sql/20260808_41_wizard_savant_forge_chronology.sql','b0f3380b7ec22124ea19de3724867877060c6d92');
 const optionSource=pinned('sql/20260808_18_metamagic_mystic_arcanum_progression.sql','ce7d4ec3f37eeb0a29b8a07cd64609ee9627642f');
 const signedV5Name='public.complete_character_level_up_v5(uuid,jsonb)';
 const replacementGroup='warlock-invocation-replacement';
@@ -63,13 +64,19 @@ const scopeBefore=def(scopeName),gapBefore=def(gapName);
 sql(once(once(scopeBefore,'p_to_level<>2','p_to_level NOT IN (2,3)'),'cp.class_level IN (1,2)','cp.class_level IN (1,2,3)'));
 sql(once(gapBefore,'$3<>1 OR $4<>2','NOT (($3=1 AND $4=2) OR ($3=2 AND $4=3))'));
 
-// The inherited level-two Fighter stub rejects any subclass argument.
-// Use migration 39's actual non-Fighter exit for this Warlock specimen.
-const battleMasterName='private.apply_level_up_battle_master_maneuvers_v1';
-const battleMasterSignature=battleMasterName+'(uuid,integer,jsonb,text)';
-const battleMasterBefore=def(battleMasterSignature);
-sql(fn(battleMasterSource,battleMasterName));
-assert.equal(sql("SELECT has_function_privilege('authenticated',"+q(battleMasterSignature)+",'EXECUTE')"),'f');
+// The inherited level-two placeholders both reject any subclass. Use the
+// pinned public functions, which take their original nonmatching-class exits.
+const subclassTails=[
+ [battleMasterSource,'private.apply_level_up_battle_master_maneuvers_v1'],
+ [wizardSavantSource,'private.apply_level_up_wizard_savant_v1']
+];
+const scratchPlaceholders=[[tailName,originalTail]];
+for(const [source,name] of subclassTails){
+ const signature=name+'(uuid,integer,jsonb,text)';
+ scratchPlaceholders.push([signature,def(signature)]);
+ sql(fn(source,name));
+ assert.equal(sql("SELECT has_function_privilege('authenticated',"+q(signature)+",'EXECUTE')"),'f');
+}
 
 const replacementV1='private.apply_level_up_warlock_invocation_replacement_v1';
 const replacementV2='private.apply_level_up_warlock_invocation_replacement_v2';
@@ -238,7 +245,7 @@ try{
  sql(actualEnsure);
  // PostgreSQL cannot replace named parameters with the unnamed arguments
  // of the inherited scratch stubs. Restore their exact definitions and ACL.
- for(const [name,definition] of [[tailName,originalTail],[battleMasterSignature,battleMasterBefore]]){
+ for(const [name,definition] of scratchPlaceholders){
   sql('DROP FUNCTION '+name);
   sql(definition);
   sql('REVOKE ALL ON FUNCTION '+name+' FROM PUBLIC,anon,authenticated');
@@ -247,8 +254,7 @@ try{
  sql(gapBefore);
 }
 assert.equal(md5(replacementV1+replacementArgs),actualV1Hash);
-assert.equal(def(tailName),originalTail);
-assert.equal(def(battleMasterSignature),battleMasterBefore);
+for(const [name,definition] of scratchPlaceholders)assert.equal(def(name),definition);
 assert.equal(md5(removeSignature),removeHash);
 assert.equal(md5(signedV5Name),'02d74b973a763c53c595be20e35e512f');
 assert.equal(lessonsSchema(),originalLessonsSchema);
@@ -260,3 +266,4 @@ assert.deepEqual(untouchedReplacementTargets.map(resourceSnapshot).map(({state,.
 assert.deepEqual(untouchedReplacementTargets.map(effectLedger),untouchedBaselines);
 for(const [name,hash] of [...unchangedFunctions,...guardFingerprints,...exactChain.filter(([name])=>name!==replacementV2+replacementArgs)])assert.equal(md5(name),hash,name);
 removalEvidence('REPLACE-07: unrelated character/resource state, v5 and original guards preserved; pinned replacement v1 MD5 '+actualV1Hash+', source chain '+exactChain.map(([name,hash])=>name+' '+hash).join(', ')+'.');
+console.log('::notice title=Signed Invocation replacement::REPLACE-01 through REPLACE-07 passed. Pinned replacement v1 MD5 '+actualV1Hash+'; '+exactChain.map(([name,hash])=>name+' MD5 '+hash).join('; ')+'.');
