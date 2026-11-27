@@ -207,3 +207,72 @@ assert.deepEqual(account(),accountBefore);assert.deepEqual(snap(other),otherBefo
 for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);assert.equal(triggerSnapshot(),triggers);
 console.log('PASS OF-PAIR-03 repeat submission preserves records and unrelated character; candidate fingerprints unchanged');
 console.log('OF-PAIR RESULT: historical public caller/validator and previously characterized scratch corrections only; no restored-source or production acceptance');
+
+
+// Independent duplicate nonrepeatable feat rollback cases. Keep OF-PAIR-01..03
+// byte-for-byte; use the same real signed client and unchanged public v5.
+// The historical earned caller invokes the materializer before checking its
+// distinct dependent-child token. Assert the exact materializer rejection.
+for(const id of [alertId,luckyId]){
+ assert.equal(sql("SELECT count(*) FROM public.character_option_catalog WHERE id="+q(id)+" AND NOT coalesce((metadata->>'repeatable')::boolean,false)"),'1');
+}
+function duplicatePairInput(id,name){
+ const request=pairInput();
+ for(const s of [slot,slot3])request.class_choice_selections[s][child]=[id];
+ request.class_option_feat_instances=request.class_option_feat_instances.map(row=>({...row,optionId:id,name}));
+ assert.equal(new Set(request.class_option_feat_instances.map(row=>row.instanceId)).size,2);
+ assert.equal(new Set(request.class_option_feat_instances.map(row=>row.acquisitionOwnerKey)).size,2);
+ return request;
+}
+function extendedSnapshot(target){
+ return {...snap(target),
+  character:sql("SELECT md5(to_jsonb(c)::text) FROM public.characters c WHERE id="+q(target.id)),
+  legacyRows:sql("SELECT md5(coalesce(string_agg(to_jsonb(g)::text,'' ORDER BY to_jsonb(g)::text),'')) FROM private.player_forge_source_choice_legacy_v1 g"+target.w)};
+}
+const duplicateOriginal=seed(),duplicateCandidate=seed();
+mark('origin-duplicate');
+const duplicateControls=[t,other,duplicateOriginal,duplicateCandidate];
+const beforeDuplicates=duplicateControls.map(extendedSnapshot);
+const candidateFeatDefinition=def(featName);
+try{
+ sql(exactFeat);
+ assert.equal(md5(featName),materializerHash);
+ await deny(editor,duplicateOriginal,duplicatePairInput(alertId,'Alert'),/^Alert is not repeatable and is already granted to this character\.$/,'P0001');
+ assert.deepEqual(duplicateControls.map(extendedSnapshot),beforeDuplicates);
+ console.log('PASS OF-PAIR-04 duplicate Alert denied by exact original materializer; all scoped state and legacy account mirrors rolled back');
+}finally{
+ sql(candidateFeatDefinition);
+}
+for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
+await deny(editor,duplicateCandidate,duplicatePairInput(luckyId,'Lucky'),/^Lucky is not repeatable and is already granted to this character\.$/,'P0001');
+assert.deepEqual(duplicateControls.map(extendedSnapshot),beforeDuplicates);
+console.log('PASS OF-PAIR-05 duplicate Lucky denied by scratch mirror-only materializer candidate; all scoped state unchanged');
+
+// The failed transaction must not consume the pending level-up or leave a
+// first-child grant behind. Retry the SAME character with distinct children.
+const retry=await apply(editor,duplicateCandidate,pairInput());
+assert.ifError(retry.error);
+final(duplicateCandidate,[lessons,lessons],{1:alertId,2:luckyId});
+const retryGrants=JSON.parse(sql("SELECT jsonb_agg(to_jsonb(g) ORDER BY acquisition_owner_key) FROM public.character_option_grant_instances g"+duplicateCandidate.w));
+assert.equal(retryGrants.length,2);
+for(const [i,g] of retryGrants.entries()){
+ assert.equal(g.option_id,[alertId,luckyId][i]);
+ assert.equal(g.instance_key,'invocation-'+[slot,slot3][i]+'-origin-feat');
+ assert.equal(g.acquisition_owner_key,[slot,slot3][i]);
+ assert.equal(g.acquisition_level,2);
+ assert.equal(g.granted_by,editor.id);
+ assert.equal(g.repeatable,false);
+}
+const retryPresence=JSON.parse(sql("SELECT jsonb_agg(option_id ORDER BY option_id) FROM public.character_option_grants"+duplicateCandidate.w));
+assert.deepEqual(retryPresence,[alertId,luckyId].sort());
+const retrySheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+duplicateCandidate.w));
+for(const g of retryGrants){
+ assert.equal(retrySheet.feats.filter(x=>x===g.option_name).length,1);
+ assert.equal(retrySheet.featGrantInstances.filter(x=>x.instanceId===g.instance_key&&x.optionId===g.option_id&&x.acquisitionOwnerKey===g.acquisition_owner_key).length,1);
+}
+assert.deepEqual(duplicateControls.slice(0,3).map(extendedSnapshot),beforeDuplicates.slice(0,3));
+assert.deepEqual(account(),beforeDuplicates[3].accounts);
+for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
+assert.equal(triggerSnapshot(),triggers);
+console.log('PASS OF-PAIR-06 corrected distinct-child retry completes the same pending level-up once after rollback; other characters and accounts preserved');
+console.log('OF-PAIR EXTENSION RESULT: nonrepeatable Alert/Lucky historical graph only; no repeatable feat, restored-source or production acceptance');
