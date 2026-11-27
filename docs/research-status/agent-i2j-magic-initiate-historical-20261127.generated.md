@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `d54e0798ba4c6930445fee4464d5a3778015fa69` |
+| Exact source commit represented by this archive snapshot | `f0801ede6cdbd5ac632e78e1eca68d3646788c32` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Use original non-Fighter exit for level-three subclass selection |
+| Last source commit title | Restore scratch function signatures without changing original parameters |
 | Files changed relative to main | 315 (218 non-docs; 97 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
