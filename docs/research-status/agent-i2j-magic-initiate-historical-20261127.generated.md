@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `6e437e8cf69b7f0925ef5e12fc60957ae84a406c` |
+| Exact source commit represented by this archive snapshot | `9f849a67c8d671ac6afbee394223551b760b58f6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Verify order-independent proficiency provenance in disposable CI |
+| Last source commit title | Record disposable proficiency provenance CI results |
 | Files changed relative to main | 313 (217 non-docs; 96 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_PROFICIENCY_PROVENANCE_2026-11-27.md`
-- `scripts/fixtures/i2j_proficiency_provenance_scratch_pg17.sql`
-- `scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs`
 
 ## Research-branch change inventory versus main
 
