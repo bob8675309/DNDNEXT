@@ -5,22 +5,18 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `c4644687ee1d1eaa244049dc4d1989d3659c048c` |
+| Exact source commit represented by this archive snapshot | `2862fdd5ee5bf5ae87d1a1b956b048ade3d1c0e6` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Characterize original reversible feat effect ownership |
+| Last source commit title | Initialize canonical skill parent in reversal specimens |
 | Files changed relative to main | 310 (215 non-docs; 95 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_REVERSIBLE_SOURCE_EFFECTS_2026-11-27.md`
 - `scripts/integration/i2j/source_owned_effect_reversal_stage.mjs`
 
 ## Research-branch change inventory versus main
