@@ -77,6 +77,11 @@ on:
       - 'scripts/validate_forge_seeded_scenarios.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      i2j_equivalence:
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -139,7 +144,7 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_candidate_pg17.sql
 
   true-local-supabase-jwt:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository || (inputs.i2j_equivalence && github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -204,6 +209,9 @@ jobs:
           set +a
           export DNDNEXT_FORGE_REPLAY_LOCAL_URL="http://127.0.0.1:54321"
           export DNDNEXT_FORGE_REPLAY_LOCAL_ANON_KEY="$ANON_KEY"
+          if [[ "${{ inputs.i2j_equivalence }}" == true ]]; then
+            export DNDNEXT_FORGE_EQUIVALENCE_RECEIPT="$RUNNER_TEMP/i2j-creation-equivalence.json"
+          fi
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
           node scripts/test_forge_immutable_creation_replay_local_auth.mjs 2>&1 | tee -a "$RUNNER_TEMP/forge-jwt-output.log"
       - name: Summarize authenticated fixture output without exposing raw logs
@@ -228,6 +236,14 @@ jobs:
             research-agent-artifact/FORGE_NESTED_CHOICE_SCENARIOS.json
             research-agent-artifact/FORGE_WARLOCK_CHILD_COMPLETION.json
           if-no-files-found: warn
+          retention-days: 3
+      - name: Upload signed creation equivalence receipt
+        if: inputs.i2j_equivalence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2j-creation-equivalence
+          path: ${{ runner.temp }}/i2j-creation-equivalence.json
+          if-no-files-found: error
           retention-days: 3
       - name: Stop and destroy disposable local services
         if: always()

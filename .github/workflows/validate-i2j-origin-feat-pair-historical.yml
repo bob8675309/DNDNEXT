@@ -11,6 +11,9 @@ on:
       - 'scripts/integration/i2j/source_owned_effect_reversal_stage.mjs'
       - 'scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs'
       - 'scripts/integration/i2j/signed_invocation_replacement_stage.mjs'
+      - 'scripts/integration/i2j/forge_advancement_equivalence*.mjs'
+      - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
+      - '.github/workflows/validate-forge-immutable-creation-replay.yml'
       - 'scripts/fixtures/i2j_proficiency_provenance_scratch_pg17.sql'
       - '.github/workflows/validate-i2j-origin-feat-pair-historical.yml'
   workflow_dispatch:
@@ -79,9 +82,18 @@ jobs:
           reversal=scripts/integration/i2j/source_owned_effect_reversal_stage.mjs
           provenance=scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs
           replacement=scripts/integration/i2j/signed_invocation_replacement_stage.mjs
-          cat "$historical" "$candidate" "$resource" "$rest" "$reversal" "$provenance" "$replacement" > "$bundle"
+          equivalence=scripts/integration/i2j/forge_advancement_equivalence_stage.mjs
+          cat "$historical" "$candidate" "$resource" "$rest" "$reversal" "$provenance" "$replacement" "$equivalence" > "$bundle"
           node --input-type=module --check < "$bundle"
           node --input-type=module < "$bundle"
+      - name: Upload signed advancement equivalence receipt
+        if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2j-advancement-equivalence
+          path: ${{ runner.temp }}/i2j-advancement-equivalence.json
+          if-no-files-found: error
+          retention-days: 3
       - name: Destroy disposable services
         if: always()
         run: |
@@ -89,3 +101,30 @@ jobs:
             cd "$RUNNER_TEMP/i2j-origin-bridge"
             npx --yes supabase@2.120.0 stop --no-backup || true
           fi
+  forge-creation:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    uses: ./.github/workflows/validate-forge-immutable-creation-replay.yml
+    with:
+      i2j_equivalence: true
+
+  compare-signed-equivalence:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    needs: [bridge, forge-creation]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: i2j-*-equivalence
+          path: ${{ runner.temp }}/i2j-equivalence
+          merge-multiple: true
+      - name: Compare the signed source-qualified receipts at exact head
+        run: |
+          node scripts/integration/i2j/forge_advancement_equivalence.mjs \
+            "$RUNNER_TEMP/i2j-equivalence/i2j-creation-equivalence.json" \
+            "$RUNNER_TEMP/i2j-equivalence/i2j-advancement-equivalence.json"
