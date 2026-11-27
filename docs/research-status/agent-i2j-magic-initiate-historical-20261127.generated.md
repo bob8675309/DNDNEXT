@@ -5,22 +5,18 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `4c50866c8fe0287ebf34f396b7dec870171651f1` |
+| Exact source commit represented by this archive snapshot | `3f535489314bd6dff8665783e1bda5a21d3ffa10` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Verify original Invocation replacement through signed advancement |
+| Last source commit title | Use the shared provenance fixture registry in replacement checks |
 | Files changed relative to main | 315 (218 non-docs; 97 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_SIGNED_INVOCATION_REPLACEMENT_2026-11-27.md`
 - `scripts/integration/i2j/signed_invocation_replacement_stage.mjs`
 
 ## Research-branch change inventory versus main
