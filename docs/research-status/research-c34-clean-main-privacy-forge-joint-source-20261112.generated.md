@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `c76677c319cd8ccd67e275daf0964daf976cfb99` |
+| Exact source commit represented by this archive snapshot | `fc8f88539fe1e740307d04bce8c7c32811aa9803` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record inherited J167 validator source comparison |
+| Last source commit title | docs(c34): record inherited J167 replay source comparison |
 | Files changed relative to main | 438 (324 non-docs; 114 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
