@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `b3918eef87990265ace3e9bc40389b41545f391f` |
+| Exact source commit represented by this archive snapshot | `b28544f007779587c95ff961c60df106a9baa3fa` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record signed Magic Initiate CI results |
-| Files changed relative to main | 300 (211 non-docs; 89 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | Characterize repeatable historical Origin feat acquisition |
+| Files changed relative to main | 301 (211 non-docs; 90 docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,6 +19,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_REPEATABLE_ORIGIN_FEAT_ACQUISITION_2026-11-27.md`
+- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 250 more
+- … 251 more
 
 ## Trust and update procedure
 
