@@ -798,6 +798,28 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
    assert.equal(result.originalMissingCount,2);
    assert.equal(result.assurance,'SOURCE_DDL_ONLY_NOT_ALL_BRANCHES_TESTED');
    assert.ok(seen.size>23);
+   // Consolidate candidate identities without promoting observed reads to closure.
+   const groups=[defaultReaderPins,jointDeclaredPins,pins,observedSourceRoots];
+   function consolidate(groups){
+     const merged=new Map();
+     for(const group of groups) for(const pin of group){
+       if(typeof pin.path!=='string'||!pin.path||pin.path.includes('\\')||
+          pin.path.split('/').some(p=>!p||p==='.'||p==='..')||
+          !/^[0-9a-f]{40}$/.test(pin.blob)||/^0+$/.test(pin.blob)) throw Error('invalid dependency pin');
+       if(merged.has(pin.path)&&merged.get(pin.path)!==pin.blob) throw Error('conflicting dependency identity');
+       merged.set(pin.path,pin.blob);
+     }
+     return [...merged].sort(([a],[b])=>a<b?-1:a>b?1:0);
+   }
+   const merged=consolidate(groups);
+   assert.deepEqual(merged,consolidate([...groups].reverse()));
+   assert.deepEqual(merged,consolidate([...groups,defaultReaderPins]));
+   assert.throws(()=>consolidate([...groups,[{...pins[0],blob:'1'.repeat(40)}]]),/conflicting/);
+   assert.throws(()=>consolidate([[{path:'../outside',blob:pins[0].blob}]]),/invalid/);
+   const inventory=new Map(merged);
+   for(const file of seen) assert.equal(inventory.get(file),pins.find(p=>p.path===file).blob);
+   console.log('Consolidated candidate inventory: '+merged.length+' unique paths; observed trigger reads: '+seen.size+'; closure unresolved');
+
    for(const missing of seen){
      assert.throws(()=>auditTriggerCoverage(file=>{
        if(file===missing)throw Error('missing synthetic dependency');
