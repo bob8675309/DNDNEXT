@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `c99a836bdb5154cdceb5051a4ea344065dbbf4e9` |
+| Exact source commit represented by this archive snapshot | `27a45b1044aa90108d1bf91ecd84959982164366` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Consolidate verified signed invocation replacement into owner I2J |
-| Files changed relative to main | 315 (218 non-docs; 97 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit title | Consolidate source-locked Forge advancement equivalence into owner I2J |
+| Files changed relative to main | 320 (222 non-docs; 98 docs) |
+| Last source commit | 8 files (5 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,14 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_SIGNED_INVOCATION_REPLACEMENT_2026-11-27.md`
-- `scripts/integration/i2j/signed_invocation_replacement_stage.mjs`
+- `docs/research/I2J_FORGE_ADVANCEMENT_EQUIVALENCE_2026-11-27.md`
+- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
+- `scripts/integration/i2j/forge_advancement_equivalence_stage.mjs`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -29,6 +32,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-c3-3-forge-privacy-original.yml`
 - `.github/workflows/validate-c3-3-npc-pdf-visual.yml`
 - `.github/workflows/validate-centered-npc-profile.yml`
+- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `.github/workflows/validate-i1b-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-i1c-forge-story-nonce-local-auth.yml`
 - `.github/workflows/validate-i1d-forge-trigger-inventory-local-auth.yml`
@@ -74,8 +78,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/MapPageClient.js`
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
-- `components/NpcForgeStepContent.js`
-- … 265 more
+- … 270 more
 
 ## Trust and update procedure
 
