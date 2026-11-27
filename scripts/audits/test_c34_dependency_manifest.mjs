@@ -657,3 +657,42 @@ function bindResearchReceipt(receipt, expected) {
  assert.equal(bindResearchReceipt(expected,null).identityMatches,false);
  console.log('Synthetic receipt identity binding passed; authentication and authorization remain unproven');
 }
+
+ // Bounded default-reader dependency enumeration, reviewed against source blob
+ // 18702c6948ad90772fd680585331fdaff9d2a7a9. Injected readers remain unresolved.
+const defaultReaderPins = [
+ ['01_forge_immutable_intent.sql','99bceee24c1718570237e70a65fe3172f4c9fbc9'],
+ ['02_npc_profile_stage1.sql','9dfe44eee49df6ead8c8ccfc7a0454a996b8bee3'],
+ ['03_npc_dossier_stage2.sql','afdd2849c3ae2be5929fd8c11c9b4e19f4f6a7ac'],
+ ['04_private_story_stage3.sql','01e48823ac3a46aa5880e98200e97c2595501ce7'],
+ ['05_inventory_constraint_rls.sql','4532ddb8db642d0d0ab14646a3e87c034d4134c6'],
+ ['06_story_complete_nonce_i1c.sql','91f5fb918bf205f2d4462e2ff0089f656601328e']
+].map(([file,blob])=>({path:'scripts/integration/c34/sources/'+file,blob}));
+function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
+ const fail=()=>({edges:[],defaultReaderResolved:false,closureProven:false,bypassAuthorized:false,recommendation:'full'});
+ if(sourceBlob!==observedSourceRoots[0].blob||readerKind!=='default'||!Array.isArray(rows))return fail();
+ for(const pin of defaultReaderPins){
+   const matches=rows.filter(r=>r?.path===pin.path);
+   if(matches.length!==1||matches[0].blob!==pin.blob||matches[0].mode!=='100644')return fail();
+ }
+ return {...fail(),edges:defaultReaderPins.map(p=>p.path),defaultReaderResolved:true};
+}
+{
+ const rows=defaultReaderPins.map(p=>({...p,mode:'100644'}));
+ const blob=observedSourceRoots[0].blob;
+ const good=resolveDefaultReaderInventory(blob,'default',rows);
+ assert.equal(good.defaultReaderResolved,true);
+ assert.equal(good.edges.length,6);
+ for(const result of [good,resolveDefaultReaderInventory(blob,'injected',rows),
+ resolveDefaultReaderInventory('0'.repeat(40),'default',rows),
+ resolveDefaultReaderInventory(blob,'default',rows.slice(1)),
+ resolveDefaultReaderInventory(blob,'default',[...rows,rows[0]]),
+ resolveDefaultReaderInventory(blob,'default',rows.map((r,i)=>i? r:{...r,mode:'120000'})),
+ resolveDefaultReaderInventory(blob,'default',rows.map((r,i)=>i? r:{...r,blob:'0'.repeat(40)}))]){
+   assert.equal(result.closureProven,false);
+   assert.equal(result.bypassAuthorized,false);
+   assert.equal(result.recommendation,'full');
+   if(result!==good){assert.equal(result.defaultReaderResolved,false);assert.deepEqual(result.edges,[]);}
+ }
+ console.log('Default reader six-stage inventory model passed; injected readers and runtime closure unresolved');
+}
