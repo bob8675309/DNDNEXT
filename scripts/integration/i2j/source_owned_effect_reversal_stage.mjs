@@ -61,7 +61,7 @@ function rejectOwnedRemoval(target,key,ownerType,ownerKey,pattern){
 const introducingFirst=seed(), laterFirst=seed(), expertiseRemovalTarget=seed(), toughRemovalTarget=seed();
 const skilledOverlap={'skills-or-tools':[...skillChoices,toolChoices[0]]};
 for(const target of [introducingFirst,laterFirst,expertiseRemovalTarget]){
- sql("UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{tools}',"+json([toolChoices[0].label])+",true)"+target.w);
+ sql("UPDATE public.character_sheets SET sheet=sheet||"+json({tools:[toolChoices[0].label],proficiencies:{skills:{}}})+target.w);
 }
 sql(providerTail);
 try{
