@@ -696,3 +696,31 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
  }
  console.log('Default reader six-stage inventory model passed; injected readers and runtime closure unresolved');
 }
+
+ // Bind the six-stage default reader to the historical signed Git tree.
+ // This proves tracked identities, not injected-reader or runtime closure.
+{
+ const commit='6e3195708340505aaa85a6b09b6e08e3c88249f0';
+ const tree='01e744bb948add770161babc1c3bd40ca52dfffb';
+ assert.equal(boundCommitTree(custodyGit(['cat-file','commit',commit]),commit),tree);
+ const rows=custodyGit(['ls-tree','-r','-z',commit]).split('\0').filter(Boolean).map(row=>{
+   const tab=row.indexOf('\t');
+   assert.ok(tab>0);
+   const [mode,type,blob]=row.slice(0,tab).split(' ');
+   return {mode,type,blob,path:row.slice(tab+1)};
+ });
+ const verify=inventory=>{
+   if(!verifyJointTree(inventory,tree)) return false;
+   const validator=inventory.filter(r=>r.path===observedSourceRoots[0].path);
+   return validator.length===1 && validator[0].mode==='100644' &&
+     resolveDefaultReaderInventory(validator[0].blob,'default',inventory).defaultReaderResolved;
+ };
+ assert.equal(verify(rows),true);
+ for(const pin of [...defaultReaderPins,observedSourceRoots[0]]){
+   assert.equal(verify(rows.filter(r=>r.path!==pin.path)),false);
+   assert.equal(verify(rows.map(r=>r.path===pin.path?{...r,blob:sha('drift')}:r)),false);
+   assert.equal(verify(rows.map(r=>r.path===pin.path?{...r,mode:'120000'}:r)),false);
+ }
+ assert.equal(verify([...rows,rows[0]]),false);
+ console.log('Historical signed tree binds six default-reader sources and validator; runtime closure unresolved');
+}
