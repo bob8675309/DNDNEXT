@@ -5,18 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `1f99da163c2bfaffe478988807b1cb9a3610e90f` |
+| Exact source commit represented by this archive snapshot | `b715073fe02d8c26d4ea4c880feb299c1d098387` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Publish disposable reversal assertion location for CI diagnosis |
+| Last source commit title | Probe private removal with independent ownership and retain deferred veto |
 | Files changed relative to main | 310 (215 non-docs; 95 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 2 files (1 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
+- `docs/research/I2J_REVERSIBLE_SOURCE_EFFECTS_2026-11-27.md`
 - `scripts/integration/i2j/source_owned_effect_reversal_stage.mjs`
 
 ## Research-branch change inventory versus main
