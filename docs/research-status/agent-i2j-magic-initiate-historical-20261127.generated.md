@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `36bb1f7878df51dd3bab1cdb13104c67c0eea886` |
+| Exact source commit represented by this archive snapshot | `b695d9c26d710b1d54bbc1010d3ea9dfaedc09d1` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record repeatable Origin feat signed results |
-| Files changed relative to main | 301 (211 non-docs; 90 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | Test reusable repeatability and spell identity in disposable signed CI |
+| Files changed relative to main | 304 (212 non-docs; 92 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_REPEATABLE_ORIGIN_FEAT_ACQUISITION_2026-11-27.md`
+- `docs/research/I2J_REPEATABILITY_SPELL_IDENTITY_CANDIDATE_2026-11-27.md`
+- `scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 251 more
+- … 254 more
 
 ## Trust and update procedure
 
