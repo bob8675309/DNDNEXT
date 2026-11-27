@@ -599,3 +599,33 @@ function verifyJointTree(rows, expectedTree) {
  assert.equal(verifyJointTree([...rows,rows[0]],tree),false);
  console.log('Pinned signed tree inventory verified; runtime closure and bypass remain unproven');
 }
+
+ // Finite research disposition: synthetic evidence flags are not authorization.
+function assessResearchCompletion(evidence) {
+ const required = ['authenticatedCompleteDiff','candidateDependencyClosure',
+   'unchangedWorkflowTrust','requiredStatusSemantics','ownerIntegrationApproval'];
+ const missing = required.filter(key => !Object.hasOwn(evidence ?? {},key) || evidence[key] !== true);
+ return {missing, readyForOwnerReview:missing.length===0,
+   bypassAuthorized:false, recommendation:'full', signedAccepted:false};
+}
+{
+ const complete = {authenticatedCompleteDiff:true,candidateDependencyClosure:true,
+   unchangedWorkflowTrust:true,requiredStatusSemantics:true,ownerIntegrationApproval:true};
+ assert.deepEqual(assessResearchCompletion(complete),
+   {missing:[],readyForOwnerReview:true,bypassAuthorized:false,recommendation:'full',signedAccepted:false});
+ for (const key of Object.keys(complete)) {
+   for (const value of [false,undefined,null,'true',1]) {
+     const result=assessResearchCompletion({...complete,[key]:value});
+     assert.deepEqual(result.missing,[key]);
+     assert.equal(result.readyForOwnerReview,false);
+     assert.equal(result.bypassAuthorized,false);
+     assert.equal(result.recommendation,'full');
+     assert.equal(result.signedAccepted,false);
+   }
+   const omitted={...complete}; delete omitted[key];
+   assert.deepEqual(assessResearchCompletion(omitted).missing,[key]);
+ }
+ assert.equal(assessResearchCompletion(null).missing.length,5);
+ assert.equal(assessResearchCompletion(Object.create(complete)).missing.length,5);
+ console.log('Finite research disposition model passed; no live bypass authorized');
+}
