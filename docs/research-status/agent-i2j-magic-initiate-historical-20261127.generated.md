@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `912400e1676ecda5413c41beeb6b74b1dabafe25` |
+| Exact source commit represented by this archive snapshot | `686ad80d12821b1d1253b651f6fe4e61123f1098` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record disposable repeatability and spell identity CI results |
-| Files changed relative to main | 304 (212 non-docs; 92 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | Verify shared spell resource consumption by assignment ID |
+| Files changed relative to main | 306 (213 non-docs; 93 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_REPEATABILITY_SPELL_IDENTITY_CANDIDATE_2026-11-27.md`
+- `docs/research/I2J_SHARED_SPELL_RESOURCE_CONSUMPTION_2026-11-27.md`
+- `scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 254 more
+- … 256 more
 
 ## Trust and update procedure
 
