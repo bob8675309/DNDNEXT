@@ -236,13 +236,19 @@ try{
  sql(originalRemove);
  sql(actualV1);
  sql(actualEnsure);
- sql(originalTail);
+ // PostgreSQL cannot replace named parameters with the unnamed arguments
+ // of the inherited scratch stubs. Restore their exact definitions and ACL.
+ for(const [name,definition] of [[tailName,originalTail],[battleMasterSignature,battleMasterBefore]]){
+  sql('DROP FUNCTION '+name);
+  sql(definition);
+  sql('REVOKE ALL ON FUNCTION '+name+' FROM PUBLIC,anon,authenticated');
+ }
  sql(scopeBefore);
  sql(gapBefore);
- sql(battleMasterBefore);
 }
 assert.equal(md5(replacementV1+replacementArgs),actualV1Hash);
 assert.equal(def(tailName),originalTail);
+assert.equal(def(battleMasterSignature),battleMasterBefore);
 assert.equal(md5(removeSignature),removeHash);
 assert.equal(md5(signedV5Name),'02d74b973a763c53c595be20e35e512f');
 assert.equal(lessonsSchema(),originalLessonsSchema);
