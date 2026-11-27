@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/audits/i2j_origin_feat_p13_bridge_source.mjs'
       - 'scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs'
+      - 'scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs'
       - '.github/workflows/validate-i2j-origin-feat-pair-historical.yml'
   workflow_dispatch:
 permissions:
@@ -64,7 +65,16 @@ jobs:
           source "$RUNNER_TEMP/i2j-origin-env"
           export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
           export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
-          node scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs
+          if [[ "$GITHUB_REF" == refs/heads/agent/i2j-magic-initiate-historical-20261127 ]]; then
+            historical=scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs
+            candidate=scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs
+            bundle="$RUNNER_TEMP/i2j-repeatability-stages.mjs"
+            cat "$historical" "$candidate" > "$bundle"
+            node --input-type=module --check < "$bundle"
+            node --input-type=module < "$bundle"
+          else
+            node scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs
+          fi
       - name: Destroy disposable services
         if: always()
         run: |
