@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `13e358343b869013deb798c351de91a944563397` |
+| Exact source commit represented by this archive snapshot | `4ceb06cecfd0b395df7b0421974ddfdba35f4b7c` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Isolate Forge rejection stock and surface scoped CI diagnostics |
+| Last source commit title | Exercise invalid child through the original source-only Forge validator |
 | Files changed relative to main | 319 (222 non-docs; 97 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 3 files (3 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,8 @@
 
 ## Latest source commit paths
 
+- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
+- `scripts/integration/i2j/forge_advancement_equivalence_stage.mjs`
 - `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 
 ## Research-branch change inventory versus main
