@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `2862fdd5ee5bf5ae87d1a1b956b048ade3d1c0e6` |
+| Exact source commit represented by this archive snapshot | `1f99da163c2bfaffe478988807b1cb9a3610e90f` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Initialize canonical skill parent in reversal specimens |
+| Last source commit title | Publish disposable reversal assertion location for CI diagnosis |
 | Files changed relative to main | 310 (215 non-docs; 95 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
