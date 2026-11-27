@@ -1,3 +1,5 @@
+> **2026-11-26 owner-directed workflow clarification:** [CONNECTED_DEVELOPMENT_WORKFLOW.md](CONNECTED_DEVELOPMENT_WORKFLOW.md) is the durable connected-services, private source, disposable CI and parallel-work runbook. Begin at [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), select the actual owner-authorized work branch (may have no PR), and read its branch-local handoff. All older task/PR/SHA headlines below are historical, not marching orders. No hosted SQL, even SELECT, main/feature merge, deployment, paid services, protected map or agent changes without separate owner authorization. Missing chat-container executables do not establish connector failure; use existing GitHub Actions for execution. Private recovered source stays outside public Git.
+
 # DNDNext Repository Access — Standing Rule
 
 This is a persistent operational rule for all future DNDNext work.
