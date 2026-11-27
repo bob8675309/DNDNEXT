@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `8a6f99d4895148229bf40fe11c3254ee1a93447e` |
+| Exact source commit represented by this archive snapshot | `91d0355a8307dec8ce676225c4c936124e3d53ba` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record 17 signed proficiency checks and owner-approved selective Codex use |
-| Files changed relative to main | 300 (211 non-docs; 89 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | Consolidate verified Codex Magic Initiate research into owner I2J |
+| Files changed relative to main | 301 (211 non-docs; 90 docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,7 +19,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_ORIGIN_FEAT_CRAFTER_MUSICIAN_HISTORICAL_SIGNED_2026-11-27.md`
+- `docs/research/I2J_REPEATABLE_ORIGIN_FEAT_ACQUISITION_2026-11-27.md`
+- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 250 more
+- … 251 more
 
 ## Trust and update procedure
 
