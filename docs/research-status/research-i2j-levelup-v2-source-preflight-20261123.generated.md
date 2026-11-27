@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `a5da643ce5b85a8cbc6fabb6596c59a74417da97` |
+| Exact source commit represented by this archive snapshot | `f0b666c9e52207ad18287f4dca8da50233250554` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | I2J: compose original P1.3 fixture with pinned Origin feat schema bridge |
+| Last source commit title | Record verified onboarding merge and pending I2J bridge execution |
 | Files changed relative to main | 292 (207 non-docs; 85 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-p13-bridge.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_ORIGIN_FEAT_P13_BRIDGE_2026-11-26.md`
-- `scripts/audits/i2j_origin_feat_p13_bridge_source.mjs`
-- `scripts/fixtures/i2j_origin_feat_p13_bridge_pg17.sql`
 
 ## Research-branch change inventory versus main
 
