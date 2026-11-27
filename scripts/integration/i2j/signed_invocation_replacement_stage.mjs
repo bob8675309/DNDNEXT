@@ -89,7 +89,7 @@ for(const target of replacementTargets){
  sql("UPDATE public.character_progression SET experience_points=900,pending_level_up=true"+target.w);
  sql("INSERT INTO public.character_level_up_sessions(character_id,from_level,to_level,status,metadata_ready,created_by) VALUES("+q(target.id)+",2,3,'open',true,"+q(owner.id)+")");
 }
-const untouchedReplacementTargets=[...controls,dependent,legacy];
+const untouchedReplacementTargets=[...controls,proficiencyTargets.expertise,proficiencyTargets.legacy];
 function replacementSnapshot(target){
  return {character:resourceSnapshot(target),baseline:effectLedger(target)};
 }
