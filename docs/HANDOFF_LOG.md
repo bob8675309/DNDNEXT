@@ -2315,3 +2315,10 @@ J168 #334 row 3/8: client wire executor blob `a90013d3dbb590af4dfae76e87863453da
 - Independently read back ACTIVE_WORK at `8c744f6a94704893773d1d3307bf8667b2225fab` (blob `d001008a666d85ac72727346ccb52d736b5b77f3`) and custody ledger blob `5209dbe1b323b5d856d6a389dcb5bfccb24ae6cc` (ledger commit `d101fa82d4eb73edd50f14275f4d65a1369b3348`). Seven original #334 paths exact-copy/T0; eighth retains complete ordered original source with one 1445-character insertion, not exact-copy or behavioral equivalence.
 - Ledger records historical J168 run 42342793461 and J167 run 42340280560, two successful original jobs each. Raw artifacts, individual PASS markers and successor dependency/runtime equivalence remain unverified. No new runtime execution.
 - Next bounded task: inherited #333/#332 receipt and dependency crosswalk; do not repeat completed #334 source comparisons. Crafting source available per owner metadata; verification/price/restore, release and retirement HOLD. All prior safety gates remain.
+
+
+## 2026-11-27 — inherited #333 custody checkpoint synchronization
+
+- Independently read back ACTIVE_WORK at `d90536ed62dcc0a5536c63af97103e0a5f862492`, blob `6931349167c2ce76477edcddbebf350db010804e`, and custody ledger blob `f9f16ac5218d674c02886d13b1f5a5d28cdd762d` (ledger commit `4a82b1edbfb43760e16ff832be80a9f8724d53f2`). #333 six of six paths compared: three exact archival copies and three modified-source comparisons; final historical HANDOFF_LOG archive blob `422c53b99cfe530894815bbeb0be182b0dd2e9bf`. #334 eight of eight paths compared, seven exact copies.
+- Next: inherited #332 contribution crosswalk and original signed artifact/dependency reconciliation. No semantic or runtime acceptance inferred; no new runtime tests. Crafting source available per owner metadata; verification/price/restore, release and retirement HOLD. All safety gates remain.
+- Owner directive 2026-11-27: shared Codex cap six assignments per Central date, one active, D coordination; unknown usage or active status blocks dispatch. Connector-posted review pilot remains unverified. No dispatch or review requested.
