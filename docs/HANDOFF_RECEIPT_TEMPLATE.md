@@ -1,3 +1,5 @@
+> **2026-11-26 later owner standing merge authorization:** [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) defines the narrow low-risk merge exception for the interactive assistant. Minor verified non-disruptive changes may merge without repeated individual approval; important systems, held feature PRs, hosted SQL, paid services, manual deploys, agent-specific no-merge rules and other protected scope remain approval-gated. This supersedes older blanket merge wording only within that exception.
+
 > **2026-11-26 owner-directed workflow clarification:** [CONNECTED_DEVELOPMENT_WORKFLOW.md](CONNECTED_DEVELOPMENT_WORKFLOW.md) is the durable connected-services, private source, disposable CI and parallel-work runbook. Begin at [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), select the actual owner-authorized work branch (may have no PR), and read its branch-local handoff. All older task/PR/SHA headlines below are historical, not marching orders. No hosted SQL, even SELECT, main/feature merge, deployment, paid services, protected map or agent changes without separate owner authorization. Missing chat-container executables do not establish connector failure; use existing GitHub Actions for execution. Private recovered source stays outside public Git.
 
 # DNDNext — End-of-chat handoff receipt (copy once per session)
@@ -52,3 +54,5 @@
 - Private source location and scoped hash-only receipt; distinguish restored text, installed body, effective ACL and closure:
 - Evidence-only head vs tested executable head; exact-head checks pending or verified:
 - Main/hosted SQL/deploy/paid/agent/map/PR retirement effects (none unless authorized):
+
+- Merge authorization class (standing low-risk / explicit PR approval / HOLD), effect classification, exact reviewed head/base/checks, rollback and resulting target/deployment verification:

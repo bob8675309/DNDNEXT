@@ -1,6 +1,8 @@
+> **2026-11-26 later owner standing merge authorization:** [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) defines the narrow low-risk merge exception for the interactive assistant. Minor verified non-disruptive changes may merge without repeated individual approval; important systems, held feature PRs, hosted SQL, paid services, manual deploys, agent-specific no-merge rules and other protected scope remain approval-gated. This supersedes older blanket merge wording only within that exception.
+
 # DNDNext connected development and recovery runbook
 
-**Owner-directed documentation refresh, 2026-11-26.** Durable workflow, not a frozen feature queue. Start at [NEXT_CHAT_START_HERE](NEXT_CHAT_START_HERE.md); follow the owner-selected branch, which may have no PR. No new production, paid-service, merge, or agent authority is granted here.
+**Owner-directed documentation refresh, 2026-11-26.** Durable workflow, not a frozen feature queue. Start at [NEXT_CHAT_START_HERE](NEXT_CHAT_START_HERE.md); follow the owner-selected branch, which may have no PR. The later [standing low-risk merge policy](LOW_RISK_MERGE_POLICY.md) is the only new narrow merge authority; no expanded production SQL, paid-service or agent authority.
 
 ## 1. Architecture and responsibilities
 
@@ -30,7 +32,7 @@ Application authority: client UI -> authenticated server/API/RPC -> canonical ch
 
 Use exact-head reads -> bounded diff plan -> Git tree/commit/ref update (expected old SHA, non-force) or equivalent safe file writes -> verify remote head and changed path list. Preserve branch ownership, no cross-agent writes; new independent work uses a separate branch. Never overwrite concurrent movement. A full working tree is available through established Actions checkout, not assumed to exist in the chat runtime. For every PR follow [full PR source review](PR_FULL_SCOPE_REVIEW_PROTOCOL.md): full HEAD vs immediate base vs main, recursive non-truncated trees, original source/test dispositions, five required PR sections and actual exact-head results. Do not skip inherited work or retire original PRs on a narrow extraction.
 
-Main merge may auto-deploy via Vercel, including docs-only changes; a docs request is not permission to merge/deploy. Research-to-research merge is not production. Re-fetch head before any separately approved merge. Preserve original source and negative tests. No force moves, deletion, closure, rebasing or paid work without authorization.
+Main merge may auto-deploy via Vercel, including docs-only changes. Under the owner-approved [low-risk merge policy](LOW_RISK_MERGE_POLICY.md), eligible verified minor changes may merge without individual approval, including incidental existing auto-deployment. Other merges and manual deploys require separate approval. Research-to-research merge is not production. Re-fetch head before any merge. Preserve original source and negative tests. No force moves, deletion, closure, rebasing or paid work without authorization.
 
 ## 4. Testing: actual remote execution, disposable only
 
@@ -75,6 +77,6 @@ No production SQL including SELECT without separate permission, no world-map edi
 
 ## 8. Copy-ready fresh-chat request
 
-> Take over as my DNDNext full-stack engineering assistant. Start with main docs/NEXT_CHAT_START_HERE.md and CONNECTED_DEVELOPMENT_WORKFLOW.md. Use the connected GitHub, Supabase, Dropbox and Vercel tools; use established GitHub Actions disposable execution when a checkout or signed PostgreSQL/Auth tests are needed. Verify live main, owner-selected work branch (not necessarily a PR), actual PR/CI/deployment metadata, branch-local ACTIVE_WORK and latest HANDOFF_LOG, cited source/tests and relevant agent ownership. Distinguish deployed, historical, research-only and unverified. Preserve all original contributions and protected systems. No hosted SQL, main/gameplay merges, deployment, map changes, paid resources or agent changes without separate authorization. Do not restart completed work or require owner-local commands just because your chat container lacks executables. Report actual blockers, one next task, and update branch-local handoff after substantial work.
+> Take over as my DNDNext full-stack engineering assistant. Start with main docs/NEXT_CHAT_START_HERE.md and CONNECTED_DEVELOPMENT_WORKFLOW.md. Use the connected GitHub, Supabase, Dropbox and Vercel tools; use established GitHub Actions disposable execution when a checkout or signed PostgreSQL/Auth tests are needed. Verify live main, owner-selected work branch (not necessarily a PR), actual PR/CI/deployment metadata, branch-local ACTIVE_WORK and latest HANDOFF_LOG, cited source/tests and relevant agent ownership. Distinguish deployed, historical, research-only and unverified. Preserve all original contributions and protected systems. Use the standing low-risk merge policy for eligible minor changes only. No hosted SQL, gameplay or protected-system merges, manual deployment, map changes, paid resources or agent changes without separate authorization. Do not restart completed work or require owner-local commands just because your chat container lacks executables. Report actual blockers, one next task, and update branch-local handoff after substantial work.
 
-If main has not yet received this documentation refresh, use the same files on the documentation PR branch; do not merge it on your own.
+If main has not yet received this documentation refresh, use the same files on the documentation PR branch. Merge only after satisfying the standing low-risk policy and all relevant checks.

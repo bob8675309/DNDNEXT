@@ -1,3 +1,5 @@
+> **2026-11-26 later owner standing merge authorization:** [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) defines the narrow low-risk merge exception for the interactive assistant. Minor verified non-disruptive changes may merge without repeated individual approval; important systems, held feature PRs, hosted SQL, paid services, manual deploys, agent-specific no-merge rules and other protected scope remain approval-gated. This supersedes older blanket merge wording only within that exception.
+
 # DNDNext — NEXT CHAT START HERE
 
 **Permanent owner-directed navigation, updated 2026-11-26.** This is a workflow, not a frozen task list. Live source and the owner's latest instruction win over dated headlines. All prior wording is preserved verbatim in [historical router archive](archive/historical_handoffs/2026-11-26__NEXT_CHAT_START_HERE.md).
@@ -17,7 +19,7 @@ On November 26 the owner interactive I2J progression research is on [research/i2
 
 ## Protected boundaries
 
-No hosted Supabase SQL (including SELECT), main/feature merges, protected world map edits, gameplay deployment, paid services, PR retirement or agent changes without separate owner scope. Public GitHub must not receive private recovered definitions/backups or credentials. Maintain Pages Router + Bootstrap/SCSS (no Tailwind), world/town/tactical separation and existing server authority. Never infer feature or production acceptance from static checks, source matches, a CI badge, or a Vercel READY record.
+Apply [LOW_RISK_MERGE_POLICY.md](LOW_RISK_MERGE_POLICY.md) for minor, verified non-disruptive merges. No hosted Supabase SQL (including SELECT), protected/held feature merges, protected world map edits, manual deployment, gameplay release, paid services, PR retirement or agent changes without separate owner scope. Public GitHub must not receive private recovered definitions/backups or credentials. Maintain Pages Router + Bootstrap/SCSS (no Tailwind), world/town/tactical separation and existing server authority. Never infer feature or production acceptance from static checks, source matches, a CI badge, or a Vercel READY record.
 
 ## Documentation map
 
