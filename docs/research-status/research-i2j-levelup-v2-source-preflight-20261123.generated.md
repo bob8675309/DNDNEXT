@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `33bbfaa2ddc6a3fdc8806f1cd4aa7a9e345fed74` |
+| Exact source commit represented by this archive snapshot | `c99a836bdb5154cdceb5051a4ea344065dbbf4e9` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Consolidate verified proficiency provenance candidate into owner I2J |
-| Files changed relative to main | 313 (217 non-docs; 96 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit title | Consolidate verified signed invocation replacement into owner I2J |
+| Files changed relative to main | 315 (218 non-docs; 97 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,9 +20,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_PROFICIENCY_PROVENANCE_2026-11-27.md`
-- `scripts/fixtures/i2j_proficiency_provenance_scratch_pg17.sql`
-- `scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs`
+- `docs/research/I2J_SIGNED_INVOCATION_REPLACEMENT_2026-11-27.md`
+- `scripts/integration/i2j/signed_invocation_replacement_stage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -76,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 263 more
+- … 265 more
 
 ## Trust and update procedure
 
