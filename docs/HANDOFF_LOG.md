@@ -1380,3 +1380,9 @@ Reverified main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`, owner I2J `8a6f99d48
 Live main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`, owner I2J `91d0355a8307dec8ce676225c4c936124e3d53ba`, isolated remote `36bb1f7878df51dd3bab1cdb13104c67c0eea886`, local review base `9bd57a54d8d91ce99cdbfc6610c8447a270dfee7`. Checked owner runner blob equals the previous exact 26-case runner. No transfer repeated. Isolated workflow appends [a disposable stage](../scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs) after unchanged historical source. [Design, consumer matrix and release limits](research/I2J_REPEATABILITY_SPELL_IDENTITY_CANDIDATE_2026-11-27.md). Syntax, pinned bridge generation and diff validation passed. Signed exact-head evidence pending. No hosted SQL, deployments, merges, paid services, other-branch writes or private transfer.
 
 **ONE NEXT:** verify exact-head RED/GREEN markers and teardown.
+
+## 2026-11-27 Central — reusable repeatability and spell identity signed CI passed
+
+Exact executable `b695d9c26d710b1d54bbc1010d3ea9dfaedc09d1`, [run 46030531886 / job 140612879572](https://github.com/bob8675309/DNDNEXT/actions/runs/46030531886/job/140612879572#step:7:1), succeeded at startup, all 26 historical and CAND-01..07 assertions, and disposable teardown. Docs run 46030531834 and tactical run 46030531866 succeeded. Direct step logs returned HTTP 404 through this access. The [dossier](research/I2J_REPEATABILITY_SPELL_IDENTITY_CANDIDATE_2026-11-27.md) records signed SQLSTATEs, index diagnostics, independent pools, rollback snapshots and consumer limits. Existing Lessons and nonrepeatable denial remained intact. The owner branch was not written. No production data, deployments, merges, casting/rest/removal acceptance, private transfers or paid work.
+
+**ONE NEXT:** add a separate signed resource-consumer test that takes one use by assignment ID and verifies the sibling assignment is unchanged.
