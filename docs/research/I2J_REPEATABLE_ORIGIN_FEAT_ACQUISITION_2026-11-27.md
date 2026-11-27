@@ -22,4 +22,15 @@ Magic Initiate's repeat rule requires a different spell list each time. The matr
 
 ## Validation
 
-Signed outcomes pending in the existing disposable workflow. This patch preserves the preceding single-acquisition baseline and records actual transaction outcomes in the Actions step summary.
+Exact executable `b28544f007779587c95ff961c60df106a9baa3fa` completed all 20 baseline cases and OF-MI-REPEAT-01..06 in [signed run 46023944467, job 140590379985](https://github.com/bob8675309/DNDNEXT/actions/runs/46023944467/job/140590379985#step:7:1). GitHub reported success for disposable startup, the full runner and teardown. [Tactical run 46023944476](https://github.com/bob8675309/DNDNEXT/actions/runs/46023944476) and [docs run 46023944468](https://github.com/bob8675309/DNDNEXT/actions/runs/46023944468) passed at the same SHA. The executable writes detailed evidence to the job log and Actions step summary. This session could verify step conclusions but could not retrieve individual logs through its current GitHub access. The outcomes below are established by assertions in the successful runner.
+
+| Probe | Signed transaction result |
+|---|---|
+| Canonical Wizard/Wizard and Wizard/Druid, distinct spells | Both rejected with `P0001` and “Repeated Lessons of the First Ones instances must use different dependent choices.” Complete rollback. This is the outer child-ID rule. |
+| Synthetic IDs, Wizard/Wizard | Committed with distinct spells and INT/CHA, exposing the absence of cross-ID list discrimination in this fixture. This same-list pair violates the Magic Initiate repeat rule. |
+| Synthetic IDs, invalid second Druid choice | Rejected with `P0001` and “Magic Initiate contains an invalid Druid cantrip.” Both acquisitions and all other scoped state rolled back. |
+| Synthetic IDs, corrected Wizard/Druid with distinct spells | Committed on the same target. Distinct slot and feat source keys, two grant instances, six feat spell rows and independent INT/WIS free casts with `1/1` uses and `long-rest` recharge were verified. |
+| Synthetic IDs, Wizard/Druid with a shared first-level spell | Rejected with `23505`, “duplicate key value violates unique constraint "character_spells_unique_source_idx"”. The detail key identified the shared spell and source label. The first acquisition and second cantrips rolled back. |
+| Preservation | Unrelated character and account snapshots, original index definitions, Lessons schema, trigger definitions and candidate fingerprints matched. The scratch tail was restored. |
+
+The passing runner asserts MD5 `02d74b973a763c53c595be20e35e512f` for installed public v5, `b7d69d8643a6b2ba2be8efbb4ee41243` for the installed migration-34 materializer before the documented scratch mirror omission, and `dfe9c0f7de7904c2b308c2dacb0897ce` for the historical earned helper before that omission. It verifies public blob pins and checks the installed historical validator, spell resolver and scratch fingerprints for stability. The synthetic variant cases establish downstream behavior with the outer gate intact. They do not establish that two same-ID picks through Lessons are legal or that these variants exist in the restored catalog.
