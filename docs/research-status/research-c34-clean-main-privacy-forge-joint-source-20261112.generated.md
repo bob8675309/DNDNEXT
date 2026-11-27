@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `f84ea62e4f123cd871b68a6bf41ea383de7c4204` |
+| Exact source commit represented by this archive snapshot | `06d3ead9505386a24a74498f7f148b9a83c53cba` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): record inherited PR332 validator retention |
+| Last source commit title | docs(c34): record original replay test retention and marker gaps |
 | Files changed relative to main | 441 (324 non-docs; 117 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
