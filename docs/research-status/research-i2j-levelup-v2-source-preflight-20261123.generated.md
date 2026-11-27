@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `2fe429f7e509dbbb0b424e9031665df611f57295` |
+| Exact source commit represented by this archive snapshot | `dcb24b66b72c6282291656665561e7f1d3d46001` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Extend I2J signed pair research with nonrepeatable feat rollback and corrected retry |
-| Files changed relative to main | 298 (211 non-docs; 87 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | Verify I2J duplicate rollback and extend signed Skilled tool proficiency regression |
+| Files changed relative to main | 299 (211 non-docs; 88 docs) |
+| Last source commit | 5 files (1 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,6 +20,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_ORIGIN_FEAT_PAIR_HISTORICAL_SIGNED_2026-11-26.md`
+- `docs/research/I2J_ORIGIN_FEAT_SKILLED_HISTORICAL_SIGNED_2026-11-27.md`
 - `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
@@ -74,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 248 more
+- … 249 more
 
 ## Trust and update procedure
 
