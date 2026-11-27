@@ -1,0 +1,9 @@
+# I2J distinct nested Origin feat pair — 2026-11-26 Central
+
+
+
+## 2026-11-26 Central — verified historical Alert result
+
+Exact executable b6d2ff2bc11a49b66e980f1d1dcdf9142ba614e5, [run 45937069427/job 140302614777](https://github.com/bob8675309/DNDNEXT/actions/runs/45937069427/job/140302614777): actual logs OF-HIST-01..04 PASS, source materializer b7d69d8643a6b2ba2be8efbb4ee41243, historical validator 8b7b9c2c2f19596828067875756ddd6e, historical earned dfe9c0f7de7904c2b308c2dacb0897ce. Original failed fixture run retained. Tactical/docs 45937069442/45937069458 success. Bounded exact materializer behavior in historical graph, scratch Option A correction, no restored caller/validator or full release acceptance. No global writer-count increment. Next independent test uses two distinct nested feats Alert/Lucky in one signed level-up, not repeat of single Alert acceptance.
+
+New standalone test derives setup from immutable verified single Alert runner blob 48e6714d5b9e4fe2cbac3925c9e62e734f966a7a; retains original fixture and tests unchanged. Existing public historical caller/validator, exact materializer before previously characterized scratch-only Option A omission, reduced catalog. No replacement exercised. Expand only reduced fixture no-replacement tail to two known earned slots with distinct Alert/Lucky options, retaining exact slot/child binding. Three intended checks: source setup, signed acquisition of both distinct feats with canonical sheet/normalized and presence grant agreement, stable repeated submission and unrelated character preservation. No private source transfer, restored graph acceptance, writer count increment or gameplay release. Fresh CI pending. ONE NEXT: inspect actual pair result, correct only proven fixture defects; exact restored graph remains held. No new service or Daybreak.
