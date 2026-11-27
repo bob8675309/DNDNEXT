@@ -1430,3 +1430,9 @@ Reverified isolated `b715073fe02d8c26d4ea4c880feb299c1d098387`, owner `49065cd13
 Exact executable `6e437e8cf69b7f0925ef5e12fc60957ae84a406c`, [run 46061144915 / job 140715438140](https://github.com/bob8675309/DNDNEXT/actions/runs/46061144915/job/140715438140) reported success for startup, all 54 inherited and PROV-01..06, and teardown. Tactical 46061144812 and docs 46061145065 passed. Direct logs returned HTTP 404. Original REMOVE-03 RED and prior failed runs were preserved. Candidate proved both removal orders, three claims and partial overlap, reacquisition, Expertise rollback, conservative history, weapon support and account isolation in [the dossier](research/I2J_PROFICIENCY_PROVENANCE_2026-11-27.md). Owner I2J's prior reversal job 140708834269 separately reported signed success and teardown. No duplicate transfer, live migrations, owner writes, protected edits, public helper, deployment, merge or paid work.
 
 **ONE NEXT:** stage the original migration-35/36 signed replacement chain and prove sibling retention and final Expertise denial through the authorized transaction.
+
+## 2026-11-27 Central — actual signed Invocation replacement authored
+
+Verified isolated `9f849a67c8d671ac6afbee394223551b760b58f6`, owner `33bbfaa2ddc6a3fdc8806f1cd4aa7a9e345fed74`, main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`. The interactive assistant independently verified all 60 cases and teardown in job 140715438140. No duplicate transfer. Added a [separate signed replacement stage and scope dossier](research/I2J_SIGNED_INVOCATION_REPLACEMENT_2026-11-27.md) covering source-pin and ACL boundaries, real Lessons and synthetic-provider specimens, original mirror evidence, candidate provenance and transactional rollback. Static syntax and diff checks passed. Exact-head CI pending. No hosted SQL, protected changes, public helper exposure, owner writes, private transfer, merge, deployment or paid work.
+
+**ONE NEXT:** verify the exact signed run and teardown.

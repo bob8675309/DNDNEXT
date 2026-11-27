@@ -10,6 +10,7 @@ on:
       - 'scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs'
       - 'scripts/integration/i2j/source_owned_effect_reversal_stage.mjs'
       - 'scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs'
+      - 'scripts/integration/i2j/signed_invocation_replacement_stage.mjs'
       - 'scripts/fixtures/i2j_proficiency_provenance_scratch_pg17.sql'
       - '.github/workflows/validate-i2j-origin-feat-pair-historical.yml'
   workflow_dispatch:
@@ -77,8 +78,9 @@ jobs:
             rest=scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs
             reversal=scripts/integration/i2j/source_owned_effect_reversal_stage.mjs
             provenance=scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs
+            replacement=scripts/integration/i2j/signed_invocation_replacement_stage.mjs
             bundle="$RUNNER_TEMP/i2j-repeatability-stages.mjs"
-            cat "$historical" "$candidate" "$resource" "$rest" "$reversal" "$provenance" > "$bundle"
+            cat "$historical" "$candidate" "$resource" "$rest" "$reversal" "$provenance" "$replacement" > "$bundle"
             node --input-type=module --check < "$bundle"
             node --input-type=module < "$bundle"
           else
