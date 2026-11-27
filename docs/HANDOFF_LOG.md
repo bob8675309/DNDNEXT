@@ -1418,3 +1418,9 @@ Exact executable `eaf33448bb899a4ff4c176b4709c1e76b43897b3`, [run 46039510266 / 
 Verified isolated base `58798ceb900bb8d2cefc5825913a1709ff936504`, owner I2J `1c128d57b359c16e87fb967196c1c8dde1935017` and main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`. The interactive assistant independently confirmed all 46 accepted cases and teardown in job 140643347799. No rest-stage transfer repeated. Added a [separate disposable private-helper stage and dossier](research/I2J_REVERSIBLE_SOURCE_EFFECTS_2026-11-27.md). Signed advancement sets up specimens, while actual removal uses local privileged psql and existing private ACLs. Syntax and diff checks passed, exact-head CI pending. No owner write, protected edits, live SQL, public removal RPC, deployments, merges, private transfer or paid work.
 
 **ONE NEXT:** verify exact-head CI and teardown.
+
+## 2026-11-27 Central — provenance candidate authored
+
+Reverified isolated `b715073fe02d8c26d4ea4c880feb299c1d098387`, owner `49065cd13e48f3c596f1d96749222fe19eab6e31`, main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`. The interactive assistant verified 54 cases and teardown in job 140684201954, including original order-dependent RED and private-helper boundaries. Prior failed runs remain in history. Owner already contains that exact stage. Added [a separate scratch candidate and source/compatibility dossier](research/I2J_PROFICIENCY_PROVENANCE_2026-11-27.md). Static syntax and diff validation passed. Exact-head signed CI pending. No owner write, production migration, private transfer, public helper exposure, deployment, merge, protected map edits or paid services.
+
+**ONE NEXT:** verify signed exact-head candidate and teardown.
