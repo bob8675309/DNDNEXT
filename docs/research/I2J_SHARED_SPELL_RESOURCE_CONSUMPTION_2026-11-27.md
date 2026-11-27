@@ -23,4 +23,15 @@ Owner I2J `91d0355a8307dec8ce676225c4c936124e3d53ba` already holds the exact his
 
 ## Evidence
 
-Exact-head disposable CI pending at authoring.
+Exact executable `686ad80d12821b1d1253b651f6fe4e61123f1098` passed [signed run 46033844609, job 140624142020](https://github.com/bob8675309/DNDNEXT/actions/runs/46033844609/job/140624142020#step:7:1). Disposable startup, 26 historical cases, seven repeatability cases, RESOURCE-01..06 and teardown reported success. [Docs run 46033844568](https://github.com/bob8675309/DNDNEXT/actions/runs/46033844568) and [tactical run 46033844586](https://github.com/bob8675309/DNDNEXT/actions/runs/46033844586) also succeeded. Direct step logs returned HTTP 404 from this session. The following outcomes were required assertions in the passing runner.
+
+| Marker | Signed result |
+|---|---|
+| RESOURCE-01 | Original signed resource profile returned both same-spell assignment IDs at 1/1 and the expected pact slot pool. |
+| RESOURCE-02 | Editor spent INT to 0/1. The WIS sibling remained byte-identical at 1/1. |
+| RESOURCE-03 | Exhausted INT assignment rejected with `22023` and unchanged state. |
+| RESOURCE-04 | Malformed UUID rejected with `22P02`. Unknown assignment, catalog spell ID and wrong character binding rejected with `P0002`. |
+| RESOURCE-05 | Viewer and outsider rejected with `42501` while the WIS assignment still had a use. |
+| RESOURCE-06 | Owner spent WIS independently. INT stayed at 0/1. Unrelated assignments, pact slots, rest history, sheets, accounts, original Lessons policy, triggers and function fingerprints remained unchanged. |
+
+**Next executable deliverable:** on an owner-approved I2J integration head, run the existing disposable job with both added stages, all 39 cases and teardown. Keep the 26-case owner's runner intact and omit isolated branch admission.
