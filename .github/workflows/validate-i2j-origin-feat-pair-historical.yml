@@ -1,7 +1,7 @@
 name: I2J distinct nested Origin feat pair (disposable only)
 on:
   push:
-    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    branches: [research/i2j-levelup-v2-source-preflight-20261123, agent/i2j-magic-initiate-historical-20261127]
     paths:
       - 'scripts/audits/i2j_origin_feat_p13_bridge_source.mjs'
       - 'scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs'
@@ -11,7 +11,7 @@ permissions:
   contents: read
 jobs:
   bridge:
-    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123' || github.ref == 'refs/heads/agent/i2j-magic-initiate-historical-20261127'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:

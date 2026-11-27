@@ -147,12 +147,12 @@ function input(a=armor,b=mind,childA,childB){
 }
 async function apply(a,t,p){let res;for(let i=0;i<35;i++){res=await a.client.rpc('complete_character_level_up_v5',{p_character_id:t.id,p_selections:p});if(res.error?.code!=='PGRST202')break;await new Promise(r=>setTimeout(r,300))}assert.notEqual(res.error?.code,'PGRST202');return res}
 async function deny(a,t,p,pattern,code){const before=snap(t),x=await apply(a,t,p);assert.ok(x.error,'invalid Warlock choice accepted');if(code)assert.equal(x.error.code,code,JSON.stringify(x.error));if(pattern)assert.match(x.error.message,pattern);assert.deepEqual(snap(t),before)}
-function final(t,expected,children={}){
+function final(t,expected,children={},featSpellCount=0){
  assert.equal(sql('SELECT class_level FROM public.character_progression'+t.w),'2');assert.equal(sql("SELECT sheet->>'level' FROM public.character_sheets"+t.w),'2');assert.equal(sql("SELECT sheet#>>'{meta,level}' FROM public.character_sheets"+t.w),'2');assert.equal(sql("SELECT sheet->>'maxHp' FROM public.character_sheets"+t.w),'15');
  const rows=JSON.parse(sql("SELECT jsonb_agg(to_jsonb(g)||jsonb_build_object('option_key',o.option_key,'name',o.name) ORDER BY g.instance_key) FROM public.character_class_option_grant_instances g JOIN public.class_feature_option_catalog o ON o.id=g.option_catalog_id WHERE g.character_id="+q(t.id)));
  assert.deepEqual(rows.map(x=>x.option_key),[pact,...expected]);assert.deepEqual(rows.map(x=>x.acquired_level),[1,2,2]);assert.equal(rows[0].id,t.initial.id);assert.equal(rows[0].updated_at,t.initial.updated_at);
  const sh=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+t.w));assert.deepEqual(sh.eldritchInvocations,rows.map(x=>x.name));assert.equal(sh.meta.creator,'shared_character_forge_player_v2');for(const [i,row] of rows.entries()){const group=sh.sourceChoices[row.instance_key];assert.equal(group.fields.invocation.selections[0].key,row.option_key);assert.equal(group.metadata.acquisitionLevel,row.acquired_level);if(children[i])assert.equal(row.choices.child.key,children[i])}
- assert.equal(sql("SELECT count(*) FROM public.character_spells"+t.w),'5');assert.equal(sql("SELECT count(*) FROM public.character_spells"+t.w+" AND spell_id="+q(ordinaryIds[2])+" AND source_type='class' AND raw_payload->>'grantedAtLevel'='2'"),'1');
+ assert.equal(sql("SELECT count(*) FROM public.character_spells"+t.w),String(5+featSpellCount));assert.equal(sql("SELECT count(*) FROM public.character_spells"+t.w+" AND spell_id="+q(ordinaryIds[2])+" AND source_type='class' AND raw_payload->>'grantedAtLevel'='2'"),'1');
  assert.equal(sql("SELECT count(*) FROM public.character_level_events"+t.w+" AND event_type='level_up_completed' AND from_level=1 AND to_level=2"),'1');assert.equal(sql("SELECT count(*) FROM public.character_level_up_sessions"+t.w+" AND status='completed' AND from_level=1 AND to_level=2"),'1');
 }
 
@@ -521,3 +521,135 @@ for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
 assert.equal(triggerSnapshot(),triggers);
 console.log('PASS OF-TOOLS-05 original tail and prior fingerprints preserved');
 console.log('OF-TOOLS RESULT: historical proficiency effects only; synthetic catalog; no full feat gameplay, repeatability, removal or restored-source acceptance');
+
+// Single historical Magic Initiate acquisition. Keep repeatable overlap,
+// replacement and actual rest execution out of this fixture.
+const magicId=randomUUID();
+const magicName='Magic Initiate';
+sql("INSERT INTO public.character_option_catalog(id,option_key,name,source,option_type,category,metadata) VALUES("+q(magicId)+",'i2j-magic-initiate|XPHB',"+q(magicName)+",'XPHB','feat','O',"+json({repeatable:true})+")");
+
+function magicSpell(label,level,list,source='XPHB'){
+ const id=randomUUID();
+ const key='i2j-mi-'+label.toLowerCase().replaceAll(' ','-');
+ sql("INSERT INTO public.spells_catalog(id,name,level,classes,source,school,spell_key) VALUES("+q(id)+","+q(label)+","+level+",ARRAY["+q(list)+"],"+q(source)+",'Evocation',"+q(key)+")");
+ return {kind:'spell',key,value:id,label,source,metadata:{spellId:id,level}};
+}
+const cantripA=magicSpell('Synthetic Wizard Spark',0,'Wizard');
+const cantripB=magicSpell('Synthetic Wizard Glimmer',0,'Wizard');
+const levelOne=magicSpell('Synthetic Wizard Ward',1,'Wizard');
+const wrongList=magicSpell('Synthetic Druid Spark',0,'Druid');
+const wrongRank=magicSpell('Synthetic Wizard Bolt',2,'Wizard');
+const nonPreferred=magicSpell('Synthetic Legacy Spark',0,'Wizard','PHB');
+
+function magicInput(){
+ const request=alertInput();
+ request.class_choice_selections[slot][child]=[magicId];
+ request.class_option_feat_instances[0]={
+  ...request.class_option_feat_instances[0],
+  optionId:magicId,name:magicName,
+  choices:{
+   'spell-list':[{kind:'spell-list',key:'wizard',value:'Wizard',label:'Wizard',source:'XPHB'}],
+   'spellcasting-ability':[{kind:'ability',key:'int',value:'int',label:'Intelligence'}],
+   'cantrips-wizard':[cantripA,cantripB],
+   'level-1-wizard':[levelOne]
+  }
+ };
+ return request;
+}
+
+const spellIndexSnapshot=()=>JSON.parse(sql(`
+ SELECT jsonb_object_agg(c.relname, pg_get_indexdef(i.indexrelid))
+ FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid
+ WHERE i.indrelid='public.character_spells'::regclass
+   AND c.relname IN ('character_spells_source_identity_uidx','character_spells_unique_source_idx')
+   AND i.indisunique AND i.indisvalid AND i.indisready`));
+const spellIndexes=spellIndexSnapshot();
+assert.deepEqual(Object.keys(spellIndexes).sort(),['character_spells_source_identity_uidx','character_spells_unique_source_idx']);
+assert.match(spellIndexes.character_spells_source_identity_uidx,/\(character_id, spell_id, source_type, source_key\)$/);
+assert.match(spellIndexes.character_spells_unique_source_idx,/\(character_id, spell_id, source_type, COALESCE\(source_label, ''::text\)\)$/i);
+
+const magicTarget=seed();
+const magicControls=[...toolFeatControls,magicTarget];
+mark('origin-magic-initiate');
+const magicBefore=magicControls.map(extendedSnapshot);
+const magicAccounts=account();
+const magicTail=once(originalTail,"'735de8f5-94b0-4052-a7b2-8ae15ac9a55c','5003a12b-94e2-45db-bcc2-3eeff78c0587'","'735de8f5-94b0-4052-a7b2-8ae15ac9a55c','5003a12b-94e2-45db-bcc2-3eeff78c0587',"+q(magicId));
+const spellHelper='private.origin_feat_spell_choice_v1(jsonb)';
+const spellHelperHash=md5(spellHelper);
+const selectedSpells=()=>JSON.parse(sql("SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY s.spell_id),'[]') FROM public.character_spells s"+magicTarget.w+" AND source_type='feat'"));
+sql(magicTail);
+try{
+ const cases=[
+  ['spell-list',[{value:'Warlock'}],/^Magic Initiate spell list must be Cleric, Druid, or Wizard\.$/],
+  ['spellcasting-ability',[{value:'str'}],/^Magic Initiate spellcasting ability must be Intelligence, Wisdom, or Charisma\.$/],
+  ['cantrips-wizard',[cantripA],/^Magic Initiate requires exactly two Wizard cantrips\.$/],
+  ['cantrips-wizard',[cantripA,cantripA],/^Magic Initiate cantrips must be distinct\.$/],
+  ['cantrips-wizard',[cantripA,wrongList],/^Magic Initiate contains an invalid Wizard cantrip\.$/],
+  ['cantrips-wizard',[cantripA,nonPreferred],/^Magic Initiate contains an invalid Wizard cantrip\.$/],
+  ['level-1-wizard',[],/^Magic Initiate requires exactly one level 1 Wizard spell\.$/],
+  ['level-1-wizard',[wrongRank],/^Magic Initiate contains an invalid level 1 Wizard spell\.$/],
+  ['cantrips-druid',[wrongList],/^Magic Initiate contains an unexpected active child choice\.$/]
+ ];
+ for(const [field,choices,message] of cases){
+  const invalid=magicInput();
+  invalid.class_option_feat_instances[0].choices[field]=choices;
+  await deny(editor,magicTarget,invalid,message,'P0001');
+  assert.deepEqual(magicControls.map(extendedSnapshot),magicBefore,field+' rollback');
+ }
+ console.log('PASS OF-MI-01 invalid Magic Initiate choices reject with complete scoped rollback');
+
+ const request=magicInput();
+ const success=await apply(editor,magicTarget,request);
+ assert.ifError(success.error);
+ final(magicTarget,[lessons,mind],{1:magicId},3);
+
+ const grant=JSON.parse(sql("SELECT to_jsonb(g) FROM public.character_option_grant_instances g"+magicTarget.w));
+ const effects=[{type:'feat-spell-source',sourceKey:instanceKey,spellList:'Wizard',introduced:true}];
+ assert.equal(grant.option_id,magicId);
+ assert.equal(grant.option_name,magicName);
+ assert.equal(grant.instance_key,instanceKey);
+ assert.equal(grant.acquisition_owner_type,'class-option');
+ assert.equal(grant.acquisition_owner_key,slot);
+ assert.equal(grant.acquisition_level,2);
+ assert.equal(grant.granted_by,editor.id);
+ assert.equal(grant.repeatable,true);
+ assert.deepEqual(grant.choices,request.class_option_feat_instances[0].choices);
+ assert.deepEqual(grant.effects,effects);
+ assert.equal(sql("SELECT option_id FROM public.character_option_grants"+magicTarget.w),magicId);
+ const sheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+magicTarget.w));
+ assert.equal(sheet.feats.filter(feat=>feat===magicName).length,1);
+ const projection=sheet.featGrantInstances.find(feat=>feat.instanceId===instanceKey);
+ assert.equal(projection.optionId,magicId);
+ assert.deepEqual(projection.choices,grant.choices);
+ assert.deepEqual(projection.fixedEffects,effects);
+
+ const spells=selectedSpells();
+ assert.deepEqual(spells.map(spell=>spell.spell_id),[cantripA.value,cantripB.value,levelOne.value].sort());
+ for(const spell of spells){
+  const freeCast=spell.spell_id===levelOne.value;
+  assert.equal(spell.source_key,grant.instance_key);
+  assert.equal(spell.source_label,magicName);
+  assert.equal(spell.known,true);
+  assert.equal(spell.prepared,true);
+  assert.equal(spell.always_available,true);
+  assert.equal(spell.casting_stat,'int');
+  assert.equal(spell.uses_max,freeCast?1:null);
+  assert.equal(spell.uses_remaining,freeCast?1:null);
+  assert.equal(spell.recharge,freeCast?'long-rest':null);
+  assert.deepEqual(spell.raw_payload,{grantedByFeat:magicName,grantedAtLevel:2,spellList:'Wizard',...(freeCast?{freeCast:true}:{})});
+ }
+ assert.equal(sql("SELECT count(*) FROM public.character_spells"+magicTarget.w+" AND source_type='class'"),'5');
+ console.log('PASS OF-MI-02 single source-owned Magic Initiate acquisition with two cantrips and one long-rest free cast');
+
+ const acquired=extendedSnapshot(magicTarget);
+ await deny(editor,magicTarget,request,null);
+ assert.deepEqual(extendedSnapshot(magicTarget),acquired);
+ assert.deepEqual(magicControls.slice(0,-1).map(extendedSnapshot),magicBefore.slice(0,-1));
+ assert.deepEqual(account(),magicAccounts);
+}finally{sql(originalTail)}
+assert.equal(def(tailName),originalTail);
+assert.equal(md5(spellHelper),spellHelperHash);
+for(const [name,hash] of pinnedCandidates)assert.equal(md5(name),hash);
+assert.equal(triggerSnapshot(),triggers);
+assert.deepEqual(spellIndexSnapshot(),spellIndexes);
+console.log('PASS OF-MI-03 replay isolation, original uniqueness indexes, tail and source fingerprints preserved');
