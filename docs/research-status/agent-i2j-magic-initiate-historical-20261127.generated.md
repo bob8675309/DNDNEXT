@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `9634bf007a4e8454f7c2038c975ed0d765f3a64f` |
+| Exact source commit represented by this archive snapshot | `13e358343b869013deb798c351de91a944563397` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Compare original signed Forge and advancement ownership at exact head |
+| Last source commit title | Isolate Forge rejection stock and surface scoped CI diagnostics |
 | Files changed relative to main | 319 (222 non-docs; 97 docs) |
-| Last source commit | 5 files (5 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,6 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
-- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
-- `scripts/integration/i2j/forge_advancement_equivalence_stage.mjs`
 - `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 
 ## Research-branch change inventory versus main
