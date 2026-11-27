@@ -724,3 +724,39 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
  assert.equal(verify([...rows,rows[0]]),false);
  console.log('Historical signed tree binds six default-reader sources and validator; runtime closure unresolved');
 }
+
+ // Exercise the actual pinned joint validator in an isolated temporary checkout.
+ // No SQL execution: the validator reads raw bytes and hashes them only.
+{
+ const {mkdtempSync,mkdirSync,writeFileSync,rmSync}=await import('node:fs');
+ const {tmpdir}=await import('node:os');
+ const {join,dirname}=await import('node:path');
+ const {spawnSync}=await import('node:child_process');
+ const commit='6e3195708340505aaa85a6b09b6e08e3c88249f0';
+ const validator=observedSourceRoots[1];
+ const dir=mkdtempSync(join(tmpdir(),'c34-joint-reader-'));
+ try {
+   for(const pin of [validator,...jointDeclaredPins]){
+     const result=spawnSync('git',['show',commit+':'+pin.path],{maxBuffer:32*1024*1024});
+     assert.equal(result.status,0);
+     const bytes=result.stdout;
+     const hash=spawnSync('git',['hash-object','--stdin'],{input:bytes});
+     assert.equal(hash.status,0);
+     assert.equal(hash.stdout.toString().trim(),pin.blob);
+     const target=join(dir,pin.path);
+     mkdirSync(dirname(target),{recursive:true});
+     writeFileSync(target,bytes);
+   }
+   const run=(args=[])=>spawnSync(process.execPath,[join(dir,validator.path),...args],{cwd:tmpdir(),encoding:'utf8'});
+   const positive=run();
+   assert.equal(positive.status,0,positive.stderr);
+   assert.ok(positive.stdout.includes('PASS C34-S02: '+jointDeclaredPins.length+' '));
+   assert.notEqual(run(['unexpected']).status,0);
+   const target=join(dir,jointDeclaredPins[0].path);
+   writeFileSync(target,'synthetic drift');
+   assert.notEqual(run().status,0);
+   rmSync(target);
+   assert.notEqual(run().status,0);
+   console.log('Pinned joint validator CLI: raw-byte positive, unexpected argument, drift and missing-file regressions; no runtime closure claim');
+ } finally {rmSync(dir,{recursive:true,force:true});}
+}
