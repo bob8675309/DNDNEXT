@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `703aec48555a3849efa10a9cfa8a783497d1b0d0` |
+| Exact source commit represented by this archive snapshot | `a5da643ce5b85a8cbc6fabb6596c59a74417da97` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | I2J: link owner-directed onboarding runbook without changing next task |
-| Files changed relative to main | 288 (204 non-docs; 84 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | I2J: compose original P1.3 fixture with pinned Origin feat schema bridge |
+| Files changed relative to main | 292 (207 non-docs; 85 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,12 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-origin-feat-p13-bridge.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_ORIGIN_FEAT_P13_BRIDGE_2026-11-26.md`
+- `scripts/audits/i2j_origin_feat_p13_bridge_source.mjs`
+- `scripts/fixtures/i2j_origin_feat_p13_bridge_pg17.sql`
 
 ## Research-branch change inventory versus main
 
@@ -56,6 +60,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-i1ef-resource-progression-local-auth.yml`
 - `.github/workflows/validate-i2j-levelup-v2-source-preflight.yml`
 - `.github/workflows/validate-i2j-nested-origin-feat-payload.yml`
+- `.github/workflows/validate-i2j-origin-feat-p13-bridge.yml`
 - `.github/workflows/validate-i2j-origin-feat-private-intake.yml`
 - `.github/workflows/validate-i2j-origin-feat-schema-contract.yml`
 - `.github/workflows/validate-i2j-origin-feat-source-custody.yml`
@@ -71,8 +76,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NpcForgeStepContent.js`
 - `components/NpcPanel.js`
 - `components/PlayerCharacterProfilePanelUnified.js`
-- `components/town/TownCrafterInteractionPanel.js`
-- … 238 more
+- … 242 more
 
 ## Trust and update procedure
 
