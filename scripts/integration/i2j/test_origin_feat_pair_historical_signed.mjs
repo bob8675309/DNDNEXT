@@ -335,3 +335,74 @@ for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
 assert.equal(triggerSnapshot(),triggers);
 console.log('PASS OF-SKILLED-03 original tail restored; historical helper and existing candidate fingerprints unchanged');
 console.log('OF-SKILLED RESULT: synthetic tool-only catalog, historical validator/tool helper and scratch materializer; no restored-source, mixed skill, repeatability or removal acceptance');
+
+
+// Mixed Skilled historical public-source experiment. The public skill-key
+// helper is real checked-in source, NOT an assumed exact restored definition.
+const skillKeySource=pinned('sql/20260808_09_level_up_advancement_authority_helpers.sql','ed8a1fc28b0f179857ec734ff59091efa32b397e');
+const skillKeyName='private.player_sheet_skill_key_v1(text)';
+sql(captured(skillKeySource,'private.player_sheet_skill_key_v1'));
+const skillKeyHash=md5(skillKeyName);
+console.log('I2J public skill-key MD5 '+skillKeyHash+' restored '+ '3b44b44ce828c6ac46ff9eaa935fa150'+' match='+String(skillKeyHash==='3b44b44ce828c6ac46ff9eaa935fa150'));
+const skillChoices=[
+ {kind:'skill',key:'Arcana',value:'Arcana',label:'Arcana'},
+ {kind:'skill',key:'Perception',value:'Perception',label:'Perception'}
+];
+for(const [i,c] of [...skillChoices,{label:'Athletics'}].entries()){
+ sql("INSERT INTO public.character_option_catalog(id,option_key,name,source,option_type,category,metadata) VALUES("+q(randomUUID())+","+q('i2j-skill-'+c.label.toLowerCase())+","+q(c.label)+",'XPHB','skill',"+q(['int','wis','str'][i])+",'{}')");
+ assert.equal(sql("SELECT private.player_sheet_skill_key_v1("+q(c.label)+")"),c.label.toLowerCase());
+}
+assert.equal(sql("SELECT private.player_sheet_skill_key_v1('I2J invalid skill') IS NULL"),'t');
+const mixed=seed();
+const priorSkills={arcana:{proficient:true,expertise:true},athletics:{proficient:true}};
+sql("UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{proficiencies}',"+json({skills:priorSkills})+",true)"+mixed.w);
+mark('origin-skilled-mixed');
+const mixedControls=[...duplicateControls,skilled],mixedControlsBefore=mixedControls.map(extendedSnapshot),mixedBefore=extendedSnapshot(mixed);
+const mixedChoices=[...skillChoices,toolChoices[1]];
+sql(skilledTail);
+try{
+ await deny(editor,mixed,skilledInput([skillChoices[0],skillChoices[0],toolChoices[1]]),/^Skilled choices must be distinct\.$/,'P0001');
+ await deny(editor,mixed,skilledInput([skillChoices[0],{kind:'skill',key:'I2J invalid skill',value:'I2J invalid skill',label:'I2J invalid skill'},toolChoices[1]]),/^Skilled contains an invalid skill choice\.$/,'P0001');
+ assert.deepEqual(extendedSnapshot(mixed),mixedBefore);
+ assert.deepEqual(mixedControls.map(extendedSnapshot),mixedControlsBefore);
+ console.log('PASS OF-MIXED-01 public skill-key source pinned; duplicate and invalid mixed skill choices denied with rollback');
+ const result=await apply(editor,mixed,skilledInput(mixedChoices));
+ assert.ifError(result.error);
+ final(mixed,[lessons,mind],{1:skilledId});
+ const grant=JSON.parse(sql("SELECT to_jsonb(g) FROM public.character_option_grant_instances g"+mixed.w));
+ const expectedEffects=[
+  {type:'skill-proficiency',skill:'arcana',introduced:false},
+  {type:'skill-proficiency',skill:'perception',introduced:true},
+  {type:'tool-proficiency',tool:toolChoices[1].label,introduced:true}
+ ];
+ assert.equal(grant.option_id,skilledId);
+ assert.equal(grant.instance_key,instanceKey);
+ assert.equal(grant.acquisition_owner_key,slot);
+ assert.equal(grant.acquisition_level,2);
+ assert.equal(grant.granted_by,editor.id);
+ assert.deepEqual(grant.choices,{'skills-or-tools':mixedChoices});
+ assert.deepEqual(grant.effects,expectedEffects);
+ const sheet=JSON.parse(sql("SELECT sheet FROM public.character_sheets"+mixed.w));
+ assert.deepEqual(sheet.proficiencies.skills.arcana,priorSkills.arcana);
+ assert.deepEqual(sheet.proficiencies.skills.athletics,priorSkills.athletics);
+ assert.equal(sheet.proficiencies.skills.perception.proficient,true);
+ assert.deepEqual(sheet.tools,[toolChoices[1].label]);
+ assert.equal(sheet.feats.filter(f=>f==='Skilled').length,1);
+ const projection=sheet.featGrantInstances.find(f=>f.instanceId===instanceKey);
+ assert.equal(projection.optionId,skilledId);
+ assert.deepEqual(projection.fixedEffects,expectedEffects);
+ assert.deepEqual(projection.choices,grant.choices);
+ assert.equal(sql("SELECT count(*) FROM public.character_option_grants"+mixed.w+" AND option_id="+q(skilledId)),'1');
+ assert.deepEqual(account(),mixedBefore.accounts);
+ assert.deepEqual(mixedControls.map(extendedSnapshot),mixedControlsBefore);
+ console.log('PASS OF-MIXED-02 mixed skill/tool acquisition preserves existing expertise and unrelated skill; new effects source-attributed');
+ await deny(editor,mixed,skilledInput(mixedChoices),null);
+ assert.deepEqual(mixedControls.map(extendedSnapshot),mixedControlsBefore);
+ console.log('PASS OF-MIXED-03 repeat submission leaves mixed grants and unrelated characters unchanged');
+}finally{sql(originalTail)}
+assert.equal(def(tailName),originalTail);
+assert.equal(md5(skillKeyName),skillKeyHash);
+assert.equal(md5(skilledToolName),toolHash);
+for(const [n,h] of pinnedCandidates)assert.equal(md5(n),h);
+assert.equal(triggerSnapshot(),triggers);
+console.log('OF-MIXED RESULT: historical public helper/validator, scratch materializer, synthetic catalog; no restored-source or repeatable/removal acceptance');
