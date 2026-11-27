@@ -1,5 +1,15 @@
 // All removal calls are privileged fixture probes of the original private
 // helper. Signed advancement creates specimens; no public removal RPC is added.
+let latestRemovalCheck='REMOVE-setup';
+function removalEvidence(message){
+ latestRemovalCheck=message.split(':',1)[0];
+ repeatEvidence(message);
+}
+process.on('uncaughtExceptionMonitor',error=>{
+ const location=error.stack?.match(/\[eval1\]:\d+:\d+/)?.[0]||'unknown location';
+ const message=String(error.message).slice(0,1400).replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A');
+ console.log('::error title=Reversal after '+latestRemovalCheck+' at '+location+'::'+message);
+});
 pinned('scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs','277bbb38a40e74554c1a6c24464713e2d1872628');
 pinned('sql/20260808_35_eldritch_invocation_level_replacement.sql','b46f6627813d87b7976cba9cb42663e7d861c81f');
 const removeName='private.remove_source_owned_origin_feat_v1';
@@ -82,7 +92,7 @@ const noInstance=/P0001: The source-owned Origin feat instance is missing\./;
 rejectOwnedRemoval(sharedTarget,'missing','class-option',slot,noInstance);
 rejectOwnedRemoval(sharedTarget,instanceKey,'species',slot,noInstance);
 rejectOwnedRemoval(sharedTarget,instanceKey,'class-option',slot3,noInstance);
-repeatEvidence('REMOVE-01: private original helper rejected missing and incorrectly bound instances (P0001) without any scoped mutation.');
+removalEvidence('REMOVE-01: private original helper rejected missing and incorrectly bound instances (P0001) without any scoped mutation.');
 
 const siblingsBefore=readAssignments(sharedTarget).filter(row=>row.source_type==='feat'&&row.source_key===sourceInstance(slot3));
 const originalMirrorBefore=account();
@@ -94,7 +104,7 @@ assert.deepEqual(account().map((hash,index)=>hash===originalMirrorBefore[index])
 assert.ok(firstRemoved.sheet.sourceChoices[slot],'caller owns updating the invocation projection');
 assertOwnedRemoval(sharedTarget,slot3);
 assert.equal(readAssignments(sharedTarget).filter(row=>row.source_type==='feat').length,0);
-repeatEvidence('REMOVE-02: original helper removed only selected Magic Initiate source rows, then removed final presence; sibling assignment ID, WIS/1 use, and pact slots survived first removal. Original mirror changed owner, editor and viewer.');
+removalEvidence('REMOVE-02: original helper removed only selected Magic Initiate source rows, then removed final presence; sibling assignment ID, WIS/1 use, and pact slots survived first removal. Original mirror changed owner, editor and viewer.');
 
 function assertSkilledEffects(target,skillsRemain){
  const sheet=readCanonicalSheet(target);
@@ -105,20 +115,20 @@ assertOwnedRemoval(introducingFirst,slot);
 assertSkilledEffects(introducingFirst,true);
 assertOwnedRemoval(introducingFirst,slot3);
 assertSkilledEffects(introducingFirst,true);
-repeatEvidence('REMOVE-03 RED: introducing source removed first; final non-introducing removal left orphaned Arcana/Perception proficiency. Pre-existing tool survived.');
+removalEvidence('REMOVE-03 RED: introducing source removed first; final non-introducing removal left orphaned Arcana/Perception proficiency. Pre-existing tool survived.');
 
 assertOwnedRemoval(laterFirst,slot3);
 assertSkilledEffects(laterFirst,true);
 assertOwnedRemoval(laterFirst,slot);
 assertSkilledEffects(laterFirst,false);
-repeatEvidence('REMOVE-04: reverse order cleared exclusively introduced proficiency on final removal. The pre-existing tool survived.');
+removalEvidence('REMOVE-04: reverse order cleared exclusively introduced proficiency on final removal. The pre-existing tool survived.');
 
 assertOwnedRemoval(expertiseRemovalTarget,slot3);
 sql("UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{proficiencies,skills,perception,expertise}','true',true)"+expertiseRemovalTarget.w);
 rejectOwnedRemoval(expertiseRemovalTarget,instanceKey,'class-option',slot,/P0001: Cannot remove Skilled because perception proficiency currently supports Expertise\./);
 assertSkilledEffects(expertiseRemovalTarget,true);
 assert.equal(readCanonicalSheet(expertiseRemovalTarget).proficiencies.skills.perception.expertise,true);
-repeatEvidence('REMOVE-05: Expertise dependency denied last introducing claim removal; earlier effect, canonical sheet, grant rows and account snapshots rolled back.');
+removalEvidence('REMOVE-05: Expertise dependency denied last introducing claim removal; earlier effect, canonical sheet, grant rows and account snapshots rolled back.');
 
 // Isolate Option A by changing only the account mirror in the scratch helper.
 // The original ownership-order RED remains executable and unchanged.
@@ -129,7 +139,7 @@ try{
  assertOwnedRemoval(detectorRed,slot);
  assert.deepEqual(account(),accountsBeforeCandidateRemoval);
 }finally{sql(originalRemove)}
-repeatEvidence('REMOVE-06 GREEN: scratch mirror-only omission preserved every account row while removing the canonical grant. Original private helper restored.');
+removalEvidence('REMOVE-06 GREEN: scratch mirror-only omission preserved every account row while removing the canonical grant. Original private helper restored.');
 
 const toughId=randomUUID();
 sql("INSERT INTO public.character_option_catalog(id,option_key,name,source,option_type,category,metadata) VALUES("+q(toughId)+",'i2j-reversal-tough|XPHB','Tough','XPHB','feat','O','{}')");
@@ -145,7 +155,7 @@ const {sheet:toughAfter}=assertOwnedRemoval(toughRemovalTarget,slot);
 assert.equal(toughAfter.maxHp,toughBefore.maxHp-4);
 assert.equal(toughAfter.hp,toughAfter.maxHp);
 assert.equal(toughAfter.featChoiceEffects.tough,undefined);
-repeatEvidence('REMOVE-07: Tough acquired at level 1, signed advancement reached level 2, and private removal subtracted four maximum HP and clamped full current HP.');
+removalEvidence('REMOVE-07: Tough acquired at level 1, signed advancement reached level 2, and private removal subtracted four maximum HP and clamped full current HP.');
 
 assert.deepEqual(protectedRemovalTargets.map(resourceSnapshot).map(({state,...rest})=>{
  const {accounts,...independent}=state;
@@ -158,4 +168,4 @@ assert.equal(md5(claimsSignature),claimsHash);
 assert.equal(def(tailName),originalTail);
 assert.equal(def(featName),materializerBefore);
 for(const [name,hash] of [...unchangedFunctions,...guardFingerprints])assert.equal(md5(name),hash,name);
-repeatEvidence('REMOVE-08: untouched character state, original trigger/source/ACL boundaries preserved. Private removal and claims MD5s: '+removeHash+' / '+claimsHash);
+removalEvidence('REMOVE-08: untouched character state, original trigger/source/ACL boundaries preserved. Private removal and claims MD5s: '+removeHash+' / '+claimsHash);
