@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `eaf33448bb899a4ff4c176b4709c1e76b43897b3` |
+| Exact source commit represented by this archive snapshot | `58798ceb900bb8d2cefc5825913a1709ff936504` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Verify original standalone rest and independent spell recharge |
+| Last source commit title | Record signed rest recharge CI evidence |
 | Files changed relative to main | 308 (214 non-docs; 94 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_SHARED_SPELL_REST_RECHARGE_2026-11-27.md`
-- `scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs`
 
 ## Research-branch change inventory versus main
 
