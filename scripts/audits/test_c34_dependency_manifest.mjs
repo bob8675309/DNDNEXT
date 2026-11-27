@@ -629,3 +629,31 @@ function assessResearchCompletion(evidence) {
  assert.equal(assessResearchCompletion(Object.create(complete)).missing.length,5);
  console.log('Finite research disposition model passed; no live bypass authorized');
 }
+
+ // Synthetic receipt identity binding; matching identities do not authenticate evidence.
+function bindResearchReceipt(receipt, expected) {
+ const keys=['base','head','workflowBlob'];
+ const valid=x=>typeof x==='string' && /^[0-9a-f]{40}$/.test(x) && !/^0+$/.test(x);
+ const matches=keys.every(k=>Object.hasOwn(receipt??{},k) &&
+   Object.hasOwn(expected??{},k) && valid(expected[k]) && receipt[k]===expected[k]);
+ return {identityMatches:matches, authenticated:false, bypassAuthorized:false,
+   recommendation:'full', signedAccepted:false};
+}
+{
+ const expected={base:'1'.repeat(40),head:'2'.repeat(40),workflowBlob:'7343fcffdca0ee76c0785b6e9e341b48a7951d2e'};
+ assert.deepEqual(bindResearchReceipt({...expected},expected),{identityMatches:true,
+   authenticated:false,bypassAuthorized:false,recommendation:'full',signedAccepted:false});
+ for(const key of Object.keys(expected)){
+   const missing={...expected}; delete missing[key];
+   for(const receipt of [missing,{...expected,[key]:'3'.repeat(40)},Object.create(expected)]){
+     assert.equal(bindResearchReceipt(receipt,expected).identityMatches,false);
+   }
+   for(const invalid of [null,'','0'.repeat(40),'A'.repeat(40)]){
+     const bad={...expected,[key]:invalid};
+     assert.equal(bindResearchReceipt(bad,bad).identityMatches,false);
+   }
+ }
+ assert.equal(bindResearchReceipt(null,expected).identityMatches,false);
+ assert.equal(bindResearchReceipt(expected,null).identityMatches,false);
+ console.log('Synthetic receipt identity binding passed; authentication and authorization remain unproven');
+}
