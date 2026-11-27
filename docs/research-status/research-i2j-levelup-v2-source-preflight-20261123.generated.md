@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `1c128d57b359c16e87fb967196c1c8dde1935017` |
+| Exact source commit represented by this archive snapshot | `49065cd13e48f3c596f1d96749222fe19eab6e31` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Consolidate verified standalone rest recharge stage into owner I2J |
-| Files changed relative to main | 308 (214 non-docs; 94 docs) |
+| Last source commit title | Consolidate verified original reversal characterization into owner I2J |
+| Files changed relative to main | 310 (215 non-docs; 95 docs) |
 | Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
@@ -20,8 +20,8 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_SHARED_SPELL_REST_RECHARGE_2026-11-27.md`
-- `scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs`
+- `docs/research/I2J_REVERSIBLE_SOURCE_EFFECTS_2026-11-27.md`
+- `scripts/integration/i2j/source_owned_effect_reversal_stage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -75,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 258 more
+- … 260 more
 
 ## Trust and update procedure
 
