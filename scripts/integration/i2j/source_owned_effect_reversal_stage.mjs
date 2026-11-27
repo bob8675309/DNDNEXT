@@ -36,13 +36,18 @@ function readGrantInstances(target){
 function readCanonicalSheet(target){
  return JSON.parse(sql('SELECT sheet FROM public.character_sheets'+target.w));
 }
+const independentOwner='background';
+function progressionWithoutTimestamp(target){
+ return sql("SELECT (to_jsonb(p)-'updated_at')::text FROM public.character_progression p"+target.w);
+}
 function assertOwnedRemoval(target,ownerKey){
  const key=sourceInstance(ownerKey);
  const before=resourceSnapshot(target);
+ const progressionBefore=progressionWithoutTimestamp(target);
  const beforeGrants=readGrantInstances(target);
  const removed=beforeGrants.find(row=>row.instance_key===key);
  assert.ok(removed,key);
- const result=JSON.parse(sql(removalSql(target,key,'class-option',ownerKey)));
+ const result=JSON.parse(sql(removalSql(target,key,independentOwner,ownerKey)));
  assert.equal(result.instanceKey,key);
  assert.equal(result.optionId,removed.option_id);
  assert.deepEqual(result.removedEffects,removed.effects);
@@ -55,8 +60,9 @@ function assertOwnedRemoval(target,ownerKey){
  assert.deepEqual(sheet.featGrantInstances.map(instance=>instance.instanceId).sort(),surviving.map(row=>row.instance_key).sort());
  const after=resourceSnapshot(target);
  assert.deepEqual(after.tables,before.tables);
+ assert.equal(progressionWithoutTimestamp(target),progressionBefore);
  for(const [name,hash] of Object.entries(before.state)){
-  if(!['character_sheets','character_option_grant_instances','character_option_grants','accounts'].includes(name))assert.deepEqual(after.state[name],hash,name);
+  if(!['character_progression','character_sheets','character_option_grant_instances','character_option_grants','accounts'].includes(name))assert.deepEqual(after.state[name],hash,name);
  }
  const hasSpells=removed.effects.some(effect=>effect.type==='feat-spell-source');
  assert.deepEqual(after.assignments,before.assignments.filter(row=>!(hasSpells&&row.source_type==='feat'&&row.source_key===key)));
@@ -68,42 +74,78 @@ function rejectOwnedRemoval(target,key,ownerType,ownerKey,pattern){
  assert.deepEqual(resourceSnapshot(target),before);
 }
 
+// Use ordinary signed characters to keep the active Invocation graph valid
+// when probing the private helper. Detached specimens keep grant/effect bytes
+// and spell state, with an independent owner and fixture-specific row IDs.
 const introducingFirst=seed(), laterFirst=seed(), expertiseRemovalTarget=seed(), toughRemovalTarget=seed();
+const detachedMagic=seed(),mirrorCandidate=seed();
+for(const target of [introducingFirst,laterFirst,expertiseRemovalTarget,detachedMagic,mirrorCandidate]){
+ assert.ifError((await apply(editor,target,input())).error);
+}
+function materializeFixture(target,level,optionId,ownerKey,choices){
+ const args=[q(target.id),level,q(optionId),json({choices}),q(sourceInstance(ownerKey)),q(independentOwner),q(ownerKey)];
+ return JSON.parse(sql('SELECT private.apply_source_owned_origin_feat_v1('+args.join(',')+')'));
+}
+function detachFeatSpecimen(source,target){
+ const original=readCanonicalSheet(source);
+ const projection={
+  feats:original.feats,
+  featGrantInstances:original.featGrantInstances.map(instance=>({...instance,acquisitionOwnerType:independentOwner}))
+ };
+ const targetId=q(target.id),sourceId=q(source.id);
+ sql(`BEGIN;
+ INSERT INTO public.character_option_grant_instances
+ SELECT (jsonb_populate_record(NULL::public.character_option_grant_instances,to_jsonb(g) ||
+  jsonb_build_object('id',gen_random_uuid(),'character_id',${targetId}::uuid,'acquisition_owner_type',${q(independentOwner)}))).*
+ FROM public.character_option_grant_instances g WHERE g.character_id=${sourceId};
+ INSERT INTO public.character_option_grants
+ SELECT (jsonb_populate_record(NULL::public.character_option_grants,to_jsonb(g) ||
+  jsonb_build_object('id',gen_random_uuid(),'character_id',${targetId}::uuid))).*
+ FROM public.character_option_grants g WHERE g.character_id=${sourceId};
+ INSERT INTO public.character_spells
+ SELECT (jsonb_populate_record(NULL::public.character_spells,to_jsonb(s) ||
+  jsonb_build_object('id',gen_random_uuid(),'character_id',${targetId}::uuid))).*
+ FROM public.character_spells s WHERE s.character_id=${sourceId} AND s.source_type='feat';
+ UPDATE public.character_sheets SET sheet=sheet||${json(projection)} WHERE character_id=${targetId};
+ COMMIT;`);
+}
+detachFeatSpecimen(sharedTarget,detachedMagic);
+detachFeatSpecimen(detectorRed,mirrorCandidate);
+const detachedProfile=await callResource(editor,profileRpc,{p_character_id:detachedMagic.id});
+assert.ifError(detachedProfile.error);
+assert.deepEqual(detachedProfile.data.slots.map(row=>[row.poolKey,row.remaining,row.max]),[['pact_magic',2,2]]);
 const skilledOverlap={'skills-or-tools':[...skillChoices,toolChoices[0]]};
 for(const target of [introducingFirst,laterFirst,expertiseRemovalTarget]){
  sql("UPDATE public.character_sheets SET sheet=sheet||"+json({tools:[toolChoices[0].label],proficiencies:{skills:{}}})+target.w);
+ for(const ownerKey of [slot,slot3])materializeFixture(target,2,skilledId,ownerKey,skilledOverlap);
+ const owned=readGrantInstances(target);
+ assert.deepEqual(owned.map(row=>row.effects.map(effect=>effect.introduced)),[[true,true,false],[false,false,false]]);
 }
-sql(providerTail);
-try{
- for(const target of [introducingFirst,laterFirst,expertiseRemovalTarget]){
-  assert.ifError((await apply(editor,target,providerRequest(skilledId,'Skilled',skilledOverlap,skilledOverlap))).error);
-  const owned=readGrantInstances(target);
-  assert.deepEqual(owned.map(row=>row.effects.map(effect=>effect.introduced)),[[true,true,false],[false,false,false]]);
- }
-}finally{sql(originalTail)}
-
-const protectedRemovalTargets=[...controls.filter(target=>target!==detectorRed)];
+const protectedRemovalTargets=[...controls,sharedTarget];
 mark('origin-reversal-original');
 const protectedBefore=protectedRemovalTargets.map(resourceSnapshot).map(({state,...rest})=>{
  const {accounts,...independent}=state;
  return {...rest,state:independent};
 });
 const noInstance=/P0001: The source-owned Origin feat instance is missing\./;
-rejectOwnedRemoval(sharedTarget,'missing','class-option',slot,noInstance);
-rejectOwnedRemoval(sharedTarget,instanceKey,'species',slot,noInstance);
-rejectOwnedRemoval(sharedTarget,instanceKey,'class-option',slot3,noInstance);
-removalEvidence('REMOVE-01: private original helper rejected missing and incorrectly bound instances (P0001) without any scoped mutation.');
+rejectOwnedRemoval(detachedMagic,'missing',independentOwner,slot,noInstance);
+rejectOwnedRemoval(detachedMagic,instanceKey,'species',slot,noInstance);
+rejectOwnedRemoval(detachedMagic,instanceKey,independentOwner,slot3,noInstance);
+rejectOwnedRemoval(sharedTarget,instanceKey,'class-option',slot,/P0001: .* is missing its owned Origin feat instance\./);
+removalEvidence('REMOVE-01: private original helper rejected missing and incorrectly bound instances and the deferred guard rejected an active Invocation orphan (P0001) with full rollback.');
 
-const siblingsBefore=readAssignments(sharedTarget).filter(row=>row.source_type==='feat'&&row.source_key===sourceInstance(slot3));
+const siblingsBefore=readAssignments(detachedMagic).filter(row=>row.source_type==='feat'&&row.source_key===sourceInstance(slot3));
+const detachedSibling=siblingsBefore.find(row=>row.spell_id===sharedOne.value);
+assert.ok(detachedSibling);
 const originalMirrorBefore=account();
-const firstRemoved=assertOwnedRemoval(sharedTarget,slot);
-assert.deepEqual(readAssignments(sharedTarget).filter(row=>row.source_type==='feat'),siblingsBefore);
-assert.deepEqual(siblingsBefore.filter(row=>row.spell_id===sharedOne.value).map(row=>[row.id,row.casting_stat,row.uses_remaining]),[[secondPool.id,'wis',1]]);
-assert.equal(sql("SELECT count(*) FROM public.players p JOIN public.character_permissions cp ON cp.user_id=p.user_id JOIN public.character_sheets cs ON cs.character_id=cp.character_id WHERE cp.character_id="+q(sharedTarget.id)+" AND p.sheet=cs.sheet"),'3');
+const firstRemoved=assertOwnedRemoval(detachedMagic,slot);
+assert.deepEqual(readAssignments(detachedMagic).filter(row=>row.source_type==='feat'),siblingsBefore);
+assert.deepEqual(siblingsBefore.filter(row=>row.spell_id===sharedOne.value).map(row=>[row.id,row.casting_stat,row.uses_remaining]),[[detachedSibling.id,'wis',1]]);
+assert.equal(sql("SELECT count(*) FROM public.players p JOIN public.character_permissions cp ON cp.user_id=p.user_id JOIN public.character_sheets cs ON cs.character_id=cp.character_id WHERE cp.character_id="+q(detachedMagic.id)+" AND p.sheet=cs.sheet"),'3');
 assert.deepEqual(account().map((hash,index)=>hash===originalMirrorBefore[index]),[false,false,false,true]);
-assert.ok(firstRemoved.sheet.sourceChoices[slot],'caller owns updating the invocation projection');
-assertOwnedRemoval(sharedTarget,slot3);
-assert.equal(readAssignments(sharedTarget).filter(row=>row.source_type==='feat').length,0);
+assert.ok(firstRemoved.sheet.sourceChoices[slot],'unrelated source-choice projection must survive');
+assertOwnedRemoval(detachedMagic,slot3);
+assert.equal(readAssignments(detachedMagic).filter(row=>row.source_type==='feat').length,0);
 removalEvidence('REMOVE-02: original helper removed only selected Magic Initiate source rows, then removed final presence; sibling assignment ID, WIS/1 use, and pact slots survived first removal. Original mirror changed owner, editor and viewer.');
 
 function assertSkilledEffects(target,skillsRemain){
@@ -125,7 +167,7 @@ removalEvidence('REMOVE-04: reverse order cleared exclusively introduced profici
 
 assertOwnedRemoval(expertiseRemovalTarget,slot3);
 sql("UPDATE public.character_sheets SET sheet=jsonb_set(sheet,'{proficiencies,skills,perception,expertise}','true',true)"+expertiseRemovalTarget.w);
-rejectOwnedRemoval(expertiseRemovalTarget,instanceKey,'class-option',slot,/P0001: Cannot remove Skilled because perception proficiency currently supports Expertise\./);
+rejectOwnedRemoval(expertiseRemovalTarget,instanceKey,independentOwner,slot,/P0001: Cannot remove Skilled because perception proficiency currently supports Expertise\./);
 assertSkilledEffects(expertiseRemovalTarget,true);
 assert.equal(readCanonicalSheet(expertiseRemovalTarget).proficiencies.skills.perception.expertise,true);
 removalEvidence('REMOVE-05: Expertise dependency denied last introducing claim removal; earlier effect, canonical sheet, grant rows and account snapshots rolled back.');
@@ -136,7 +178,7 @@ const removeMirror="  update public.players p set sheet=v_sheet,updated_at=now()
 sql(once(originalRemove,removeMirror,'  -- Disposable Option A: canonical sheet only.'));
 try{
  const accountsBeforeCandidateRemoval=account();
- assertOwnedRemoval(detectorRed,slot);
+ assertOwnedRemoval(mirrorCandidate,slot);
  assert.deepEqual(account(),accountsBeforeCandidateRemoval);
 }finally{sql(originalRemove)}
 removalEvidence('REMOVE-06 GREEN: scratch mirror-only omission preserved every account row while removing the canonical grant. Original private helper restored.');
@@ -144,7 +186,7 @@ removalEvidence('REMOVE-06 GREEN: scratch mirror-only omission preserved every a
 const toughId=randomUUID();
 sql("INSERT INTO public.character_option_catalog(id,option_key,name,source,option_type,category,metadata) VALUES("+q(toughId)+",'i2j-reversal-tough|XPHB','Tough','XPHB','feat','O','{}')");
 sql("UPDATE public.character_sheets SET sheet=sheet||'{\"featChoiceEffects\":{}}'::jsonb"+toughRemovalTarget.w);
-sql("SELECT private.apply_source_owned_origin_feat_v1("+[q(toughRemovalTarget.id),1,q(toughId),json({choices:{}}),q(instanceKey),q('class-option'),q(slot)].join(',')+")");
+materializeFixture(toughRemovalTarget,1,toughId,slot,{});
 assert.equal(readCanonicalSheet(toughRemovalTarget).featChoiceEffects.tough.acquiredLevel,1);
 assert.ifError((await apply(editor,toughRemovalTarget,input())).error);
 assert.equal(sql('SELECT class_level FROM public.character_progression'+toughRemovalTarget.w),'2');
