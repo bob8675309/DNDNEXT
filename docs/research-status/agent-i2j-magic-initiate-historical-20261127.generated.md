@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `686ad80d12821b1d1253b651f6fe4e61123f1098` |
+| Exact source commit represented by this archive snapshot | `909cb9f45b139ec12fac0cc42452cb5097e258ab` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Verify shared spell resource consumption by assignment ID |
+| Last source commit title | Record shared spell resource consumption CI evidence |
 | Files changed relative to main | 306 (213 non-docs; 93 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_SHARED_SPELL_RESOURCE_CONSUMPTION_2026-11-27.md`
-- `scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs`
 
 ## Research-branch change inventory versus main
 
