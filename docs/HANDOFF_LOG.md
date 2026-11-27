@@ -1412,3 +1412,9 @@ Verified main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`, owner I2J `8ef9388dc93
 Exact executable `eaf33448bb899a4ff4c176b4709c1e76b43897b3`, [run 46039510266 / job 140643347799](https://github.com/bob8675309/DNDNEXT/actions/runs/46039510266/job/140643347799), startup, 39 inherited cases, REST-01..07 and teardown reported success. Tactical 46039510317 and docs 46039510343 passed. Direct step logs returned HTTP 404. [Dossier](research/I2J_SHARED_SPELL_REST_RECHARGE_2026-11-27.md) records original function fingerprints and signed recharge, caps, slot recovery, invalid/unauthorized/active rollback, ownership and post-rest spend assertions. Owner I2J `8ef9388dc935dcb20b397a9034f72450864189c8` prior-stage job 140631582292 separately reported signed and teardown step success. No duplicate transfer, owner write, production SQL, deployed adapter changes, maps, private transfer, merge or paid work. Actual tactical casting, mounted UI, other feature families and restored parity remain separate.
 
 **ONE NEXT:** stage signed reversible removal with original migration-34 helper, proving sibling source and shared proficiency survive.
+
+## 2026-11-27 Central — reversible source ownership stage authored
+
+Verified isolated base `58798ceb900bb8d2cefc5825913a1709ff936504`, owner I2J `1c128d57b359c16e87fb967196c1c8dde1935017` and main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`. The interactive assistant independently confirmed all 46 accepted cases and teardown in job 140643347799. No rest-stage transfer repeated. Added a [separate disposable private-helper stage and dossier](research/I2J_REVERSIBLE_SOURCE_EFFECTS_2026-11-27.md). Signed advancement sets up specimens, while actual removal uses local privileged psql and existing private ACLs. Syntax and diff checks passed, exact-head CI pending. No owner write, protected edits, live SQL, public removal RPC, deployments, merges, private transfer or paid work.
+
+**ONE NEXT:** verify exact-head CI and teardown.
