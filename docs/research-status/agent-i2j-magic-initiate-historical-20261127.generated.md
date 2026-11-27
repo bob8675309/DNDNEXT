@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `b79f0a009085ddf4e6121bd25bc517fdfa031ab8` |
+| Exact source commit represented by this archive snapshot | `b3918eef87990265ace3e9bc40389b41545f391f` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Test historical Magic Initiate acquisition |
+| Last source commit title | Record signed Magic Initiate CI results |
 | Files changed relative to main | 300 (211 non-docs; 89 docs) |
-| Last source commit | 4 files (2 non-docs; 2 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 
