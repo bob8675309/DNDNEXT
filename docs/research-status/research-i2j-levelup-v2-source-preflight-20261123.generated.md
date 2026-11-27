@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `fa48a27f738eaff8b1f56283370165beedc811ae` |
+| Exact source commit represented by this archive snapshot | `8a6f99d4895148229bf40fe11c3254ee1a93447e` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Verify mixed Skilled and extend signed Crafter and Musician proficiency regressions |
+| Last source commit title | Record 17 signed proficiency checks and owner-approved selective Codex use |
 | Files changed relative to main | 300 (211 non-docs; 89 docs) |
-| Last source commit | 5 files (1 non-docs; 4 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,8 +20,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_ORIGIN_FEAT_CRAFTER_MUSICIAN_HISTORICAL_SIGNED_2026-11-27.md`
-- `docs/research/I2J_ORIGIN_FEAT_SKILLED_HISTORICAL_SIGNED_2026-11-27.md`
-- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
 
 ## Research-branch change inventory versus main
 
