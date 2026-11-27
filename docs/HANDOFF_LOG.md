@@ -1400,3 +1400,9 @@ Dated correction to the preceding integration dossier: the interactive assistant
 Exact executable `686ad80d12821b1d1253b651f6fe4e61123f1098`, [run 46033844609 / job 140624142020](https://github.com/bob8675309/DNDNEXT/actions/runs/46033844609/job/140624142020#step:7:1). Startup, 33 accepted historical/candidate cases, RESOURCE-01..06 and teardown passed. Docs run 46033844568 and tactical run 46033844586 passed. Direct raw log retrieval returned HTTP 404. The pinned historical resource code decremented only the selected row, with assignment, permission and exhaustion errors rolling back. The [dossier](research/I2J_SHARED_SPELL_RESOURCE_CONSUMPTION_2026-11-27.md) records SQLSTATEs, unchanged state and UI compatibility gaps. No owner write, hosted SQL, actual casting, rest, protected edits, merges, deployments or paid services.
 
 **ONE NEXT:** verify all 39 cases and teardown through the existing workflow on an owner-approved I2J integration head.
+
+## 2026-11-27 Central — standalone rest recharge stage authored
+
+Verified main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`, owner I2J `8ef9388dc935dcb20b397a9034f72450864189c8` and isolated base `909cb9f45b139ec12fac0cc42452cb5097e258ab`. The interactive assistant independently verified all 39 signed cases in job 140624142020. Owner already incorporated the earlier stages. The new [rest stage and consumer dossier](research/I2J_SHARED_SPELL_REST_RECHARGE_2026-11-27.md) preserve those files and add public source body/MD5 checks, real signed cadence and slot recovery, authentic migration-06 veto and protected snapshots. Local syntax and source-body comparison passed. Exact-head CI pending. No live SQL, branch consolidation, paid services, private transfer, maps or production deployment.
+
+**ONE NEXT:** verify the exact signed run and teardown.
