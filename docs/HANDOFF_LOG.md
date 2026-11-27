@@ -1436,3 +1436,11 @@ Exact executable `6e437e8cf69b7f0925ef5e12fc60957ae84a406c`, [run 46061144915 / 
 Verified isolated `9f849a67c8d671ac6afbee394223551b760b58f6`, owner `33bbfaa2ddc6a3fdc8806f1cd4aa7a9e345fed74`, main `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0`. The interactive assistant independently verified all 60 cases and teardown in job 140715438140. No duplicate transfer. Added a [separate signed replacement stage and scope dossier](research/I2J_SIGNED_INVOCATION_REPLACEMENT_2026-11-27.md) covering source-pin and ACL boundaries, real Lessons and synthetic-provider specimens, original mirror evidence, candidate provenance and transactional rollback. Static syntax and diff checks passed. Exact-head CI pending. No hosted SQL, protected changes, public helper exposure, owner writes, private transfer, merge, deployment or paid work.
 
 **ONE NEXT:** verify the exact signed run and teardown.
+
+## 2026-11-27 Central — exact-head signed Invocation replacement passed
+
+Executable `521ceed4efa90c07557251a345eb6a57fbd71350` passed all 60 inherited cases and REPLACE-01–07. GitHub reported disposable startup and teardown step success. The original signed v5 path showed linked legacy mirror writes while preserving the surviving Lucky instance. The scratch candidate preserved independent proficiency claims and the same-spell WIS assignment, removed the last exclusive claim, protected Expertise, and rolled back unauthorized, invalid and late failures. Repeated submission was rejected without another commit. The job annotation and [source dossier](research/I2J_SIGNED_INVOCATION_REPLACEMENT_2026-11-27.md) preserve source fingerprints and failed retry receipts. [Job 140739277092](https://github.com/bob8675309/DNDNEXT/actions/runs/46068428278/job/140739277092)
+
+Owner I2J `33bbfaa2ddc6a3fdc8806f1cd4aa7a9e345fed74` already has the matching provenance bundle. Its bounded addition is the signed replacement stage, workflow path and final bundle entry plus these receipts. Retain owner-only admission and run the complete bundle at the integrated head. Mounted UI, concurrent writes and restored-source parity remain separate gates. No owner/main write or PR state change.
+
+**ONE NEXT:** Run a source-locked J164–J168 creation versus signed advancement/replacement equivalence matrix on an owner-approved review head.
