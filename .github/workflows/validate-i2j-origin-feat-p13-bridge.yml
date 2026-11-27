@@ -1,0 +1,64 @@
+name: I2J Origin feat P1.3 schema bridge (disposable only)
+on:
+  push:
+    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    paths:
+      - 'scripts/audits/i2j_origin_feat_p13_bridge_source.mjs'
+      - 'scripts/fixtures/i2j_origin_feat_p13_bridge_pg17.sql'
+      - '.github/workflows/validate-i2j-origin-feat-p13-bridge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bridge:
+    if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate pinned public-source schema bridge
+        run: |
+          node --check scripts/audits/i2j_origin_feat_p13_bridge_source.mjs
+          node scripts/audits/i2j_origin_feat_p13_bridge_source.mjs > "$RUNNER_TEMP/i2j-origin-bridge.sql"
+      - name: Configure disposable Supabase PG17 and Auth
+        run: |
+          mkdir -p "$RUNNER_TEMP/i2j-origin-bridge/supabase"
+          cat > "$RUNNER_TEMP/i2j-origin-bridge/supabase/config.toml" <<'TOML'
+          project_id = "i2j-origin-bridge-local"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+          cd "$RUNNER_TEMP/i2j-origin-bridge"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Compose existing P1.3 fixture and execute bridge-only checks
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -c 'SHOW server_version'
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/i2j-origin-bridge.sql"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/i2j_origin_feat_p13_bridge_pg17.sql
+      - name: Destroy disposable services
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/i2j-origin-bridge" ]; then
+            cd "$RUNNER_TEMP/i2j-origin-bridge"
+            npx --yes supabase@2.120.0 stop --no-backup || true
+          fi
