@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `9f849a67c8d671ac6afbee394223551b760b58f6` |
+| Exact source commit represented by this archive snapshot | `4c50866c8fe0287ebf34f396b7dec870171651f1` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record disposable proficiency provenance CI results |
-| Files changed relative to main | 313 (217 non-docs; 96 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | Verify original Invocation replacement through signed advancement |
+| Files changed relative to main | 315 (218 non-docs; 97 docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,9 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_PROFICIENCY_PROVENANCE_2026-11-27.md`
+- `docs/research/I2J_SIGNED_INVOCATION_REPLACEMENT_2026-11-27.md`
+- `scripts/integration/i2j/signed_invocation_replacement_stage.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +75,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
 - `components/NpcForgeStepContent.js`
-- … 263 more
+- … 265 more
 
 ## Trust and update procedure
 
