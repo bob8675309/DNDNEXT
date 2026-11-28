@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `3d0cb95ecf2f095675ac57248902bfc2bdbdc83d` |
+| Exact source commit represented by this archive snapshot | `d85d6cc1cb2a86e7954886a4538f1d8c6e1ac479` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Join signed Story Forge to earned and replaced Origin feat authority |
+| Last source commit title | Preserve the historical I1-G grant while extending the joined fixture |
 | Files changed relative to main | 322 (224 non-docs; 98 docs) |
-| Last source commit | 4 files (4 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,8 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
 - `scripts/integration/i2j/story_forge_lifecycle.mjs`
 - `scripts/integration/i2j/story_forge_lifecycle_sources.mjs`
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
