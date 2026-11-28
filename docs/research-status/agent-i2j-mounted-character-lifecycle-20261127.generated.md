@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-mounted-character-lifecycle-20261127` |
-| Exact source commit represented by this archive snapshot | `fa9f39f1e24ea66609ad4628f5e42fe2dd9dce81` |
+| Exact source commit represented by this archive snapshot | `4798b848ba803d46c9856dd0abd932b4a0392ed8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Compare active feat choices without inactive spell-list fields |
-| Files changed relative to main | 327 (227 non-docs; 100 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | Record verified mounted Story Forge to v5 lifecycle |
+| Files changed relative to main | 328 (227 non-docs; 101 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/browser/verify_i2j_mounted_lifecycle.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_MOUNTED_CHARACTER_LIFECYCLE_2026-11-27.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +73,7 @@
 - `components/MapPageClient.js`
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
-- … 277 more
+- … 278 more
 
 ## Trust and update procedure
 

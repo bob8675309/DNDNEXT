@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-28T05:20:23Z | agent/i2j-mounted-character-lifecycle-20261127 (fa9f39f1e24ea66609ad4628f5e42fe2dd9dce81) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
+| 2026-11-28T05:24:53Z | agent/i2j-mounted-character-lifecycle-20261127 (4798b848ba803d46c9856dd0abd932b4a0392ed8) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
