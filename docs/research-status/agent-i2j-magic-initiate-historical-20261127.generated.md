@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `ccd8e074800d1dfab40ea1b5020ee78fca4172c7` |
+| Exact source commit represented by this archive snapshot | `e6543dca1f356e6fdf5da624b1e62347a32cff26` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Supply the earned Warlock catalog projections to the I1-H fixture |
+| Last source commit title | Assert the original joined low-XP review cancellation and rollback |
 | Files changed relative to main | 322 (224 non-docs; 98 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/i2j/story_forge_lifecycle_sources.mjs`
+- `scripts/integration/i2j/story_forge_lifecycle.mjs`
 
 ## Research-branch change inventory versus main
 
