@@ -891,3 +891,32 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
      a.equal(validateDiffEnvelope(event,{...receipt,...bad}),false);
    console.log('Synthetic push diff envelope: endpoint, completeness, cap and ambiguity checks; authentication and PR merge-base unresolved');
  }
+
+ // Synthetic PR comparison identity model; not authenticated GitHub evidence.
+ {
+   function prComparisonMatches(event, receipt) {
+     const sha=x=>typeof x==='string' && /^[0-9a-f]{40}$/.test(x) && !/^0+$/.test(x);
+     return !!(event && receipt && event.kind==='pull_request' &&
+       event.baseRepo==='bob8675309/DNDNEXT' && event.headRepo===event.baseRepo &&
+       sha(event.base) && sha(event.head) && event.base!==event.head &&
+       receipt.base===event.base && receipt.head===event.head &&
+       receipt.complete===true && receipt.truncated===false &&
+       Array.isArray(receipt.mergeBases) && receipt.mergeBases.length===1 &&
+       sha(receipt.mergeBases[0]) && receipt.diffFrom===receipt.mergeBases[0] &&
+       receipt.diffTo===event.head);
+   }
+   const event={kind:'pull_request',baseRepo:'bob8675309/DNDNEXT',
+     headRepo:'bob8675309/DNDNEXT',base:'1'.repeat(40),head:'2'.repeat(40)};
+   const ancestor='3'.repeat(40);
+   const receipt={base:event.base,head:event.head,complete:true,truncated:false,
+     mergeBases:[ancestor],diffFrom:ancestor,diffTo:event.head};
+   assert.equal(prComparisonMatches(event,receipt),true);
+   for(const bad of [{base:'4'.repeat(40)},{head:'4'.repeat(40)},
+     {headRepo:'fork/DNDNEXT'},{kind:'push'},{base:'0'.repeat(40)}])
+     assert.equal(prComparisonMatches({...event,...bad},receipt),false);
+   for(const bad of [{base:ancestor},{head:ancestor},{complete:false},{truncated:true},
+     {mergeBases:[]},{mergeBases:[ancestor,event.base]},{mergeBases:undefined},
+     {diffFrom:event.base},{diffTo:event.base},{mergeBases:['0'.repeat(40)],diffFrom:'0'.repeat(40)}])
+     assert.equal(prComparisonMatches(event,{...receipt,...bad}),false);
+   console.log('Synthetic PR comparison identity checks; ancestry and provenance not proven');
+ }
