@@ -12,6 +12,15 @@ const creationRpc="create_player_character_with_private_backstory_v1";
 const levelRpc="complete_character_level_up_v5";
 const pact="optional-feature:pact-of-the-blade|XPHB";
 
+// The mounted form serializes inactive fields as empty arrays. Compare every
+// selected group and field against the existing signed payload.
+function selectedClassChoices(groups) {
+  return Object.fromEntries(Object.entries(groups).flatMap(([groupId,fields])=>{
+    const selected=Object.entries(fields).filter(([,keys])=>keys.length);
+    return selected.length ? [[groupId,Object.fromEntries(selected)]] : [];
+  }));
+}
+
 export class MountedLifecycle {
   constructor({sql,email,password,actorId}) {
     this.sql=sql;
@@ -256,17 +265,23 @@ export class MountedLifecycle {
     const request=response.request().postDataJSON();
     assert.equal(request.p_character_id,id);
     const selection=request.p_selections;
-    assert.deepEqual(selection.class_choice_selections,reference.class_choice_selections);
+    assert.deepEqual(selectedClassChoices(selection.class_choice_selections),reference.class_choice_selections);
+    assert.deepEqual(selection.replacement_selections,reference.replacement_selections);
     assert.deepEqual(selection.spell_choices.map(row=>row.spell_id),reference.spell_choices.map(row=>row.spell_id));
     if(level===2){
-      const shape=rows=>rows.map(row=>[row.acquisitionOwnerKey,row.optionId]).sort();
+      const shape=rows=>rows.map(row=>({
+        ownerType:row.acquisitionOwnerType,
+        ownerKey:row.acquisitionOwnerKey,
+        level:row.acquisitionLevel,
+        id:row.optionId,
+        source:row.source,
+        choices:Object.fromEntries(Object.entries(row.choices).map(([field,options])=>[
+          field,options.map(option=>option.value.toLowerCase()).sort(),
+        ])),
+      })).sort((a,b)=>a.ownerKey.localeCompare(b.ownerKey));
       assert.deepEqual(shape(selection.class_option_feat_instances),shape(reference.class_option_feat_instances));
-      const magic=selection.class_option_feat_instances.find(row=>row.name==="Magic Initiate");
-      assert.equal(magic.choices["spell-list"][0].value,"Wizard");
-      assert.equal(magic.choices["spellcasting-ability"][0].value,"int");
-      assert.equal(magic.choices["cantrips-wizard"].length,2);
-      assert.equal(magic.choices["level-1-wizard"].length,1);
     }else{
+      assert.deepEqual(selection.class_option_feat_instances,[]);
       assert.equal(selection.subclass_name,"Fiend");
       assert.equal(selection.subclass_source,"XPHB");
     }
