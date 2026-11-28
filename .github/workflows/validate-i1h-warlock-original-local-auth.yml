@@ -1,5 +1,11 @@
 name: I1-H original first-create Warlock Invocation acquisition joint signed
 on:
+  push:
+    branches: [agent/i2j-magic-initiate-historical-20261127]
+    paths:
+      - '.github/workflows/validate-i1h-warlock-original-local-auth.yml'
+      - 'scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs'
+      - 'scripts/integration/i2j/story_forge_lifecycle*.mjs'
   pull_request:
     paths:
       - '.github/workflows/validate-i1h-warlock-original-local-auth.yml'
@@ -42,7 +48,7 @@ permissions:
   contents: read
 jobs:
   warlock-original-guards-joint-signed:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository || (github.event_name == 'push' && github.ref == 'refs/heads/agent/i2j-magic-initiate-historical-20261127')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -108,9 +114,18 @@ jobs:
             -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
           psql -X -v ON_ERROR_STOP=1 \
             -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          if [[ "$GITHUB_REF" == refs/heads/agent/i2j-magic-initiate-historical-20261127 ]]; then
+            export DNDNEXT_I2J_STORY_LIFECYCLE=DISPOSABLE_I1H_ONLY
+          fi
           node scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
       - name: Stop and discard local test services and data
         if: always()
         run: |
           cd "$RUNNER_TEMP/i1h-local"
           npx --yes supabase@2.120.0 stop --no-backup || true
+      - name: Verify joined fixture containers were removed
+        if: always() && github.ref == 'refs/heads/agent/i2j-magic-initiate-historical-20261127'
+        run: |
+          containers=$(docker ps -a --filter name=i1h-warlock-original-acquisition-local-only --format '{{.Names}}')
+          test -z "$containers"
+          echo '::notice title=Disposable database teardown::No joined I1-H project containers remain.'

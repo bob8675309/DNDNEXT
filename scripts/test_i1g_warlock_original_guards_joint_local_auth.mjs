@@ -975,6 +975,21 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
   console.log("PASS I1H-08: all three source-original Warlock triggers enabled; prior I1C-I1G Wizard/Battle Master/Story/Stage4 authority persists");
   console.log("I1H RESULT: signed original FIRST-creation Invocation acquisition plus two original deferred safeguards in reduced local PG17 catalogs; NOT full 31-trigger or production acceptance.");
 
+  if(env.DNDNEXT_I2J_STORY_LIFECYCLE==="DISPOSABLE_I1H_ONLY"){
+    try {
+      const {runStoryForgeLifecycle}=await import("./integration/i2j/story_forge_lifecycle.mjs");
+      await runStoryForgeLifecycle({
+        sql,sqlFile,rpc,creator,outsider,basePayload:i1hOnePayload,unrelatedId:i1hTwo,
+        classId:wClass,blastId:wBlast,poisonId:wPoison
+      });
+    } catch(error) {
+      const frame=error.stack?.match(/story_forge_lifecycle(?:_sources)?\.mjs:\d+:\d+/)?.[0];
+      const message=String(error.message).replaceAll("%","%25").replaceAll("\n","%0A").replaceAll("\r","%0D");
+      console.log("::error title=Disposable joined Story lifecycle::"+(frame??"setup")+" "+message);
+      throw error;
+    }
+  }
+
   // I1-I: add one genuinely missing original NON-WORLD-MAP trigger to the
   // already verified I1-C..H joint real JWT/PostgREST/PG17 research suite.
   // The five private Eladrin functions are exact live pg_get_functiondef
