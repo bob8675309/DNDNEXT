@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-mounted-character-lifecycle-20261127` |
-| Exact source commit represented by this archive snapshot | `a02bb998f07838e314e6ee14e5886e44bd4152ef` |
+| Exact source commit represented by this archive snapshot | `fa9f39f1e24ea66609ad4628f5e42fe2dd9dce81` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Compare selected mounted v5 fields and full source-owned feat choices |
+| Last source commit title | Compare active feat choices without inactive spell-list fields |
 | Files changed relative to main | 327 (227 non-docs; 100 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
