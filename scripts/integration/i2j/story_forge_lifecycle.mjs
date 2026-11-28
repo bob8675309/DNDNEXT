@@ -184,7 +184,10 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
   };
   const level2Session=open(1,2,299);
   await denyAdvance(outsider,learn,"42501",/^You do not have permission to level this character\.$/);
-  await denyAdvance(creator,learn,"P0001",/^The required XP threshold has not been reached\.$/);
+  // The earned writer touches the sheet before base v3. At insufficient XP,
+  // original sheet sync clears pending and original C3L cancels the open
+  // review inside the attempted transaction. The denial must roll it back.
+  await denyAdvance(creator,learn,"P0002",/^Open a level-up review first\.$/);
   sql("UPDATE public.character_progression SET experience_points=300 WHERE "+character(id));
   const invalidLearn=structuredClone(learn);
   invalidLearn.class_option_feat_instances[0].choices["cantrips-wizard"]=[pick(cantripA),pick(cantripA)];
