@@ -5,21 +5,22 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `28aab0e3eb58f94e73a56c85a60f67ee9523b4a3` |
+| Exact source commit represented by this archive snapshot | `3d0cb95ecf2f095675ac57248902bfc2bdbdc83d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Record signed Forge equivalence and original PR preservation evidence |
-| Files changed relative to main | 320 (222 non-docs; 98 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | Join signed Story Forge to earned and replaced Origin feat authority |
+| Files changed relative to main | 322 (224 non-docs; 98 docs) |
+| Last source commit | 4 files (4 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_FORGE_ADVANCEMENT_EQUIVALENCE_2026-11-27.md`
+- `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
+- `scripts/integration/i2j/story_forge_lifecycle.mjs`
+- `scripts/integration/i2j/story_forge_lifecycle_sources.mjs`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -73,7 +74,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/MapPageClient.js`
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
-- … 270 more
+- … 272 more
 
 ## Trust and update procedure
 
