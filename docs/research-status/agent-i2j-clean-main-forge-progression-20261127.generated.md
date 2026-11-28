@@ -5,21 +5,25 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-clean-main-forge-progression-20261127` |
-| Exact source commit represented by this archive snapshot | `ea07f2acf4bf633a94c16664333d21ab8055caa0` |
+| Exact source commit represented by this archive snapshot | `8af03bd68e46d2127c91a61342e78978dcc94b42` |
 | Compared with | `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0` (main comparison base) |
-| Last source commit title | Record completed advancement and exact comparator job |
-| Files changed relative to main | 53 (47 non-docs; 6 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | Join the exact starting Warlock specimen to mounted Story Forge |
+| Files changed relative to main | 54 (48 non-docs; 6 docs) |
+| Last source commit | 7 files (7 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_CLEAN_MAIN_FORGE_PROGRESSION_2026-11-27.md`
+- `.github/workflows/validate-i2j-clean-main-forge-progression.yml`
+- `scripts/browser/verify_i2j_mounted_lifecycle.mjs`
+- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
+- `scripts/integration/i2j/mounted_starting_warlock.mjs`
+- `scripts/integration/i2j/story_forge_lifecycle.mjs`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -58,6 +62,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/integration/i2j/clean-main/prepare-mounted-forge.sh`
 - `scripts/integration/i2j/forge_advancement_equivalence.mjs`
 - `scripts/integration/i2j/forge_advancement_equivalence_stage.mjs`
+- `scripts/integration/i2j/mounted_starting_warlock.mjs`
 - `scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs`
 - `scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs`
 - `scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs`
@@ -72,8 +77,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 - `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 - `scripts/validate_i1d_trigger_gap_manifest.mjs`
-- `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
-- … 3 more
+- … 4 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
