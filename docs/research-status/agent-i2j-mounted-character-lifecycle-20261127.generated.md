@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-mounted-character-lifecycle-20261127` |
-| Exact source commit represented by this archive snapshot | `03c97341dfcbf762a75e9c945c60070f28e27bbf` |
+| Exact source commit represented by this archive snapshot | `2d3207a58bef6e40eb975a80f65d2e05c00e450d` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Restrict mounted fixture catalog access to read-only privileges |
+| Last source commit title | Compose the existing public merchant display-column reads |
 | Files changed relative to main | 327 (227 non-docs; 100 docs) |
 | Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
