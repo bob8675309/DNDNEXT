@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-28T06:27:40Z | agent/i2j-clean-main-forge-progression-20261127 (8af03bd68e46d2127c91a61342e78978dcc94b42) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
+| 2026-11-28T06:31:42Z | agent/i2j-clean-main-forge-progression-20261127 (c3e9eef8cfdaf9fbb2aa8644ccd1de98d776c56f) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

@@ -5,25 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-clean-main-forge-progression-20261127` |
-| Exact source commit represented by this archive snapshot | `8af03bd68e46d2127c91a61342e78978dcc94b42` |
+| Exact source commit represented by this archive snapshot | `c3e9eef8cfdaf9fbb2aa8644ccd1de98d776c56f` |
 | Compared with | `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0` (main comparison base) |
-| Last source commit title | Join the exact starting Warlock specimen to mounted Story Forge |
-| Files changed relative to main | 54 (48 non-docs; 6 docs) |
-| Last source commit | 7 files (7 non-docs; 0 authored docs) |
+| Last source commit title | Record the Forge source-retirement decision and pinned inventory |
+| Files changed relative to main | 55 (48 non-docs; 7 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i2j-clean-main-forge-progression.yml`
-- `scripts/browser/verify_i2j_mounted_lifecycle.mjs`
-- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
-- `scripts/integration/i2j/mounted_starting_warlock.mjs`
-- `scripts/integration/i2j/story_forge_lifecycle.mjs`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_FORGE_SOURCE_RETIREMENT_2026-11-28.md`
 
 ## Research-branch change inventory versus main
 
@@ -35,6 +31,7 @@
 - `docs/research/I2J_CLEAN_MAIN_FORGE_EXECUTABLE_2026-11-27.tsv`
 - `docs/research/I2J_CLEAN_MAIN_FORGE_PROGRESSION_2026-11-27.md`
 - `docs/research/I2J_CLEAN_MAIN_FORGE_PR_SOURCE_2026-11-27.tsv`
+- `docs/research/I2J_FORGE_SOURCE_RETIREMENT_2026-11-28.md`
 - `scripts/audits/i2j_origin_feat_p13_bridge_source.mjs`
 - `scripts/browser/i2j_mounted_lifecycle_dom.jsx`
 - `scripts/browser/i2j_mounted_lifecycle_reads.mjs`
@@ -76,8 +73,7 @@
 - `scripts/integration/i2j/test_warlock_earned_v5_signed.mjs`
 - `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 - `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
-- `scripts/validate_i1d_trigger_gap_manifest.mjs`
-- … 4 more
+- … 5 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
