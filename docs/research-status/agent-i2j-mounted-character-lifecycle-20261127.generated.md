@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-mounted-character-lifecycle-20261127` |
-| Exact source commit represented by this archive snapshot | `8d534906b9ce9dea389452eeda3edf7a34c00f8a` |
+| Exact source commit represented by this archive snapshot | `ec6e2d24e8ead9c4b9cc15a853b65b2bd1944380` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Select the Warlock pact in mounted Forge Training |
+| Last source commit title | Open the Forge Class Choices tab and complete the review read shape |
 | Files changed relative to main | 327 (227 non-docs; 100 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 2 files (2 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,6 +17,7 @@
 
 ## Latest source commit paths
 
+- `scripts/browser/i2j_mounted_lifecycle_reads.mjs`
 - `scripts/browser/verify_i2j_mounted_lifecycle.mjs`
 
 ## Research-branch change inventory versus main
