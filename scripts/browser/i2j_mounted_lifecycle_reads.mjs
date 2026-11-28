@@ -36,6 +36,7 @@ export function installMountedLifecycleReads(sql) {
   sql(between(text.catalog,"ALTER TABLE public.npc_portrait_library","CREATE OR REPLACE VIEW public.class_catalog_preferred"));
   sql(between(text.catalog,"INSERT INTO public.npc_portrait_library","-- Deliberately allow"));
   sql(`
+    ALTER TABLE public.character_level_up_sessions ADD COLUMN created_at timestamptz NOT NULL DEFAULT now();
     ALTER TABLE public.class_level_progression ADD COLUMN raw_payload jsonb NOT NULL DEFAULT '{}';
     UPDATE public.class_level_progression SET raw_payload='{"source":"5etools_class_progression"}'
       WHERE class_id='6792abd0-1fd9-44fb-ae4c-56c307ab791a' AND class_level IN(1,2,3);

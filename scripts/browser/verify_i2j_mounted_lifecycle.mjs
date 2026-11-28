@@ -139,6 +139,7 @@ export class MountedLifecycle {
           await field.locator("select").nth(1).selectOption({label:"Elvish"});
         }
         if(step==="Training"){
+          await modal.getByRole("tab",{name:/Class Choices/}).click();
           const choices=modal.locator(".npc-forge-training-feat-section");
           if(!await choices.evaluate(el=>el.open))await choices.locator(":scope > summary").click();
           const invocation=choices.locator(".npc-forge-class-option-group").filter({
