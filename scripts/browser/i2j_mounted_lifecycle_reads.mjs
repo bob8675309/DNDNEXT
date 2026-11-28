@@ -43,6 +43,7 @@ export function installMountedLifecycleReads(sql) {
     ALTER TABLE public.class_feature_option_catalog
        ADD COLUMN IF NOT EXISTS feature_types text[], ADD COLUMN IF NOT EXISTS page int,
        ADD COLUMN IF NOT EXISTS additional_spells jsonb, ADD COLUMN IF NOT EXISTS metadata jsonb;
+    ALTER TABLE public.items_catalog ADD COLUMN IF NOT EXISTS id uuid NOT NULL DEFAULT gen_random_uuid();
     UPDATE public.class_catalog SET edition=2024, primary_abilities=ARRAY['cha'], saving_throws=ARRAY['wis','cha'],
       raw_payload=raw_payload||'{"startingProficiencies":{"skills":[{"choose":{"from":["arcana","deception","history","intimidation","investigation","nature","religion"],"count":2}}]}}'
       WHERE class_key='warlock' AND source='XPHB';
