@@ -10,6 +10,7 @@ const sources = {
   recovery:["sql/20260808_28_legacy_warlock_invocation_recovery.sql","292acd8000ada950ebcd14e1a917b55918499edb"],
   replacements:["sql/20260808_30_safe_level_up_replacements.sql","7fb8cad7dd19f25673e2d9a3956097561bdab6ee"],
   invocations:["sql/20260808_35_eldritch_invocation_level_replacement.sql","b46f6627813d87b7976cba9cb42663e7d861c81f"],
+  optionReads:["sql/20260808_20_class_feature_option_catalog.sql","a85095a1ef550c7f1c32aa83424a0d2bba82a468"],
   equipment:["sql/20260808_49_player_forge_starting_equipment_currency.sql","a052b87a3e9da73272addb673eec180831df6167"],
   rls:["sql/20260721_01_character_data_rls_phase_1.sql","5d9a53590a030ac15a45be654016dbbe00651fff"],
 };
@@ -74,6 +75,8 @@ export function installMountedLifecycleReads(sql) {
     CREATE POLICY mounted_fixture_visible_stock ON public.character_stock FOR SELECT TO authenticated
        USING(EXISTS(SELECT 1 FROM public.characters c WHERE c.id=character_id AND c.storefront_enabled));
   `);
+  sql(between(text.optionReads,"create policy class_feature_option_catalog_read","create or replace function public.import_class_feature_option_batch_v1"));
+  assert.equal(sql("SET ROLE authenticated; SELECT count(*) FROM public.class_feature_option_catalog WHERE name='Pact of the Blade' AND source='XPHB'"),"1");
   sql(between(text.rls,"create policy character_spells_select_visible_or_assigned","create policy character_spells_admin_write"));
 
   const publicGetters=[
