@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `d85d6cc1cb2a86e7954886a4538f1d8c6e1ac479` |
+| Exact source commit represented by this archive snapshot | `ccd8e074800d1dfab40ea1b5020ee78fca4172c7` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Preserve the historical I1-G grant while extending the joined fixture |
+| Last source commit title | Supply the earned Warlock catalog projections to the I1-H fixture |
 | Files changed relative to main | 322 (224 non-docs; 98 docs) |
-| Last source commit | 2 files (2 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@
 
 ## Latest source commit paths
 
-- `scripts/integration/i2j/story_forge_lifecycle.mjs`
 - `scripts/integration/i2j/story_forge_lifecycle_sources.mjs`
 
 ## Research-branch change inventory versus main
