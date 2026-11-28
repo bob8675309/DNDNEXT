@@ -91,7 +91,7 @@ async function signedActor(){
   assert.ifError(who.error);assert.ifError(claims.error);
   assert.equal(claims.data.claims.sub,who.data.user.id);
   assert.equal(claims.data.claims.role,"authenticated");
-  return {client,id:who.data.user.id};
+  return {client,id:who.data.user.id,email};
 }
 const creator=await signedActor(),outsider=await signedActor();
 const requestId=randomUUID();
@@ -976,17 +976,24 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
   console.log("I1H RESULT: signed original FIRST-creation Invocation acquisition plus two original deferred safeguards in reduced local PG17 catalogs; NOT full 31-trigger or production acceptance.");
 
   if(env.DNDNEXT_I2J_STORY_LIFECYCLE==="DISPOSABLE_I1H_ONLY"){
+    let mounted=null;
     try {
+      if(env.DNDNEXT_I2J_MOUNTED_LIFECYCLE==="DISPOSABLE_I1H_BROWSER_ONLY"){
+        const {MountedLifecycle}=await import("./browser/verify_i2j_mounted_lifecycle.mjs");
+        mounted=new MountedLifecycle({sql,email:creator.email,password,actorId:creator.id});
+      }
       const {runStoryForgeLifecycle}=await import("./integration/i2j/story_forge_lifecycle.mjs");
       await runStoryForgeLifecycle({
         sql,sqlFile,rpc,creator,outsider,basePayload:i1hOnePayload,unrelatedId:i1hTwo,
-        classId:wClass,blastId:wBlast,poisonId:wPoison
+        classId:wClass,blastId:wBlast,poisonId:wPoison,mounted
       });
     } catch(error) {
-      const frame=error.stack?.match(/story_forge_lifecycle(?:_sources)?\.mjs:\d+:\d+/)?.[0];
+      const frame=error.stack?.match(/(?:story_forge_lifecycle(?:_sources)?|verify_i2j_mounted_lifecycle|i2j_mounted_lifecycle_reads)\.mjs:\d+:\d+/)?.[0];
       const message=String(error.message).replaceAll("%","%25").replaceAll("\n","%0A").replaceAll("\r","%0D");
       console.log("::error title=Disposable joined Story lifecycle::"+(frame??"setup")+" "+message);
       throw error;
+    } finally {
+      await mounted?.close();
     }
   }
 

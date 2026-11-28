@@ -6,6 +6,7 @@ on:
       - '.github/workflows/validate-i1h-warlock-original-local-auth.yml'
       - 'scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs'
       - 'scripts/integration/i2j/story_forge_lifecycle*.mjs'
+      - 'scripts/browser/*i2j_mounted_lifecycle*'
   pull_request:
     paths:
       - '.github/workflows/validate-i1h-warlock-original-local-auth.yml'
@@ -77,6 +78,13 @@ jobs:
           node scripts/validate_npc_private_profile_cutover.mjs
       - name: Install existing pinned application dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install isolated mounted browser tools
+        if: github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+        run: |
+          npm install --prefix "$RUNNER_TEMP/i2j-mounted-tools" --no-audit --no-fund --no-progress esbuild@0.25.12 playwright-core@1.56.1
+          CHROME="$(command -v google-chrome || command -v chromium)"
+          test -x "$CHROME"
+          printf 'C33_BROWSER_TOOL_ROOT=%s\nC33_BROWSER_CHROME=%s\n' "$RUNNER_TEMP/i2j-mounted-tools" "$CHROME" >> "$GITHUB_ENV"
       - name: Configure isolated PostgreSQL 17 + GoTrue
         run: |
           mkdir -p "$RUNNER_TEMP/i1h-local/supabase"
@@ -116,6 +124,7 @@ jobs:
             -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
           if [[ "$GITHUB_REF" == refs/heads/research/i2j-levelup-v2-source-preflight-20261123 ]]; then
             export DNDNEXT_I2J_STORY_LIFECYCLE=DISPOSABLE_I1H_ONLY
+            export DNDNEXT_I2J_MOUNTED_LIFECYCLE=DISPOSABLE_I1H_BROWSER_ONLY
           fi
           node scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
       - name: Stop and discard local test services and data
