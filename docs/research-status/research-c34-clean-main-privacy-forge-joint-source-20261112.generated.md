@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `1220fac9292c1ef8c0a1fe02e439331660392bb1` |
+| Exact source commit represented by this archive snapshot | `47ce6773a5c55f6b88ad65ce81b7494ca9967cfd` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): archive original PR332 trigger coverage dossier |
+| Last source commit title | docs(c34): verify original creation-trigger dossier custody |
 | Files changed relative to main | 442 (324 non-docs; 118 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/archive/PR332/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
+- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
