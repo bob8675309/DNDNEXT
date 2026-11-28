@@ -962,3 +962,63 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
     console.log('Native synthetic Git ancestry: 8 assertions; event provenance and closure unresolved');
   } finally {rmSync(dir,{recursive:true,force:true});}
 }
+
+ 
+// Bounded native diff experiment: only ordinary modified paths are candidates.
+// No event authentication, dependency closure or bypass authority is inferred.
+{
+  const {execFileSync}=await import('node:child_process');
+  const {mkdtempSync,rmSync,writeFileSync}=await import('node:fs');
+  const {tmpdir}=await import('node:os');
+  const {join}=await import('node:path');
+  function parseModifiedPaths(bytes) {
+    if (!Buffer.isBuffer(bytes) || !bytes.length || bytes.length>65536 ||
+        bytes[bytes.length-1]!==0) return null;
+    let decoded;
+    try { decoded=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes); }
+    catch { return null; }
+    const fields=decoded.slice(0,-1).split('\0');
+    if(fields.length%2 || fields.length/2>=300) return null;
+    const paths=new Set();
+    for(let i=0;i<fields.length;i+=2){
+      const p=fields[i+1];
+      if(fields[i]!=='M' || /[\x00-\x1f\x7f\\]/.test(p) ||
+         p.split('/').some(x=>!x||x==='.'||x==='..') || paths.has(p)) return null;
+      paths.add(p);
+    }
+    return [...paths];
+  }
+  const dir=mkdtempSync(join(tmpdir(),'c34-diff-'));
+  const env={PATH:process.env.PATH,HOME:dir,GIT_CONFIG_NOSYSTEM:'1',
+    GIT_CONFIG_GLOBAL:join(dir,'empty-config'),GIT_NO_REPLACE_OBJECTS:'1',
+    GIT_AUTHOR_NAME:'Synthetic',GIT_AUTHOR_EMAIL:'synthetic@example.invalid',
+    GIT_COMMITTER_NAME:'Synthetic',GIT_COMMITTER_EMAIL:'synthetic@example.invalid'};
+  const git=args=>execFileSync('git',args,{cwd:dir,env,timeout:10000,
+    maxBuffer:65536,stdio:['pipe','pipe','pipe']});
+  try {
+    git(['init','--quiet','--object-format=sha1']);
+    const file='candidate space.md';
+    writeFileSync(join(dir,file),'before');
+    git(['add','--',file]);git(['commit','-qm','base']);
+    const base=git(['rev-parse','HEAD']).toString().trim();
+    writeFileSync(join(dir,file),'after');
+    git(['add','--',file]);git(['commit','-qm','head']);
+    const head=git(['rev-parse','HEAD']).toString().trim();
+    const mergeBase=git(['merge-base','--all',base,head]).toString().trim();
+    assert.equal(mergeBase,base);
+    const diff=(from,to)=>git(['diff','--name-status','-z','--no-renames',
+      '--no-ext-diff','--no-textconv','--ignore-submodules=none',from,to,'--']);
+    assert.deepEqual(parseModifiedPaths(diff(mergeBase,head)),[file]);
+    git(['rm','--',file]);git(['commit','-qm','delete']);
+    const deleted=git(['rev-parse','HEAD']).toString().trim();
+    assert.equal(parseModifiedPaths(diff(head,deleted)),null);
+    for(const bad of ['M\0x','M\0x\0M\0x\0','R100\0x\0y\0',
+      'A\0x\0','T\0x\0','M\0../x\0','M\0x\nz\0','M\0\0','']){
+      assert.equal(parseModifiedPaths(Buffer.from(bad)),null);
+    }
+    assert.equal(parseModifiedPaths(Buffer.from([77,0,255,0])),null);
+    assert.equal(parseModifiedPaths(Buffer.from(Array.from({length:300},
+      (_,i)=>'M\0docs/'+i+'\0').join(''))),null);
+    console.log('Native synthetic diff: modified-path parsing and fail-closed ambiguity checks; no bypass authority');
+  } finally {rmSync(dir,{recursive:true,force:true});}
+}
