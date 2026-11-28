@@ -5,19 +5,21 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-magic-initiate-historical-20261127` |
-| Exact source commit represented by this archive snapshot | `e6543dca1f356e6fdf5da624b1e62347a32cff26` |
+| Exact source commit represented by this archive snapshot | `1310156fd70f0caddbcd414ea06c0474348a6804` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Assert the original joined low-XP review cancellation and rollback |
-| Files changed relative to main | 322 (224 non-docs; 98 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | Record joined signed Story Forge lifecycle and integration gates |
+| Files changed relative to main | 323 (224 non-docs; 99 docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/integration/i2j/story_forge_lifecycle.mjs`
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_STORY_FORGE_JOINED_LIFECYCLE_2026-11-27.md`
 
 ## Research-branch change inventory versus main
 
@@ -71,7 +73,7 @@
 - `components/MapPageClient.js`
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
-- … 272 more
+- … 273 more
 
 ## Trust and update procedure
 
