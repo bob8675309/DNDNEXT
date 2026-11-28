@@ -5,64 +5,35 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-clean-main-forge-progression-20261127` |
-| Exact source commit represented by this archive snapshot | `a05e1076d87e08403a9755091ba88cd9ae432228` |
+| Exact source commit represented by this archive snapshot | `f54624f35389efa0addf8725dc177f4a8ef0e9fa` |
 | Compared with | `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0` (main comparison base) |
-| Last source commit title | Compose the signed Forge and progression suite on current main |
-| Files changed relative to main | 47 (47 non-docs; 0 docs) |
-| Last source commit | 47 files (47 non-docs; 0 authored docs) |
+| Last source commit title | Record original PR custody and clean-main integration evidence |
+| Files changed relative to main | 53 (47 non-docs; 6 docs) |
+| Last source commit | 6 files (0 non-docs; 6 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
-- `.github/workflows/validate-i2j-clean-main-forge-progression.yml`
-- `scripts/audits/i2j_origin_feat_p13_bridge_source.mjs`
-- `scripts/browser/i2j_mounted_lifecycle_dom.jsx`
-- `scripts/browser/i2j_mounted_lifecycle_reads.mjs`
-- `scripts/browser/verify_i2j_mounted_lifecycle.mjs`
-- `scripts/fixtures/c33_forge_full_component_browser_catalog_pg17.sql`
-- `scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql`
-- `scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql`
-- `scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql`
-- `scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql`
-- `scripts/fixtures/forge_creation_replay_local_auth_pg17.sql`
-- `scripts/fixtures/i1d_forge_story_inventory_setup_pg17.sql`
-- `scripts/fixtures/i1e_wizard_joint_setup_pg17.sql`
-- `scripts/fixtures/i1e_wizard_original_functions_pg17.sql`
-- `scripts/fixtures/i1f_battle_master_joint_setup_pg17.sql`
-- `scripts/fixtures/i1f_battle_master_original_functions_pg17.sql`
-- `scripts/fixtures/i1g_warlock_invocation_joint_setup_pg17.sql`
-- `scripts/fixtures/i1g_warlock_original_acquisition_pg17.sql`
-- `scripts/fixtures/i1g_warlock_original_functions_pg17.sql`
-- `scripts/fixtures/i1g_warlock_original_trigger_install_pg17.sql`
-- `scripts/fixtures/i1h_warlock_acquisition_with_guards_pg17.sql`
-- `scripts/fixtures/i1p_original_rest_shared_p13_pg17.sql`
-- `scripts/fixtures/i2j_proficiency_provenance_scratch_pg17.sql`
-- `scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql`
-- `scripts/integration/i2j/clean-main/forge-story-components.patch`
-- `scripts/integration/i2j/clean-main/prepare-mounted-forge.sh`
-- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
-- `scripts/integration/i2j/forge_advancement_equivalence_stage.mjs`
-- `scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs`
-- `scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs`
-- `scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs`
-- `scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs`
-- `scripts/integration/i2j/signed_invocation_replacement_stage.mjs`
-- `scripts/integration/i2j/source_owned_effect_reversal_stage.mjs`
-- `scripts/integration/i2j/story_forge_lifecycle.mjs`
-- `scripts/integration/i2j/story_forge_lifecycle_sources.mjs`
-- `scripts/integration/i2j/test_origin_feat_alert_historical_signed.mjs`
-- `scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs`
-- `scripts/integration/i2j/test_warlock_earned_v5_signed.mjs`
-- … 7 more
+- `docs/ACTIVE_WORK.md`
+- `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_CLEAN_MAIN_FORGE_EXECUTABLE_2026-11-27.tsv`
+- `docs/research/I2J_CLEAN_MAIN_FORGE_PROGRESSION_2026-11-27.md`
+- `docs/research/I2J_CLEAN_MAIN_FORGE_PR_SOURCE_2026-11-27.tsv`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `.github/workflows/validate-i2j-clean-main-forge-progression.yml`
+- `docs/ACTIVE_WORK.md`
+- `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_CLEAN_MAIN_FORGE_EXECUTABLE_2026-11-27.tsv`
+- `docs/research/I2J_CLEAN_MAIN_FORGE_PROGRESSION_2026-11-27.md`
+- `docs/research/I2J_CLEAN_MAIN_FORGE_PR_SOURCE_2026-11-27.tsv`
 - `scripts/audits/i2j_origin_feat_p13_bridge_source.mjs`
 - `scripts/browser/i2j_mounted_lifecycle_dom.jsx`
 - `scripts/browser/i2j_mounted_lifecycle_reads.mjs`
@@ -105,9 +76,7 @@
 - `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 - `scripts/validate_i1d_trigger_gap_manifest.mjs`
 - `sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql`
-- `sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql`
-- `sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql`
-- `sql/candidates/20261109_player_story_complete_intent_i1c_research.sql`
+- … 3 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
