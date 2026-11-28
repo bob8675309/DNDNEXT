@@ -1,0 +1,227 @@
+name: Clean-main signed Forge and progression candidate
+on:
+  push:
+    branches: [agent/i2j-clean-main-forge-progression-20261127]
+permissions:
+  contents: read
+jobs:
+  bridge:
+    if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+      DNDNEXT_I2J_WARLOCK_CONFIRM: I2J_DISPOSABLE_WARLOCK_V5_ONLY
+      DNDNEXT_I2J_ORIGIN_HISTORICAL_CONFIRM: I2J_PUBLIC_HISTORY_ALERT_ONLY
+      DNDNEXT_I2J_ORIGIN_PAIR_CONFIRM: I2J_PUBLIC_HISTORY_DISTINCT_FEAT_PAIR_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate pinned public-source schema bridge
+        run: |
+          node --check scripts/audits/i2j_origin_feat_p13_bridge_source.mjs
+          node --check scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs
+          node scripts/audits/i2j_origin_feat_p13_bridge_source.mjs > "$RUNNER_TEMP/i2j-origin-bridge.sql"
+      - name: Configure disposable Supabase PG17 and Auth
+        run: |
+          mkdir -p "$RUNNER_TEMP/i2j-origin-bridge/supabase"
+          cat > "$RUNNER_TEMP/i2j-origin-bridge/supabase/config.toml" <<'TOML'
+          project_id = "i2j-origin-bridge-local"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+          cd "$RUNNER_TEMP/i2j-origin-bridge"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Compose existing P1.3 fixture and run historical signed feat pair
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -c 'SHOW server_version'
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/i2j-origin-bridge.sql"
+          (cd "$RUNNER_TEMP/i2j-origin-bridge" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i2j-origin-env"
+          source "$RUNNER_TEMP/i2j-origin-env"
+          export DNDNEXT_P13_LEVELUP_URL=http://127.0.0.1:54321
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          historical=scripts/integration/i2j/test_origin_feat_pair_historical_signed.mjs
+          candidate=scripts/integration/i2j/origin_feat_repeatability_candidate_stage.mjs
+          resource=scripts/integration/i2j/shared_spell_resource_consumer_stage.mjs
+          bundle="$RUNNER_TEMP/i2j-repeatability-stages.mjs"
+          rest=scripts/integration/i2j/shared_spell_rest_recharge_stage.mjs
+          reversal=scripts/integration/i2j/source_owned_effect_reversal_stage.mjs
+          provenance=scripts/integration/i2j/proficiency_provenance_candidate_stage.mjs
+          replacement=scripts/integration/i2j/signed_invocation_replacement_stage.mjs
+          equivalence=scripts/integration/i2j/forge_advancement_equivalence_stage.mjs
+          cat "$historical" "$candidate" "$resource" "$rest" "$reversal" "$provenance" "$replacement" "$equivalence" > "$bundle"
+          node --input-type=module --check < "$bundle"
+          node --input-type=module < "$bundle"
+          echo '::notice title=Signed advancement::Completed historical, repeatability, resource, rest, removal, provenance, replacement and equivalence stages.'
+      - name: Upload signed advancement equivalence receipt
+        if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2j-advancement-equivalence
+          path: ${{ runner.temp }}/i2j-advancement-equivalence.json
+          if-no-files-found: error
+          retention-days: 3
+      - name: Destroy disposable services
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/i2j-origin-bridge" ]; then
+            cd "$RUNNER_TEMP/i2j-origin-bridge"
+            npx --yes supabase@2.120.0 stop --no-backup
+          fi
+      - name: Verify advancement fixture containers were removed
+        if: always()
+        run: |
+          containers=$(docker ps -a --filter name=i2j-origin-bridge-local --format '{{.Names}}')
+          test -z "$containers"
+          echo '::notice title=Advancement teardown::No advancement project containers remain.'
+  forge-creation:
+    if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
+    uses: ./.github/workflows/validate-forge-immutable-creation-replay.yml
+    with:
+      i2j_equivalence: true
+
+  compare-signed-equivalence:
+    if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
+    needs: [bridge, forge-creation]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: i2j-*-equivalence
+          path: ${{ runner.temp }}/i2j-equivalence
+          merge-multiple: true
+      - name: Compare the signed source-qualified receipts at exact head
+        run: |
+          node scripts/integration/i2j/forge_advancement_equivalence.mjs \
+            "$RUNNER_TEMP/i2j-equivalence/i2j-creation-equivalence.json" \
+            "$RUNNER_TEMP/i2j-equivalence/i2j-advancement-equivalence.json"
+  warlock-original-guards-joint-signed:
+    if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: '127.0.0.1'
+      PGPORT: '55622'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_I1G_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+      DNDNEXT_I1H_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate local-only signed fixture syntax
+        run: |
+          node --check scripts/validate_i1d_trigger_gap_manifest.mjs
+          node scripts/validate_i1d_trigger_gap_manifest.mjs
+          node --check scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+      - name: Install existing pinned application dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install isolated mounted browser tools
+        if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
+        run: |
+          npm install --prefix "$RUNNER_TEMP/i2j-mounted-tools" --no-audit --no-fund --no-progress esbuild@0.25.12 playwright-core@1.56.1
+          CHROME="$(command -v google-chrome || command -v chromium)"
+          test -x "$CHROME"
+          printf 'C33_BROWSER_TOOL_ROOT=%s\nC33_BROWSER_CHROME=%s\n' "$RUNNER_TEMP/i2j-mounted-tools" "$CHROME" >> "$GITHUB_ENV"
+      - name: Run the original J169 Chromium successor on current-main components
+        run: |
+          CI=true DNDNEXT_FORGE_BROWSER_FIXTURE_ONLY=1 \
+            FORGE_BROWSER_TOOL_ROOT="$C33_BROWSER_TOOL_ROOT" \
+            FORGE_BROWSER_CHROME="$C33_BROWSER_CHROME" \
+            node scripts/browser/verify_forge_warlock_choice_dom.mjs
+          echo '::notice title=Original browser successor::J169 passed on current-main components.'
+      - name: Compose exact Story Forge components in a disposable checkout
+        run: |
+          mounted=$(mktemp -d "$RUNNER_TEMP/i2j-mounted-source.XXXXXX")
+          bash scripts/integration/i2j/clean-main/prepare-mounted-forge.sh "$mounted"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$mounted/node_modules"
+          printf 'I2J_MOUNTED_SOURCE=%s\n' "$mounted" >> "$GITHUB_ENV"
+      - name: Configure isolated PostgreSQL 17 + GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/i1h-local/supabase"
+          cat > "$RUNNER_TEMP/i1h-local/supabase/config.toml" <<'TOML'
+          project_id = "i1h-warlock-original-acquisition-local-only"
+          [api]
+          port = 55621
+          [db]
+          port = 55622
+          shadow_port = 55620
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable local Supabase services
+        run: |
+          cd "$RUNNER_TEMP/i1h-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Signed original Forge v2/v3 plus private Story and #324 nonce research
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '55622'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_I1G_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          test "$DNDNEXT_I1H_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY
+          (cd "$RUNNER_TEMP/i1h-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/i1h-local-env"
+          set -a
+          source "$RUNNER_TEMP/i1h-local-env"
+          set +a
+          export DNDNEXT_I1G_LOCAL_URL='http://127.0.0.1:55621'
+          export DNDNEXT_I1G_LOCAL_ANON_KEY="$ANON_KEY"
+          cd "$I2J_MOUNTED_SOURCE"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 \
+            -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 \
+            -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          if [[ "$GITHUB_REF" == refs/heads/agent/i2j-clean-main-forge-progression-20261127 ]]; then
+            export DNDNEXT_I2J_STORY_LIFECYCLE=DISPOSABLE_I1H_ONLY
+            export DNDNEXT_I2J_MOUNTED_LIFECYCLE=DISPOSABLE_I1H_BROWSER_ONLY
+          fi
+          node scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
+      - name: Stop and discard local test services and data
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/i1h-local/supabase/config.toml" ]]; then
+            cd "$RUNNER_TEMP/i1h-local"
+            npx --yes supabase@2.120.0 stop --no-backup
+          fi
+      - name: Verify joined fixture containers were removed
+        if: always() && github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
+        run: |
+          containers=$(docker ps -a --filter name=i1h-warlock-original-acquisition-local-only --format '{{.Names}}')
+          test -z "$containers"
+          echo '::notice title=Disposable database teardown::No joined I1-H project containers remain.'

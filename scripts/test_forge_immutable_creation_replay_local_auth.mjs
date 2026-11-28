@@ -13,6 +13,14 @@ import { loadWarlockChildPlans } from "./validate_forge_seeded_warlock_child_com
 import { compileWarlockClientWire } from "./agents/forge_warlock_client_wire.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 const e=process.env;
+let equivalenceCheckpoint="inherited Forge suite";
+if (e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT) {
+ process.on("uncaughtExceptionMonitor",error=>{
+  const frame=error.stack?.match(/test_forge_immutable_creation_replay_local_auth\.mjs:(\d+):\d+/);
+  console.log("::error title=Signed Forge equivalence::"+equivalenceCheckpoint+" failed ("+
+   (error.code ?? error.name)+") at runner line "+(frame?.[1] ?? "unknown")+". See authenticated job logs.");
+ });
+}
 for(const [key,value] of Object.entries({
  GITHUB_ACTIONS:"true",CI:"true",
  DNDNEXT_FORGE_REPLAY_LOCAL_CONFIRM:"DISPOSABLE_LOCAL_GOTRUE_ONLY",
@@ -2899,3 +2907,49 @@ writeFileSync("research-agent-artifact/FORGE_WARLOCK_CHILD_COMPLETION.json",JSON
  "production source RLS/browser, 14 absent original triggers, global lock ordering NOT proven"]
 },null,2)+"\n","utf8");
 console.log("PASS J164-J168 original-source Warlock nested, source-only and actual pure client serialized RPC under signed GoTrue; 17/31 staged trigger DDL unchanged");
+
+if (e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT) {
+ equivalenceCheckpoint="read the source-locked creation specimens";
+ const {verifyEquivalenceSources,readWarlockEquivalence,writeEquivalenceReceipt}
+  = await import("./integration/i2j/forge_advancement_equivalence.mjs");
+ const source=verifyEquivalenceSources();
+ const cases=Object.fromEntries(Object.entries({J165:wcPositiveId,J167:wcSourceId,J168:wcWireId})
+  .map(([label,characterId])=>[label,readWarlockEquivalence(sql,characterId,source)]));
+ const negativeStock=randomUUID();
+ sql("INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id) VALUES "+
+  "('"+negativeStock+"','"+marketMerchant+"',1,'Forge equivalence negative fixture torch',"+
+  "'{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,9,'p13-warlock-torch')");
+ const rejectCreation=async (label,mutate,pattern)=>{
+  equivalenceCheckpoint=label;
+  const requestId=randomUUID();
+  const name="Forge equivalence "+label;
+  const request=wcChild({name,requestId},true);
+  request.payload.sheet.startingEquipmentSelections.marketPurchases[0].stockId=negativeStock;
+  mutate(request);
+  const snapshot=()=>[warlockCounts(),speciesAbortCounts(),getStock(negativeStock),scenarioSnapshot(wcWireId)];
+  const before=snapshot();
+  const result=await call3(people.PLAYER.client,request.payload,request.selections);
+  assert.equal(result.error?.code,"P0001",JSON.stringify(result.error));
+  if (!pattern.test(result.error.message)) {
+   const message=result.error.message.replaceAll("%","%25").replaceAll("\r","%0D").replaceAll("\n","%0A");
+   console.log("::error title=Unexpected synthetic Forge rejection::"+label+" returned "+message);
+  }
+  assert.match(result.error.message,pattern);
+  assert.deepEqual(snapshot(),before);
+  assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+requestId+"'"),"0");
+  assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+requestId+"'"),"0");
+ };
+ await rejectCreation("invalid child",({payload})=>{
+  const invalid=wc.spells.find(spell=>spell.level===1);
+  const choice={key:invalid.id,value:invalid.id,name:invalid.name,source:invalid.source,kind:"spell"};
+  payload.sheet.sourceChoices["warlock-invocation-slot-2"].fields["child-agonizing-blast"].selections=[choice];
+  payload.sheet.classFeatureChoices={};
+  payload.sheet.classFeatureChoiceSummary=[];
+ },/^Agonizing Blast requires a preferred Warlock damage cantrip\.$/i);
+ await rejectCreation("duplicate spell",({selections})=>{
+  selections[selections.length-1]=selections[0];
+ },/duplicate starting magic spell selections|duplicate spell choices/i);
+ writeEquivalenceReceipt(e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT,"creation",{
+  cases,rejections:["omitted-child","invalid-child","duplicate-spell"],replay:"same-nonce-inert"
+ });
+}

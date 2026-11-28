@@ -133,7 +133,14 @@ INSERT INTO public.spells_catalog(id,name,level,classes,source) VALUES
  ('00000000-0000-0000-0000-000000000901','Fire Bolt',0,ARRAY['Wizard'],'XPHB'),
  ('00000000-0000-0000-0000-000000000902','Ray of Frost',0,ARRAY['Wizard'],'XPHB');
 
+-- Existing Forge replay tests keep the original creator trigger untouched.
+-- Only the dedicated C3.3 composition fixture skips this historical duplicate,
+-- so the exact stage-three SQL can create and install its own trigger once.
+\if :{?DNDNEXT_C33_PRIVACY_STAGE3_CREATOR}
+-- The companion fixture installs the original Admin helper before any RPC.
+\else
 \i scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql
+\endif
 \i scripts/fixtures/forge_creation_original_functions_pg17.sql
 
 REVOKE ALL ON FUNCTION public.create_player_character_v2(jsonb,jsonb) FROM PUBLIC,anon;
