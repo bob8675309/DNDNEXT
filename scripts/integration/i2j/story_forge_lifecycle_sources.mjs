@@ -135,6 +135,12 @@ export function installStoryLifecycleSources({sql, sqlFile, targetClass}) {
       ADD COLUMN created_by uuid, ADD COLUMN completed_at timestamptz;
     ALTER TABLE public.class_feature_option_catalog ADD COLUMN description text;
     ALTER TABLE public.class_feature_catalog ADD COLUMN description text;
+    ALTER TABLE public.spells_catalog ADD COLUMN description text, ADD COLUMN range_text text;
+    CREATE OR REPLACE VIEW public.spells_catalog_preferred AS SELECT * FROM public.spells_catalog;
+    DROP VIEW public.character_option_catalog_preferred;
+    CREATE VIEW public.character_option_catalog_preferred WITH (security_invoker=true) AS
+      SELECT * FROM public.character_option_catalog WHERE source='XPHB';
+    REVOKE ALL ON public.character_option_catalog_preferred,public.spells_catalog_preferred FROM PUBLIC,anon,authenticated;
     ALTER TABLE public.class_level_progression
       ADD COLUMN features jsonb NOT NULL DEFAULT '[]',
       ADD COLUMN cantrips_known int, ADD COLUMN spells_known int;
