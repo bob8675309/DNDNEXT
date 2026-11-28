@@ -101,7 +101,7 @@ jobs:
 
   compare-signed-equivalence:
     if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
-    needs: [bridge, forge-creation]
+    needs: [bridge, forge-creation, warlock-original-guards-joint-signed]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -119,7 +119,8 @@ jobs:
         run: |
           node scripts/integration/i2j/forge_advancement_equivalence.mjs \
             "$RUNNER_TEMP/i2j-equivalence/i2j-creation-equivalence.json" \
-            "$RUNNER_TEMP/i2j-equivalence/i2j-advancement-equivalence.json"
+            "$RUNNER_TEMP/i2j-equivalence/i2j-advancement-equivalence.json" \
+            "$RUNNER_TEMP/i2j-equivalence/i2j-mounted-j168-equivalence.json"
   warlock-original-guards-joint-signed:
     if: github.ref == 'refs/heads/agent/i2j-clean-main-forge-progression-20261127'
     runs-on: ubuntu-latest
@@ -211,7 +212,15 @@ jobs:
             export DNDNEXT_I2J_STORY_LIFECYCLE=DISPOSABLE_I1H_ONLY
             export DNDNEXT_I2J_MOUNTED_LIFECYCLE=DISPOSABLE_I1H_BROWSER_ONLY
           fi
+          export DNDNEXT_MOUNTED_J168_RECEIPT="$RUNNER_TEMP/i2j-mounted-j168-equivalence.json"
           node scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
+      - name: Upload signed mounted J168 receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: i2j-mounted-j168-equivalence
+          path: ${{ runner.temp }}/i2j-mounted-j168-equivalence.json
+          if-no-files-found: error
+          retention-days: 3
       - name: Stop and discard local test services and data
         if: always()
         run: |

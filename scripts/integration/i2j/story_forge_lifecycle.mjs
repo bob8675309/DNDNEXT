@@ -161,6 +161,12 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
   assert.deepEqual(mirrors(),createdMirrors);
   console.log("PASS LIFE-01 Story-wrapped signed creation, owner attribution, Lucky instance, private Story, stock and nonce rollback");
 
+  if(process.env.DNDNEXT_MOUNTED_J168_RECEIPT){
+    assert.ok(mounted);
+    const {runMountedStartingWarlock}=await import("./mounted_starting_warlock.mjs");
+    await runMountedStartingWarlock({sql,rpc,creator,outsider,mounted,backgroundId:merchantBackground});
+  }
+
   const open = (from,to,xp) => {
     sql("UPDATE public.character_progression SET pending_level_up=true,experience_points="+xp+" WHERE "+character(id));
     return sql("INSERT INTO public.character_level_up_sessions(character_id,status,from_level,to_level,created_by) VALUES("+

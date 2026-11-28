@@ -104,8 +104,9 @@ export class MountedLifecycle {
     assert.equal(await this.page.evaluate(({email,password})=>window.i2jMounted.login(email,password),this.credentials),this.actorId);
   }
 
-  async create({payload,story,stock,merchantId}) {
-    installMountedLifecycleReads(this.sql);
+  async create({payload,story,stock,merchantId,startingWarlock=null}) {
+    if(!startingWarlock) installMountedLifecycleReads(this.sql);
+    const level=startingWarlock?.level ?? 1;
     const portraitId="00000000-0000-0000-0000-000000009914";
     const speciesId="00000000-0000-0000-0000-000000009911";
     const backgroundId=payload.sheet.startingEquipmentSelections.backgroundId;
@@ -117,7 +118,7 @@ export class MountedLifecycle {
     await this.start({
       version:1,
       controller:{step:0,draft:{
-        creationRequestId:payload.creation_request_id,name:payload.name,role:"Warlock",level:1,
+        creationRequestId:payload.creation_request_id,name:payload.name,role:"Warlock",level,
         kind:"npc",speciesOptionId:speciesId,backgroundOptionId:backgroundId,classOptionId:classId,
         speciesKey:"dwarf",customBackground:"Merchant",classKey:"warlock",abilityMethod:"standard",
         baseAbilities:{str:8,dex:13,con:12,int:10,wis:14,cha:15},
@@ -132,7 +133,7 @@ export class MountedLifecycle {
       choices:{
         species:{speciesId,speciesName:"Dwarf",rules:[],selections:{}},
         class:{classId,classKey:"warlock",className:"Warlock",classSource:"XPHB",
-          level:1,options:[],catalogReady:true,selectedKey:"",featureGroups:[],featureSelections:{},featureCatalogReady:true},
+          level,options:[],catalogReady:true,selectedKey:"",featureGroups:[],featureSelections:{},featureCatalogReady:true},
         source:{draftVersion:3,selections:{},defaultedGroups:{}},
       },
     });
@@ -155,18 +156,17 @@ export class MountedLifecycle {
           await modal.getByRole("tab",{name:/Class Choices/}).click();
           const choices=modal.locator(".npc-forge-training-feat-section");
           if(!await choices.evaluate(el=>el.open))await choices.locator(":scope > summary").click();
-          const invocation=choices.locator(".npc-forge-class-option-group").filter({
-            has:page.locator("summary strong").filter({hasText:/^Eldritch Invocation 1$/}),
+          const group=slot=>choices.locator(".npc-forge-class-option-group").filter({
+            has:page.locator("summary strong").filter({hasText:new RegExp("^Eldritch Invocation "+slot+"$")}),
           });
-          await invocation.waitFor({state:"visible"});
-          if(!await invocation.evaluate(el=>el.open))await invocation.locator(":scope > summary").click();
-          const pactOption=invocation.getByRole("button",{name:/Pact of the Blade/});
-          await pactOption.click();
-          await modal.locator(".npc-forge-training-context-dossier").getByRole("button",{name:"Select",exact:true}).click();
-          await pactOption.filter({hasText:"Selected"}).waitFor();
+          if(startingWarlock){
+            await this.chooseStartingInvocations(modal,group,startingWarlock.invocations);
+          }else{
+            await this.selectTrainingOption(modal,group(1),"Pact of the Blade");
+          }
         }
         if(step==="Spells"){
-          for(const name of ["Eldritch Blast","Poison Spray","Warlock specimen 1","Warlock specimen 2"]){
+          for(const name of startingWarlock?.spells.map(spell=>spell.name) ?? ["Eldritch Blast","Poison Spray","Warlock specimen 1","Warlock specimen 2"]){
             await modal.locator(".npc-forge-spell-table-row").filter({hasText:name}).locator("button.npc-forge-spell-row-status").click();
           }
         }
@@ -202,13 +202,51 @@ export class MountedLifecycle {
     assert.equal(typeof data==="string"?data:data.id,created.id);
     assert.equal(request.p_payload.creation_request_id,payload.creation_request_id);
     assert.equal(request.p_private_backstory,story);
-    assert.equal(request.p_payload.sheet.sourceChoices["warlock-invocation-slot-1"].fields.invocation.selections[0].key,pact);
+    if(!startingWarlock){
+      assert.equal(request.p_payload.sheet.sourceChoices["warlock-invocation-slot-1"].fields.invocation.selections[0].key,pact);
+    }
     assert.ok(request.p_payload.sheet.featGrantInstances.some(row=>row.name==="Lucky" && row.acquisitionOwnerType==="background"));
     assert.equal(request.p_payload.sheet.startingEquipmentSelections.marketPurchases[0].stockId,stock);
-    assert.equal(request.p_magic_selections.filter(row=>row.source_type==="class").length,4);
+    assert.equal(request.p_magic_selections.filter(row=>row.source_type==="class").length,startingWarlock ? 5 : 4);
     this.characterId=created.id;
-    console.log("::notice title=Mounted Story Forge::MOUNT-01 passed. Chromium traversed the ten hydrated Forge steps and submitted the real signed Story RPC.");
+    if(!startingWarlock) console.log("::notice title=Mounted Story Forge::MOUNT-01 passed. Chromium traversed the ten hydrated Forge steps and submitted the real signed Story RPC.");
     return {data:created.id,error:null,request};
+  }
+
+  option(group,name) {
+    return group.getByRole("button").filter({has:this.page.getByText(name,{exact:true})});
+  }
+
+  async selectTrainingOption(modal,group,name,action="Select") {
+    await group.waitFor({state:"visible"});
+    if(!await group.evaluate(element=>element.open)) await group.locator(":scope > summary").click();
+    const option=this.option(group,name);
+    await option.click();
+    await modal.locator(".npc-forge-training-context-dossier").getByRole("button",{name:action,exact:true}).click();
+    await option.filter({hasText:"Selected"}).waitFor();
+  }
+
+  async chooseStartingInvocations(modal,group,invocations) {
+    await this.selectTrainingOption(modal,group(1),invocations[0].name);
+    await this.selectTrainingOption(modal,group(2),invocations[1].name);
+    await this.selectTrainingOption(modal,group(3),invocations[2].name);
+    const child=this.option(group(2),"Eldritch Blast");
+    const incomplete=async()=>{
+      await modal.getByRole("button",{name:"Continue",exact:true}).click();
+      await modal.locator(".npc-forge-error,[data-forge-validation-message]").filter({hasText:/Eldritch Invocation 2|required class|source-owned/i}).first().waitFor();
+      assert.match(await modal.locator(".npc-forge-steps button.is-current").innerText(),/Training/);
+      assert.deepEqual(this.writes,[]);
+    };
+    await incomplete();
+    await this.selectTrainingOption(modal,group(2),"Eldritch Blast");
+    await this.selectTrainingOption(modal,group(2),"Devil's Sight","Replace Selection");
+    await child.waitFor({state:"detached"});
+    await this.selectTrainingOption(modal,group(2),invocations[1].name,"Replace Selection");
+    await child.waitFor({state:"visible"});
+    assert.equal(await child.filter({hasText:"Selected"}).count(),0);
+    await incomplete();
+    await this.selectTrainingOption(modal,group(2),"Eldritch Blast");
+    console.log("::notice title=Mounted original Warlock child::STORY-J168-01 passed. Incomplete child blocked Training and a replacement cleared the stale child before reselection.");
   }
 
   response(name) {
@@ -310,11 +348,15 @@ export class MountedLifecycle {
   verify() {
     assert.deepEqual(this.levels,[2,3]);
     assert.deepEqual(this.writes,[creationRpc,levelRpc,"update_character_spell_use_v1",levelRpc]);
+    this.verifyBrowserTraffic();
+    console.log("::notice title=Mounted browser isolation::MOUNT-05 passed. No failed loopback reads, transport errors, uncaught browser errors, external requests or v4/v3 writes.");
+  }
+
+  verifyBrowserTraffic() {
     assert.deepEqual(this.errors,[]);
     assert.deepEqual(this.offsite,[]);
     assert.deepEqual(this.failedReads,[]);
     assert.deepEqual(this.transportErrors,[]);
-    console.log("::notice title=Mounted browser isolation::MOUNT-05 passed. No failed loopback reads, transport errors, uncaught browser errors, external requests or v4/v3 writes.");
   }
 
   async close() {

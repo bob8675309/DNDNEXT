@@ -69,13 +69,38 @@ export function readWarlockEquivalence(sql, characterId, source) {
   };
 }
 
+// Compare the complete starting specimen. Advancement intentionally uses a
+// different slot-one option and spell list, so its existing comparator stays separate.
+export function readStartingWarlock(sql, characterId, source) {
+  const base=readWarlockEquivalence(sql,characterId,source);
+  const where=" WHERE g.character_id='"+characterId+"'";
+  const grants=JSON.parse(sql(`SELECT jsonb_agg(jsonb_build_object(
+    'slot',g.instance_key,'optionId',g.option_catalog_id,'optionKey',o.option_key,
+    'level',g.acquired_level,'source',o.source,'type',g.option_type,
+    'owner',g.metadata->>'source',
+    'childId',coalesce(g.choices#>>'{child,value}',g.choices#>>'{child,key}')) ORDER BY g.instance_key)
+    FROM public.character_class_option_grant_instances g
+    JOIN public.class_feature_option_catalog o ON o.id=g.option_catalog_id ${where}`));
+  assert.deepEqual(grants,source.invocations.map(option=>({
+    slot:"warlock-invocation-slot-"+option.slot,optionId:option.id,optionKey:option.key,
+    level:option.acquisitionLevel,source:source.classSource,type:"eldritch-invocation",owner:"player-forge",
+    childId:option.name==="Agonizing Blast" ? base.common.sharedSpell.spellId : null,
+  })));
+  const spells=JSON.parse(sql(`SELECT jsonb_agg(jsonb_build_object(
+    'spellId',s.id,'level',s.level,'source',s.source,'owner',g.source_key,
+    'castingStat',g.casting_stat,'available',g.always_available) ORDER BY s.id)
+    FROM public.character_spells g JOIN public.spells_catalog s ON s.id=g.spell_id
+    ${where} AND g.source_type='class'`));
+  return {class:base.common.classId,level:base.common.level,grants,spells};
+}
+
 export function writeEquivalenceReceipt(path, kind, evidence) {
   assert.match(process.env.GITHUB_SHA ?? "", /^[a-f0-9]{40}$/);
   writeFileSync(path, JSON.stringify({kind, sha:process.env.GITHUB_SHA, sourcePins, ...evidence}, null, 2)+"\n");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [creation, advancement] = process.argv.slice(2).map(path => JSON.parse(readFileSync(path, "utf8")));
+  const [creation, advancement, mounted] = process.argv.slice(2).map(path => JSON.parse(readFileSync(path, "utf8")));
   assert.equal(creation.kind, "creation");
   assert.equal(advancement.kind, "advancement");
   for (const receipt of [creation, advancement]) {
@@ -92,4 +117,19 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   assert.equal(advancement.repeatSubmission, "REPLACE-04");
   assert.deepEqual(advancement.replacementStages, ["REPLACE-01", "REPLACE-02", "REPLACE-03", "REPLACE-04", "REPLACE-05", "REPLACE-06", "REPLACE-07"]);
   console.log("::notice title=Signed Forge and advancement equivalence::J165, J167 and J168 persisted the same source-qualified earned slots, child and class-owned Eldritch Blast as signed v5. Original rejections, nonce replay and replacement stages passed.");
+  if(mounted){
+    assert.equal(mounted.kind,"mounted-j168");
+    assert.equal(mounted.sha,process.env.GITHUB_SHA);
+    assert.deepEqual(mounted.sourcePins,sourcePins);
+    assert.deepEqual(mounted.canonical,creation.startingJ168);
+    assert.equal(mounted.replay,"same-nonce-inert");
+    assert.deepEqual(mounted.rejections,["changed-story-22023","outsider-42501","missing-child-P0001","invalid-child-P0001"]);
+    assert.deepEqual(mounted.fingerprints,{
+      storyHash:"6e39477f971c9d40c6726c9f4dbc456e",
+      optionHash:"6df5aee6f0519c9c77758d6e887ed8e4",
+      validatorHash:"4f1752db655b6ba490113f604c7583ef",
+    });
+    console.log("::notice title=Mounted Story and signed J168 equivalence::STORY-J168-04 passed. The same-head signed starting Warlocks persisted all three identical source-owned slots and five identical class spell assignments.");
+  }
+
 }

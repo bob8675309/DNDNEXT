@@ -2910,7 +2910,7 @@ console.log("PASS J164-J168 original-source Warlock nested, source-only and actu
 
 if (e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT) {
  equivalenceCheckpoint="read the source-locked creation specimens";
- const {verifyEquivalenceSources,readWarlockEquivalence,writeEquivalenceReceipt}
+ const {verifyEquivalenceSources,readWarlockEquivalence,readStartingWarlock,writeEquivalenceReceipt}
   = await import("./integration/i2j/forge_advancement_equivalence.mjs");
  const source=verifyEquivalenceSources();
  const cases=Object.fromEntries(Object.entries({J165:wcPositiveId,J167:wcSourceId,J168:wcWireId})
@@ -2950,6 +2950,6 @@ if (e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT) {
   selections[selections.length-1]=selections[0];
  },/duplicate starting magic spell selections|duplicate spell choices/i);
  writeEquivalenceReceipt(e.DNDNEXT_FORGE_EQUIVALENCE_RECEIPT,"creation",{
-  cases,rejections:["omitted-child","invalid-child","duplicate-spell"],replay:"same-nonce-inert"
+  cases,startingJ168:readStartingWarlock(sql,wcWireId,source),rejections:["omitted-child","invalid-child","duplicate-spell"],replay:"same-nonce-inert"
  });
 }

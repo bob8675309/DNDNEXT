@@ -988,7 +988,7 @@ if(env.DNDNEXT_I1H_LOCAL_CONFIRM==="DISPOSABLE_LOCAL_GOTRUE_PG17_ONLY"){
         classId:wClass,blastId:wBlast,poisonId:wPoison,mounted
       });
     } catch(error) {
-      const frame=error.stack?.match(/(?:story_forge_lifecycle(?:_sources)?|verify_i2j_mounted_lifecycle|i2j_mounted_lifecycle_reads)\.mjs:\d+:\d+/)?.[0];
+      const frame=error.stack?.match(/(?:story_forge_lifecycle(?:_sources)?|verify_i2j_mounted_lifecycle|i2j_mounted_lifecycle_reads|mounted_starting_warlock)\.mjs:\d+:\d+/)?.[0];
       const message=String(error.message).replaceAll("%","%25").replaceAll("\n","%0A").replaceAll("\r","%0D");
       console.log("::error title=Disposable joined Story lifecycle::"+(frame??"setup")+" "+message);
       throw error;
