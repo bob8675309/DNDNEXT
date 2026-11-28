@@ -157,10 +157,16 @@ export class MountedLifecycle {
         throw Error("Forge "+step+" failed (reads "+JSON.stringify(this.failedReads)+", guidance "+JSON.stringify(guidance)+"): "+error.message);
       }
     }
-    const [response]=await Promise.all([
-      this.response(creationRpc),
-      modal.getByRole("button",{name:"Create Player Character",exact:true}).click(),
-    ]);
+    let response;
+    try{
+      [response]=await Promise.all([
+        this.response(creationRpc),
+        modal.getByRole("button",{name:"Create Player Character",exact:true}).click(),
+      ]);
+    }catch(error){
+      throw Error("Forge Review sent no Story write (UI "+JSON.stringify(await modal.locator(".npc-forge-error").allTextContents())
+        +", reads "+JSON.stringify(this.failedReads)+", browser "+JSON.stringify(this.errors)+"): "+error.message);
+    }
     const request=response.request().postDataJSON();
     const data=await response.json();
     assert.ok(response.ok(),JSON.stringify(data));

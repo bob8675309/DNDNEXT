@@ -68,6 +68,7 @@ export function installMountedLifecycleReads(sql) {
     GRANT SELECT(spell_id,source_type,raw_payload,character_id) ON public.character_spells TO authenticated;
     ALTER TABLE public.character_spells ENABLE ROW LEVEL SECURITY;
     GRANT SELECT ON public.character_stock TO authenticated;
+    GRANT SELECT(storefront_title,storefront_tagline) ON public.characters TO authenticated;
     ALTER TABLE public.character_stock ENABLE ROW LEVEL SECURITY;
     CREATE POLICY mounted_fixture_visible_stock ON public.character_stock FOR SELECT TO authenticated
        USING(EXISTS(SELECT 1 FROM public.characters c WHERE c.id=character_id AND c.storefront_enabled));
