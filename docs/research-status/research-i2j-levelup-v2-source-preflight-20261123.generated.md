@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `d723dfffd07eaf1d37710673d33def35949c59e3` |
+| Exact source commit represented by this archive snapshot | `acbaf8b6fcf27c81cb532d258031e5aea2ac6be8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | test(i2j): incorporate verified Codex joined Story Forge lifecycle |
+| Last source commit title | docs(i2j): verify owner joined lifecycle and mounted UI composition constraints |
 | Files changed relative to main | 323 (224 non-docs; 99 docs) |
-| Last source commit | 7 files (4 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,13 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_STORY_FORGE_JOINED_LIFECYCLE_2026-11-27.md`
-- `scripts/integration/i2j/story_forge_lifecycle.mjs`
-- `scripts/integration/i2j/story_forge_lifecycle_sources.mjs`
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
