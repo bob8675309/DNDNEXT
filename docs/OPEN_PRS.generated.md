@@ -4,14 +4,14 @@
 
 | Captured UTC | GitHub main (not deployment verified) | Trigger source SHA | Open PRs |
 |---|---|---|---|
-| 2026-11-27T22:08:23Z | `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0` | `06d3ead9505386a24a74498f7f148b9a83c53cba` | 32 |
+| 2026-11-28T02:06:33Z | `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0` | `1220fac9292c1ef8c0a1fe02e439331660392bb1` | 32 |
 
 Every open PR returned by **all pages** of the GitHub open-pulls API at capture time appears below, including draft and stacked research PRs. **Closed/merged PRs, unassociated branches and later PR activity are not included.**
 
 | PR / title | Exact HEAD | Branch → base | Draft? | GitHub updated UTC |
 |---|---|---|---|---|
 | [#392 — docs: remove Codex daily cap and prioritize PR consolidation](https://github.com/bob8675309/DNDNEXT/pull/392) | `be74d870b2440060e801a1814371dd8c135af5b8` | `docs/codex-unrestricted-included-usage-20261127` → `main` | no | 2026-11-27T15:15:38Z |
-| [#379 — C34 T28-P2 HOLD: nonmap original merchant/wallet guard after T28-P1 signed PASS](https://github.com/bob8675309/DNDNEXT/pull/379) | `06d3ead9505386a24a74498f7f148b9a83c53cba` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-27T22:07:52Z |
+| [#379 — C34 T28-P2 HOLD: nonmap original merchant/wallet guard after T28-P1 signed PASS](https://github.com/bob8675309/DNDNEXT/pull/379) | `1220fac9292c1ef8c0a1fe02e439331660392bb1` | `research/c34-clean-main-privacy-forge-joint-source-20261112` → `main` | yes | 2026-11-28T02:06:12Z |
 | [#371 — I2-G research: original signed level-up v1 account-overwrite RED and Option A no-mirror scratch GREEN](https://github.com/bob8675309/DNDNEXT/pull/371) | `6db27e720d0c2788774cc37d2f85d14244e61b95` | `research/i2g-signed-levelup-v1-option-a-20261112` → `research/i2f-source-species-projection-option-a-freeze-20261111` | yes | 2026-11-12T23:26:15Z |
 | [#364 — I1-P research: signed original earned level-up v5 and Rage-rest cross-character mirror RED/GREEN](https://github.com/bob8675309/DNDNEXT/pull/364) | `f969af0a15cc8a7e517808cb2eeeefea3119f6fd` | `research/i1p-earned-levelup-rest-legacy-sheet-20261111` → `research/i1o-cross-family-legacy-sheet-signed-20261111` | yes | 2026-11-11T05:14:38Z |
 | [#363 — I1-O research: signed cross-family legacy-sheet RED/GREEN for HP and Admin progression](https://github.com/bob8675309/DNDNEXT/pull/363) | `0c413bc5b0d1378a55891f070f76e74394bd0044` | `research/i1o-cross-family-legacy-sheet-signed-20261111` → `research/i1n-legacy-sheet-writer-reader-census-20261111` | yes | 2026-11-11T04:36:10Z |
