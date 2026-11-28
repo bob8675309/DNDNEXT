@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-28T05:24:53Z | agent/i2j-mounted-character-lifecycle-20261127 (4798b848ba803d46c9856dd0abd932b4a0392ed8) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
+| 2026-11-28T05:35:31Z | research/i2j-levelup-v2-source-preflight-20261123 (f8eaa8984633b1cb375ebb6fd101010066c274d8) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

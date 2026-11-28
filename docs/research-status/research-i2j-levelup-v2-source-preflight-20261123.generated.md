@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `fb85b7564c0fc0acc510abe930a7ea48aa9a9104` |
+| Exact source commit represented by this archive snapshot | `f8eaa8984633b1cb375ebb6fd101010066c274d8` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | docs: record exact open PR CI and I2J baseline delta |
-| Files changed relative to main | 324 (224 non-docs; 100 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | test(i2j): incorporate verified Codex mounted Story Forge to v5 lifecycle |
+| Files changed relative to main | 328 (227 non-docs; 101 docs) |
+| Last source commit | 9 files (6 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,15 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
+- `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_OPEN_PR_EXACT_HEAD_AND_BASELINE_DELTA_2026-11-27.md`
+- `docs/research/I2J_MOUNTED_CHARACTER_LIFECYCLE_2026-11-27.md`
+- `scripts/browser/i2j_mounted_lifecycle_dom.jsx`
+- `scripts/browser/i2j_mounted_lifecycle_reads.mjs`
+- `scripts/browser/verify_i2j_mounted_lifecycle.mjs`
+- `scripts/integration/i2j/story_forge_lifecycle.mjs`
+- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -72,7 +79,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `components/MapPageClient.js`
 - `components/NewNpcModalV3.js`
 - `components/NewNpcModalV3Refined.js`
-- … 274 more
+- … 278 more
 
 ## Trust and update procedure
 
