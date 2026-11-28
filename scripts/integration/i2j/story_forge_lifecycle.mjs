@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { installStoryLifecycleSources } from "./story_forge_lifecycle_sources.mjs";
 
-export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,basePayload,unrelatedId,classId,blastId,poisonId}) {
+export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,basePayload,unrelatedId,classId,blastId,poisonId,mounted=null}) {
   const q = value => "'"+String(value).replaceAll("'","''")+"'";
   const guard = installStoryLifecycleSources({sql,sqlFile,targetClass:classId});
   const slot2 = "warlock-invocation-slot-2";
@@ -94,8 +94,12 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
     spell_id,source_type:"class",source_key:"warlock",access_type:"class-list",prepared:true,
   }));
   payload.sheet.startingMagicSelections=magicPayload;
+  let mountedRequest=null;
   const create = (actor,p=payload,privateStory=story) => rpc(actor.client,"create_player_character_with_private_backstory_v1",{
-    p_payload:p,p_spell_choices:[],p_magic_selections:magicPayload,p_private_backstory:privateStory,
+    ...(mountedRequest && p===payload ? mountedRequest : {
+      p_payload:p,p_spell_choices:[],p_magic_selections:magicPayload,
+    }),
+    p_private_backstory:privateStory,
   });
   const globalCounts = () => Object.fromEntries([
     "public.characters","public.character_sheets","public.character_progression","public.character_backstory_secrets",
@@ -116,7 +120,8 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
   assert.deepEqual({counts:globalCounts(),mirrors:mirrors(),stock:rows("public.character_stock","id="+q(stock))},beforeFailedCreate);
   assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id="+q(failedPayload.creation_request_id)),"0");
 
-  const firstResult=await create(creator);
+  const firstResult=mounted ? await mounted.create({payload,story,stock,merchantId:merchant}) : await create(creator);
+  if(mounted)mountedRequest=firstResult.request;
   assert.ifError(firstResult.error);
   const id=firstResult.data;
   assert.match(id,/^[a-f0-9-]{36}$/);
@@ -199,8 +204,9 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
     assert.deepEqual(snapshots(),exactBefore);
     console.log("PASS LIFE-02 original deferred OLD/NEW level timing RED with atomic rollback");
     guard.applyFinalStateCandidate();
-    assert.ifError((await apply(creator,learn)).error);
+    assert.ifError((await (mounted ? mounted.advance(id,level2Session,2,learn) : apply(creator,learn))).error);
   } else {
+    assert.equal(mounted,null,"Mounted lifecycle requires the established original RED before the first browser write");
     console.log("PASS LIFE-02 original deferred validator accepted the joined transition without the final-state-only correction");
   }
   const afterEarn=canonical(id);
@@ -229,7 +235,7 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
   const beforeDeniedUse=snapshots();
   requireDenial(await use(outsider),"42501",/permission to manage/);
   assert.deepEqual(snapshots(),beforeDeniedUse);
-  const spent=await use(creator);
+  const spent=mounted ? await mounted.spend(id,pool.id) : await use(creator);
   assert.ifError(spent.error);
   assert.equal(spent.data.limitedSpellUses.find(row=>row.assignmentId===pool.id).remaining,0);
   assert.equal(canonical(id).spells.find(row=>row.id===pool.id).uses_remaining,0);
@@ -246,7 +252,7 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
   await denyAdvance(creator,badReplacement,"P0001",/^The selected Invocation cannot be replaced on this level-up\.$/);
   await denyAdvance(creator,{...replace,spell_choices:[]},"P0001",/^Choose exactly 1 new leveled spell\(s\)\.$/);
   const beforeReplace=canonical(id);
-  const result=await apply(creator,replace);
+  const result=mounted ? await mounted.advance(id,level3Session,3,replace) : await apply(creator,replace);
   assert.ifError(result.error);
   const after=canonical(id);
   const summary=result.data.replacements;
@@ -285,5 +291,6 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
   assert.equal(finalReplay.data,id);
   assert.deepEqual(snapshots(),beforeFinalReplay);
   guard.verify();
+  mounted?.verify();
   console.log("::notice title=Joined signed Forge lifecycle::LIFE-01 through LIFE-04 passed. Story creation, earned Magic Initiate/Skilled, free use, late rollback, replacement and replay on the same character. "+guard.fingerprintReceipt());
 }

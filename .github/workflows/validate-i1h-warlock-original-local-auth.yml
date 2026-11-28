@@ -1,11 +1,12 @@
 name: I1-H original first-create Warlock Invocation acquisition joint signed
 on:
   push:
-    branches: [research/i2j-levelup-v2-source-preflight-20261123]
+    branches: [research/i2j-levelup-v2-source-preflight-20261123, agent/i2j-mounted-character-lifecycle-20261127]
     paths:
       - '.github/workflows/validate-i1h-warlock-original-local-auth.yml'
       - 'scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs'
       - 'scripts/integration/i2j/story_forge_lifecycle*.mjs'
+      - 'scripts/browser/*i2j_mounted_lifecycle*'
   pull_request:
     paths:
       - '.github/workflows/validate-i1h-warlock-original-local-auth.yml'
@@ -48,7 +49,7 @@ permissions:
   contents: read
 jobs:
   warlock-original-guards-joint-signed:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository || (github.event_name == 'push' && github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123')
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository || (github.event_name == 'push' && (github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123' || github.ref == 'refs/heads/agent/i2j-mounted-character-lifecycle-20261127'))
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -77,6 +78,13 @@ jobs:
           node scripts/validate_npc_private_profile_cutover.mjs
       - name: Install existing pinned application dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install isolated mounted browser tools
+        if: github.ref == 'refs/heads/agent/i2j-mounted-character-lifecycle-20261127'
+        run: |
+          npm install --prefix "$RUNNER_TEMP/i2j-mounted-tools" --no-audit --no-fund --no-progress esbuild@0.25.12 playwright-core@1.56.1
+          CHROME="$(command -v google-chrome || command -v chromium)"
+          test -x "$CHROME"
+          printf 'C33_BROWSER_TOOL_ROOT=%s\nC33_BROWSER_CHROME=%s\n' "$RUNNER_TEMP/i2j-mounted-tools" "$CHROME" >> "$GITHUB_ENV"
       - name: Configure isolated PostgreSQL 17 + GoTrue
         run: |
           mkdir -p "$RUNNER_TEMP/i1h-local/supabase"
@@ -117,6 +125,10 @@ jobs:
           if [[ "$GITHUB_REF" == refs/heads/research/i2j-levelup-v2-source-preflight-20261123 ]]; then
             export DNDNEXT_I2J_STORY_LIFECYCLE=DISPOSABLE_I1H_ONLY
           fi
+          if [[ "$GITHUB_REF" == refs/heads/agent/i2j-mounted-character-lifecycle-20261127 ]]; then
+            export DNDNEXT_I2J_STORY_LIFECYCLE=DISPOSABLE_I1H_ONLY
+            export DNDNEXT_I2J_MOUNTED_LIFECYCLE=DISPOSABLE_I1H_BROWSER_ONLY
+          fi
           node scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs
       - name: Stop and discard local test services and data
         if: always()
@@ -124,7 +136,7 @@ jobs:
           cd "$RUNNER_TEMP/i1h-local"
           npx --yes supabase@2.120.0 stop --no-backup || true
       - name: Verify joined fixture containers were removed
-        if: always() && github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123'
+        if: always() && (github.ref == 'refs/heads/research/i2j-levelup-v2-source-preflight-20261123' || github.ref == 'refs/heads/agent/i2j-mounted-character-lifecycle-20261127')
         run: |
           containers=$(docker ps -a --filter name=i1h-warlock-original-acquisition-local-only --format '{{.Names}}')
           test -z "$containers"
