@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-clean-main-privacy-forge-joint-source-20261112` |
-| Exact source commit represented by this archive snapshot | `2345289a9f43bcc06ff710b3de0332d9a7967bb2` |
+| Exact source commit represented by this archive snapshot | `2c94855b36cb8108bb0a46e7357959aa78ebd11f` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | docs(c34): archive original PR332 Warlock completion dossier |
+| Last source commit title | docs(c34): verify original Warlock completion dossier custody |
 | Files changed relative to main | 443 (324 non-docs; 119 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/research/archive/PR332/Forge_Warlock_Child_Completion_2026-11-06.md`
+- `docs/research/C34_PR332_PR334_J168_SOURCE_CUSTODY_2026-11-24.md`
 
 ## Research-branch change inventory versus main
 
