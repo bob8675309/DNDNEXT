@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/i2j-levelup-v2-source-preflight-20261123` |
-| Exact source commit represented by this archive snapshot | `27a45b1044aa90108d1bf91ecd84959982164366` |
+| Exact source commit represented by this archive snapshot | `f1bc46e788a727b55b34d7c0736b680c234f2569` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Consolidate source-locked Forge advancement equivalence into owner I2J |
+| Last source commit title | docs: verify owner I2J equivalence and joined lifecycle source preflight |
 | Files changed relative to main | 320 (222 non-docs; 98 docs) |
-| Last source commit | 8 files (5 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,14 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
-- `.github/workflows/validate-i2j-origin-feat-pair-historical.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/research/I2J_FORGE_ADVANCEMENT_EQUIVALENCE_2026-11-27.md`
-- `scripts/integration/i2j/forge_advancement_equivalence.mjs`
-- `scripts/integration/i2j/forge_advancement_equivalence_stage.mjs`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
