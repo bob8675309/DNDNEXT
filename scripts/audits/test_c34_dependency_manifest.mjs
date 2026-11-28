@@ -920,3 +920,45 @@ function resolveDefaultReaderInventory(sourceBlob,readerKind,rows){
      assert.equal(prComparisonMatches(event,{...receipt,...bad}),false);
    console.log('Synthetic PR comparison identity checks; ancestry and provenance not proven');
  }
+
+
+// Native Git ancestry experiment, exclusively against a disposable synthetic repository.
+// This proves local graph behavior, not authenticated event provenance or dependency closure.
+{
+  const {execFileSync}=await import('node:child_process');
+  const {mkdtempSync,rmSync}=await import('node:fs');
+  const {tmpdir}=await import('node:os');
+  const {join}=await import('node:path');
+  const dir=mkdtempSync(join(tmpdir(),'c34-ancestry-'));
+  const env={PATH:process.env.PATH,HOME:dir,GIT_CONFIG_NOSYSTEM:'1',
+    GIT_CONFIG_GLOBAL:join(dir,'empty-config'),GIT_NO_REPLACE_OBJECTS:'1',
+    GIT_AUTHOR_NAME:'Synthetic',GIT_AUTHOR_EMAIL:'synthetic@example.invalid',
+    GIT_COMMITTER_NAME:'Synthetic',GIT_COMMITTER_EMAIL:'synthetic@example.invalid'};
+  const git=(args,input)=>execFileSync('git',args,{cwd:dir,env,input,
+    encoding:'utf8',timeout:10000,maxBuffer:65536,stdio:['pipe','pipe','pipe']}).trim();
+  function uniqueMergeBase(base,head) {
+    if (![base,head].every(x=>typeof x==='string' && /^[0-9a-f]{40}$/.test(x)) || base===head) return null;
+    try {
+      if(git(['rev-parse','--is-shallow-repository'])!=='false') return null;
+      for(const id of [base,head]) if(git(['cat-file','-t',id])!=='commit') return null;
+      const bases=git(['merge-base','--all',base,head]).split('\n');
+      return bases.length===1 && /^[0-9a-f]{40}$/.test(bases[0]) ? bases[0] : null;
+    } catch {return null;}
+  }
+  try {
+    git(['init','--quiet','--object-format=sha1']);
+    const tree=git(['mktree'],'');
+    const commit=(name,parents=[])=>git(['commit-tree',tree,...parents.flatMap(p=>['-p',p]),'-m',name]);
+    const root=commit('root'), left=commit('left',[root]), right=commit('right',[root]);
+    const cross1=commit('cross one',[left,right]),cross2=commit('cross two',[right,left]);
+    assert.equal(uniqueMergeBase(left,right),root);
+    assert.equal(uniqueMergeBase(root,left),root);
+    assert.equal(uniqueMergeBase(cross1,cross2),null);
+    assert.equal(uniqueMergeBase(left,commit('unrelated')),null);
+    assert.equal(uniqueMergeBase(left,'0'.repeat(40)),null);
+    assert.equal(uniqueMergeBase(left,tree),null);
+    assert.equal(uniqueMergeBase(left,'HEAD'),null);
+    assert.equal(uniqueMergeBase(left,left),null);
+    console.log('Native synthetic Git ancestry: 8 assertions; event provenance and closure unresolved');
+  } finally {rmSync(dir,{recursive:true,force:true});}
+}
