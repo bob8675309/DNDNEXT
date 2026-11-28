@@ -4,9 +4,11 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-28T02:28:47Z | research/i2j-levelup-v2-source-preflight-20261123 (fb85b7564c0fc0acc510abe930a7ea48aa9a9104) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
+| 2026-11-28T04:23:45Z | research/c34-ci-efficiency-independent-20261121 (e2eaacb3857f8a74e83bb1b2ab9ffb5110473dc6) | be1b20d9cab2ce45205a4cbe8d25ac540fceebf0 |
 
 ## Exact PR heads and latest captured GitHub Actions
+
+**All open PRs (metadata only):** [complete paginated index](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/OPEN_PRS.generated.md). That catalogue contains current HEAD/base/draft information for each open PR at the last research push; it does NOT check their CI or choose development priorities.
 
 | PR | Branch/base | Exact head SHA | Workflow status | Documentation signal |
 |---|---|---|---|---|
@@ -70,6 +72,6 @@
 ## Owner-current task: do not infer it from this snapshot
 
 - **START HERE:** [NEXT_CHAT_START_HERE.md](https://github.com/bob8675309/DNDNEXT/blob/main/docs/NEXT_CHAT_START_HERE.md), then [ACTIVE_WORK.md](https://github.com/bob8675309/DNDNEXT/blob/main/docs/ACTIVE_WORK.md) and its last HANDOFF_LOG receipt. Those human-authored files, with live PR HEAD/CI, control the current owner task.
-- This free collector intentionally queries only **four anchor PRs: #317, #321, #324, #325**. It does **not** summarize newer stacked Forge #328–#335, Spell Engine #309/#312, or every open PR. Use the [workstream dependency index](https://github.com/bob8675309/DNDNEXT/blob/main/docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md) and current GitHub.
+- This detailed CI collector intentionally queries **four anchor PRs** (#317, #321, #324, #325). The separate [all-open-PR index](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/OPEN_PRS.generated.md) enumerates all current open PRs at capture time, but does **not** verify their CI or feature completeness. Consult the source workstream index and live GitHub for full acceptance.
 - A previous generated next-trigger recommendation was a **historical 2026-11-06 research checkpoint**, not an instruction to override newer owner directions. No automatic priority selection, paid model calls, continuous monitoring, gameplay, deployment or production SQL are performed by this publisher.
 

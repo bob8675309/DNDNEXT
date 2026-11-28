@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/c34-ci-efficiency-independent-20261121` |
-| Exact source commit represented by this archive snapshot | `16f71afb1b90a368e066a3500781280e84fe15d5` |
+| Exact source commit represented by this archive snapshot | `e2eaacb3857f8a74e83bb1b2ab9ffb5110473dc6` |
 | Compared with | `6637b14f807ebec79542deb7eef4b2bc3abfb5fd` (main comparison base) |
-| Last source commit title | test(ci): validate synthetic push diff evidence envelope |
+| Last source commit title | test(ci): model PR comparison identity fail-closed cases |
 | Files changed relative to main | 341 (265 non-docs; 76 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
