@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-clean-main-forge-progression-20261127` |
-| Exact source commit represented by this archive snapshot | `9dcbfa5443b7aae33c21886d2080335472abd6fc` |
+| Exact source commit represented by this archive snapshot | `ea07f2acf4bf633a94c16664333d21ab8055caa0` |
 | Compared with | `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0` (main comparison base) |
-| Last source commit title | Keep the historical PR scope audit checkpoint visible |
+| Last source commit title | Record completed advancement and exact comparator job |
 | Files changed relative to main | 53 (47 non-docs; 6 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,6 +18,8 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/research/I2J_CLEAN_MAIN_FORGE_PROGRESSION_2026-11-27.md`
 
 ## Research-branch change inventory versus main
 
