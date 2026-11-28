@@ -222,10 +222,9 @@ export class MountedLifecycle {
       for(const name of ["Wizard specimen 1","Wizard specimen 2","Wizard specimen 3"]){
         await form.locator(".npc-forge-source-spell-picker__row").filter({hasText:name}).locator("button").click();
       }
-      const skills=form.locator(".npc-forge-source-choice-slots select");
-      for(const [index,name] of ["Arcana","Athletics","Perception"].entries()){
-        const label=await skills.nth(index).locator("option").filter({hasText:new RegExp("^"+name+"(?: • .+)?$")}).innerText();
-        await skills.nth(index).selectOption({label});
+      const skills=field(form,"Choose three skills or tools");
+      for(const name of ["Arcana","Athletics","Perception"]){
+        await this.chooseRich(skills,name);
       }
     }else{
       const replacement=group("Replace an Eldritch Invocation");
