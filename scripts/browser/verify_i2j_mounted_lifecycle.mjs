@@ -14,9 +14,13 @@ const pact="optional-feature:pact-of-the-blade|XPHB";
 
 // The mounted form serializes inactive fields as empty arrays. Compare every
 // selected group and field against the existing signed payload.
+function selectedFields(fields) {
+  return Object.entries(fields).filter(([,options])=>options.length);
+}
+
 function selectedClassChoices(groups) {
   return Object.fromEntries(Object.entries(groups).flatMap(([groupId,fields])=>{
-    const selected=Object.entries(fields).filter(([,keys])=>keys.length);
+    const selected=selectedFields(fields);
     return selected.length ? [[groupId,Object.fromEntries(selected)]] : [];
   }));
 }
@@ -275,7 +279,7 @@ export class MountedLifecycle {
         level:row.acquisitionLevel,
         id:row.optionId,
         source:row.source,
-        choices:Object.fromEntries(Object.entries(row.choices).map(([field,options])=>[
+        choices:Object.fromEntries(selectedFields(row.choices).map(([field,options])=>[
           field,options.map(option=>option.value.toLowerCase()).sort(),
         ])),
       })).sort((a,b)=>a.ownerKey.localeCompare(b.ownerKey));
