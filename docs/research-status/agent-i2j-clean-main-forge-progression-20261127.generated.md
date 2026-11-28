@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-clean-main-forge-progression-20261127` |
-| Exact source commit represented by this archive snapshot | `f54624f35389efa0addf8725dc177f4a8ef0e9fa` |
+| Exact source commit represented by this archive snapshot | `9dcbfa5443b7aae33c21886d2080335472abd6fc` |
 | Compared with | `be1b20d9cab2ce45205a4cbe8d25ac540fceebf0` (main comparison base) |
-| Last source commit title | Record original PR custody and clean-main integration evidence |
+| Last source commit title | Keep the historical PR scope audit checkpoint visible |
 | Files changed relative to main | 53 (47 non-docs; 6 docs) |
-| Last source commit | 6 files (0 non-docs; 6 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,11 +18,6 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `docs/ACTIVE_WORK.md`
-- `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/research/I2J_CLEAN_MAIN_FORGE_EXECUTABLE_2026-11-27.tsv`
-- `docs/research/I2J_CLEAN_MAIN_FORGE_PROGRESSION_2026-11-27.md`
-- `docs/research/I2J_CLEAN_MAIN_FORGE_PR_SOURCE_2026-11-27.tsv`
 
 ## Research-branch change inventory versus main
 
