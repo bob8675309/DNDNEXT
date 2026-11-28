@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-mounted-character-lifecycle-20261127` |
-| Exact source commit represented by this archive snapshot | `5f57070ba5f4c51d614c2a866e229c59205ba2d2` |
+| Exact source commit represented by this archive snapshot | `8d534906b9ce9dea389452eeda3edf7a34c00f8a` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Select Skilled proficiencies through the mounted rich catalog |
+| Last source commit title | Select the Warlock pact in mounted Forge Training |
 | Files changed relative to main | 327 (227 non-docs; 100 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
