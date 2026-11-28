@@ -120,7 +120,7 @@ export class MountedLifecycle {
         species:{speciesId,speciesName:"Dwarf",rules:[],selections:{}},
         class:{classId,classKey:"warlock",className:"Warlock",classSource:"XPHB",
           level:1,options:[],catalogReady:true,selectedKey:"",featureGroups:[],featureSelections:{},featureCatalogReady:true},
-        source:{draftVersion:3,selections:{"warlock-invocation-slot-1":{invocation:[pact]}},defaultedGroups:{}},
+        source:{draftVersion:3,selections:{},defaultedGroups:{}},
       },
     });
     const page=this.page;
@@ -137,6 +137,19 @@ export class MountedLifecycle {
           if(!await field.evaluate(el=>el.open))await field.locator("summary").click();
           await field.locator("select").nth(0).selectOption({label:"Dwarvish"});
           await field.locator("select").nth(1).selectOption({label:"Elvish"});
+        }
+        if(step==="Training"){
+          const choices=modal.locator(".npc-forge-training-feat-section");
+          if(!await choices.evaluate(el=>el.open))await choices.locator(":scope > summary").click();
+          const invocation=choices.locator(".npc-forge-class-option-group").filter({
+            has:page.locator("summary strong").filter({hasText:/^Eldritch Invocation 1$/}),
+          });
+          await invocation.waitFor({state:"visible"});
+          if(!await invocation.evaluate(el=>el.open))await invocation.locator(":scope > summary").click();
+          const pactOption=invocation.getByRole("button",{name:/Pact of the Blade/});
+          await pactOption.click();
+          await modal.locator(".npc-forge-training-context-dossier").getByRole("button",{name:"Select",exact:true}).click();
+          await pactOption.filter({hasText:"Selected"}).waitFor();
         }
         if(step==="Spells"){
           for(const name of ["Eldritch Blast","Poison Spray","Warlock specimen 1","Warlock specimen 2"]){
