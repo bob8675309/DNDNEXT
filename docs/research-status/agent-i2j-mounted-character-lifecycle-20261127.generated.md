@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/i2j-mounted-character-lifecycle-20261127` |
-| Exact source commit represented by this archive snapshot | `8c39195b8aef7986746b2202e68a3a0d624f5b9b` |
+| Exact source commit represented by this archive snapshot | `6709f66e1c361aebda745aebdda46e96ac940297` |
 | Compared with | `9437b9d0a2bedc3ba78110c612543f6033674a72` (main comparison base) |
-| Last source commit title | Mount Story Forge and signed v5 lifecycle in disposable Chromium |
+| Last source commit title | Expose item identities required by the mounted Forge registrar |
 | Files changed relative to main | 327 (227 non-docs; 100 docs) |
-| Last source commit | 6 files (6 non-docs; 0 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-i1h-warlock-original-local-auth.yml`
-- `scripts/browser/i2j_mounted_lifecycle_dom.jsx`
 - `scripts/browser/i2j_mounted_lifecycle_reads.mjs`
-- `scripts/browser/verify_i2j_mounted_lifecycle.mjs`
-- `scripts/integration/i2j/story_forge_lifecycle.mjs`
-- `scripts/test_i1g_warlock_original_guards_joint_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
