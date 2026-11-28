@@ -20,6 +20,7 @@ export class MountedLifecycle {
     this.errors=[];
     this.offsite=[];
     this.failedReads=[];
+    this.transportErrors=[];
     this.writes=[];
     this.levels=[];
   }
@@ -64,6 +65,10 @@ export class MountedLifecycle {
     this.page=await context.newPage();
     this.page.setDefaultTimeout(14000);
     this.page.on("pageerror",error=>this.errors.push(error.message));
+    this.page.on("requestfailed",request=>{
+      const address=new URL(request.url());
+      if(address.origin===origin) this.transportErrors.push(address.pathname+" "+request.failure()?.errorText);
+    });
     this.page.on("request",request=>{
       const name=new URL(request.url()).pathname.split("/rpc/")[1];
       if(name===creationRpc || name?.startsWith("complete_character_level_up_") || name==="update_character_spell_use_v1"){
@@ -270,6 +275,8 @@ export class MountedLifecycle {
     assert.deepEqual(this.errors,[]);
     assert.deepEqual(this.offsite,[]);
     assert.deepEqual(this.failedReads,[]);
+    assert.deepEqual(this.transportErrors,[]);
+    console.log("::notice title=Mounted browser isolation::MOUNT-05 passed. No failed loopback reads, transport errors, uncaught browser errors, external requests or v4/v3 writes.");
   }
 
   async close() {

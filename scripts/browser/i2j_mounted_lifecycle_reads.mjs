@@ -54,6 +54,12 @@ export function installMountedLifecycleReads(sql) {
     INSERT INTO public.character_option_catalog(id,option_key,option_type,name,source,category,tags,metadata,raw_payload)
     VALUES('00000000-0000-0000-0000-000000009911','dwarf-xphb','species','Dwarf','XPHB','species',
       ARRAY['playable'],'{"speed":{"walk":30},"size":["Medium"],"traits":[]}','{}');
+    REVOKE ALL ON public.class_catalog,public.class_level_progression,public.class_catalog_preferred,
+      public.character_option_catalog,public.character_option_catalog_preferred,
+      public.items_catalog,public.spells_catalog,public.spells_catalog_preferred,
+      public.class_feature_catalog,public.class_feature_option_catalog,
+      public.npc_portrait_library,public.npc_visual_assets,public.portrait_sprite_suggestions,
+      public.character_spells,public.character_stock FROM PUBLIC,anon,authenticated;
     GRANT SELECT ON public.class_catalog,public.class_level_progression,public.class_catalog_preferred,
       public.character_option_catalog,public.character_option_catalog_preferred,
       public.items_catalog,public.spells_catalog,public.spells_catalog_preferred,
