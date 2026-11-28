@@ -79,7 +79,13 @@ export function installStoryLifecycleSources({sql, sqlFile, targetClass}) {
   const q = value => "'"+String(value).replaceAll("'", "''")+"'";
   const def = name => sql("SELECT pg_get_functiondef("+q(name)+"::regprocedure)");
   const hash = name => sql("SELECT md5(pg_get_functiondef("+q(name)+"::regprocedure))");
-  const install = (source, ...names) => names.forEach(name => sql(functionBody(sources[source],name)));
+  const internal = new Set();
+  const install = (source, ...names) => {
+    for(const name of names){
+      sql(functionBody(sources[source],name));
+      if(name.startsWith("private.")) internal.add(name);
+    }
+  };
   const fingerprints = {
     "public.complete_character_level_up_v5(uuid,jsonb)":"02d74b973a763c53c595be20e35e512f",
     "public.complete_character_level_up_v4(uuid,jsonb)":"f8338ef170c6e27b972e777eeae406b8",
@@ -97,15 +103,14 @@ export function installStoryLifecycleSources({sql, sqlFile, targetClass}) {
   const guardSnapshot = triggers();
   assert.equal(JSON.parse(guardSnapshot).length,4);
 
-  // Expand I1-G's still-empty dependency table using the original grant shape,
-  // retaining its existing owner uniqueness and access policy.
-  assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances"),"0");
+  // Expand I1-G's dependency table without deleting its one historical
+  // privileged validation specimen. Its prior columns remain unchanged.
   sql(`ALTER TABLE public.character_option_catalog ADD COLUMN option_key text,
       ADD COLUMN raw_payload jsonb, ADD COLUMN description text;
     ALTER TABLE public.character_option_grant_instances
       ADD COLUMN option_key text, ADD COLUMN option_type text NOT NULL DEFAULT 'feat',
-      ADD COLUMN option_name text NOT NULL, ADD COLUMN option_source text,
-      ADD COLUMN instance_key text NOT NULL, ADD COLUMN acquisition_label text,
+      ADD COLUMN option_name text, ADD COLUMN option_source text,
+      ADD COLUMN instance_key text, ADD COLUMN acquisition_label text,
       ADD COLUMN acquisition_level int NOT NULL DEFAULT 1 CHECK (acquisition_level BETWEEN 1 AND 20),
       ADD COLUMN choices jsonb NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(choices)='object'),
       ADD COLUMN effects jsonb NOT NULL DEFAULT '[]' CHECK (jsonb_typeof(effects)='array'),
@@ -115,11 +120,17 @@ export function installStoryLifecycleSources({sql, sqlFile, targetClass}) {
       ADD COLUMN created_at timestamptz NOT NULL DEFAULT now(),
       ADD COLUMN updated_at timestamptz NOT NULL DEFAULT now(),
       ADD UNIQUE(character_id,instance_key);
+    UPDATE public.character_option_grant_instances g
+      SET option_name=o.name,option_source=o.source,instance_key='i1g-privileged-fixture-'||g.id::text
+      FROM public.character_option_catalog o WHERE o.id=g.option_id;
+    ALTER TABLE public.character_option_grant_instances
+      ALTER COLUMN option_name SET NOT NULL, ALTER COLUMN instance_key SET NOT NULL;
     ALTER TABLE public.character_level_up_sessions
       ALTER COLUMN id SET DEFAULT gen_random_uuid(),
       ADD COLUMN from_level int, ADD COLUMN to_level int,
       ADD COLUMN metadata_ready boolean NOT NULL DEFAULT true,
       ADD COLUMN preview jsonb NOT NULL DEFAULT '{}',
+      ADD COLUMN required_choices jsonb NOT NULL DEFAULT '[]',
       ADD COLUMN selections jsonb NOT NULL DEFAULT '{}',
       ADD COLUMN created_by uuid, ADD COLUMN completed_at timestamptz;
     ALTER TABLE public.class_feature_option_catalog ADD COLUMN description text;
@@ -163,6 +174,11 @@ export function installStoryLifecycleSources({sql, sqlFile, targetClass}) {
   const gap = functionBody(sources.p13,"private.level_up_persistent_choice_gaps_v1");
   sql(once(gap,"$1<>'fighter' OR $2<>'XPHB' OR $3<>1 OR $4<>2",
     "$1<>'warlock' OR $2<>'XPHB' OR NOT (($3=1 AND $4=2) OR ($3=2 AND $4=3))"));
+  for(const name of ["private.p13_only_plain_fighter","private.level_up_persistent_choice_gaps_v1",
+    "private.can_manage_character_progression_v1","private.sync_character_progression_from_sheet_v1",
+    "private.complete_character_level_up_base_v3","private.sync_player_forge_class_spell_summary_v1"]){
+    internal.add(name);
+  }
   if (sql("SELECT to_regclass('public.class_catalog_preferred') IS NULL")==="t") {
     sql("CREATE VIEW public.class_catalog_preferred AS SELECT * FROM public.class_catalog WHERE source='XPHB'");
     sql("REVOKE ALL ON public.class_catalog_preferred FROM PUBLIC,anon,authenticated");
@@ -223,11 +239,8 @@ export function installStoryLifecycleSources({sql, sqlFile, targetClass}) {
       /^(revoke all|grant execute) on function (public\.(character_sheet_resource_profile_v1|update_character_spell_use_v1|complete_character_level_up_v5)|private\.(sync_character_spell_slots_v1|character_sheet_resource_profile_json_v1|apply_level_up_warlock_invocation_replacement_v[12]|ensure_character_source_choices_v1|remove_source_owned_origin_feat_v1|apply_source_owned_origin_feat_v1|validate_source_owned_origin_feat_v1|other_character_option_effect_claim_v1|level_up_warlock_invocation_replacement_group_v1))\(/.test(line));
     if (acl.length) sql(acl.join("\n"));
   }
-  const privateNames=[...mirrors.map(([name])=>name),remove,replaceV2,
-    "private.validate_player_forge_feat_instances_v1(jsonb)",
-    "private.level_up_warlock_invocation_groups_v1(uuid,integer)"];
-  for(const name of privateNames) sql("REVOKE ALL ON FUNCTION "+name+" FROM PUBLIC,anon,authenticated");
-  sql("REVOKE ALL ON FUNCTION public.complete_character_level_up_v3(uuid,jsonb),public.complete_character_level_up_v4(uuid,jsonb) FROM PUBLIC,anon,authenticated");
+  for(const name of internal) sql("REVOKE ALL ON FUNCTION "+name+" FROM PUBLIC,anon,authenticated");
+  sql("REVOKE ALL ON FUNCTION public.complete_character_level_up_v3(uuid,jsonb),public.complete_character_level_up_v4(uuid,jsonb),public.get_character_progression_v1(uuid) FROM PUBLIC,anon,authenticated");
   sql("NOTIFY pgrst,'reload schema'");
 
   function verify() {
@@ -235,8 +248,8 @@ export function installStoryLifecycleSources({sql, sqlFile, targetClass}) {
     assert.equal(hash(replaceV2),"7f3d2e2683dd4033b5862e591ac5bccc");
     assert.equal(hash(storyName),storyHash);
     assert.equal(triggers(),guardSnapshot);
-    for(const name of [...privateNames,replaceV2]) {
-      assert.equal(sql("SELECT has_function_privilege('authenticated',"+q(name)+",'EXECUTE')"),"f");
+    for(const name of internal) {
+      assert.equal(sql("SELECT has_function_privilege('authenticated',"+q(name)+"::regproc,'EXECUTE')"),"f",name);
     }
   }
   verify();

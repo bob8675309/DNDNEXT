@@ -182,8 +182,10 @@ export async function runStoryForgeLifecycle({sql,sqlFile,rpc,creator,outsider,b
     ],
     replacement_selections:{},
   };
-  const level2Session=open(1,2,300);
+  const level2Session=open(1,2,299);
   await denyAdvance(outsider,learn,"42501",/^You do not have permission to level this character\.$/);
+  await denyAdvance(creator,learn,"P0001",/^The required XP threshold has not been reached\.$/);
+  sql("UPDATE public.character_progression SET experience_points=300 WHERE "+character(id));
   const invalidLearn=structuredClone(learn);
   invalidLearn.class_option_feat_instances[0].choices["cantrips-wizard"]=[pick(cantripA),pick(cantripA)];
   await denyAdvance(creator,invalidLearn,"P0001",/^Magic Initiate cantrips must be distinct\.$/);
